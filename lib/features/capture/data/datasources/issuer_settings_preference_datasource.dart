@@ -21,6 +21,8 @@ class IssuerSettingsPreferenceDatasource {
   IssuerSettingsPreferenceDatasource(this._prefs);
 
   static const String _key = 'capture_enabled_issuers';
+  static const String _accountsKey = 'capture_issuer_accounts';
+  static const String _separator = '=';
 
   final SharedPreferencesAsync _prefs;
   final StreamController<void> _changes = StreamController<void>.broadcast();
@@ -40,6 +42,33 @@ class IssuerSettingsPreferenceDatasource {
       await _prefs.remove(_key);
     } else {
       await _prefs.setStringList(_key, packageNames.toList());
+    }
+    _changes.add(null);
+  }
+
+  /// Which account each issuer's notifications belong to, as the user
+  /// configured it. Stored as `package=accountId` entries because
+  /// `SharedPreferences` has no map type; a malformed entry is skipped rather
+  /// than crashing the settings screen.
+  Future<Map<String, String>> readIssuerAccounts() async {
+    final entries = await _prefs.getStringList(_accountsKey) ?? const [];
+    return <String, String>{
+      for (final entry in entries)
+        if (entry.indexOf(_separator) > 0)
+          entry.substring(0, entry.indexOf(_separator)):
+              entry.substring(entry.indexOf(_separator) + 1),
+    };
+  }
+
+  Future<void> writeIssuerAccounts(
+      Map<String, String> accountsByPackage) async {
+    if (accountsByPackage.isEmpty) {
+      await _prefs.remove(_accountsKey);
+    } else {
+      await _prefs.setStringList(_accountsKey, [
+        for (final entry in accountsByPackage.entries)
+          '${entry.key}$_separator${entry.value}',
+      ]);
     }
     _changes.add(null);
   }

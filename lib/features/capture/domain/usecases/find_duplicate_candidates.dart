@@ -25,6 +25,15 @@ import '../repositories/pending_capture_repository.dart';
 ///    another from the card's bank, and requiring the same issuer would let
 ///    them through as two separate movements.
 ///
+/// **Opposite money directions are never candidates for each other, whatever
+/// else matches.** Transferring money from one's own Nu to one's own Nequi
+/// fires two simultaneous notifications for the same amount: Nu says
+/// "Enviaste $1,00" (an expense) and Nequi "Te enviaron $1" (an income).
+/// Those are two real movements in two different accounts, not one seen
+/// twice, and grouping them would leave both balances wrong. The wallet+bank
+/// pairing below only ever applies to two captures of the *same* type, which
+/// is what a single card payment actually produces.
+///
 /// **Nothing is merged or discarded here.** This use case reads and returns;
 /// every action stays with the user. A false positive would erase a real
 /// expense and unbalance the account with no trace, which is worse than the
@@ -73,26 +82,32 @@ class FindDuplicateCandidates {
 
     return Right(<DuplicateCandidate>[
       for (final other in captures.getOrElse((_) => const []))
-        CaptureDuplicateCandidate(
-          other,
-          sameIssuer: other.sourcePackage == capture.sourcePackage,
-          // High confidence for the same issuer notifying twice and for the
-          // known wallet/bank pairing. Two unrelated issuers coinciding to
-          // the minute is not that pattern, so it stays a suggestion.
-          confidence: other.sourcePackage == capture.sourcePackage ||
-                  _isWalletBankPair(
-                    kinds[capture.sourcePackage],
-                    kinds[other.sourcePackage],
-                  )
-              ? DuplicateConfidence.high
-              : DuplicateConfidence.possible,
-        ),
+        // Opposite directions are two movements, never one duplicated: this
+        // is the own-transfer case (Nu "Enviaste" + Nequi "Te enviaron").
+        if (other.entryType == capture.entryType)
+          CaptureDuplicateCandidate(
+            other,
+            sameIssuer: other.sourcePackage == capture.sourcePackage,
+            // High confidence for the same issuer notifying twice and for the
+            // known wallet/bank pairing. Two unrelated issuers coinciding to
+            // the minute is not that pattern, so it stays a suggestion.
+            confidence: other.sourcePackage == capture.sourcePackage ||
+                    _isWalletBankPair(
+                      kinds[capture.sourcePackage],
+                      kinds[other.sourcePackage],
+                    )
+                ? DuplicateConfidence.high
+                : DuplicateConfidence.possible,
+          ),
       for (final transaction in transactions.getOrElse((_) => const []))
-        TransactionDuplicateCandidate(
-          transaction,
-          accountMatches: capture.suggestedAccountId != null &&
-              transaction.accountId == capture.suggestedAccountId,
-        ),
+        // Same rule as above: an income of the same amount is not the
+        // expense this capture describes, so it is not offered as one.
+        if (transaction.type == capture.entryType)
+          TransactionDuplicateCandidate(
+            transaction,
+            accountMatches: capture.suggestedAccountId != null &&
+                transaction.accountId == capture.suggestedAccountId,
+          ),
     ]);
   }
 

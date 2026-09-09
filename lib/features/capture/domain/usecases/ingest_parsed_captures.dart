@@ -68,7 +68,10 @@ class IngestParsedCaptures {
         continue;
       }
 
-      final accountResult = await _suggestAccount(parsed.accountHint);
+      final accountResult = await _suggestAccount(
+        sourcePackage: parsed.sourcePackage,
+        accountHint: parsed.accountHint,
+      );
       final categoryResult = await _suggestCategory(parsed.merchantRaw);
       ingestions.add(
         CaptureIngestion(

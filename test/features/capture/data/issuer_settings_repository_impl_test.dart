@@ -89,6 +89,89 @@ void main() {
     expect(entries.where((issuer) => issuer.enabled), isEmpty);
   });
 
+  // Nu and Nequi never quote the card digits, so this link is the only way
+  // their captures can arrive with an account.
+  test('links an issuer to an account and reads it back', () async {
+    await repository.setIssuerAccount(
+      packageName: firstIssuer,
+      accountId: 'account-1',
+    );
+
+    final linked = await repository.accountIdForPackage(firstIssuer);
+    expect(linked.getOrElse((_) => null), 'account-1');
+
+    final entries = (await repository.getIssuerCatalog()).getOrElse(noIssuers);
+    expect(
+      entries
+          .firstWhere((issuer) => issuer.packageName == firstIssuer)
+          .linkedAccountId,
+      'account-1',
+    );
+  });
+
+  test('links are independent per issuer', () async {
+    await repository.setIssuerAccount(
+      packageName: firstIssuer,
+      accountId: 'account-1',
+    );
+    await repository.setIssuerAccount(
+      packageName: secondIssuer,
+      accountId: 'account-2',
+    );
+
+    expect(
+      (await repository.accountIdForPackage(secondIssuer))
+          .getOrElse((_) => null),
+      'account-2',
+    );
+    expect(
+      (await repository.accountIdForPackage(firstIssuer))
+          .getOrElse((_) => null),
+      'account-1',
+    );
+  });
+
+  test('a null account clears the link', () async {
+    await repository.setIssuerAccount(
+      packageName: firstIssuer,
+      accountId: 'account-1',
+    );
+
+    await repository.setIssuerAccount(
+      packageName: firstIssuer,
+      accountId: null,
+    );
+
+    expect(
+      (await repository.accountIdForPackage(firstIssuer)).getOrElse((_) => 'x'),
+      isNull,
+    );
+  });
+
+  test('refuses to link a package outside the catalog', () async {
+    final result = await repository.setIssuerAccount(
+      packageName: 'com.whatsapp',
+      accountId: 'account-1',
+    );
+
+    expect(result.getLeft().toNullable(), isA<ValidationFailure>());
+  });
+
+  test('the confirmed package names are in the catalog', () {
+    final packages =
+        launchIssuerCatalog.map((issuer) => issuer.packageName).toSet();
+
+    expect(
+      packages,
+      containsAll(<String>[
+        'co.com.bancolombia.personas.superapp',
+        'com.nu.production',
+        'com.nequi.MobileApp',
+        'com.google.android.apps.walletnfcrel',
+      ]),
+    );
+  });
+
   test('re-emits the catalog after every change', () async {
     final emissions = <List<IssuerCatalogEntry>>[];
     final subscription = repository.watchIssuerCatalog().listen(

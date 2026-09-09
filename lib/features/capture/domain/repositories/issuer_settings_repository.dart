@@ -27,4 +27,17 @@ abstract class IssuerSettingsRepository {
   /// Turns every issuer off in one action, without the user having to revoke
   /// the system permission (HU-02, HU-09).
   FutureResult<Unit> disableAllIssuers();
+
+  /// Points an issuer at one of the user's accounts, or clears the link with
+  /// a null [accountId]. Ignores a package outside the catalog, same as
+  /// [setIssuerEnabled].
+  FutureResult<Unit> setIssuerAccount({
+    required String packageName,
+    required String? accountId,
+  });
+
+  /// The account linked to [packageName], or `null` when there is none.
+  /// Read on every capture, so it is a direct lookup rather than a scan of
+  /// the whole catalog.
+  FutureResult<String?> accountIdForPackage(String packageName);
 }

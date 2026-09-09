@@ -16,13 +16,16 @@ import '../../domain/entities/issuer_catalog_entry.dart';
 /// catalog — package and display name, no parsing rules — until the asset
 /// lands, at which point this must be derived from it instead of restated.
 ///
-/// **The package names below are unverified.** The requirement flags
-/// confirming each app's real `packageName` on Google Play as a prerequisite
-/// for writing the parsing rules; a wrong package name here silently listens
-/// to nothing, which is the failure mode this comment exists to prevent.
+/// **Only four package names are confirmed** against real notifications on a
+/// device: `co.com.bancolombia.personas.superapp`, `com.nu.production`,
+/// `com.nequi.MobileApp` and `com.google.android.apps.walletnfcrel`. The rest
+/// are still unverified, and the requirement flags confirming each app's real
+/// `packageName` as a prerequisite for writing its parsing rules — a wrong
+/// package name here silently listens to nothing, which is the failure mode
+/// this comment exists to prevent.
 const List<IssuerCatalogEntry> launchIssuerCatalog = <IssuerCatalogEntry>[
   IssuerCatalogEntry(
-    packageName: 'com.todo1.mobile',
+    packageName: 'co.com.bancolombia.personas.superapp',
     displayName: 'Bancolombia',
     kind: IssuerKind.bank,
   ),

@@ -207,6 +207,100 @@ void main() {
     expect(candidate.confidence, DuplicateConfidence.possible);
   });
 
+  // Real case: moving money from one's own Nu to one's own Nequi fires two
+  // simultaneous notifications for the same amount — Nu "Enviaste $1,00"
+  // (expense) and Nequi "Te enviaron $1" (income). Two real movements in two
+  // accounts, not one duplicated.
+  test('never groups two captures of opposite money direction', () async {
+    when(
+      () => repository.findMatchingCaptures(
+        excludeId: any(named: 'excludeId'),
+        amountMinor: any(named: 'amountMinor'),
+        currency: any(named: 'currency'),
+        around: any(named: 'around'),
+        window: any(named: 'window'),
+      ),
+    ).thenAnswer(
+      (_) async => Right([
+        buildPendingCapture(
+          id: 'capture-2',
+          sourcePackage: otherBank,
+          entryType: TransactionType.income,
+        ),
+      ]),
+    );
+
+    final result = await findCandidates(
+      buildPendingCapture(
+        sourcePackage: bank,
+        entryType: TransactionType.expense,
+      ),
+    );
+
+    expect(result.getOrElse(noCandidates), isEmpty);
+  });
+
+  test('the wallet + bank pairing still needs the same direction', () async {
+    when(
+      () => repository.findMatchingCaptures(
+        excludeId: any(named: 'excludeId'),
+        amountMinor: any(named: 'amountMinor'),
+        currency: any(named: 'currency'),
+        around: any(named: 'around'),
+        window: any(named: 'window'),
+      ),
+    ).thenAnswer(
+      (_) async => Right([
+        buildPendingCapture(
+          id: 'capture-2',
+          sourcePackage: wallet,
+          entryType: TransactionType.income,
+        ),
+      ]),
+    );
+
+    final result = await findCandidates(
+      buildPendingCapture(
+        sourcePackage: bank,
+        entryType: TransactionType.expense,
+      ),
+    );
+
+    expect(result.getOrElse(noCandidates), isEmpty);
+  });
+
+  test('an income transaction is not a candidate for an expense capture',
+      () async {
+    when(
+      () => repository.findMatchingTransactions(
+        amountMinor: any(named: 'amountMinor'),
+        currency: any(named: 'currency'),
+        around: any(named: 'around'),
+        window: any(named: 'window'),
+      ),
+    ).thenAnswer(
+      (_) async => Right([
+        Transaction(
+          id: 'tx-income',
+          accountId: 'account-1',
+          amountMinor: 4590000,
+          currency: 'COP',
+          type: TransactionType.income,
+          date: postedAt,
+          source: TransactionSource.manual,
+          createdAt: postedAt,
+          updatedAt: postedAt.millisecondsSinceEpoch,
+        ),
+      ]),
+    );
+
+    final result = await findCandidates(
+      buildPendingCapture(entryType: TransactionType.expense),
+    );
+
+    expect(result.getOrElse(noCandidates), isEmpty);
+  });
+
   test('never merges nor discards on its own', () async {
     await findCandidates(buildPendingCapture());
 

@@ -4,6 +4,7 @@ import 'package:billetudo/features/capture/domain/usecases/discard_captures_befo
 import 'package:billetudo/features/capture/domain/usecases/discard_pending_capture.dart';
 import 'package:billetudo/features/capture/domain/usecases/forget_capture_learning.dart';
 import 'package:billetudo/features/capture/domain/usecases/learn_merchant_category.dart';
+import 'package:billetudo/features/capture/domain/usecases/link_issuer_account.dart';
 import 'package:billetudo/features/capture/domain/usecases/purge_discarded_captures.dart';
 import 'package:billetudo/features/capture/domain/usecases/restore_pending_capture.dart';
 import 'package:billetudo/features/capture/domain/usecases/suggest_account_for_capture.dart';
@@ -97,20 +98,114 @@ void main() {
   });
 
   group('SuggestAccountForCapture', () {
-    test('does not query without a hint', () async {
-      final result = await SuggestAccountForCapture(repository)(null);
+    late MockIssuerSettingsRepository issuers;
+    late SuggestAccountForCapture suggestAccount;
 
-      expect(result.getOrElse((_) => 'x'), isNull);
+    const wallet = 'com.google.android.apps.walletnfcrel';
+    const nu = 'com.nu.production';
+
+    setUp(() {
+      issuers = MockIssuerSettingsRepository();
+      suggestAccount = SuggestAccountForCapture(repository, issuers);
+      when(() => issuers.accountIdForPackage(any()))
+          .thenAnswer((_) async => const Right(null));
+      when(() => repository.findAccountIdByLast4(any()))
+          .thenAnswer((_) async => const Right(null));
+    });
+
+    test('resolves the last-4 hint when the issuer sent one', () async {
+      when(() => repository.findAccountIdByLast4('5615'))
+          .thenAnswer((_) async => const Right('card-account'));
+
+      final result = await suggestAccount(
+        sourcePackage: wallet,
+        accountHint: '5615',
+      );
+
+      expect(result.getOrElse((_) => null), 'card-account');
+    });
+
+    // Verified against real notifications: Nu and Nequi never quote the last
+    // four digits, so without the issuer link their captures would arrive
+    // account-less forever.
+    test('uses the issuer link when the issuer sends no hint', () async {
+      when(() => issuers.accountIdForPackage(nu))
+          .thenAnswer((_) async => const Right('nu-account'));
+
+      final result = await suggestAccount(sourcePackage: nu);
+
+      expect(result.getOrElse((_) => null), 'nu-account');
       verifyNever(() => repository.findAccountIdByLast4(any()));
     });
 
-    test('returns the matched account', () async {
-      when(() => repository.findAccountIdByLast4(any()))
-          .thenAnswer((_) async => const Right('account-1'));
+    test('the hint wins over the issuer link when both resolve', () async {
+      when(() => repository.findAccountIdByLast4('5615'))
+          .thenAnswer((_) async => const Right('card-account'));
+      when(() => issuers.accountIdForPackage(wallet))
+          .thenAnswer((_) async => const Right('wallet-account'));
 
-      final result = await SuggestAccountForCapture(repository)('1234');
+      final result = await suggestAccount(
+        sourcePackage: wallet,
+        accountHint: '5615',
+      );
 
-      expect(result.getOrElse((_) => null), 'account-1');
+      expect(result.getOrElse((_) => null), 'card-account');
+    });
+
+    test('falls back to the issuer link when the hint matches nothing',
+        () async {
+      when(() => issuers.accountIdForPackage(wallet))
+          .thenAnswer((_) async => const Right('wallet-account'));
+
+      final result = await suggestAccount(
+        sourcePackage: wallet,
+        accountHint: '0000',
+      );
+
+      expect(result.getOrElse((_) => null), 'wallet-account');
+    });
+
+    test('suggests nothing when neither path resolves', () async {
+      final result = await suggestAccount(
+        sourcePackage: nu,
+        accountHint: '0000',
+      );
+
+      expect(result.getOrElse((_) => 'x'), isNull);
+    });
+  });
+
+  group('LinkIssuerAccount', () {
+    test('stores and clears the issuer to account link', () async {
+      final issuers = MockIssuerSettingsRepository();
+      when(
+        () => issuers.setIssuerAccount(
+          packageName: any(named: 'packageName'),
+          accountId: any(named: 'accountId'),
+        ),
+      ).thenAnswer((_) async => const Right(unit));
+
+      await LinkIssuerAccount(issuers)(
+        packageName: 'com.nu.production',
+        accountId: 'nu-account',
+      );
+      await LinkIssuerAccount(issuers)(
+        packageName: 'com.nu.production',
+        accountId: null,
+      );
+
+      verify(
+        () => issuers.setIssuerAccount(
+          packageName: 'com.nu.production',
+          accountId: 'nu-account',
+        ),
+      ).called(1);
+      verify(
+        () => issuers.setIssuerAccount(
+          packageName: 'com.nu.production',
+          accountId: null,
+        ),
+      ).called(1);
     });
   });
 

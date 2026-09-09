@@ -29,7 +29,7 @@ void main() {
     ingest = IngestParsedCaptures(
       repository,
       issuers,
-      SuggestAccountForCapture(repository),
+      SuggestAccountForCapture(repository, issuers),
       SuggestCategoryForMerchant(learning),
     );
 
@@ -50,6 +50,8 @@ void main() {
     );
     when(() => repository.findAccountIdByLast4(any()))
         .thenAnswer((_) async => const Right('account-1'));
+    when(() => issuers.accountIdForPackage(any()))
+        .thenAnswer((_) async => const Right(null));
     when(() => learning.suggestedCategoryFor(any()))
         .thenAnswer((_) async => const Right('category-1'));
     when(() => repository.ingestParsedCaptures(any()))
@@ -111,11 +113,22 @@ void main() {
     expect(captured().single.suggestedAccountId, isNull);
   });
 
-  test('skips the account lookup when there is no hint', () async {
+  test('skips the last-4 lookup when the issuer sent no hint', () async {
     await ingest([parsed(accountHint: null)]);
 
     verifyNever(() => repository.findAccountIdByLast4(any()));
     expect(captured().single.suggestedAccountId, isNull);
+  });
+
+  // Nu and Nequi never quote the card digits, so the issuer link is the only
+  // thing that can fill the account for them.
+  test('falls back to the account linked to the issuer', () async {
+    when(() => issuers.accountIdForPackage(enabledBank))
+        .thenAnswer((_) async => const Right('nu-account'));
+
+    await ingest([parsed(accountHint: null)]);
+
+    expect(captured().single.suggestedAccountId, 'nu-account');
   });
 
   test('propagates a catalog failure instead of ingesting blindly', () async {

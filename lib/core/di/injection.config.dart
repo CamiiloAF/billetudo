@@ -373,6 +373,8 @@ import 'package:billetudo/features/capture/domain/usecases/ingest_parsed_capture
     as _i954;
 import 'package:billetudo/features/capture/domain/usecases/learn_merchant_category.dart'
     as _i91;
+import 'package:billetudo/features/capture/domain/usecases/link_issuer_account.dart'
+    as _i274;
 import 'package:billetudo/features/capture/domain/usecases/purge_discarded_captures.dart'
     as _i725;
 import 'package:billetudo/features/capture/domain/usecases/restore_pending_capture.dart'
@@ -1047,6 +1049,8 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i705.DisableAllIssuers>(
         () => _i705.DisableAllIssuers(gh<_i824.IssuerSettingsRepository>()));
+    gh.factory<_i274.LinkIssuerAccount>(
+        () => _i274.LinkIssuerAccount(gh<_i824.IssuerSettingsRepository>()));
     gh.factory<_i348.SetIssuerEnabled>(
         () => _i348.SetIssuerEnabled(gh<_i824.IssuerSettingsRepository>()));
     gh.factory<_i739.WatchIssuerCatalog>(
@@ -1368,6 +1372,11 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i869.PendingCaptureRepository>(),
               gh<_i824.IssuerSettingsRepository>(),
             ));
+    gh.factory<_i167.SuggestAccountForCapture>(
+        () => _i167.SuggestAccountForCapture(
+              gh<_i869.PendingCaptureRepository>(),
+              gh<_i824.IssuerSettingsRepository>(),
+            ));
     gh.factory<_i304.CategoryQuickPickerCubit>(
         () => _i304.CategoryQuickPickerCubit(
               gh<_i415.GetMostUsedCategories>(),
@@ -1453,8 +1462,6 @@ extension GetItInjectableX on _i174.GetIt {
         _i725.PurgeDiscardedCaptures(gh<_i869.PendingCaptureRepository>()));
     gh.factory<_i917.RestorePendingCapture>(() =>
         _i917.RestorePendingCapture(gh<_i869.PendingCaptureRepository>()));
-    gh.factory<_i167.SuggestAccountForCapture>(() =>
-        _i167.SuggestAccountForCapture(gh<_i869.PendingCaptureRepository>()));
     gh.factory<_i179.WatchPendingCaptureCount>(() =>
         _i179.WatchPendingCaptureCount(gh<_i869.PendingCaptureRepository>()));
     gh.factory<_i593.WatchPendingCaptures>(

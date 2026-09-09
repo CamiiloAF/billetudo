@@ -23,10 +23,14 @@ class IssuerSettingsRepositoryImpl implements IssuerSettingsRepository {
   @override
   FutureResult<List<IssuerCatalogEntry>> getIssuerCatalog() => _guard(() async {
         final enabled = await _prefs.readEnabledPackages();
+        final accounts = await _prefs.readIssuerAccounts();
         return Right(
           [
             for (final issuer in launchIssuerCatalog)
-              issuer.copyWith(enabled: enabled.contains(issuer.packageName)),
+              issuer.copyWith(
+                enabled: enabled.contains(issuer.packageName),
+                linkedAccountId: accounts[issuer.packageName],
+              ),
           ],
         );
       });
@@ -46,9 +50,7 @@ class IssuerSettingsRepositoryImpl implements IssuerSettingsRepository {
     required bool enabled,
   }) =>
       _guard(() async {
-        final known = launchIssuerCatalog
-            .any((issuer) => issuer.packageName == packageName);
-        if (!known) {
+        if (!_isCatalogIssuer(packageName)) {
           // Enabling a package outside the curated catalog would silently
           // widen what the app listens to, which is exactly what a closed
           // catalog exists to prevent.
@@ -71,6 +73,37 @@ class IssuerSettingsRepositoryImpl implements IssuerSettingsRepository {
         await _prefs.writeEnabledPackages(const <String>{});
         return const Right(unit);
       });
+
+  @override
+  FutureResult<Unit> setIssuerAccount({
+    required String packageName,
+    required String? accountId,
+  }) =>
+      _guard(() async {
+        if (!_isCatalogIssuer(packageName)) {
+          return Left(
+            ValidationFailure('"$packageName" is not a catalog issuer'),
+          );
+        }
+        final current = {...await _prefs.readIssuerAccounts()};
+        if (accountId == null || accountId.trim().isEmpty) {
+          current.remove(packageName);
+        } else {
+          current[packageName] = accountId.trim();
+        }
+        await _prefs.writeIssuerAccounts(current);
+        return const Right(unit);
+      });
+
+  @override
+  FutureResult<String?> accountIdForPackage(String packageName) =>
+      _guard(() async {
+        final accounts = await _prefs.readIssuerAccounts();
+        return Right(accounts[packageName]);
+      });
+
+  bool _isCatalogIssuer(String packageName) =>
+      launchIssuerCatalog.any((issuer) => issuer.packageName == packageName);
 
   FutureResult<T> _guard<T>(FutureResult<T> Function() body) async {
     try {
