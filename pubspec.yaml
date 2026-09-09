@@ -81,10 +81,29 @@ dependencies:
   #purchases_flutter: ^10.4.1
 
   # --- Captura sin fricción ---
-  # Igual: enlazan frameworks nativos y arrastran declaraciones de privacidad
-  # (micrófono, cámara) que todavía no hay qué justificar.
-  #speech_to_text: ^6.6.2
+  # `speech_to_text` entra con la feature de captura por voz (Fase 2,
+  # docs/requirements/fase-2/17-captura-voz.md). Arrastra RECORD_AUDIO en
+  # Android y NSMicrophoneUsageDescription + NSSpeechRecognitionUsageDescription
+  # en iOS: ambos ya declarados, con su justificación en las declaraciones de
+  # tienda. El audio→texto corre en el dispositivo cuando la plataforma lo
+  # soporta (`requiresOnDeviceRecognition`); no hay backend ni API key.
+  speech_to_text: ^7.4.0
+  # OCR sigue fuera: su feature (18-captura-ocr.md) no está construida, y el
+  # plugin arrastra CAMERA + NSCameraUsageDescription que hoy no hay qué
+  # justificar ante las tiendas.
   #google_mlkit_text_recognition: ^0.13.0
+
+  # --- Notificaciones locales (recordatorios de vencimiento HU-08 y avisos
+  # del centro de notificaciones) ---
+  # Solo locales: se programan en el dispositivo, funcionan sin conexión y sin
+  # costo marginal. No hay Firebase ni push remotas en el proyecto.
+  # `timezone` es requisito de `zonedSchedule`, que es la única forma de
+  # programar a una hora local estable frente a cambios de huso.
+  flutter_local_notifications: ^22.3.0
+  timezone: ^0.11.1
+  # Necesario para el permiso POST_NOTIFICATIONS (Android 13+) y para
+  # RECORD_AUDIO, ambos en runtime.
+  permission_handler: ^13.0.2
 
   # --- Utilidades ---
   intl: ^0.20.2
