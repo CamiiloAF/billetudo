@@ -30,7 +30,9 @@ void main() {
   });
 
   NotificationCaptureRepositoryImpl buildRepository() =>
-      NotificationCaptureRepositoryImpl(CaptureMethodChannelDatasource());
+      const NotificationCaptureRepositoryImpl(
+        CaptureMethodChannelDatasource(),
+      );
 
   test('drainPendingCaptures maps the native payload into entities', () async {
     handler = (MethodCall call) => <Object?>[

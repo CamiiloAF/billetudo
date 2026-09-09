@@ -11,8 +11,13 @@ import 'package:injectable/injectable.dart';
 /// this feature exists only there.
 @lazySingleton
 class CaptureMethodChannelDatasource {
-  CaptureMethodChannelDatasource({MethodChannel? channel})
-      : _channel = channel ?? const MethodChannel(channelName);
+  const CaptureMethodChannelDatasource()
+      : _channel = const MethodChannel(channelName);
+
+  /// Injects a mock channel. The production constructor takes no arguments on
+  /// purpose: the channel is not a container dependency.
+  @visibleForTesting
+  const CaptureMethodChannelDatasource.withChannel(this._channel);
 
   /// Must match `CaptureChannelHandler.CHANNEL` on the Kotlin side.
   static const String channelName = 'com.billetudo.app/capture';

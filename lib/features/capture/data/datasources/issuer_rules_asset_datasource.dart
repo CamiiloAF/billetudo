@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/services.dart' show AssetBundle, rootBundle;
 import 'package:injectable/injectable.dart';
 
@@ -8,7 +9,13 @@ import 'package:injectable/injectable.dart';
 /// change without changing `IssuerRulesLoader.kt` too.
 @lazySingleton
 class IssuerRulesAssetDatasource {
-  IssuerRulesAssetDatasource({AssetBundle? bundle}) : _bundle = bundle;
+  const IssuerRulesAssetDatasource() : _bundle = null;
+
+  /// Injects a test bundle. The production constructor takes no arguments on
+  /// purpose: `rootBundle` is not a container dependency.
+  @visibleForTesting
+  const IssuerRulesAssetDatasource.withBundle(AssetBundle bundle)
+      : _bundle = bundle;
 
   static const String assetPath = 'assets/capture/issuer_rules.json';
 
