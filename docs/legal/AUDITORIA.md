@@ -1,6 +1,13 @@
 # Auditoría de tratamiento de datos — billetudo
 
-**Fecha:** 2026-08-07 · **Actualizada:** 2026-09-01 (re-verificación contra el
+**Fecha:** 2026-08-07 · **Actualizada:** 2026-09-09 (auditoría de la
+**superficie de captura de Fase 2**: el esquema ya está aplicado y las
+dependencias de voz y notificaciones locales ya están descomentadas, pero
+**ningún código de feature existe todavía** en `lib/` ni en `android/`. Evidencia
+archivo por archivo, tabla por tabla y columna por columna en la nueva **§13**.
+`politica-de-privacidad.md` sube a **v1.8** —redactada, **no publicada**— y
+`declaraciones-tiendas.md` a **v1.8**, con §7 convertida en el juego de
+respuestas del envío) · 2026-09-01 (re-verificación contra el
 código del PR del asistente de IA antes de mezclar `feat/ai-assistant` a
 `main`: **B4 y B5 se cierran** — la sección de IA en Ajustes y el interruptor
 de notas ya están cableados de extremo a extremo, con evidencia nueva abajo.
@@ -892,7 +899,17 @@ cambió ahí la negación absoluta de IA (*"No hay inteligencia artificial"*, v1
 §17) por una acotación verificable: la IA se limita al asistente opcional de la
 nueva §17, y fuera de él ningún dato va a un modelo de lenguaje.
 
-### 10.2 Fase 2 (captura sin fricción): especificada, NO implementada
+### 10.2 Fase 2 (captura sin fricción): parcialmente abierta — LEER §13
+
+> ⚠️ **Esta subsección quedó desactualizada el 2026-09-09.** Su conclusión
+> operativa (*"las respuestas de §1.2 y §2.2 siguen siendo exactas"*) **sigue
+> siendo cierta para el binario de hoy**, pero su tabla de evidencia **ya no lo
+> es**: el esquema de Fase 2 está aplicado (`schemaVersion` 34) y varias
+> dependencias están descomentadas. La evidencia vigente, re-verificada línea por
+> línea, está en **[§13](#13-fase-2--superficie-de-captura-auditoría-del-2026-09-09)**.
+> Se conserva lo de abajo como registro de lo que se verificó el 2026-08-17.
+
+### 10.2 (registro histórico, 2026-08-17) Fase 2: especificada, NO implementada
 
 El 2026-08-17 se escribieron los requerimientos de Fase 2 —captura por voz
 (`docs/requirements/fase-2/17-captura-voz.md`), OCR de recibos
@@ -1335,36 +1352,74 @@ leyendo el código.
     editar**. Todo el texto que trataba esto como una decisión previa se
     reescribió en `declaraciones-tiendas.md` §0 y §5.
 
-### Fase 2 — bloqueantes de declaración (abiertos, no resolubles en el código)
+### Fase 2 — bloqueantes de declaración (actualizado el 2026-09-09)
 
-Estos **no** afectan a la publicación de hoy: la app no tiene ninguna de esas
-capacidades (§10.2). Se listan aquí para que no se pierdan cuando Fase 2 se
-implemente. El detalle está en [`checklist-fase-2.md`](checklist-fase-2.md).
+Estos **no** afectan a la publicación del binario de hoy —que no tiene ninguna de
+esas capacidades (§13)— pero **sí bloquean el primer build de captura**, incluido
+uno de TestFlight o Internal Testing. Detalle en
+[`checklist-fase-2.md`](checklist-fase-2.md) y en `declaraciones-tiendas.md` §7.
 
-23. `[VERIFICAR: qué hace la app cuando el reconocimiento de voz on-device NO está disponible]` —
-    **el más urgente de todos.** `17-captura-voz.md` HU-06 lo deja sin decidir.
-    Si la app degrada al reconocimiento en la nube del sistema operativo, el
-    audio del usuario **sale del dispositivo** hacia Apple o Google aunque no se
-    guarde nada. *No guardar no es no transmitir.* Hasta que esa decisión exista,
-    **no se puede escribir** ni la sección de voz de la política ni la respuesta
-    de "Audio" en Data Safety / App Privacy. Es un bloqueante de declaración,
-    no de implementación, y no lo resuelve este documento.
-24. `[VERIFICAR: si Play exige una declaración de uso específica —formulario y/o video— para BIND_NOTIFICATION_LISTENER_SERVICE al momento del envío]` —
-    la política pública "Permissions and APIs that Access Sensitive Information"
-    consultada el 2026-08-17 **no lista** el acceso a notificaciones entre sus
-    permisos con formulario de declaración (sí SMS/Call Log, ubicación,
-    accesibilidad, VPN, alarmas exactas). No se afirma que no exista: no se
-    encontró documentada. Play Protect sí lo trata como señal de alto riesgo
-    cuando se combina con SMS o accesibilidad. Hay que revisarlo en la consola
-    antes de subir el build.
-25. `[VERIFICAR: alcance final de galería en OCR]` — si el flujo termina usando
-    el **Photo Picker** de Android no hace falta `READ_MEDIA_IMAGES` ni el
-    formulario de permisos de fotos y video de Play; si usa el picker antiguo,
-    sí. Determina una respuesta de tienda, así que se decide antes de declarar.
-26. `[VERIFICAR: incluir PendingCaptures y TransactionAttachments en delete_account_data, en la misma migración que las crea]` —
-    es exactamente el bug B1, que ya reincidió cuatro veces. Con las tablas
-    sincronizando, dejarlas fuera del RPC vuelve a hacer falsa la promesa de
-    borrado total.
+23. ✅ **RESUELTO (2026-09-09)** — `[VERIFICAR: qué hace la app cuando el
+    reconocimiento de voz on-device NO está disponible]`. **Decidido:** se usa
+    reconocimiento on-device cuando la plataforma lo soporta y **se degrada al
+    servicio en la nube de Apple o Google cuando no**. Ni el audio ni la
+    transcripción se guardan. Consecuencias ya escritas: política v1.8 §7, §8 y
+    §18.1 nombran a Apple y a Google como responsables independientes de ese
+    audio, y `declaraciones-tiendas.md` §7.5 fija la casilla de Audio.
+    **Queda un residuo, menor:** en iOS el aviso lo da el sistema; en Android no
+    hay equivalente. `[VERIFICAR: decisión de producto sobre si Android muestra
+    un aviso propio cuando el reconocimiento cae a la nube. Afecta solo al copy]`
+24. `[VERIFICAR: si Play exige una declaración de uso específica —formulario y/o
+    video— para BIND_NOTIFICATION_LISTENER_SERVICE al momento del envío]` —
+    **re-verificado el 2026-09-09** contra las páginas vigentes
+    ["Permissions and APIs that Access Sensitive Information"](https://support.google.com/googleplay/android-developer/answer/16558241)
+    y su [preview](https://support.google.com/googleplay/android-developer/answer/16909972):
+    **el acceso a notificaciones sigue sin aparecer** entre los permisos con
+    formulario propio. Los que sí lo tienen: SMS/Call Log, ubicación en segundo
+    plano, All Files Access, `QUERY_ALL_PACKAGES`, `REQUEST_INSTALL_PACKAGES`,
+    accesibilidad, Health Connect, alarmas exactas y full-screen intent. No se
+    afirma que el requisito no exista: no se encontró documentado. La
+    justificación y el guion de video están listos igualmente en
+    [`declaracion-permiso-notificaciones.md`](declaracion-permiso-notificaciones.md).
+25. `[VERIFICAR: alcance final de galería en OCR]` — **sigue abierto y sigue sin
+    aplicar**: OCR no entra en este envío (`google_mlkit_text_recognition`
+    comentado, `pubspec.yaml:94`).
+26. ✅ **RESUELTO en el repo (2026-09-09)** — `[VERIFICAR: incluir
+    PendingCaptures en delete_account_data en la misma migración que la crea]`.
+    `supabase/migrations/20260909000000_fase2_capture_schema.sql:153-154` borra
+    `pending_captures` y `merchant_category_learning`, en el orden correcto
+    respecto de sus claves foráneas, **en la misma migración que crea las
+    tablas**. Es la primera vez que no se repite el bug B1.
+    `[VERIFICAR: que esa migración esté APLICADA en dev y en prod, no solo
+    commiteada. No se pudo comprobar desde este worktree]`
+27. `[VERIFICAR: que la lista de apps de banco instaladas se resuelva con un
+    <queries> explícito y NO con QUERY_ALL_PACKAGES]` — **hallazgo nuevo del
+    2026-09-09.** `QUERY_ALL_PACKAGES` sí tiene formulario de declaración
+    obligatorio en Play y sería desproporcionado para un catálogo cerrado de
+    cuatro apps. Lo verifica quien implemente HU-02.
+28. `[VERIFICAR: modo de programación de los recordatorios locales]` — si se usa
+    alarma exacta (`SCHEDULE_EXACT_ALARM` / `USE_EXACT_ALARM`) aparece otro
+    formulario de declaración en Play. Un recordatorio de "faltan 3 días" no la
+    necesita.
+29. `[VERIFICAR: dónde se persiste la lista de emisores activos]` —
+    `AppSettings` no tiene ninguna columna para eso y no se creó tabla nueva. Si
+    terminara sincronizando, es una fila más de Data Safety.
+30. `[VERIFICAR: si las capturas pendientes entran en la copia completa de
+    Import/Export]` — decisión de producto. Hay que decirlo en la política en
+    cualquiera de los dos casos.
+31. `[VERIFICAR: si las capturas pendientes no despachadas caducan solas, y en
+    cuántos días]` — `19-notificaciones-bancarias.md` HU-10 lo deja abierto. La
+    fila de conservación de la política v1.8 §9 está marcada en consecuencia.
+32. `[VERIFICAR: privacy manifests de los plugins nuevos]` —
+    `speech_to_text`, `flutter_local_notifications`, `timezone`,
+    `permission_handler` y `flutter_timezone` pueden traer su propio
+    `PrivacyInfo.xcprivacy` o usar *required reason APIs*. Auditar al integrar y
+    actualizar `ios/Runner/PrivacyInfo.xcprivacy`.
+33. `[VERIFICAR: reabrir la condición de "no publicar sola"]` — el proyecto se
+    autoimpuso que el release **público** con avisos bancarios lleve voz **y**
+    OCR funcionando. Este envío lleva voz, no OCR. Para TestFlight / Internal
+    Testing es aceptable; para un release público hay que reabrir la decisión de
+    forma explícita, no con una nota.
 
 ### Fase 4 (asistente con IA) — bloqueantes de declaración
 
@@ -1445,3 +1500,119 @@ ninguna capacidad de IA (§10.3). Se listan para que no se pierdan.
 - El contenido exacto de los formularios de tienda al momento del envío: cambian
   seguido. `declaraciones-tiendas.md` documenta el porqué de cada respuesta, así
   que si el formulario cambia se puede recomponer sin re-auditar.
+
+---
+
+## 13. Fase 2 — superficie de captura (auditoría del 2026-09-09)
+
+**Alcance de esta pasada:** el esquema de Fase 2 y las dependencias, contra el
+worktree `docs/legal-fase2` en el commit `299e7aaa`. **No** se auditó código de
+feature porque no existe: se está construyendo en otras ramas.
+
+> **La distinción que sostiene todo lo demás:** el **esquema** de Fase 2 está
+> aplicado, y las **dependencias** de voz y notificaciones locales están
+> descomentadas. La **feature** no existe. Se declara el binario, así que las
+> respuestas vigentes de `declaraciones-tiendas.md` §1 y §2 **no cambian
+> todavía**; §7 es lo que entra en vigor con el primer build que traiga la
+> captura.
+
+### 13.1 Qué SÍ está en el árbol (verificado)
+
+| Qué | Dónde | Nota |
+|---|---|---|
+| `schemaVersion` **34** | `lib/core/database/app_database.dart:1297` | Sube desde 33 |
+| Tabla **`PendingCaptures`** | `app_database.dart:987-1056` | Con `_SyncColumns`: **sincroniza** |
+| Tabla **`MerchantCategoryLearning`** | `app_database.dart:1067-1085` | Con `_SyncColumns`: **sincroniza** |
+| `enum CaptureStatus { pending, confirmed, discarded }` | `app_database.dart:137` | Texto, paridad con Postgres |
+| `Accounts.cardLast4` | `app_database.dart:259` | Distinta de `Accounts.last4`: esta identifica la **tarjeta**, aquélla la **cuenta** |
+| `ScheduledPayments.reminderLeadDays` | `app_database.dart:590` | Nullable = sin recordatorio |
+| Espejo en Postgres, RLS y `delete_account_data` | `supabase/migrations/20260909000000_fase2_capture_schema.sql` | RLS `user_id = auth.uid()` en ambas tablas; borrado en `:153-154` |
+| `speech_to_text: ^7.4.0` | `pubspec.yaml:90` | **Descomentado** |
+| `flutter_local_notifications: ^22.3.0` + `timezone: ^0.11.1` | `pubspec.yaml:102-103` | **Descomentados** |
+| `permission_handler: ^13.0.2` | `pubspec.yaml:106` | **Descomentado** |
+
+### 13.2 Qué NO está en el árbol (verificado, uno por uno)
+
+| Qué exigiría el envío | Estado real | Evidencia |
+|---|---|---|
+| Código de captura | **No existe** | `lib/features/capture/` y `lib/features/improvement/`: 0 archivos |
+| Uso de los plugins nuevos | **Ninguno** | `grep -rl "speech_to_text\|flutter_local_notifications\|permission_handler" lib/` no devuelve nada |
+| Servicio nativo Android | **No existe** | El único `.kt` del proyecto es `android/app/src/main/kotlin/com/billetudo/app/MainActivity.kt` |
+| Permisos Android | **Ninguno** | `android/app/src/main/AndroidManifest.xml` no tiene **ni un** `uses-permission`; solo el `<queries>` de `PROCESS_TEXT` que es boilerplate del engine (`:39-44`) |
+| Permisos iOS | **Ninguno** | `ios/Runner/Info.plist` no tiene **ninguna** clave `*UsageDescription` |
+| OCR | **Fuera de alcance** | `google_mlkit_text_recognition` comentado, `pubspec.yaml:94` |
+| Widget | **No existe** | Sin `AppWidgetProvider` en `android/`, sin extensión WidgetKit en `ios/` |
+| Preferencia de emisores activos | **Sin lugar donde vivir** | `AppSettings` no tiene ninguna columna de captura (revisada columna por columna) |
+
+### 13.3 La retención cero es demostrable, no es una promesa
+
+Es el punto que sostiene la frase central de la política v1.8 §18.2, así que se
+verificó de forma directa en las dos mitades del esquema:
+
+- **Drift:** `PendingCaptures` (`app_database.dart:987-1056`) tiene 13 columnas
+  propias y **ninguna** es texto crudo de la notificación. No hay `rawText`,
+  `title`, `bigText` ni equivalente. El propio doc-comment de la clase
+  (`:972-982`) lo declara decisión no negociable y explica por qué:
+  *"the literal body of a notification can carry OTPs, names, and anything else
+  the bank chose to put in it, and it would then be synced to Postgres and kept
+  in backups."*
+- **Postgres:** el `create table` (`20260909000000_fase2_capture_schema.sql:29-50`)
+  es el espejo exacto. Tampoco hay columna de texto crudo. Aunque alguien la
+  añadiera solo del lado del cliente, no tendría dónde sincronizar.
+- **`merchantRaw` no es una puerta trasera.** El comentario de la columna
+  (`app_database.dart:1015-1019`) acota su contenido a *"ONLY the fragment
+  identified as the merchant"*. La regla de negocio equivalente para la `note` de
+  la transacción está en `19-notificaciones-bancarias.md` HU-03, y es explícita
+  en prohibir el atajo de "tomar el mensaje y quitarle el monto".
+
+**Por eso la política puede escribir** *"el contenido de las notificaciones no se
+envía a ningún servidor porque no se guarda en ninguna parte"*: es una propiedad
+del esquema, comprobable por cualquiera que lo lea. **Y por eso mismo la frase se
+cae entera** si alguien añade una columna de texto crudo: las dos decisiones
+—retención cero y sync— se revisan juntas o no se revisan.
+
+### 13.4 Qué sale del dispositivo, exactamente
+
+`PendingCaptures` y `MerchantCategoryLearning` llevan `_SyncColumns`, así que
+sincronizan como el resto del esquema. Con sesión iniciada salen del dispositivo:
+
+| Campo | Qué revela |
+|---|---|
+| `amountMinor`, `currency`, `entryType`, `postedAt` | Datos financieros. Ya cubiertos por *Financial info* |
+| `merchantRaw` | El comercio… **o el nombre completo de una persona** en una transferencia recibida |
+| `accountHint`, `Accounts.cardLast4` | Últimos 4 dígitos de la tarjeta |
+| `sourcePackage` | **Qué apps de banco tiene instaladas el usuario.** Fila nueva de Data Safety (*App activity → Installed apps*) |
+| `sourceRuleId`, `status`, `transactionId`, `duplicateOfTransactionId` | Metadatos internos |
+| `merchantKey`, `categoryId`, `hitCount` | El aprendizaje comercio→categoría |
+
+**El caso del nombre de un tercero está confirmado con notificaciones reales:** Nu
+envía *"Te llegó dinero de DANIELA TORO VALENCIA"*; Nequi lo enmascara. Ese
+nombre es exactamente lo que el parser extrae como comercio, así que se guarda y
+sincroniza. Es dato personal de una persona que no es usuaria de billetudo y que
+no dio ningún consentimiento a la app. Declarado en la política v1.8 §4.6 y §12,
+y en `declaraciones-tiendas.md` §7.3 (*Personal info → Name*).
+
+### 13.5 Bloqueantes abiertos de esta superficie
+
+- ⛔ **B9 — `sentry_redaction.dart` no cubre nada de Fase 2.**
+  `lib/core/crash/sentry_redaction.dart` solo tiene reglas para mensajes de error
+  de Postgres (claves duplicadas, filas rechazadas, parámetros de consulta). No
+  hay ninguna regla para transcripciones, texto de notificaciones ni contenido de
+  una captura. Un crash que filtre a Sentry lo que la política promete que no se
+  transmite **vuelve falsa esa promesa**. Es bloqueante del primer build de
+  captura, incluido TestFlight.
+- ⛔ **B10 — no existe el borrado local ("borrar todas las capturas y lo
+  aprendido").** La política v1.8 §18.4 lo describe y `19-notificaciones-bancarias.md`
+  HU-08 lo exige como no negociable. No hay código.
+- ⛔ **B11 — no existe la pantalla de transparencia.** Misma HU-08, misma
+  situación. La política la describe.
+- ⚠️ **B12 — visibilidad de paquetes.** Ver el punto 27 de §11: la lista de apps
+  de banco instaladas no puede resolverse con `QUERY_ALL_PACKAGES`.
+
+Los tres primeros tienen la misma forma: **la política v1.8 describe un
+comportamiento que el código todavía no tiene**. Eso es correcto mientras la
+política **no se publique** —se redacta antes justamente para poder publicarla
+antes de que la función llegue al usuario— y se vuelve una declaración falsa en
+el instante en que se despliegue sin ellos. Por eso la v1.8 lleva una marca de
+"no desplegar" en su cabecera y el checklist tiene una fase de publicación
+separada.

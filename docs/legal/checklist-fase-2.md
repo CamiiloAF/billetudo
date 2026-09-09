@@ -1,351 +1,337 @@
 # Checklist legal de pre-publicación — Fase 2 (captura sin fricción)
 
-**Versión 1.0** · **Creado: 17 de agosto de 2026** · **Estado: NO VIGENTE**
+**Versión 2.0** · **Creado: 17 de agosto de 2026** · **Recorrido completo: 9 de septiembre de 2026**
+**Estado: EN CURSO — ya no es un plan a futuro**
 
-> ⛔ **Este documento no describe la app de hoy.** Al 17 de agosto de 2026
-> billetudo **no** captura por voz, **no** hace OCR, **no** lee notificaciones y
-> **no** tiene widget. Fase 2 está **especificada** (`docs/requirements/fase-2/`)
-> y **no implementada** (evidencia archivo por archivo en `AUDITORIA.md` §10.2).
+> **Qué cambió respecto de la v1.0.** La v1.0 se escribió cuando Fase 2 era solo
+> una carpeta de requisitos. Ya no: el **esquema está aplicado**
+> (`schemaVersion` 34), las **dependencias de voz y notificaciones locales están
+> descomentadas**, la **decisión bloqueante del audio está tomada** y la
+> **política v1.8 está redactada**. Este documento se recorrió entero el
+> 2026-09-09 y ahora dice, casilla por casilla, **qué queda y quién lo tiene que
+> hacer**.
 >
-> Los documentos **vigentes** son `politica-de-privacidad.md` (v1.4),
-> `terminos-de-uso.md` (v1.2) y `declaraciones-tiendas.md` (v1.4) §0-§6. **Son
-> correctos y no se tocan hasta que exista el código.**
+> Lo que **no** cambió: se declara el binario, no el plan. Y el alcance se
+> recortó: este envío es **voz + avisos bancarios + recordatorios locales**.
+> **OCR y widget quedan fuera** y no se declaran.
 
 > **Documento interno.** No se publica: `web/build_site.py` solo convierte a HTML
 > `politica-de-privacidad.md`, `terminos-de-uso.md` y `como-borrar-tu-cuenta.md`.
-> Este archivo, `AUDITORIA.md` y `declaraciones-tiendas.md` se quedan en el repo.
-> Por eso el checklist vive aquí y **no** dentro de la política: cualquier cosa
-> escrita en la política se publica literal, y una política que contiene su
-> propio borrador futuro confunde al usuario y a la tienda.
+> Este archivo, `AUDITORIA.md`, `declaraciones-tiendas.md`,
+> `textos-consentimiento-fase-2.md` y `declaracion-permiso-notificaciones.md` se
+> quedan en el repo.
 
-**Para qué sirve:** cuando Fase 2 llegue, este documento evita el fallo más caro
-—publicar con declaraciones desactualizadas— diciendo exactamente qué cambiar,
-dónde y con qué precisión. Se recorre completo antes de subir el primer build
-que incluya cualquiera de las cuatro features.
+## Cómo se leen los estados
 
-**Cómo se usa:** ninguna casilla se marca "por analogía". Cada una se verifica
-contra el código del binario que se va a subir, igual que hizo la auditoría
-original.
+| Símbolo | Significa |
+|---|---|
+| ✅ | Hecho y verificado contra el código o contra la fuente citada |
+| 📝 | Escrito y listo, pero **depende de que exista código** para poder afirmarse |
+| ⛔ | **Bloqueante.** Sin esto no se sube un build, ni siquiera a TestFlight / Internal Testing |
+| ⚠️ | Hay que decidirlo o revisarlo, no bloquea por sí solo |
+| ➖ | Fuera de alcance de este envío |
+
+**Quién:** `[impl]` la rama que implementa la feature · `[legal]` este rol
+(documentos) · `[prod]` decisión de producto · `[envío]` quien sube el build y
+llena las consolas · `[infra]` Supabase / dashboards.
 
 ---
 
 ## 0. Regla que gobierna todo el checklist
 
-Se declara **el binario**, no el plan. Mientras `lib/features/capture/` siga
-teniendo solo un `.gitkeep` y `speech_to_text` / `google_mlkit_text_recognition`
-sigan comentados en `pubspec.yaml:86-87`, las respuestas vigentes son las
-correctas. **Declarar de más es tan sancionable como declarar de menos**, y
-además rompe la confianza: prometer captura por voz en un formulario de
-privacidad cuando la app no la tiene es describir un producto que no existe.
+Se declara **el binario**, no el plan. **Declarar de más es tan sancionable como
+declarar de menos.**
 
-Corolario poco intuitivo, pero el que más veces se olvida: **si Fase 2 se
-implementa por partes** (el orden de construcción es 19 → 17 → 18 → 20), se
-declara **solo la parte que va en el binario**. Un release con notificaciones
-bancarias y sin OCR no declara cámara. Ojo: `docs/requirements/README.md` fija
-que el primer release público con notificaciones **debe** incluir voz y OCR
-funcionando, así que ese escenario parcial no debería llegar a producción — pero
-si llegara, la declaración sigue al binario.
+Corolario que sigue vigente y que ahora sí muerde: **si Fase 2 se implementa por
+partes, se declara solo la parte que va en el binario.** Este envío no incluye
+OCR, así que **no se declara cámara ni galería** por más que aparezcan en la
+carpeta de requisitos.
+
+**Corolario nuevo, específico de este momento:** el esquema aplicado y una
+dependencia descomentada **no son** la feature. `speech_to_text` está en
+`pubspec.yaml:90` y **ningún archivo de `lib/` lo importa**; mientras siga así,
+las respuestas vigentes de tienda son las de `declaraciones-tiendas.md` §1 y §2.
 
 ---
 
-## 1. Permisos nuevos por plataforma
+## 1. Permisos por plataforma
 
-Hoy la app declara **cero** permisos propios: el `AndroidManifest.xml` no tiene
-ni un `uses-permission` y el `Info.plist` no tiene ni una clave
-`*UsageDescription`. Fase 2 rompe las dos cosas, y la ficha de permisos que ven
-los usuarios en la tienda cambia.
+Hoy la app declara **cero** permisos: `AndroidManifest.xml` no tiene ni un
+`uses-permission` y `Info.plist` no tiene ni una `*UsageDescription` (verificado
+2026-09-09). Este envío rompe las dos cosas y la ficha de permisos visible en la
+tienda cambia por primera vez.
 
 ### 1.1 Android
 
-| Permiso | Lo trae | Nota |
-|---|---|---|
-| `android.permission.RECORD_AUDIO` | Voz (17) | Android 11+ puede requerir además un `<queries>` para resolver el servicio de reconocimiento |
-| `android.permission.CAMERA` | OCR / foto (18) | |
-| `android.permission.READ_MEDIA_IMAGES` | Galería (18) — **evitable** | Solo si el flujo no usa el **Photo Picker** del sistema. Usarlo evita el permiso *y* el formulario de permisos de fotos y video de Play Console |
-| `<service ... android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">` + intent-filter `android.service.notification.NotificationListenerService` | Notificaciones bancarias (19) | **El de mayor riesgo.** Ver §3 |
-| Provider de app widget | Widget (20) | No es un permiso; sí cambia el manifiesto |
+| # | Permiso | Estado | Quién |
+|---|---|---|---|
+| 1 | `RECORD_AUDIO` | ⛔ falta declarar | `[impl]` |
+| 2 | `<service>` con `BIND_NOTIFICATION_LISTENER_SERVICE` + intent-filter | ⛔ falta declarar | `[impl]` |
+| 3 | `POST_NOTIFICATIONS` | ⛔ falta declarar | `[impl]` |
+| 4 | `RECEIVE_BOOT_COMPLETED` | ⛔ falta declarar | `[impl]` |
+| 5 | `<queries>` **explícito** con los 4 `packageName` del catálogo | ⛔ falta, y **no puede ser `QUERY_ALL_PACKAGES`** (activa formulario de declaración en Play) | `[impl]` |
+| 6 | **Ningún permiso de más.** Sin `READ_SMS`, `READ_CALL_LOG`, `BIND_ACCESSIBILITY_SERVICE`, `CAMERA`, `READ_MEDIA_IMAGES` — ni en el manifiesto propio ni en el fusionado | ⛔ verificar sobre el APK/AAB fusionado, no sobre el fuente | `[envío]` |
+| 7 | Modo de programación de recordatorios **sin alarma exacta** si se puede | ⚠️ decidir; la alarma exacta trae su propio formulario en Play | `[impl]` / `[prod]` |
 
 ### 1.2 iOS
 
-| Clave de `Info.plist` | La trae | Nota |
-|---|---|---|
-| `NSMicrophoneUsageDescription` | Voz (17) | |
-| `NSSpeechRecognitionUsageDescription` | Voz (17) | **Se olvida con frecuencia.** `SFSpeechRecognizer` la exige aparte del micrófono; sin ella la app crashea al pedir reconocimiento |
-| `NSCameraUsageDescription` | OCR (18) | |
-| `NSPhotoLibraryUsageDescription` | Galería (18) | Solo si se lee la galería |
-| — | Notificaciones bancarias | **No aplica en iOS**: la plataforma no permite leer notificaciones de otras apps. La feature es solo Android y así debe describirse |
+| # | Clave | Estado | Quién |
+|---|---|---|---|
+| 8 | `NSMicrophoneUsageDescription` | ⛔ falta | `[impl]` |
+| 9 | `NSSpeechRecognitionUsageDescription` — **se olvida con frecuencia**; sin ella la app crashea al pedir autorización | ⛔ falta | `[impl]` |
+| 10 | Autorización de notificaciones en runtime (no lleva clave de `Info.plist`) | ⛔ falta | `[impl]` |
+| 11 | Textos localizados en `InfoPlist.strings` (es + en) | 📝 redactados en [`textos-consentimiento-fase-2.md`](textos-consentimiento-fase-2.md) §1.4 | `[impl]` |
+| 12 | **No** declarar cámara ni galería | ✅ nada que hacer: OCR está fuera | — |
 
-Reglas de redacción de los `*UsageDescription`:
-
-- **Localizados** en `InfoPlist.strings` (es + en), como el resto de la app.
-- Dicen el uso **real y concreto**. Apple rechaza plantillas ("esta app necesita
-  acceso a la cámara"). Ejemplos utilizables como punto de partida:
-  - Micrófono: *"Para que puedas dictar un gasto en vez de escribirlo. El audio
-    no se guarda."*
-  - Reconocimiento de voz: *"Para convertir en texto lo que dictas y llenar el
-    formulario del gasto."*
-  - Cámara: *"Para fotografiar un recibo y leer el monto. La foto se guarda solo
-    en este dispositivo."*
-  - Fotos: *"Para que elijas una foto de un recibo que ya tomaste."*
-- **Solo se escribe lo que el código cumple.** "El audio no se guarda" es
-  verificable; "el audio nunca sale del dispositivo" **no lo es todavía** (§5).
+**La lectura de avisos bancarios no aplica en iOS** y no va a aplicar: la
+plataforma no permite leer notificaciones ajenas. Todo texto que mencione la
+feature dice "en Android" explícitamente. ✅ cumplido en la política v1.8 §14.2 y
+§18.2.
 
 ### 1.3 Consecuencias que arrastra cada permiso
 
-- Petición **en contexto**, con explicación previa, y degradación no punitiva si
-  se niega. No es solo UX: es la *prominent disclosure* que Play exige para
-  permisos sensibles, y la única forma de que un "No permitir" de iOS —que
-  aparece una sola vez— no queme la feature.
-- Ninguna función de **Nivel 0** puede quedar detrás de un permiso. El registro
-  manual sigue completo con el micrófono y la cámara denegados.
-- El estado del permiso se **re-verifica** en cada arranque; el usuario puede
-  revocarlo desde el sistema sin avisarle a la app.
+| # | Qué | Estado | Quién |
+|---|---|---|---|
+| 13 | Petición **en contexto** con explicación previa (*prominent disclosure* de Play) | 📝 textos listos, falta implementarlos | `[impl]` |
+| 14 | Degradación no punitiva si se niega; **ninguna función de Nivel 0 detrás de un permiso** | ⛔ falta código | `[impl]` |
+| 15 | El estado del permiso se **re-verifica en cada arranque** y al volver a foreground | ⛔ falta código | `[impl]` |
 
 ---
 
-## 2. Qué hay que reescribir en `politica-de-privacidad.md`
+## 2. Política de privacidad
 
-Sección por sección. Los textos de abajo son **borradores de trabajo**, no
-redacción final: cada uno se confirma contra el código antes de publicarse.
+| # | Qué | Estado | Quién |
+|---|---|---|---|
+| 16 | Nueva versión y fecha | ✅ **v1.8**, 9 de septiembre de 2026 | `[legal]` |
+| 17 | Línea de captura en "Lo esencial" | ✅ | `[legal]` |
+| 18 | §4.1: filas de capturas pendientes, aprendizaje, `cardLast4`, `reminderLeadDays` | ✅ | `[legal]` |
+| 19 | §4.6 nueva: qué se extrae de un aviso, campo por campo, y **el nombre de terceros** | ✅ | `[legal]` |
+| 20 | §5.4 y §8: Apple/Google como destino del audio | ✅ | `[legal]` |
+| 21 | §6: **consentimiento explícito y revocable** como base legal de voz y avisos, no ejecución del contrato | ✅ | `[legal]` |
+| 22 | §7: Apple y Google como **responsables independientes** del audio | ✅ | `[legal]` |
+| 23 | §9: retención cero del material crudo y plazos de las capturas | ✅ (con un `[VERIFICAR]` abierto: si las capturas caducan solas) | `[legal]` / `[prod]` |
+| 24 | §10: el borrado de cuenta arrastra capturas y aprendizaje | ✅ | `[legal]` |
+| 25 | §11: cómo revocar cada consentimiento nuevo | ✅ | `[legal]` |
+| 26 | §12: datos de terceros que **la app extrae sin que el usuario los teclee** | ✅ | `[legal]` |
+| 27 | §14 reescrita entera (antes decía "no pedimos ningún permiso sensible") | ✅ | `[legal]` |
+| 28 | §17.3: corregida la frase *"la app ni siquiera pide esos permisos"*, que dejaba de ser cierta | ✅ | `[legal]` |
+| 29 | §18 nueva: voz, avisos bancarios y recordatorios, entera | ✅ | `[legal]` |
+| 30 | §19: quitar solo los bullets que dejan de ser ciertos; **mantener** "no hay OCR" y "no hay widget" | ✅ | `[legal]` |
+| 31 | **Publicarla** (regenerar el sitio y desplegar) | ⛔ **NO todavía** — ver §9 | `[legal]` / `[envío]` |
 
-| Sección de la política | Qué cambia |
-|---|---|
-| Encabezado | Nueva versión y fecha. Se publica **antes** de que la función llegue al usuario (lo promete la propia §18) |
-| "Lo esencial, en diez líneas" | Añadir la línea de captura, con la precisión de la foto (§4) |
-| §4.1 (datos que creas) | Filas nuevas: **capturas pendientes** (monto, comercio, fecha, emisor, pista de cuenta) y **comprobantes** (metadatos: que la transacción tiene foto, en qué dispositivo, cuándo) |
-| §5 (qué sale del dispositivo) | Precisar: la **imagen** y el **texto crudo** no salen; los **campos extraídos y los metadatos del comprobante sí**, si iniciaste sesión |
-| §6 (bases legales) | El acceso a notificaciones va con **consentimiento explícito y revocable**, no con ejecución del contrato. Es un tratamiento separable que el usuario activa a propósito |
-| §9 (conservación) | Retención cero del material crudo (§4). Las capturas descartadas se purgan tras la ventana de deshacer |
-| §10 (borrado) | Confirmar que el borrado arrastra capturas pendientes **y** los archivos de comprobante del disco |
-| §14 (permisos) | Reescribir entera: hoy dice "no pedimos ningún permiso sensible" |
-| §17 ("lo que hoy no hace") | Quitar el bullet de voz/foto/notificaciones **solo** para lo que ya exista en el binario |
+### 2.1 La frase que sostiene todo, y por qué se puede escribir
 
-### 2.1 Borrador — retención cero
+> El contenido de las notificaciones no se envía a ningún servidor **porque no se
+> guarda en ninguna parte**; lo que sincroniza son los datos financieros ya
+> estructurados, del mismo tipo que un movimiento escrito a mano.
 
-> **Lo que dictas, fotografías o te notifica el banco no se guarda.** Cuando
-> dictas un gasto, el audio y su transcripción existen mientras tienes el
-> formulario abierto y se descartan al cerrarlo. Cuando fotografías un recibo,
-> el texto que la app leyó se usa para llenar los campos y no se guarda. Cuando
-> la app lee una notificación de tu banco, el texto de esa notificación no se
-> guarda **en ninguna parte, ni siquiera un momento**: solo se conservan los
-> campos que se extrajeron (monto, comercio, fecha, tipo, pista de la cuenta).
->
-> Esto tiene una consecuencia que preferimos decirte: si la app entendió mal, no
-> tienes el original contra el cual comparar. Lo aceptamos a propósito. Guardar
-> el texto de tus notificaciones bancarias sería el dato más sensible de toda la
-> app, y no queremos tenerlo.
+Esa frase **solo se sostiene por la retención cero**, y la retención cero es
+**demostrable**: `PendingCaptures` no tiene ninguna columna de texto crudo, ni en
+Drift (`app_database.dart:987-1056`) ni en Postgres
+(`20260909000000_fase2_capture_schema.sql:29-50`). Ver `AUDITORIA.md` §13.3.
 
-**Condición para poder publicar ese párrafo:** que el código no persista nada de
-eso ni en la base de datos, ni en un log, ni en un reporte de Sentry, ni en un
-archivo temporal. Se verifica leyendo el código, no confiando en el requisito.
-
-### 2.2 Borrador — notificaciones bancarias (Android)
-
-> **Solo si tú lo activas.** Android no deja que una app lea notificaciones sin
-> que tú lo autorices en Ajustes del sistema, y el propio sistema te advierte
-> que la app podría ver **todas** tus notificaciones. Por eso billetudo hace dos
-> cosas: te explica para qué antes de mandarte a esa pantalla, y **solo escucha
-> las apps de bancos que tú elijas de una lista**. Del resto no lee nada.
->
-> **Qué hacemos con lo que leemos:** buscamos si la notificación es un movimiento
-> de dinero. Si lo es, extraemos el monto, el comercio, la fecha y los últimos
-> dígitos de la cuenta, y creamos una **captura pendiente** que tú confirmas o
-> descartas. El texto de la notificación no se guarda (ver arriba). Si no es un
-> movimiento —una promoción, un código de seguridad—, no se crea nada y no queda
-> rastro.
->
-> **Puedes apagarlo cuando quieras**, desde la app o desde Ajustes del sistema, y
-> borrar de una vez todas las capturas.
-
-### 2.3 Borrador — la voz
-
-Pendiente de la decisión de §5. **No se escribe hasta entonces.**
+**Condición para que siga siendo cierta:** que el código no persista el texto ni
+en la base, ni en un log, ni en un reporte de Sentry, ni en un archivo temporal,
+ni disfrazado dentro de la `note` de la transacción.
+⛔ **Esa verificación falta** y la hace `[impl]` sobre el código real, no sobre el
+esquema.
 
 ---
 
 ## 3. El acceso a notificaciones: la declaración de mayor riesgo
 
-`BIND_NOTIFICATION_LISTENER_SERVICE` da acceso al contenido de **todas** las
-notificaciones del teléfono. Google Play lo restringe con dureza y es el único
-permiso de Fase 2 que puede tumbar la publicación entera de la app, no solo la
-feature.
+| # | Qué | Estado | Quién |
+|---|---|---|---|
+| 32 | Justificación de uso escrita | ✅ [`declaracion-permiso-notificaciones.md`](declaracion-permiso-notificaciones.md) §1 | `[legal]` |
+| 33 | Guion del video de demostración | ✅ mismo documento §2 | `[legal]` |
+| 34 | **Grabar** el video | ⛔ falta; necesita la feature funcionando en un teléfono real | `[envío]` |
+| 35 | Data Safety actualizado y enviado con el mismo build | 📝 respuestas listas en `declaraciones-tiendas.md` §7.3 | `[envío]` |
+| 36 | Ficha de tienda que describa la funcionalidad, **sin prometer captura total** | ⛔ falta | `[prod]` |
+| 37 | No combinar con SMS, registro de llamadas ni accesibilidad | ✅ hoy no se piden; verificar sobre el manifiesto fusionado al enviar | `[envío]` |
+| 38 | Voz y OCR funcionando en el mismo release **público** | ⚠️ este envío lleva voz, **no OCR** — ver §7 | `[prod]` |
 
-Antes de subir el build tiene que existir:
+`[VERIFICAR: si Play exige un formulario y/o video específico para
+BIND_NOTIFICATION_LISTENER_SERVICE]` — **re-verificado el 2026-09-09**: las
+páginas vigentes de Play siguen **sin** listarlo entre los permisos con
+formulario propio. No se afirma que no exista; se revisa en la consola al enviar.
+Detalle y fuentes en `declaracion-permiso-notificaciones.md` §0.
 
-- [ ] **Justificación de uso escrita**: funcionalidad central y promocionada en
-      la ficha, procesamiento **local**, consentimiento **explícito y por app
-      emisora**, revocable desde la app y desde el sistema, retención cero del
-      texto.
-- [ ] **Video de demostración** del flujo completo: activación, elección de
-      emisores, bandeja, confirmación, revocación.
-- [ ] **Data Safety actualizado** en el mismo envío (`declaraciones-tiendas.md`
-      §7.3).
-- [ ] **Ficha de tienda que describa la funcionalidad**. Un permiso sensible con
-      una finalidad que no aparece en la ficha es el caso típico de rechazo.
-- [ ] **Voz y OCR funcionando en el mismo release.**
-      `docs/Plan_Monetizacion_y_Tecnico.md` §9 exige **no depender solo de esta
-      vía**, y `docs/requirements/README.md` lo eleva a condición de publicación
-      no negociable. Si Google rechaza la lectura de notificaciones, la app se
-      queda con una vía de captura menos, no con ninguna.
-- [ ] **No combinar** este permiso con SMS, registro de llamadas o
-      accesibilidad. Play Protect trata esa combinación como señal de alto
-      riesgo; billetudo no pide ninguno de los tres y conviene que siga así.
-
-`[VERIFICAR: si Play exige un formulario de declaración específico y/o video para BIND_NOTIFICATION_LISTENER_SERVICE al momento del envío]` —
-la página "Permissions and APIs that Access Sensitive Information" consultada el
-2026-08-17 **no** lista el acceso a notificaciones entre los permisos con
-formulario propio (sí SMS/Call Log, ubicación, sensores corporales,
-accesibilidad, VPN, alarmas exactas, full-screen intent). No se afirma que no
-exista el requisito: no se encontró documentado. Se revisa en la consola al
-momento de enviar.
-
-**Pendiente concreto anotado el 2026-08-18, al llenar la ficha del Nivel 0 en
-Play Console:** en la sección "Mensajes" del formulario de Data Safety
-(`Correos electrónicos`, `SMS o MMS`, `Otros mensajes desde la app`) hoy se
-dejaron las tres casillas **sin marcar**, correcto para el binario actual, que
-no lee notificaciones. Cuando esta feature (19) se implemente, esa sección
-**no puede quedar en blanco**: `BIND_NOTIFICATION_LISTENER_SERVICE` da acceso
-al contenido de las notificaciones del sistema (incluidas potencialmente SMS
-si el usuario elige una app de mensajería como emisor), así que probablemente
-haya que marcar `Otros mensajes desde la app` como mínimo, cruzándolo con la
-categoría de "Información financiera" para los campos extraídos (monto,
-comercio, fecha, cuenta) que sí sincronizan (§4). Confirmar la casilla exacta
-contra el código en ese momento, no por analogía con esta nota.
+**La nota del 2026-08-18 sobre la sección "Mensajes" queda cerrada.** Se temía que
+esa sección no pudiera quedar en blanco. Revisado contra el esquema real: la
+respuesta correcta **sigue siendo No**, y ahora hay evidencia para sostenerla
+(catálogo cerrado sin apps de mensajería, filtro por `packageName` antes de leer
+contenido, y cero persistencia del texto). Lo que sí aparece son **tres filas
+nuevas** que la nota original no anticipaba: *Installed apps*, la justificación
+ampliada de *Name*, y la fuente nueva de *Purchase history*.
+Ver `declaraciones-tiendas.md` §7.3.
 
 ---
 
-## 4. La precisión que más fácil se rompe: foto local vs. metadatos que sí sincronizan
+## 4. La precisión que más fácil se rompe
 
-**La imagen del recibo es estrictamente local. Los metadatos del comprobante
-sincronizan por PowerSync.** (`18-captura-ocr.md`, decisión 2026-08-17.)
+**Lo que sincroniza y lo que no.** `PendingCaptures` **sincroniza**: monto,
+comercio, fecha, emisor y cuenta sugerida **salen del dispositivo** si el usuario
+inició sesión.
 
-Por lo tanto:
+- ❌ **Prohibido:** *"nada sale de tu teléfono"*, *"todo el proceso es local"*.
+- ✅ **Correcto:** la formulación de §2.1 de este documento.
+- ❌ **Prohibido para la voz:** *"todo el procesamiento es local"* a secas. Falso
+  en los teléfonos sin reconocimiento on-device. Ver §5.
+- ➖ La precisión sobre foto vs. metadatos del comprobante **no aplica**: OCR está
+  fuera de alcance.
 
-- ❌ **Prohibido:** *"esto no sale de tu teléfono"*, *"tus comprobantes no salen
-  del dispositivo"*, *"todo el proceso es local"* a secas. Son **falsos** para el
-  metadato, y el usuario los desmiente solo: en su segundo dispositivo ve que la
-  transacción tiene comprobante.
-- ✅ **Correcto:** *"La **foto** se guarda solo en este dispositivo y no se
-  sincroniza. Lo que sí viaja a tu cuenta es el **registro** de que esa
-  transacción tiene un comprobante y en qué dispositivo quedó guardado — para que
-  desde otro teléfono sepas que existe, aunque no puedas verlo ahí."*
-- La misma precisión aplica a la pérdida: **la foto se pierde** si cambias de
-  teléfono o reinstalas. Hay que decirlo antes, no cuando el usuario la busque.
-- Nunca escribir "el comprobante" a secas cuando se habla de lo que no viaja:
-  siempre "la foto" o "la imagen".
-- Lo mismo con las capturas de notificaciones: `PendingCaptures` **sincroniza**,
-  así que monto, comercio, fecha, emisor y cuenta inferida **salen del
-  dispositivo** si el usuario inició sesión. La promesa correcta no es "nada sale
-  del dispositivo", es: **el contenido de las notificaciones no se envía a
-  ningún servidor porque no se guarda en ninguna parte; lo que sincroniza son
-  los datos financieros ya estructurados, del mismo tipo que un movimiento
-  escrito a mano.**
+✅ Verificado en la política v1.8: no aparece ninguna de las frases prohibidas.
 
 ---
 
-## 5. Bloqueante abierto: a dónde va el audio mientras se transcribe
+## 5. El audio: bloqueante RESUELTO
 
-**Sin esta decisión no se puede escribir ni la política ni la casilla de audio de
-las tiendas.**
+**Decidido (2026-09-09):** el audio→texto usa el reconocedor de la plataforma. Con
+reconocimiento **on-device** disponible se usa ese y el audio no sale del
+teléfono. **Cuando no está disponible, el audio se procesa en servidores de Apple
+o de Google.** Ni el audio ni la transcripción se guardan.
 
-`17-captura-voz.md` HU-06 lo deja abierto y lo marca como el pendiente más
-urgente del documento: ¿qué hace la app cuando el reconocimiento **on-device** no
-está disponible en ese dispositivo o idioma? Tanto `SFSpeechRecognizer` (iOS)
-como `SpeechRecognizer` (Android) enrutan el audio a servidores de Apple o Google
-en ese caso.
-
-**No guardar no es no transmitir.** La retención cero responde *qué guardamos*
-(nada); no responde *a dónde sale el audio mientras se transcribe*. Si sale:
-
-- Apple y Google pasan a ser **destinatarios de audio del usuario** y hay que
-  nombrarlos en §7 de la política.
-- Las casillas de **Audio** en Data Safety y App Privacy pueden tener que decir
-  "recopilado" (y, en Play, "compartido").
-- La frase "el procesamiento es local", que es el argumento con el que se pide el
-  micrófono, deja de ser cierta tal como se escribiría hoy.
-
-Las tres salidas que el requisito plantea (degradar en silencio, no ofrecer voz
-en esos dispositivos, o preguntar una vez con explicación) llevan a **textos de
-tienda distintos**. Es una decisión de producto: este documento la señala, no la
-resuelve.
-
-- [ ] Decisión tomada y registrada en `17-captura-voz.md`.
-- [ ] Política y declaraciones escritas **después** de esa decisión, no antes.
+| # | Consecuencia | Estado | Quién |
+|---|---|---|---|
+| 39 | La política nombra a Apple y a Google como responsables independientes del audio | ✅ v1.8 §7 y §18.1 | `[legal]` |
+| 40 | La tabla de transferencias internacionales incluye esa fila | ✅ v1.8 §8 | `[legal]` |
+| 41 | Casilla de Audio en Data Safety y App Privacy resuelta con su justificación | ✅ `declaraciones-tiendas.md` §7.3 y §7.4 | `[legal]` |
+| 42 | **Prohibido** escribir "todo el procesamiento es local" en ficha, permiso o material de marketing | ✅ regla escrita | `[prod]` / `[envío]` |
+| 43 | Pedir `requiresOnDeviceRecognition` siempre que la plataforma lo permita, y **saber** si se consiguió | ⛔ falta código | `[impl]` |
+| 44 | En Android no hay aviso del sistema equivalente al de iOS. ¿Se muestra uno propio cuando cae a la nube? | ⚠️ decisión abierta, solo afecta al copy | `[prod]` |
 
 ---
 
 ## 6. Menores y categorías de datos sensibles
 
-- **La audiencia declarada no cambia**: 16-17 y 18+ en Play, 16+ en App Store.
-  Fase 2 no introduce contenido ni funciones dirigidas a menores.
-- **Ninguna capacidad de Fase 2 introduce datos de categorías especiales**
-  (salud, biometría, religión, orientación). Ojo con la confusión frecuente: la
-  voz se usa como **canal de entrada de texto**, no como biometría —no se hace
-  reconocimiento del hablante ni se guarda huella de voz—, y así hay que
-  describirla. Si algún día se identificara al usuario por su voz, eso **sí**
-  sería dato biométrico y cambiaría el marco legal completo (RGPD art. 9, LGPD
-  art. 11, dato sensible en la Ley 1581 y en la LFPDPPP).
-- **El micrófono, la cámara y el acceso a notificaciones no son "datos
-  sensibles" del formulario de Data Safety**, pero sí son **permisos sensibles**
-  con reglas propias (§1, §3). No mezclar las dos categorías al llenar el
-  formulario.
-- **Incompatibilidad a tener presente:** si alguna vez se marcara una audiencia
-  infantil en Play, la lectura de notificaciones sería insostenible bajo la
-  Política de Familias. No marcarla.
+| # | Qué | Estado |
+|---|---|---|
+| 45 | La audiencia declarada **no cambia**: 16-17 y 18+ en Play, 16+ en App Store | ✅ |
+| 46 | Nada de este envío introduce categorías especiales de datos | ✅ |
+| 47 | **La voz es canal de entrada de texto, no biometría.** No hay reconocimiento del hablante ni huella de voz | ✅ dicho en la política v1.8 §19 y en `declaraciones-tiendas.md` §7.3 |
+| 48 | Micrófono, notificaciones y acceso a notificaciones **no** son "datos sensibles" del formulario, pero sí **permisos sensibles** con reglas propias. No mezclar las dos categorías | ✅ |
+| 49 | No marcar audiencia infantil: sería incompatible con la lectura de notificaciones bajo la Política de Familias | ✅ decisión vigente |
 
 ---
 
-## 7. Checklist final antes de subir el build
+## 7. La condición de "no publicar sola"
 
-Ninguna casilla se marca por analogía; cada una se verifica contra el binario.
+`docs/requirements/fase-2/19-notificaciones-bancarias.md` y
+`docs/requirements/README.md` fijan que el release **público** con avisos
+bancarios debe llevar **voz y OCR ya funcionando**, para no depender de una sola
+vía de captura si Google rechaza el permiso.
 
-**Código y plataforma**
+**Este envío lleva voz. No lleva OCR.**
 
-- [ ] `pubspec.yaml`: dependencias descomentadas **solo** las que la feature usa.
-- [ ] `AndroidManifest.xml`: permisos y `<service>` declarados, y **ninguno de
-      más**.
-- [ ] `Info.plist`: todas las `*UsageDescription` que aplican, localizadas y
-      específicas (incluida `NSSpeechRecognitionUsageDescription`).
-- [ ] `PrivacyInfo.xcprivacy` creado (hoy **no existe**, ver B4) y coherente con
-      `declaraciones-tiendas.md`.
-- [ ] `delete_account_data` cubre `PendingCaptures` y `TransactionAttachments`
-      **en la misma migración que las crea** (es el bug B1; ya reincidió cuatro
-      veces).
-- [ ] El borrado de cuenta y el borrado local eliminan también **los archivos de
-      comprobante** del directorio privado (si no, se repite el patrón de B2, el
-      número de cuenta que sobrevive en el llavero).
-- [ ] `lib/core/crash/sentry_redaction.dart` no deja pasar rutas ni contenido de
-      comprobantes, transcripciones ni texto de notificaciones. Un crash que
-      filtre lo que la política promete no transmitir vuelve falsa esa promesa.
-- [ ] Decidido si los comprobantes entran en la copia completa de
-      Import/Export, y dicho en la política en cualquiera de los dos casos.
+- Para **TestFlight / Internal Testing** eso es aceptable y coherente: es un canal
+  cerrado, y validar el diferenciador con usuarios reales es justamente para lo
+  que sirve.
+- Para un **release público**, la propia decisión dice que **debe reabrirse
+  explícitamente**, no resolverse con una nota ni con un "lo hacemos en el
+  siguiente release".
 
-**Documentos**
-
-- [ ] `politica-de-privacidad.md` actualizada y **publicada antes** de que la
-      función llegue al usuario (§2).
-- [ ] `declaraciones-tiendas.md` §1 y §2 actualizadas; §7 recortada a lo que
-      quede pendiente.
-- [ ] `AUDITORIA.md` §10.2 reescrita: deja de ser "no implementado".
-- [ ] `terminos-de-uso.md` revisado (hoy no afirma nada sobre permisos ni
-      captura; confirmar que sigue siendo así).
-- [ ] `como-borrar-tu-cuenta.md` revisado si el borrado cambia de alcance.
-- [ ] Sitio legal regenerado: `python3 web/build_site.py`.
-
-**Tiendas**
-
-- [ ] Data Safety de Play rehecho y enviado con el mismo build.
-- [ ] App Privacy de Apple rehecho.
-- [ ] Justificación de uso + video del acceso a notificaciones listos (§3).
-- [ ] Ficha de tienda describe las funciones que justifican cada permiso.
-- [ ] Notas para App Review actualizadas: la app funciona sin conceder micrófono
-      ni cámara.
+⚠️ **`[prod]` tiene que reabrirla antes de cualquier promoción a producción.**
 
 ---
 
-## 8. Límite
+## 8. Checklist final antes de subir el build
+
+### Código y plataforma
+
+| # | Qué | Estado | Quién |
+|---|---|---|---|
+| 50 | `pubspec.yaml`: solo las dependencias que la feature usa | ✅ voz, notificaciones locales y permisos descomentados; **OCR y monetización siguen comentados** | `[impl]` |
+| 51 | `AndroidManifest.xml`: permisos y `<service>` declarados, y **ninguno de más** | ⛔ | `[impl]` |
+| 52 | `Info.plist`: las dos `*UsageDescription`, localizadas y específicas | ⛔ | `[impl]` |
+| 53 | `PrivacyInfo.xcprivacy` revisado y coherente con `declaraciones-tiendas.md`; auditar los privacy manifests de los plugins nuevos | ⚠️ existe desde 2026-08-18, **falta revisarlo** | `[impl]` |
+| 54 | `delete_account_data` cubre `pending_captures` y `merchant_category_learning` **en la misma migración que las crea** | ✅ `20260909000000_fase2_capture_schema.sql:153-154` — **primera vez que no reincide el bug B1** | — |
+| 55 | Esa migración **aplicada en dev y en prod**, no solo commiteada | ⚠️ no se pudo verificar desde este worktree | `[infra]` |
+| 56 | Borrado local de capturas ("dejar como recién instalada", sin tocar transacciones confirmadas) | ⛔ falta código; la política ya lo describe | `[impl]` |
+| 57 | Pantalla de transparencia dentro de Ajustes | ⛔ falta código; la política ya la describe | `[impl]` |
+| 58 | `sentry_redaction.dart` no deja pasar transcripciones, texto de notificaciones ni contenido de capturas | ⛔ **hoy solo cubre errores de Postgres** | `[impl]` |
+| 59 | La `note` de la transacción se compone **solo de campos identificados**, nunca del texto del aviso recortado | ⛔ falta verificar sobre el código | `[impl]` |
+| 60 | El filtro por `packageName` se aplica **antes** de leer título, texto o extras — y hay revisión humana del Kotlin, que ningún revisor del repo cubre | ⛔ | `[impl]` |
+| 61 | Decidido si las capturas entran en la copia completa de Import/Export, y dicho en la política en cualquier caso | ⚠️ | `[prod]` / `[legal]` |
+| 62 | Dónde se persiste la lista de emisores activos (si sincroniza, es una fila más de Data Safety) | ⚠️ | `[impl]` |
+
+### Documentos
+
+| # | Qué | Estado | Quién |
+|---|---|---|---|
+| 63 | `politica-de-privacidad.md` actualizada | ✅ v1.8 | `[legal]` |
+| 64 | `politica-de-privacidad.md` **publicada antes** de que la función llegue al usuario | ⛔ ver §9 | `[legal]` |
+| 65 | `declaraciones-tiendas.md` §1.1 y §1.3 acotadas; §7 convertida en el juego de respuestas del envío | ✅ v1.8 | `[legal]` |
+| 66 | `AUDITORIA.md` §10.2 reescrita: deja de ser "no implementado" a secas | ✅ nueva §13 con la evidencia; §10.2 marcada como registro histórico | `[legal]` |
+| 67 | `terminos-de-uso.md` revisado | ⚠️ **revisar**: hoy no afirma nada sobre permisos ni captura. Confirmar que sigue siendo así y que no hace falta un párrafo sobre "la captura no garantiza cobertura" | `[legal]` |
+| 68 | `como-borrar-tu-cuenta.md` revisado si el borrado cambia de alcance | ⚠️ el borrado de cuenta ahora arrastra dos tablas más; revisar si el texto público lo enumera | `[legal]` |
+| 69 | Textos de consentimiento y transparencia listos para `.arb` | ✅ [`textos-consentimiento-fase-2.md`](textos-consentimiento-fase-2.md) — **no se metieron en los `.arb` a propósito**, para no chocar con las ramas de implementación | `[legal]` → `[impl]` |
+| 70 | Justificación y guion de video del permiso de notificaciones | ✅ [`declaracion-permiso-notificaciones.md`](declaracion-permiso-notificaciones.md) | `[legal]` |
+| 71 | Sitio legal regenerado (`python3 web/build_site.py`) y desplegado | ⛔ ver §9 | `[envío]` |
+| 71b | El set `NO_PUBLICAR` de `web/build_site.py:54` sigue listando solo `AUDITORIA.md` y `declaraciones-tiendas.md`. Los tres documentos internos nuevos (`checklist-fase-2.md`, `textos-consentimiento-fase-2.md`, `declaracion-permiso-notificaciones.md`) **no** se publican —la lista `PAGES` es explícita y no los incluye— pero conviene añadirlos a ese set para que la omisión siga siendo deliberada y no un olvido | ⚠️ cosmético, no bloquea | `[envío]` |
+
+### Tiendas
+
+| # | Qué | Estado | Quién |
+|---|---|---|---|
+| 72 | Data Safety de Play rehecho y enviado con el mismo build | 📝 respuestas listas | `[envío]` |
+| 73 | App Privacy de Apple rehecho | 📝 respuestas listas, con una casilla de criterio (Audio Data) señalada | `[envío]` |
+| 74 | Justificación + video del acceso a notificaciones | 📝 / ⛔ (falta grabar) | `[envío]` |
+| 75 | Ficha de tienda describe las funciones que justifican cada permiso | ⛔ | `[prod]` |
+| 76 | Notas para App Review actualizadas: la app funciona sin micrófono ni notificaciones | 📝 párrafo listo en `declaraciones-tiendas.md` §7.7 | `[envío]` |
+| 77 | Verificar el **manifiesto fusionado** del AAB que se sube, no el fuente | ⛔ | `[envío]` |
+
+---
+
+## 9. Publicación: la política se redacta ahora, se despliega después
+
+**La política v1.8 está escrita y NO se despliega todavía.** Es deliberado y hay
+que respetarlo en las dos direcciones:
+
+- **No se despliega antes**, porque describiría funciones que el binario no
+  tiene. Una política que promete un borrado local y una pantalla de
+  transparencia que no existen es tan falsa como una que omite un permiso.
+- **No se despliega después**, porque la propia política (§19) promete
+  actualizarse **antes** de que la función llegue al usuario, y porque las
+  tiendas exigen que la URL vigente describa el binario que se envía.
+
+**El orden correcto, y no admite atajos:**
+
+1. `[impl]` cierra los ⛔ de §8 (permisos nativos, borrado local, pantalla de
+   transparencia, redacción de Sentry).
+2. `[legal]` re-verifica la v1.8 contra ese código y quita cualquier afirmación
+   que no se sostenga.
+3. `[envío]` regenera el sitio (`python3 web/build_site.py`) y **despliega**.
+4. `[envío]` sube el build a TestFlight / Internal Testing con Data Safety y App
+   Privacy rehechos **en el mismo envío**.
+
+**TestFlight e Internal Testing cuentan.** Son canales cerrados, pero son
+distribución: Data Safety y App Privacy aplican, y los usuarios de prueba son
+titulares de datos con los mismos derechos que cualquier otro.
+
+---
+
+## 10. Resumen: qué bloquea un build de TestFlight / Internal Testing
+
+En orden de riesgo:
+
+1. ⛔ **Redacción de Sentry** (#58). Si un crash filtra una transcripción o el
+   texto de un aviso, la promesa central de la política es falsa el día uno.
+2. ⛔ **Permisos nativos declarados** (#51, #52) y **ninguno de más**, verificado
+   sobre el binario fusionado (#77).
+3. ⛔ **Borrado local de capturas** (#56) y **pantalla de transparencia** (#57):
+   la política ya los describe y HU-08 los hace no negociables.
+4. ⛔ **Política v1.8 publicada antes del envío** (#64, #71).
+5. ⛔ **Data Safety y App Privacy rehechos en el mismo envío** (#72, #73),
+   incluida la fila nueva de *Installed apps*.
+6. ⛔ **Video del permiso de notificaciones grabado** (#34), si Play lo pide.
+7. ⛔ **`<queries>` explícito, nunca `QUERY_ALL_PACKAGES`** (#5).
+8. ⚠️ **Migración aplicada en prod** (#55).
+9. ⚠️ **Reabrir la condición de "no publicar sola"** antes de producción (§7).
+
+---
+
+## 11. Límite
 
 Este documento **no es asesoría jurídica**. Su valor es ser exacto respecto al
-software y completo respecto a los requisitos de tienda; la revisión legal
-formal la hace una persona abogada. Y su contenido es un **plan**: no describe
-la app de hoy y no debe citarse como si lo hiciera.
+software y completo respecto a los requisitos de tienda; la revisión legal formal
+la hace una persona abogada.
