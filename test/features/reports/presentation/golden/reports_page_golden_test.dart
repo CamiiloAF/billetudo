@@ -13,6 +13,7 @@ import 'package:billetudo/features/reports/presentation/cubit/reports_dashboard_
 import 'package:billetudo/features/reports/presentation/cubit/reports_dashboard_state.dart';
 import 'package:billetudo/features/reports/presentation/cubit/reports_shell_cubit.dart';
 import 'package:billetudo/features/reports/presentation/cubit/reports_shell_state.dart';
+import 'package:billetudo/features/reports/presentation/models/reports_period_selection.dart';
 import 'package:billetudo/features/reports/presentation/pages/reports_page.dart';
 import 'package:billetudo/features/reports/presentation/widgets/categories/category_view_subcategories_link.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -125,9 +126,22 @@ void main() {
     ReportsDashboardState? dashboardState,
     Future<void> Function(WidgetTester tester)? interact,
   }) async {
+    // `ReportsShellState()`'s default `period` resolves
+    // `ReportsPeriodSelection.lastSixMonths()` from `clock.now()` at
+    // construction time — pinning it to `goldenReferenceNow` here (like
+    // every explicit `shellState:` passed by a caller below) keeps the
+    // header's period caption ("mar – ago 2026") from drifting against the
+    // real wall clock on every later run.
     when(
       () => shellCubit.state,
-    ).thenReturn(shellState ?? ReportsShellState());
+    ).thenReturn(
+      shellState ??
+          ReportsShellState(
+            period: ReportsPeriodSelection.lastSixMonths(
+              now: goldenReferenceNow,
+            ),
+          ),
+    );
     when(
       () => cashflowCubit.state,
     ).thenReturn(cashflowState ?? const CashflowState());
@@ -141,7 +155,7 @@ void main() {
       () => dashboardCubit.state,
     ).thenReturn(dashboardState ?? const ReportsDashboardState());
 
-    await pumpGolden(
+    await pumpWithFixedClock(
       tester,
       MultiBlocProvider(
         providers: [
@@ -214,7 +228,10 @@ void main() {
         tester,
         'cashflow_loading_$suffix',
         brightness: brightness,
-        shellState: ReportsShellState(activeTab: ChartViewId.cashflow),
+        shellState: ReportsShellState(
+          period: ReportsPeriodSelection.lastSixMonths(now: goldenReferenceNow),
+          activeTab: ChartViewId.cashflow,
+        ),
       );
     });
 
@@ -223,7 +240,10 @@ void main() {
         tester,
         'cashflow_empty_$suffix',
         brightness: brightness,
-        shellState: ReportsShellState(activeTab: ChartViewId.cashflow),
+        shellState: ReportsShellState(
+          period: ReportsPeriodSelection.lastSixMonths(now: goldenReferenceNow),
+          activeTab: ChartViewId.cashflow,
+        ),
         cashflowState: CashflowState(
           status: CashflowStatus.ready,
           series: emptyCashflowSeries(),
@@ -238,7 +258,10 @@ void main() {
         tester,
         'cashflow_positive_$suffix',
         brightness: brightness,
-        shellState: ReportsShellState(activeTab: ChartViewId.cashflow),
+        shellState: ReportsShellState(
+          period: ReportsPeriodSelection.lastSixMonths(now: goldenReferenceNow),
+          activeTab: ChartViewId.cashflow,
+        ),
         cashflowState: CashflowState(
           status: CashflowStatus.ready,
           series: positiveCashflowSeries(),
@@ -256,6 +279,7 @@ void main() {
         'cashflow_account_filter_active_$suffix',
         brightness: brightness,
         shellState: ReportsShellState(
+          period: ReportsPeriodSelection.lastSixMonths(now: goldenReferenceNow),
           activeTab: ChartViewId.cashflow,
           accountIds: const {'acc-1', 'acc-2'},
         ),
@@ -273,7 +297,10 @@ void main() {
         tester,
         'cashflow_negative_$suffix',
         brightness: brightness,
-        shellState: ReportsShellState(activeTab: ChartViewId.cashflow),
+        shellState: ReportsShellState(
+          period: ReportsPeriodSelection.lastSixMonths(now: goldenReferenceNow),
+          activeTab: ChartViewId.cashflow,
+        ),
         cashflowState: CashflowState(
           status: CashflowStatus.ready,
           series: negativeCashflowSeries(),
@@ -286,7 +313,10 @@ void main() {
         tester,
         'cashflow_short_history_$suffix',
         brightness: brightness,
-        shellState: ReportsShellState(activeTab: ChartViewId.cashflow),
+        shellState: ReportsShellState(
+          period: ReportsPeriodSelection.lastSixMonths(now: goldenReferenceNow),
+          activeTab: ChartViewId.cashflow,
+        ),
         cashflowState: CashflowState(
           status: CashflowStatus.ready,
           series: shortHistoryCashflowSeries(),
@@ -302,6 +332,7 @@ void main() {
         'cashflow_sync_notice_$suffix',
         brightness: brightness,
         shellState: ReportsShellState(
+          period: ReportsPeriodSelection.lastSixMonths(now: goldenReferenceNow),
           activeTab: ChartViewId.cashflow,
           syncState: SyncState.stalled,
         ),
@@ -319,7 +350,10 @@ void main() {
         tester,
         'net_worth_loading_$suffix',
         brightness: brightness,
-        shellState: ReportsShellState(activeTab: ChartViewId.netWorth),
+        shellState: ReportsShellState(
+          period: ReportsPeriodSelection.lastSixMonths(now: goldenReferenceNow),
+          activeTab: ChartViewId.netWorth,
+        ),
       );
     });
 
@@ -328,7 +362,10 @@ void main() {
         tester,
         'net_worth_empty_$suffix',
         brightness: brightness,
-        shellState: ReportsShellState(activeTab: ChartViewId.netWorth),
+        shellState: ReportsShellState(
+          period: ReportsPeriodSelection.lastSixMonths(now: goldenReferenceNow),
+          activeTab: ChartViewId.netWorth,
+        ),
         netWorthState: NetWorthState(
           status: NetWorthStatus.ready,
           series: emptyNetWorthSeries(),
@@ -341,7 +378,10 @@ void main() {
         tester,
         'net_worth_with_data_$suffix',
         brightness: brightness,
-        shellState: ReportsShellState(activeTab: ChartViewId.netWorth),
+        shellState: ReportsShellState(
+          period: ReportsPeriodSelection.lastSixMonths(now: goldenReferenceNow),
+          activeTab: ChartViewId.netWorth,
+        ),
         netWorthState: NetWorthState(
           status: NetWorthStatus.ready,
           series: netWorthSeriesWithData(),
@@ -356,7 +396,10 @@ void main() {
         tester,
         'net_worth_short_history_$suffix',
         brightness: brightness,
-        shellState: ReportsShellState(activeTab: ChartViewId.netWorth),
+        shellState: ReportsShellState(
+          period: ReportsPeriodSelection.lastSixMonths(now: goldenReferenceNow),
+          activeTab: ChartViewId.netWorth,
+        ),
         netWorthState: NetWorthState(
           status: NetWorthStatus.ready,
           series: shortHistoryNetWorthSeries(),
@@ -372,6 +415,7 @@ void main() {
         'categories_loading_$suffix',
         brightness: brightness,
         shellState: ReportsShellState(
+          period: ReportsPeriodSelection.lastSixMonths(now: goldenReferenceNow),
           activeTab: ChartViewId.categoryBreakdown,
         ),
       );
@@ -383,6 +427,7 @@ void main() {
         'categories_empty_$suffix',
         brightness: brightness,
         shellState: ReportsShellState(
+          period: ReportsPeriodSelection.lastSixMonths(now: goldenReferenceNow),
           activeTab: ChartViewId.categoryBreakdown,
         ),
         categoryState: CategoryBreakdownState(
@@ -400,6 +445,7 @@ void main() {
         'categories_with_data_$suffix',
         brightness: brightness,
         shellState: ReportsShellState(
+          period: ReportsPeriodSelection.lastSixMonths(now: goldenReferenceNow),
           activeTab: ChartViewId.categoryBreakdown,
         ),
         categoryState: CategoryBreakdownState(
@@ -418,6 +464,7 @@ void main() {
         'categories_selected_$suffix',
         brightness: brightness,
         shellState: ReportsShellState(
+          period: ReportsPeriodSelection.lastSixMonths(now: goldenReferenceNow),
           activeTab: ChartViewId.categoryBreakdown,
         ),
         categoryState: CategoryBreakdownState(
@@ -440,6 +487,7 @@ void main() {
         'categories_subcategories_$suffix',
         brightness: brightness,
         shellState: ReportsShellState(
+          period: ReportsPeriodSelection.lastSixMonths(now: goldenReferenceNow),
           activeTab: ChartViewId.categoryBreakdown,
         ),
         categoryState: CategoryBreakdownState(
@@ -449,8 +497,7 @@ void main() {
         interact: (tester) async {
           tapDonutSection(tester, 0);
           await tester.pump();
-          await tester
-              .tap(find.byType(CategoryViewSubcategoriesLink));
+          await tester.tap(find.byType(CategoryViewSubcategoriesLink));
         },
       );
     });

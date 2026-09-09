@@ -103,5 +103,27 @@ void applySentryOptions(SentryFlutterOptions options) {
     // leaves the device. Server-side scrubbers clean on ingest; this is the
     // layer that keeps the value from ever being sent. See
     // `sentry_redaction.dart` for what the patterns do and do not cover.
-    ..beforeSend = (event, hint) => redactSentryEvent(event);
+    ..beforeSend = (event, hint) {
+      if (_isExpectedSyncRetrySignal(event)) {
+        return null;
+      }
+      return redactSentryEvent(event);
+    };
+}
+
+/// Drops the `AuthException` `SupabaseOperationUploader.upload` throws on
+/// purpose when there is no active session yet, so PowerSync retries the
+/// upload later instead of quarantining it (see that method's doc comment —
+/// this is the fix for BILLETUDO-D). The throw is deliberate and self-heals
+/// on its own once sign-in finishes; without this filter, every guest user's
+/// first local edit reports it to Sentry as an unhandled crash (BILLETUDO-J),
+/// even though nothing is actually broken.
+bool _isExpectedSyncRetrySignal(SentryEvent event) {
+  for (final exception in event.exceptions ?? const <SentryException>[]) {
+    if (exception.type == 'AuthException' &&
+        (exception.value ?? '').contains('No active Supabase session')) {
+      return true;
+    }
+  }
+  return false;
 }

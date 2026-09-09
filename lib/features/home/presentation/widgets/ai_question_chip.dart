@@ -68,7 +68,7 @@ class AiQuestionChip extends StatelessWidget {
     final fixedMaxWidth = maxWidth;
 
     return Material(
-      color: colors.mutedStrong,
+      color: colors.muted,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: onTap,

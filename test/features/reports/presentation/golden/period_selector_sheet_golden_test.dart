@@ -1,5 +1,6 @@
 import 'package:billetudo/features/reports/presentation/models/reports_period_selection.dart';
 import 'package:billetudo/features/reports/presentation/widgets/sheets/period_selector_sheet.dart';
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -22,31 +23,40 @@ void main() {
 
   /// Opens the sheet through a real trigger button, same choreography as
   /// `test/features/accounts/presentation/golden/sheets_golden_test.dart`.
+  // `PeriodSelectorSheet`'s `_cursor` falls back to `clock.now()` for any
+  // `initial` whose `kind` is `lastSixMonths` (see the widget's field
+  // initializer) — the month/year stepper's "today" reference, read the
+  // moment the sheet opens (on tap), not at pump time. Without pinning the
+  // clock around the whole interaction, the stepper's caption ("Agosto de
+  // 2026") drifts against the real wall clock and the golden mismatches on
+  // every later run.
   Future<void> golden(
     WidgetTester tester,
     ReportsPeriodSelection initial,
     String name, {
     Brightness brightness = Brightness.light,
   }) async {
-    setGoldenViewport(tester);
-    await tester.pumpWidget(
-      wrapForGolden(
-        Builder(
-          builder: (context) => ElevatedButton(
-            onPressed: () =>
-                PeriodSelectorSheet.show(context, initial: initial),
-            child: const Text('open'),
+    await withClock(Clock.fixed(goldenReferenceNow), () async {
+      setGoldenViewport(tester);
+      await tester.pumpWidget(
+        wrapForGolden(
+          Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () =>
+                  PeriodSelectorSheet.show(context, initial: initial),
+              child: const Text('open'),
+            ),
           ),
+          brightness: brightness,
         ),
-        brightness: brightness,
-      ),
-    );
-    await tester.tap(find.byType(ElevatedButton));
-    await tester.pumpAndSettle();
-    await expectLater(
-      find.byType(MaterialApp),
-      matchesGoldenFile('goldens/sheet_period_selector_$name.png'),
-    );
+      );
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pumpAndSettle();
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/sheet_period_selector_$name.png'),
+      );
+    });
   }
 
   testWidgets('month granularity, default range (light)', (tester) async {

@@ -54,8 +54,9 @@ void main() {
   });
 
   testWidgets(
-      'tema oscuro: fondo usa AppColors.mutedStrong (issue #22, contraste); '
-      'icono usa primaryOnSoft', (tester) async {
+      'tema oscuro: fondo usa AppColors.muted (revertido tras issue #22 — '
+      'el usuario prefirió el color original); icono usa primaryOnSoft',
+      (tester) async {
     await tester.pumpHomeWidget(
       AiQuestionChip(label: 'Pregunta', onTap: () {}),
       brightness: Brightness.dark,
@@ -67,15 +68,15 @@ void main() {
         matching: find.byType(Material),
       ),
     );
-    expect(material.color, AppColors.dark.mutedStrong);
+    expect(material.color, AppColors.dark.muted);
 
     final icon = tester.widget<Icon>(find.byIcon(LucideIcons.arrowUpRight));
     expect(icon.color, AppColors.dark.primaryOnSoft);
   });
 
   testWidgets(
-      'tema claro: fondo usa AppColors.mutedStrong (issue #22, contraste); '
-      'icono usa primaryOnSoft', (tester) async {
+      'tema claro: fondo usa AppColors.muted; icono usa primaryOnSoft',
+      (tester) async {
     await tester.pumpHomeWidget(
       AiQuestionChip(label: 'Pregunta', onTap: () {}),
     );
@@ -86,7 +87,7 @@ void main() {
         matching: find.byType(Material),
       ),
     );
-    expect(material.color, AppColors.light.mutedStrong);
+    expect(material.color, AppColors.light.muted);
 
     final icon = tester.widget<Icon>(find.byIcon(LucideIcons.arrowUpRight));
     expect(icon.color, AppColors.light.primaryOnSoft);
