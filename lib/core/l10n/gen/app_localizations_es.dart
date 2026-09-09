@@ -6560,4 +6560,151 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get captureAccountCardLast4Error => 'Deben ser exactamente 4 dígitos.';
+
+  @override
+  String get capturePermissionHeader => 'Avisos de tu banco';
+
+  @override
+  String get capturePermissionTitle => 'Leer los avisos de tu banco';
+
+  @override
+  String get capturePermissionBody =>
+      'Cuando tu banco te avise de una compra, la app te la propone con el monto y el comercio ya puestos. Tú confirmas y queda registrada.';
+
+  @override
+  String get capturePermissionFactAppsTitle => 'Solo las apps que elijas';
+
+  @override
+  String get capturePermissionFactAppsDescription =>
+      'Tú decides qué apps de banco se leen. Chats, correos y todo lo demás queda fuera.';
+
+  @override
+  String get capturePermissionFactDataTitle => 'Solo monto, comercio y fecha';
+
+  @override
+  String get capturePermissionFactDataDescription =>
+      'El texto de la notificación no se guarda en ninguna parte, tampoco en tu teléfono.';
+
+  @override
+  String get capturePermissionFactConfirmTitle => 'Nada se registra sin ti';
+
+  @override
+  String get capturePermissionFactConfirmDescription =>
+      'Cada compra detectada espera tu confirmación antes de tocar tus saldos.';
+
+  @override
+  String get capturePermissionFactSyncTitle =>
+      'Se respalda como un movimiento más';
+
+  @override
+  String get capturePermissionFactSyncDescription =>
+      'Esos tres datos viajan a tu cuenta igual que un movimiento que escribes a mano.';
+
+  @override
+  String get capturePermissionSystemWarning =>
+      'Android te va a advertir que la app podrá ver todas tus notificaciones. Es la única forma en que el sistema concede este permiso; la app solo lee las apps que tú actives.';
+
+  @override
+  String get capturePermissionOpenSettingsCta => 'Ir a Ajustes de Android';
+
+  @override
+  String get capturePermissionDeclineCta => 'Ahora no, gracias';
+
+  @override
+  String get captureSeeHowItWorksCta => 'Ver cómo funciona';
+
+  @override
+  String get captureDisabledTitle => 'La lectura de avisos está desactivada';
+
+  @override
+  String get captureDisabledBody =>
+      'Puedes activarla cuando quieras. Mientras tanto todo sigue igual: registras tus movimientos como siempre y tus saldos no cambian.';
+
+  @override
+  String get captureDisabledPendingNote =>
+      'Las capturas que ya tenías siguen en tu bandeja. Puedes revisarlas aunque esto esté apagado.';
+
+  @override
+  String get captureDisabledOpenSettingsCta => 'Activar en Ajustes de Android';
+
+  @override
+  String get captureIssuersHeader => 'Apps que se leen';
+
+  @override
+  String get captureIssuersScopeNote =>
+      'Solo se leen los avisos de las apps que enciendas aquí. Las demás no se abren nunca.';
+
+  @override
+  String get captureIssuersNoneActive => 'Ninguna activa todavía';
+
+  @override
+  String get captureIssuersTurnOffAll => 'Apagar todas';
+
+  @override
+  String get captureIssuersClosedCatalogNote =>
+      '¿No ves tu banco? Por ahora solo leemos avisos de estas apps. El catálogo irá creciendo.';
+
+  @override
+  String get captureIssuersNoAppsTitle => 'No tienes ninguna de estas apps';
+
+  @override
+  String get captureIssuersNoAppsDescription =>
+      'Por ahora leemos avisos de Nu, Nequi y Google Wallet. Cuando instales alguna, aparecerá aquí para que la enciendas.';
+
+  @override
+  String get captureIssuersErrorTitle => 'No pudimos cargar tus apps';
+
+  @override
+  String get captureIssuerNuDescription => 'Compras con tu tarjeta Nu';
+
+  @override
+  String get captureIssuerNequiDescription => 'Compras, envíos y recargas';
+
+  @override
+  String get captureIssuerGoogleWalletDescription =>
+      'Pagos con el celular (NFC)';
+
+  @override
+  String get captureIssuerGenericDescription => 'Avisos de compra de esta app';
+
+  @override
+  String get captureOfferMessage =>
+      'Cuando tu banco te avise de una compra, te la dejo lista para confirmar: monto, comercio y fecha ya puestos.';
+
+  @override
+  String get captureOfferScopeNote =>
+      'No alcanza para todo: el efectivo no avisa y hay bancos que aún no están en la lista. Esto se suma a registrar a mano, no lo reemplaza.';
+
+  @override
+  String get captureOfferDismissCta => 'Ahora no';
+
+  @override
+  String get captureSettingsTitle => 'Avisos de tu banco';
+
+  @override
+  String get captureSettingsSubtitleChecking => 'Revisando el estado…';
+
+  @override
+  String get captureSettingsSubtitleOff =>
+      'Desactivado · actívalo cuando quieras';
+
+  @override
+  String get captureSettingsSubtitleNoIssuers =>
+      'Activo, pero sin apps elegidas todavía';
+
+  @override
+  String captureIssuersActiveCount(int count, int total) {
+    return '$count de $total activas';
+  }
+
+  @override
+  String captureSettingsSubtitleListening(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Escuchando $count apps',
+      one: 'Escuchando 1 app',
+    );
+    return '$_temp0';
+  }
 }

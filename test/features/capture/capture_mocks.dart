@@ -2,7 +2,9 @@ import 'package:billetudo/features/capture/domain/entities/capture_ingestion.dar
 import 'package:billetudo/features/capture/domain/entities/parsed_capture.dart';
 import 'package:billetudo/features/capture/domain/entities/pending_capture.dart';
 import 'package:billetudo/features/capture/domain/repositories/capture_learning_repository.dart';
+import 'package:billetudo/features/capture/domain/repositories/capture_offer_repository.dart';
 import 'package:billetudo/features/capture/domain/repositories/issuer_settings_repository.dart';
+import 'package:billetudo/features/capture/domain/repositories/notification_capture_repository.dart';
 import 'package:billetudo/features/capture/domain/repositories/pending_capture_repository.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_draft.dart';
@@ -16,6 +18,12 @@ class MockCaptureLearningRepository extends Mock
 
 class MockIssuerSettingsRepository extends Mock
     implements IssuerSettingsRepository {}
+
+class MockNotificationCaptureRepository extends Mock
+    implements NotificationCaptureRepository {}
+
+class MockCaptureOfferRepository extends Mock
+    implements CaptureOfferRepository {}
 
 /// Registers the fallbacks mocktail needs for `any()` on custom types.
 void registerCaptureFallbacks() {

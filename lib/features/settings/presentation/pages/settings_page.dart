@@ -11,6 +11,8 @@ import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/settings_field.dart';
 import '../../../auth/domain/entities/auth_session.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
+import '../../../capture/presentation/cubit/capture_status_state.dart';
+import '../../../capture/presentation/widgets/capture_settings_field.dart';
 import '../cubit/app_settings_cubit.dart';
 import '../cubit/app_settings_state.dart';
 import '../widgets/ai_settings_section.dart';
@@ -35,6 +37,7 @@ class SettingsPage extends StatelessWidget {
     required this.onOpenComingSoon,
     required this.onOpenSyncStatus,
     required this.onOpenQuickAccessOrder,
+    required this.onOpenCapture,
     super.key,
   });
 
@@ -50,6 +53,14 @@ class SettingsPage extends StatelessWidget {
   /// without one there is no cloud to report on, and Ajustes offers
   /// "Respaldar en la nube" instead.
   final VoidCallback onOpenSyncStatus;
+
+  /// Opens notification capture (HU-09). Takes the state the row is already
+  /// showing so the router can send the user to the catalog or to the
+  /// explainer without asking the system a second time.
+  ///
+  /// The row draws nothing on iOS, where the permission does not exist, so
+  /// this is never called there.
+  final ValueChanged<CaptureStatusState> onOpenCapture;
 
   /// Opens the info sheet and honours its "Activar modo sobres" call to action.
   Future<void> _openEnvelopeInfo(
@@ -130,6 +141,11 @@ class SettingsPage extends StatelessWidget {
                         onTap: onOpenQuickAccessOrder,
                       ),
                       const SizedBox(height: 12),
+                      // HU-09: always visible on Android, and always telling
+                      // the truth — it re-asks the system instead of trusting
+                      // a stored flag, because the permission can be revoked
+                      // from Android without the app being told.
+                      CaptureSettingsField(onTap: onOpenCapture),
                       BlocBuilder<AppSettingsCubit, AppSettingsState>(
                         builder: (context, settings) => ShowHelpOnEntryField(
                           enabled: settings.showHelpOnSectionEntry,

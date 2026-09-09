@@ -46,10 +46,18 @@ import '../../features/budgets/presentation/pages/archived_budgets_page.dart';
 import '../../features/budgets/presentation/pages/budget_detail_page.dart';
 import '../../features/budgets/presentation/pages/budget_form_page.dart';
 import '../../features/budgets/presentation/pages/budgets_page.dart';
+import '../../features/capture/domain/usecases/mark_notification_capture_offered.dart';
+import '../../features/capture/domain/usecases/should_offer_notification_capture.dart';
+import '../../features/capture/presentation/cubit/capture_issuers_cubit.dart';
+import '../../features/capture/presentation/cubit/capture_permission_cubit.dart';
+import '../../features/capture/presentation/cubit/capture_status_cubit.dart';
 import '../../features/capture/presentation/cubit/notices_cubit.dart';
 import '../../features/capture/presentation/cubit/pending_captures_cubit.dart';
+import '../../features/capture/presentation/pages/capture_issuers_page.dart';
+import '../../features/capture/presentation/pages/capture_permission_page.dart';
 import '../../features/capture/presentation/pages/notices_page.dart';
 import '../../features/capture/presentation/utils/capture_prefill_mapper.dart';
+import '../../features/capture/presentation/widgets/sheets/capture_offer_flow.dart';
 import '../../features/categories/domain/entities/category.dart';
 import '../../features/categories/presentation/cubit/categories_list_cubit.dart';
 import '../../features/categories/presentation/cubit/category_form_cubit.dart';
@@ -205,6 +213,15 @@ abstract final class AppRoutes {
   /// [notices] so popping it returns to the inbox; the `CapturePrefill`
   /// travels as `extra`.
   static const String dispatchCapture = '$notices/despachar';
+
+  /// The explainer that must come **before** Android's own permission screen
+  /// (HU-01, `FRtfP`/`ZGtoE`). Reachable from the contextual offer, from
+  /// Ajustes and from the revoked state of [captureIssuers].
+  static const String capturePermission = '$notices/permiso';
+
+  /// The issuer catalog (HU-02, `qrDFE`/`xqdHH`) — the screen that actually
+  /// turns capture on: the system permission alone listens to nothing.
+  static const String captureIssuers = '$notices/apps';
   static const String pendingScheduledPayments =
       '/pagos-programados/por-confirmar';
   static const String importExport = '/mas/importar-exportar';
@@ -757,6 +774,36 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
                         tagIds: formState.tagIds.toList(),
                       ),
                     ),
+                    // HU-01's contextual offer. Wired **only here**: the edit
+                    // route and the capture-dispatch route leave it null, so
+                    // it can only fire right after a movement was created by
+                    // hand. Restricted to an expense because that is the
+                    // friction this feature removes — no bank notifies you of
+                    // an income you typed in. It shows at most once ever;
+                    // `ShouldOfferNotificationCapture` owns that rule.
+                    onSaved: (formState) {
+                      if (formState.type != TransactionType.expense) {
+                        return;
+                      }
+                      // The root navigator's context, not this route's: by
+                      // the time this runs the form has already popped, and
+                      // its own context is deactivated — `context.mounted`
+                      // would be false and the offer would silently never
+                      // appear.
+                      final rootContext = _rootNavigatorKey.currentContext;
+                      if (rootContext == null) {
+                        return;
+                      }
+                      unawaited(
+                        CaptureOfferFlow.maybeOffer(
+                          rootContext,
+                          shouldOffer: getIt<ShouldOfferNotificationCapture>(),
+                          markOffered: getIt<MarkNotificationCaptureOffered>(),
+                          onSeeHowItWorks: () =>
+                              rootContext.push(AppRoutes.capturePermission),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -1169,6 +1216,10 @@ GoRoute _settingsRoute() => GoRoute(
             create: (context) =>
                 _started(getIt<SyncStatusCubit>(), (c) => c.start()),
           ),
+          BlocProvider(
+            create: (context) =>
+                _started(getIt<CaptureStatusCubit>(), (c) => c.start()),
+          ),
         ],
         child: SettingsPage(
           onOpenLogin: () => context.push(AppRoutes.login),
@@ -1182,6 +1233,15 @@ GoRoute _settingsRoute() => GoRoute(
           onOpenSyncStatus: () => context.push(AppRoutes.syncStatus),
           onOpenQuickAccessOrder: () =>
               context.push(AppRoutes.quickAccessOrder),
+          // HU-09: the permanent way in. Routes by the state the row is
+          // already showing — the catalog when there is something to switch,
+          // the explainer when the permission still has to be granted — so
+          // the tap lands where the user's next decision actually is.
+          onOpenCapture: (status) => context.push(
+            status.permissionGranted
+                ? AppRoutes.captureIssuers
+                : AppRoutes.capturePermission,
+          ),
         ),
       ),
       routes: [
@@ -1364,16 +1424,42 @@ GoRoute _noticesRoute() => GoRoute(
             AppRoutes.dispatchCapture,
             extra: capturePrefillFor(item),
           ),
-          // HU-02's issuer catalog has no screen yet; the generic
-          // "Próximamente" page is the honest placeholder until it does.
-          onChooseIssuers: () => context.push(
-            AppRoutes.comingSoonTitled(
-              AppLocalizations.of(context).captureNoIssuersCta,
-            ),
-          ),
+          onChooseIssuers: () => context.push(AppRoutes.captureIssuers),
         ),
       ),
       routes: [
+        // HU-01: the app's own explainer, always before Android's screen.
+        GoRoute(
+          path: 'permiso',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) =>
+                _started(getIt<CapturePermissionCubit>(), (c) => c.start()),
+            child: CapturePermissionPage(
+              // Granting the permission is only half of it: with no issuer
+              // switched on nothing is ever captured, so the catalog is the
+              // next step and not an optional detour. `pushReplacement` so
+              // going back from the catalog does not land on an explainer
+              // for a permission the user already granted.
+              onGranted: () => context.pushReplacement(
+                AppRoutes.captureIssuers,
+              ),
+              onDecline: () => context.pop(),
+            ),
+          ),
+        ),
+        // HU-02: which apps are listened to.
+        GoRoute(
+          path: 'apps',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) =>
+                _started(getIt<CaptureIssuersCubit>(), (c) => c.start()),
+            child: CaptureIssuersPage(
+              onOpenPermission: () => context.push(AppRoutes.capturePermission),
+            ),
+          ),
+        ),
         GoRoute(
           path: 'despachar',
           parentNavigatorKey: _rootNavigatorKey,

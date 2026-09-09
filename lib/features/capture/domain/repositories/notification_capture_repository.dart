@@ -10,6 +10,16 @@ import '../entities/parsed_notification.dart';
 /// branch on the platform to stay correct — but iOS must not surface this
 /// feature at all, not even disabled (see "Alcance por plataforma").
 abstract class NotificationCaptureRepository {
+  /// Whether this platform can listen to notifications at all (Android and
+  /// only Android).
+  ///
+  /// Distinct from [isPermissionGranted] on purpose: both answer `false` on
+  /// iOS, but they mean opposite things to the UI. "Not granted" invites the
+  /// user to grant it; "not supported" must hide the feature entirely — iOS
+  /// must not surface it even disabled behind a padlock, because that would
+  /// be advertising something the platform makes impossible.
+  bool get isSupported;
+
   /// Whether the system-level notification access is currently granted.
   /// Must be asked to the system on every app start and on every return to
   /// foreground: the user can revoke it from Settings without telling the app

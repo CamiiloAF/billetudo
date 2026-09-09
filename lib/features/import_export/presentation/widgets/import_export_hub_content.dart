@@ -6,10 +6,10 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/sync/presentation/widgets/sync_section_header.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/data_action_row.dart';
+import '../../../../core/widgets/privacy_note_strip.dart';
 import '../cubit/import_export_hub_state.dart';
 import 'import_batch_row.dart';
 import 'local_copy_hero_card.dart';
-import 'privacy_note_strip.dart';
 
 /// The Import/Export hub content once there is at least one transaction
 /// (`oSWz9`/`qDCvi`/`Am9cg` — Variant B "Copia protagonista"): hero card,
