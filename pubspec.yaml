@@ -83,10 +83,13 @@ dependencies:
   # --- Captura sin fricción ---
   # `speech_to_text` entra con la feature de captura por voz (Fase 2,
   # docs/requirements/fase-2/17-captura-voz.md). Arrastra RECORD_AUDIO en
-  # Android y NSMicrophoneUsageDescription + NSSpeechRecognitionUsageDescription
-  # en iOS: ambos ya declarados, con su justificación en las declaraciones de
-  # tienda. El audio→texto corre en el dispositivo cuando la plataforma lo
-  # soporta (`requiresOnDeviceRecognition`); no hay backend ni API key.
+  # Android (ya declarado en el manifiesto, junto al <queries> del
+  # RecognitionService) y NSMicrophoneUsageDescription +
+  # NSSpeechRecognitionUsageDescription en iOS: esos dos textos siguen
+  # PENDIENTES, porque su redacción depende de la decisión abierta de HU-06
+  # (qué hacer cuando el reconocimiento on-device no está disponible) y pasa
+  # por privacy-legal-officer antes de publicar. El audio→texto se pide
+  # on-device (`SpeechListenOptions.onDevice`); no hay backend ni API key.
   speech_to_text: ^7.4.0
   # OCR sigue fuera: su feature (18-captura-ocr.md) no está construida, y el
   # plugin arrastra CAMERA + NSCameraUsageDescription que hoy no hay qué

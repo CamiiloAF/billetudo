@@ -359,6 +359,51 @@ abstract final class AppRoutes {
         .join('&');
     return '$newScheduledPayment?$query';
   }
+
+  /// The new-movement form prefilled from a voice capture
+  /// (`17-captura-voz.md`, HU-01). Same [newTransaction] route, same form: the
+  /// voice never registers anything by itself, it only fills the fields the
+  /// user then confirms.
+  ///
+  /// Every parameter is optional because partial parsing is the normal case
+  /// (HU-05). `source=voice` is what tells the route to take this path, and it
+  /// is also what the saved transaction is stamped with.
+  ///
+  /// The transcription travels as a query parameter and therefore lives in the
+  /// in-memory navigation stack only — it is never written to disk, and the
+  /// form only ever persists it if the user leaves it in the note (HU-06,
+  /// retención cero).
+  static String newTransactionFromVoice({
+    int? amountMinor,
+    bool amountIsUncertain = false,
+    String? type,
+    String? accountId,
+    String? categoryId,
+    String? categoryKind,
+    String? categoryName,
+    DateTime? date,
+    String? note,
+  }) {
+    final params = <String, String>{
+      'source': 'voice',
+      if (amountMinor != null) 'amountMinor': amountMinor.toString(),
+      if (amountIsUncertain) 'amountIsUncertain': 'true',
+      if (type != null) 'type': type,
+      if (accountId != null) 'accountId': accountId,
+      if (categoryId != null) 'categoryId': categoryId,
+      if (categoryKind != null) 'categoryKind': categoryKind,
+      if (categoryName != null) 'categoryName': categoryName,
+      if (date != null) 'date': date.toIso8601String(),
+      if (note != null && note.isNotEmpty) 'note': note,
+    };
+    final query = params.entries
+        .map(
+          (entry) =>
+              '${Uri.encodeQueryComponent(entry.key)}=${Uri.encodeQueryComponent(entry.value)}',
+        )
+        .join('&');
+    return '$newTransaction?$query';
+  }
 }
 
 /// The debt context the Configurar-cuota route needs (HU-03), passed as
@@ -706,14 +751,7 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
               builder: (context, state) => AccountGatedRoute(
                 surface: AccountGateSurface.movement,
                 builder: (context) => BlocProvider(
-                  create: (context) => _started(
-                    getIt<TransactionFormCubit>(),
-                    (c) => c.load(
-                      null,
-                      type: _typeFromQuery(state.uri),
-                      accountId: state.uri.queryParameters['accountId'],
-                    ),
-                  ),
+                  create: (context) => _startedTransactionForm(state.uri),
                   child: TransactionFormPage(
                     // pushReplacement, not push: the transaction form must leave
                     // the stack as the scheduled-payment form opens, so popping
@@ -2245,6 +2283,49 @@ ScheduledPaymentFormCubit _startedScheduledPaymentForm(Uri uri) {
         .split(',')
         .where((id) => id.isNotEmpty)
         .toSet(),
+  );
+  return cubit;
+}
+
+/// Starts the new-movement form, either empty (optionally with a preselected
+/// account) or prefilled from a voice capture when the puente's query params
+/// are present (`AppRoutes.newTransactionFromVoice`).
+///
+/// Parsing the params here — and not in the cubit — is what keeps
+/// Transacciones independent of Captura: the router is the only layer that
+/// knows both sides, same as it already does for the Pagos Programados puente.
+TransactionFormCubit _startedTransactionForm(Uri uri) {
+  final cubit = getIt<TransactionFormCubit>();
+  if (uri.queryParameters['source'] != TransactionSource.voice.name) {
+    unawaited(
+      cubit.load(
+        null,
+        type: _typeFromQuery(uri),
+        accountId: uri.queryParameters['accountId'],
+      ),
+    );
+    return cubit;
+  }
+  final categoryKindRaw = uri.queryParameters['categoryKind'];
+  unawaited(
+    cubit.loadFromVoice(
+      amountMinor: int.tryParse(uri.queryParameters['amountMinor'] ?? ''),
+      amountIsUncertain: uri.queryParameters['amountIsUncertain'] == 'true',
+      type: uri.queryParameters.containsKey('type')
+          ? _typeFromQuery(uri)
+          : null,
+      accountId: uri.queryParameters['accountId'],
+      categoryId: uri.queryParameters['categoryId'],
+      categoryName: uri.queryParameters['categoryName'],
+      categoryKind: categoryKindRaw == null
+          ? null
+          : CategoryKind.values.firstWhere(
+              (value) => value.name == categoryKindRaw,
+              orElse: () => CategoryKind.expense,
+            ),
+      date: DateTime.tryParse(uri.queryParameters['date'] ?? ''),
+      note: uri.queryParameters['note'],
+    ),
   );
   return cubit;
 }

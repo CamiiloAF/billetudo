@@ -38,6 +38,7 @@ class TransactionFormState extends Equatable {
     this.note = '',
     this.tagIds = const <String>{},
     this.source = TransactionSource.manual,
+    this.amountIsUncertain = false,
     this.focusedField = TransactionFormFocusedField.none,
     this.calcOperator,
     this.calcOperand,
@@ -86,6 +87,14 @@ class TransactionFormState extends Equatable {
   /// Capture origin. Read-only in the form: HU-04 never lets an edit rewrite
   /// it.
   final TransactionSource source;
+
+  /// Only ever true for a voice capture whose amount came out of the
+  /// magnitude-elision heuristic ("gasté veinte" -> 20.000, see
+  /// `ParseSpokenTransaction`). The amount is prefilled but explicitly
+  /// unconfirmed, so the form asks the user to check it instead of presenting
+  /// a guess as a fact. Never persisted: it is a property of this editing
+  /// session, not of the transaction.
+  final bool amountIsUncertain;
 
   final TransactionFormFocusedField focusedField;
 
@@ -170,6 +179,7 @@ class TransactionFormState extends Equatable {
     String? note,
     Set<String>? tagIds,
     TransactionSource? source,
+    bool? amountIsUncertain,
     TransactionFormFocusedField? focusedField,
     CalcOperator? calcOperator,
     int? calcOperand,
@@ -207,6 +217,7 @@ class TransactionFormState extends Equatable {
         note: note ?? this.note,
         tagIds: tagIds ?? this.tagIds,
         source: source ?? this.source,
+        amountIsUncertain: amountIsUncertain ?? this.amountIsUncertain,
         focusedField: focusedField ?? this.focusedField,
         calcOperator: clearCalc ? null : (calcOperator ?? this.calcOperator),
         calcOperand: clearCalc ? null : (calcOperand ?? this.calcOperand),
@@ -238,6 +249,7 @@ class TransactionFormState extends Equatable {
         note,
         tagIds,
         source,
+        amountIsUncertain,
         focusedField,
         calcOperator,
         calcOperand,

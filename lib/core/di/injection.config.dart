@@ -337,6 +337,30 @@ import 'package:billetudo/features/budgets/presentation/cubit/budgets_list_cubit
     as _i244;
 import 'package:billetudo/features/budgets/presentation/cubit/zero_based_summary_cubit.dart'
     as _i843;
+import 'package:billetudo/features/capture/data/repositories/permission_handler_microphone_gate.dart'
+    as _i1016;
+import 'package:billetudo/features/capture/data/repositories/speech_to_text_recognizer.dart'
+    as _i159;
+import 'package:billetudo/features/capture/domain/repositories/microphone_permission_gate.dart'
+    as _i129;
+import 'package:billetudo/features/capture/domain/repositories/speech_recognizer.dart'
+    as _i312;
+import 'package:billetudo/features/capture/domain/usecases/cancel_voice_capture.dart'
+    as _i545;
+import 'package:billetudo/features/capture/domain/usecases/get_voice_capture_availability.dart'
+    as _i184;
+import 'package:billetudo/features/capture/domain/usecases/open_microphone_settings.dart'
+    as _i1073;
+import 'package:billetudo/features/capture/domain/usecases/parse_spoken_transaction.dart'
+    as _i996;
+import 'package:billetudo/features/capture/domain/usecases/request_microphone_permission.dart'
+    as _i695;
+import 'package:billetudo/features/capture/domain/usecases/start_voice_capture.dart'
+    as _i1048;
+import 'package:billetudo/features/capture/domain/usecases/stop_voice_capture.dart'
+    as _i334;
+import 'package:billetudo/features/capture/domain/usecases/watch_voice_capture_updates.dart'
+    as _i853;
 import 'package:billetudo/features/categories/data/datasources/categories_local_datasource.dart'
     as _i151;
 import 'package:billetudo/features/categories/data/datasources/category_seeds_remote_datasource.dart'
@@ -858,6 +882,8 @@ extension GetItInjectableX on _i174.GetIt {
       environmentFilter,
     );
     final registerModule = _$RegisterModule();
+    gh.factory<_i996.ParseSpokenTransaction>(
+        () => const _i996.ParseSpokenTransaction());
     gh.factory<_i505.AutodetectColumnMapping>(
         () => const _i505.AutodetectColumnMapping());
     gh.factory<_i394.ResolveDefaultCurrencyForLocale>(
@@ -940,6 +966,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i476.MappingTemplatesLocalDatasource>(() =>
         _i476.MappingTemplatesLocalDatasource(
             gh<_i460.SharedPreferencesAsync>()));
+    gh.lazySingleton<_i129.MicrophonePermissionGate>(
+        () => const _i1016.PermissionHandlerMicrophoneGate());
     gh.lazySingleton<_i200.BackupIdCollisionDatasource>(
         () => _i200.BackupIdCollisionDatasource(gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i636.AiRemoteDatasource>(
@@ -951,6 +979,8 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i180.CategorySeedsRemoteDatasource>(
         () => _i180.CategorySeedsRemoteDatasource(gh<_i454.SupabaseClient>()));
+    gh.lazySingleton<_i312.SpeechRecognizer>(
+        () => _i159.SpeechToTextRecognizer());
     gh.lazySingleton<_i867.MappingTemplateRepository>(
         () => _i1025.MappingTemplateRepositoryImpl(
               gh<_i476.MappingTemplatesLocalDatasource>(),
@@ -975,6 +1005,12 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i407.ThemeModeCubit(gh<_i207.ThemePreferenceDatasource>()));
     gh.lazySingleton<_i826.AiReportRepository>(() =>
         _i166.AiReportRepositoryImpl(gh<_i827.AiReportRemoteDatasource>()));
+    gh.factory<_i545.CancelVoiceCapture>(
+        () => _i545.CancelVoiceCapture(gh<_i312.SpeechRecognizer>()));
+    gh.factory<_i334.StopVoiceCapture>(
+        () => _i334.StopVoiceCapture(gh<_i312.SpeechRecognizer>()));
+    gh.factory<_i853.WatchVoiceCaptureUpdates>(
+        () => _i853.WatchVoiceCaptureUpdates(gh<_i312.SpeechRecognizer>()));
     gh.lazySingleton<_i967.DataOwnershipClaimer>(() => registerModule
         .dataOwnershipClaimer(gh<_i718.LocalDataOwnershipDatasource>()));
     gh.lazySingleton<_i765.BackupIdCollisionResolver>(() => registerModule
@@ -1193,6 +1229,11 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i545.ImportBatchesLocalDatasource>(),
               gh<_i474.CrashReporter>(),
             ));
+    gh.factory<_i1073.OpenMicrophoneSettings>(() =>
+        _i1073.OpenMicrophoneSettings(gh<_i129.MicrophonePermissionGate>()));
+    gh.factory<_i695.RequestMicrophonePermission>(() =>
+        _i695.RequestMicrophonePermission(
+            gh<_i129.MicrophonePermissionGate>()));
     gh.factory<_i824.ScheduledPaymentTagPickerCubit>(
         () => _i824.ScheduledPaymentTagPickerCubit(
               gh<_i889.GetTags>(),
@@ -1235,6 +1276,15 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i964.UndoSkipScheduledOccurrence>(),
               gh<_i319.UndoSnoozeScheduledOccurrence>(),
             ));
+    gh.factory<_i184.GetVoiceCaptureAvailability>(
+        () => _i184.GetVoiceCaptureAvailability(
+              gh<_i312.SpeechRecognizer>(),
+              gh<_i129.MicrophonePermissionGate>(),
+            ));
+    gh.factory<_i1048.StartVoiceCapture>(() => _i1048.StartVoiceCapture(
+          gh<_i312.SpeechRecognizer>(),
+          gh<_i129.MicrophonePermissionGate>(),
+        ));
     gh.factory<_i667.CategoryBreakdownCubit>(() =>
         _i667.CategoryBreakdownCubit(gh<_i645.WatchCategoryBreakdownReport>()));
     gh.factory<_i885.CreateCategory>(

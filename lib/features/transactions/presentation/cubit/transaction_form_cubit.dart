@@ -106,6 +106,63 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     }
   }
 
+  /// Opens an empty form prefilled with whatever the voice capture managed to
+  /// understand (`17-captura-voz.md`, HU-01/HU-05).
+  ///
+  /// Same shape as `ScheduledPaymentFormCubit.loadFromBridge`: the bridge only
+  /// ever hands this cubit plain values, so Transacciones never depends on
+  /// Captura's domain. It builds on [load] so the account default, the
+  /// currency and every other form rule stay exactly the ones the manual path
+  /// uses — voice adds no invisible rules of its own.
+  ///
+  /// Everything is optional: **partial parsing is the normal case**. A capture
+  /// that only understood the amount still opens the form with the amount, and
+  /// one that understood nothing still opens the form with the transcription
+  /// as the note. Nothing is written until the user presses Guardar.
+  ///
+  /// `source` stays `voice` no matter what the user edits afterwards: the
+  /// capture origin is a historical fact, not a description of the final
+  /// field values (HU-01, paridad con HU-04 de `03-transacciones.md`).
+  Future<void> loadFromVoice({
+    int? amountMinor,
+    bool amountIsUncertain = false,
+    TransactionType? type,
+    String? accountId,
+    String? categoryId,
+    String? categoryName,
+    CategoryKind? categoryKind,
+    DateTime? date,
+    String? note,
+  }) async {
+    await load(
+      null,
+      type: type ?? TransactionType.expense,
+      accountId: accountId,
+    );
+    if (isClosed || state.status != TransactionFormStatus.ready) {
+      return;
+    }
+    emit(
+      state.copyWith(
+        source: TransactionSource.voice,
+        amountMinor: amountMinor,
+        amountIsUncertain: amountMinor != null && amountIsUncertain,
+        categoryId: categoryId,
+        categoryName: categoryName,
+        categoryKind: categoryKind,
+        date: date,
+        note: note,
+        // The focus lands on the first thing that still needs the user: the
+        // amount when it is missing or only inferred. Category and account are
+        // pickers, not text fields, so they take no keyboard focus — the form
+        // blocks Guardar on them exactly as it does in the manual flow.
+        focusedField: amountMinor == null || amountIsUncertain
+            ? TransactionFormFocusedField.amount
+            : TransactionFormFocusedField.none,
+      ),
+    );
+  }
+
   AccountWithBalance? _accountById(
     List<AccountWithBalance> accounts,
     String id,
@@ -257,7 +314,15 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     if (next > _maxAmountMinor) {
       return;
     }
-    emit(base.copyWith(amountMinor: next, entryFractionDigits: nextFraction));
+    // Touching the amount confirms it: a voice-inferred amount stops being
+    // flagged as unverified the moment the user types over it.
+    emit(
+      base.copyWith(
+        amountMinor: next,
+        entryFractionDigits: nextFraction,
+        amountIsUncertain: false,
+      ),
+    );
   }
 
   /// The decimal-point key. Every currency the app handles accepts typed cents

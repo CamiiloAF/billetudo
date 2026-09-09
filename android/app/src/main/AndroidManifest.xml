@@ -1,4 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Captura por voz (docs/requirements/fase-2/17-captura-voz.md, HU-07).
+         Se pide en runtime, en el momento de dictar: nunca en el arranque ni
+         en el onboarding. El audio no se guarda ni se sincroniza. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
         android:label="@string/app_name"
         android:name="${applicationName}"
@@ -40,6 +44,12 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- Android 11+ exige declarar el servicio de reconocimiento para
+             poder resolverlo; sin esto `SpeechRecognizer` no encuentra ningún
+             proveedor y la captura por voz queda muda sin explicación. -->
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
         </intent>
     </queries>
 </manifest>
