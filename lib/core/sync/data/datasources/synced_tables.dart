@@ -25,4 +25,8 @@ const ownedTables = [
   'budget_categories',
   'budget_period_overrides',
   'app_settings',
+  // Fase 2. Both are written before the user ever signs in (a capture can land
+  // while the app is still anonymous), so they must be claimed like the rest.
+  'pending_captures',
+  'merchant_category_learning',
 ];
