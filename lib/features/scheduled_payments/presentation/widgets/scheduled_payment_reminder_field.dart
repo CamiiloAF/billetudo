@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../transactions/presentation/widgets/transaction_form_field_button.dart';
 import '../../domain/entities/scheduled_payment_reminder.dart';
-import 'scheduled_payment_frequency_unit_chips.dart';
+import 'sheets/scheduled_payment_reminder_sheet.dart';
 
-/// HU-08: "¿Cuándo te avisamos?" on the create/edit template form, right
-/// after the "Modo" block.
+/// HU-08: the "Recordatorio" field of the create/edit template form
+/// (`KXZKA` in `a7x7uy`).
 ///
-/// A row of chips, reusing the exact chip of the frequency picker
-/// (`ScheduledPaymentFrequencyUnitChip`) instead of a second chip style —
-/// and horizontally scrollable for the same reason it is there: five labels
-/// of uneven width must not shrink the type below the design system's
-/// minimum on a narrow phone or a large text scale.
+/// A `Form Field` (`wOlOA`) — label above, tappable box with an inline icon,
+/// the current value and a trailing `chevron-down` — that opens
+/// [ScheduledPaymentReminderSheet]. **Not** an inline chip row: the frame's
+/// context is explicit that tapping it opens the sheet, and five options of
+/// uneven width read as a list, not as a scrollable strip.
 ///
-/// "Sin recordatorio" is a first-class chip and the selected one by default.
-/// The default is deliberately not "avisarme": push nobody asked for is how
-/// an app loses its notification permission for good.
+/// Sits right after the "Al llegar la fecha" block and before "Nota": a
+/// reminder only makes sense once it is decided what happens on the date.
+///
+/// The default is "Sin recordatorio", rendered as a placeholder with the
+/// `bell-off` glyph. The app does not start notifying because someone created
+/// a scheduled payment.
 class ScheduledPaymentReminderField extends StatelessWidget {
   const ScheduledPaymentReminderField({
     required this.reminder,
@@ -40,56 +45,53 @@ class ScheduledPaymentReminderField extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = context.colors;
 
-    final options = <ScheduledPaymentReminder?, String>{
-      null: l10n.remindersOptionNone,
-      ScheduledPaymentReminder.onDueDate: l10n.remindersOptionOnDueDate,
-      ScheduledPaymentReminder.oneDayBefore: l10n.remindersOptionOneDayBefore,
-      ScheduledPaymentReminder.threeDaysBefore:
-          l10n.remindersOptionThreeDaysBefore,
-      ScheduledPaymentReminder.oneWeekBefore: l10n.remindersOptionOneWeekBefore,
+    final value = switch (reminder) {
+      null => l10n.remindersOptionNone,
+      ScheduledPaymentReminder.onDueDate => l10n.remindersOptionOnDueDate,
+      ScheduledPaymentReminder.oneDayBefore => l10n.remindersOptionOneDayBefore,
+      ScheduledPaymentReminder.threeDaysBefore =>
+        l10n.remindersOptionThreeDaysBefore,
+      ScheduledPaymentReminder.oneWeekBefore =>
+        l10n.remindersOptionOneWeekBefore,
     };
-    final entries = options.entries.toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.remindersFieldSectionLabel,
-          style: theme.textTheme.labelLarge?.copyWith(
-            color: colors.textSecondary,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
+        TransactionFormFieldButton(
+          label: l10n.remindersFieldSectionLabel,
+          value: value,
+          // "Sin recordatorio" is a real, valid choice, but it is the empty
+          // pole of the field: the frame renders it in `$text-secondary`
+          // with `bell-off`, same as any other placeholder.
+          hasValue: reminder != null,
+          inlineIcon:
+              reminder == null ? LucideIcons.bellOff : LucideIcons.bell,
+          onTap: () async {
+            FocusScope.of(context).unfocus();
+            final result = await ScheduledPaymentReminderSheet.show(
+              context,
+              selected: reminder,
+            );
+            if (result.picked) {
+              onChanged(result.reminder);
+            }
+          },
         ),
-        const SizedBox(height: 8),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (var i = 0; i < entries.length; i++) ...[
-                if (i > 0) const SizedBox(width: 8),
-                ScheduledPaymentFrequencyUnitChip(
-                  label: entries[i].value,
-                  selected: entries[i].key == reminder,
-                  onTap: () => onChanged(entries[i].key),
-                ),
-              ],
-            ],
+        // Only in the state the frame does not cover. With the permission
+        // granted the field stands alone, exactly as designed; with it
+        // denied, staying silent would let the user pick a reminder that
+        // cannot fire and never say so. Secondary text, not an error: nothing
+        // failed and nothing is blocked.
+        if (showsPermissionNotice) ...[
+          const SizedBox(height: 8),
+          Text(
+            l10n.remindersPermissionNotice,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colors.textSecondary,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          showsPermissionNotice
-              ? l10n.remindersPermissionNotice
-              : l10n.remindersFieldHint,
-          // Same secondary-text treatment for both: the permission note is
-          // information, not an error. Nothing failed and nothing is blocked
-          // — the preference was saved, it just will not fire yet.
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: colors.textSecondary,
-          ),
-        ),
+        ],
       ],
     );
   }

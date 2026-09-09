@@ -6496,11 +6496,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get remindersFieldSectionLabel => 'Recordatorio';
 
   @override
-  String get remindersFieldHint =>
-      'Te avisamos con la anticipación que elijas.';
+  String get remindersOptionNone => 'Sin recordatorio';
 
   @override
-  String get remindersOptionNone => 'Sin recordatorio';
+  String get remindersSheetCaption =>
+      'Te mandamos una notificación antes de que llegue la fecha.';
 
   @override
   String get remindersOptionOnDueDate => 'El día del pago';
@@ -6533,14 +6533,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get remindersChipOneWeekBefore => 'Te avisamos una semana antes';
 
   @override
-  String get settingsNotificationsSection => 'Avisos';
-
-  @override
-  String get notificationsSettingsPaymentReminders => 'Recordatorios de pagos';
+  String get notificationsSettingsPaymentReminders => 'Recordatorios de pago';
 
   @override
   String get notificationsSettingsPaymentRemindersSubtitle =>
-      'Los que activaste en cada pago programado.';
+      'Te avisamos antes de la fecha de un pago programado, con la anticipación que elegiste en cada uno.';
 
   @override
   String get notificationsSettingsUpcomingCharges => 'Cobros próximos';
@@ -6557,41 +6554,11 @@ class AppLocalizationsEs extends AppLocalizations {
       'Cuando un pago manual quedó esperando tu confirmación.';
 
   @override
-  String get notificationsSettingsGoalMilestones => 'Logros de tus metas';
+  String get notificationsSettingsGoalMilestones => 'Hitos de metas';
 
   @override
   String get notificationsSettingsGoalMilestonesSubtitle =>
-      'Cuando alcanzas un hito de una meta.';
-
-  @override
-  String insightUpcomingChargeTitle(String name) {
-    return '$name se paga pronto';
-  }
-
-  @override
-  String insightUpcomingChargeBodyToday(String amount) {
-    return 'Hoy · $amount';
-  }
-
-  @override
-  String insightUpcomingChargeBodyTomorrow(String amount) {
-    return 'Mañana · $amount';
-  }
-
-  @override
-  String insightUpcomingChargeBodyInDays(int days, String amount) {
-    return 'En $days días · $amount';
-  }
-
-  @override
-  String insightPendingOccurrenceTitle(String name) {
-    return '$name espera tu confirmación';
-  }
-
-  @override
-  String insightPendingOccurrenceBody(String amount) {
-    return 'Lo registramos cuando tú lo confirmes · $amount';
-  }
+      'Cuando llegas a la mitad de una meta y cuando la completas.';
 
   @override
   String insightGoalMilestoneTitle(String name, int percent) {
@@ -6600,11 +6567,92 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String insightGoalCompletedTitle(String name) {
-    return '¡Lograste $name!';
+    return '¡Llegaste a tu meta $name!';
   }
 
   @override
   String insightGoalMilestoneBody(String amount, String target) {
     return 'Llevas $amount de $target';
   }
+
+  @override
+  String get settingsNotifications => 'Notificaciones';
+
+  @override
+  String get settingsNotificationsSubtitle =>
+      'Recordatorios de pago, cobros próximos y metas';
+
+  @override
+  String get notificationsSettingsIntro =>
+      'Tú eliges qué te avisamos. Lo que apagues aquí deja de llegar y puedes volver a encenderlo cuando quieras.';
+
+  @override
+  String get notificationsSettingsDeniedIntro =>
+      'Cuando vuelvas a permitir las notificaciones, estos ajustes quedan como los tenías. No se pierde nada.';
+
+  @override
+  String get notificationsPermissionDeniedTitle =>
+      'Tu teléfono tiene las notificaciones apagadas';
+
+  @override
+  String get notificationsPermissionDeniedBody =>
+      'Mientras el permiso esté apagado no te llega ningún aviso, aunque aquí los dejes encendidos. Se activa desde los ajustes del teléfono.';
+
+  @override
+  String get notificationsPermissionDeniedCta => 'Abrir ajustes del teléfono';
+
+  @override
+  String insightUpcomingChargeTitleToday(Object name) {
+    return '$name se cobra hoy';
+  }
+
+  @override
+  String insightUpcomingChargeTitleTomorrow(Object name) {
+    return '$name se cobra mañana';
+  }
+
+  @override
+  String insightUpcomingChargeTitleInDays(Object days, Object name) {
+    return '$name se cobra en $days días';
+  }
+
+  @override
+  String insightUpcomingChargeSubtitle(Object amount) {
+    return '$amount · Pago programado';
+  }
+
+  @override
+  String insightPendingConfirmationTitleToday(Object name) {
+    return '$name estaba programado para hoy';
+  }
+
+  @override
+  String insightPendingConfirmationTitleYesterday(Object name) {
+    return '$name estaba programado para ayer';
+  }
+
+  @override
+  String insightPendingConfirmationTitleDaysAgo(Object days, Object name) {
+    return '$name estaba programado hace $days días';
+  }
+
+  @override
+  String insightPendingConfirmationSubtitle(Object amount) {
+    return '$amount · Espera tu confirmación';
+  }
+
+  @override
+  String get insightActionViewPayment => 'Ver pago';
+
+  @override
+  String get insightActionRemindLater => 'Recordar después';
+
+  @override
+  String get insightActionConfirmPayment => 'Confirmar pago';
+
+  @override
+  String get insightActionNotYet => 'Todavía no';
+
+  @override
+  String get insightActionViewGoal => 'Ver meta';
 }

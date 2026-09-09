@@ -123,6 +123,7 @@ void main() {
           onOpenComingSoon: onOpenComingSoon ?? (_) {},
           onOpenSyncStatus: onOpenSyncStatus ?? () {},
           onOpenQuickAccessOrder: onOpenQuickAccessOrder ?? () {},
+          onOpenNotifications: () {},
         ),
       ),
       wrapInScaffold: false,

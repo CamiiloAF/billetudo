@@ -289,7 +289,11 @@ void main() {
       expect(find.text('Te avisamos 3 días antes'), findsOneWidget);
     });
 
-    testWidgets('el chip del recordatorio reemplaza al genérico de modo manual',
+    // `tit0W` tiene el chip de aviso en su PROPIA fila (`v5a9Gq`), separada
+    // de la de chips (`a1vmQ`, frecuencia + deuda). No se reemplazan: dicen
+    // cosas distintas — cómo se comporta el pago vs. cuándo avisamos — y el
+    // frame conserva los dos.
+    testWidgets('el chip del recordatorio convive con el de modo manual',
         (tester) async {
       final entry = ScheduledPaymentSummary(
         scheduledPayment: buildScheduledPayment(
@@ -305,8 +309,13 @@ void main() {
       );
 
       expect(find.byType(ScheduledReminderChip), findsOneWidget);
-      expect(find.byType(ScheduledManualModeChip), findsNothing);
+      expect(find.byType(ScheduledManualModeChip), findsOneWidget);
       expect(find.text('Te avisamos el día del pago'), findsOneWidget);
+
+      // Y en filas distintas: el chip de aviso queda por debajo del de modo.
+      final manual = tester.getRect(find.byType(ScheduledManualModeChip));
+      final reminder = tester.getRect(find.byType(ScheduledReminderChip));
+      expect(reminder.top, greaterThanOrEqualTo(manual.bottom));
     });
 
     testWidgets('una plantilla terminada no promete avisos', (tester) async {

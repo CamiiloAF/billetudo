@@ -36,6 +36,10 @@ import 'package:billetudo/core/notifications/domain/usecases/ensure_notification
     as _i175;
 import 'package:billetudo/core/notifications/domain/usecases/initialize_notifications.dart'
     as _i105;
+import 'package:billetudo/core/notifications/domain/usecases/open_notification_system_settings.dart'
+    as _i1052;
+import 'package:billetudo/core/notifications/domain/usecases/read_notification_permission.dart'
+    as _i442;
 import 'package:billetudo/core/notifications/domain/usecases/read_notification_preferences.dart'
     as _i308;
 import 'package:billetudo/core/notifications/domain/usecases/set_notification_kind_enabled.dart'
@@ -661,6 +665,8 @@ import 'package:billetudo/features/improvement/domain/usecases/watch_pending_con
     as _i769;
 import 'package:billetudo/features/improvement/domain/usecases/watch_upcoming_charge_insights.dart'
     as _i957;
+import 'package:billetudo/features/improvement/presentation/cubit/insights_cubit.dart'
+    as _i563;
 import 'package:billetudo/features/onboarding/domain/usecases/complete_onboarding.dart'
     as _i522;
 import 'package:billetudo/features/onboarding/domain/usecases/resolve_default_currency_for_locale.dart'
@@ -1330,12 +1336,6 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i173.NotificationPreferences>(),
               gh<_i598.NotificationMessages>(),
             ));
-    gh.factory<_i733.NotificationSettingsCubit>(
-        () => _i733.NotificationSettingsCubit(
-              gh<_i308.ReadNotificationPreferences>(),
-              gh<_i860.SetNotificationKindEnabled>(),
-              gh<_i647.SyncScheduledPaymentReminders>(),
-            ));
     gh.lazySingleton<_i691.SyncStatusRepository>(
         () => _i975.SyncStatusRepositoryImpl(
               gh<_i130.SyncStatusSource>(),
@@ -1407,6 +1407,11 @@ extension GetItInjectableX on _i174.GetIt {
         _i175.EnsureNotificationPermission(gh<_i239.NotificationScheduler>()));
     gh.factory<_i105.InitializeNotifications>(
         () => _i105.InitializeNotifications(gh<_i239.NotificationScheduler>()));
+    gh.factory<_i1052.OpenNotificationSystemSettings>(() =>
+        _i1052.OpenNotificationSystemSettings(
+            gh<_i239.NotificationScheduler>()));
+    gh.factory<_i442.ReadNotificationPermission>(() =>
+        _i442.ReadNotificationPermission(gh<_i239.NotificationScheduler>()));
     gh.factory<_i288.CancelScheduledPaymentReminder>(() =>
         _i288.CancelScheduledPaymentReminder(
             gh<_i239.NotificationScheduler>()));
@@ -1805,6 +1810,14 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i1023.BudgetRepository>(),
               gh<_i487.AppSettingsRepository>(),
             ));
+    gh.factory<_i733.NotificationSettingsCubit>(
+        () => _i733.NotificationSettingsCubit(
+              gh<_i308.ReadNotificationPreferences>(),
+              gh<_i860.SetNotificationKindEnabled>(),
+              gh<_i647.SyncScheduledPaymentReminders>(),
+              gh<_i442.ReadNotificationPermission>(),
+              gh<_i1052.OpenNotificationSystemSettings>(),
+            ));
     gh.factory<_i489.MergeCubit>(
         () => _i489.MergeCubit(gh<_i916.MergeLocalData>()));
     gh.factory<_i97.CreateGoal>(() => _i97.CreateGoal(
@@ -2177,6 +2190,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i902.WatchAccountsOverview>(),
           gh<_i787.ReorderAccounts>(),
         ));
+    gh.factory<_i563.InsightsCubit>(
+        () => _i563.InsightsCubit(gh<_i493.WatchInsights>()));
     gh.factory<_i433.AiChatCubit>(() => _i433.AiChatCubit(
           gh<_i61.ResumeOrCreateAiConversation>(),
           gh<_i196.StartNewAiConversation>(),

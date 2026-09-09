@@ -113,6 +113,22 @@ class LocalNotificationScheduler implements NotificationScheduler {
   }
 
   @override
+  FutureResult<Unit> openSystemSettings() async {
+    try {
+      await openAppSettings();
+      return const Right(unit);
+    } on Object catch (error, stackTrace) {
+      return Left(
+        UnexpectedFailure(
+          'could not open the system settings',
+          cause: error,
+          stackTrace: stackTrace,
+        ),
+      );
+    }
+  }
+
+  @override
   FutureResult<Unit> schedule(ScheduledLocalNotification notification) async {
     final initialized = await initialize();
     if (initialized case Left(value: final failure)) {

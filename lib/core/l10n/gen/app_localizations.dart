@@ -10594,17 +10594,17 @@ abstract class AppLocalizations {
   /// **'Recordatorio'**
   String get remindersFieldSectionLabel;
 
-  /// No description provided for @remindersFieldHint.
-  ///
-  /// In es, this message translates to:
-  /// **'Te avisamos con la anticipación que elijas.'**
-  String get remindersFieldHint;
-
   /// No description provided for @remindersOptionNone.
   ///
   /// In es, this message translates to:
   /// **'Sin recordatorio'**
   String get remindersOptionNone;
+
+  /// No description provided for @remindersSheetCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'Te mandamos una notificación antes de que llegue la fecha.'**
+  String get remindersSheetCaption;
 
   /// No description provided for @remindersOptionOnDueDate.
   ///
@@ -10660,22 +10660,16 @@ abstract class AppLocalizations {
   /// **'Te avisamos una semana antes'**
   String get remindersChipOneWeekBefore;
 
-  /// No description provided for @settingsNotificationsSection.
-  ///
-  /// In es, this message translates to:
-  /// **'Avisos'**
-  String get settingsNotificationsSection;
-
   /// No description provided for @notificationsSettingsPaymentReminders.
   ///
   /// In es, this message translates to:
-  /// **'Recordatorios de pagos'**
+  /// **'Recordatorios de pago'**
   String get notificationsSettingsPaymentReminders;
 
   /// No description provided for @notificationsSettingsPaymentRemindersSubtitle.
   ///
   /// In es, this message translates to:
-  /// **'Los que activaste en cada pago programado.'**
+  /// **'Te avisamos antes de la fecha de un pago programado, con la anticipación que elegiste en cada uno.'**
   String get notificationsSettingsPaymentRemindersSubtitle;
 
   /// No description provided for @notificationsSettingsUpcomingCharges.
@@ -10705,50 +10699,14 @@ abstract class AppLocalizations {
   /// No description provided for @notificationsSettingsGoalMilestones.
   ///
   /// In es, this message translates to:
-  /// **'Logros de tus metas'**
+  /// **'Hitos de metas'**
   String get notificationsSettingsGoalMilestones;
 
   /// No description provided for @notificationsSettingsGoalMilestonesSubtitle.
   ///
   /// In es, this message translates to:
-  /// **'Cuando alcanzas un hito de una meta.'**
+  /// **'Cuando llegas a la mitad de una meta y cuando la completas.'**
   String get notificationsSettingsGoalMilestonesSubtitle;
-
-  /// No description provided for @insightUpcomingChargeTitle.
-  ///
-  /// In es, this message translates to:
-  /// **'{name} se paga pronto'**
-  String insightUpcomingChargeTitle(String name);
-
-  /// No description provided for @insightUpcomingChargeBodyToday.
-  ///
-  /// In es, this message translates to:
-  /// **'Hoy · {amount}'**
-  String insightUpcomingChargeBodyToday(String amount);
-
-  /// No description provided for @insightUpcomingChargeBodyTomorrow.
-  ///
-  /// In es, this message translates to:
-  /// **'Mañana · {amount}'**
-  String insightUpcomingChargeBodyTomorrow(String amount);
-
-  /// No description provided for @insightUpcomingChargeBodyInDays.
-  ///
-  /// In es, this message translates to:
-  /// **'En {days} días · {amount}'**
-  String insightUpcomingChargeBodyInDays(int days, String amount);
-
-  /// No description provided for @insightPendingOccurrenceTitle.
-  ///
-  /// In es, this message translates to:
-  /// **'{name} espera tu confirmación'**
-  String insightPendingOccurrenceTitle(String name);
-
-  /// No description provided for @insightPendingOccurrenceBody.
-  ///
-  /// In es, this message translates to:
-  /// **'Lo registramos cuando tú lo confirmes · {amount}'**
-  String insightPendingOccurrenceBody(String amount);
 
   /// No description provided for @insightGoalMilestoneTitle.
   ///
@@ -10759,7 +10717,7 @@ abstract class AppLocalizations {
   /// No description provided for @insightGoalCompletedTitle.
   ///
   /// In es, this message translates to:
-  /// **'¡Lograste {name}!'**
+  /// **'¡Llegaste a tu meta {name}!'**
   String insightGoalCompletedTitle(String name);
 
   /// No description provided for @insightGoalMilestoneBody.
@@ -10767,6 +10725,126 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Llevas {amount} de {target}'**
   String insightGoalMilestoneBody(String amount, String target);
+
+  /// No description provided for @settingsNotifications.
+  ///
+  /// In es, this message translates to:
+  /// **'Notificaciones'**
+  String get settingsNotifications;
+
+  /// No description provided for @settingsNotificationsSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Recordatorios de pago, cobros próximos y metas'**
+  String get settingsNotificationsSubtitle;
+
+  /// No description provided for @notificationsSettingsIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Tú eliges qué te avisamos. Lo que apagues aquí deja de llegar y puedes volver a encenderlo cuando quieras.'**
+  String get notificationsSettingsIntro;
+
+  /// No description provided for @notificationsSettingsDeniedIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando vuelvas a permitir las notificaciones, estos ajustes quedan como los tenías. No se pierde nada.'**
+  String get notificationsSettingsDeniedIntro;
+
+  /// No description provided for @notificationsPermissionDeniedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu teléfono tiene las notificaciones apagadas'**
+  String get notificationsPermissionDeniedTitle;
+
+  /// No description provided for @notificationsPermissionDeniedBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Mientras el permiso esté apagado no te llega ningún aviso, aunque aquí los dejes encendidos. Se activa desde los ajustes del teléfono.'**
+  String get notificationsPermissionDeniedBody;
+
+  /// No description provided for @notificationsPermissionDeniedCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir ajustes del teléfono'**
+  String get notificationsPermissionDeniedCta;
+
+  /// No description provided for @insightUpcomingChargeTitleToday.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} se cobra hoy'**
+  String insightUpcomingChargeTitleToday(Object name);
+
+  /// No description provided for @insightUpcomingChargeTitleTomorrow.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} se cobra mañana'**
+  String insightUpcomingChargeTitleTomorrow(Object name);
+
+  /// No description provided for @insightUpcomingChargeTitleInDays.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} se cobra en {days} días'**
+  String insightUpcomingChargeTitleInDays(Object days, Object name);
+
+  /// No description provided for @insightUpcomingChargeSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{amount} · Pago programado'**
+  String insightUpcomingChargeSubtitle(Object amount);
+
+  /// No description provided for @insightPendingConfirmationTitleToday.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} estaba programado para hoy'**
+  String insightPendingConfirmationTitleToday(Object name);
+
+  /// No description provided for @insightPendingConfirmationTitleYesterday.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} estaba programado para ayer'**
+  String insightPendingConfirmationTitleYesterday(Object name);
+
+  /// No description provided for @insightPendingConfirmationTitleDaysAgo.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} estaba programado hace {days} días'**
+  String insightPendingConfirmationTitleDaysAgo(Object days, Object name);
+
+  /// No description provided for @insightPendingConfirmationSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{amount} · Espera tu confirmación'**
+  String insightPendingConfirmationSubtitle(Object amount);
+
+  /// No description provided for @insightActionViewPayment.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver pago'**
+  String get insightActionViewPayment;
+
+  /// No description provided for @insightActionRemindLater.
+  ///
+  /// In es, this message translates to:
+  /// **'Recordar después'**
+  String get insightActionRemindLater;
+
+  /// No description provided for @insightActionConfirmPayment.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar pago'**
+  String get insightActionConfirmPayment;
+
+  /// No description provided for @insightActionNotYet.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no'**
+  String get insightActionNotYet;
+
+  /// No description provided for @insightActionViewGoal.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver meta'**
+  String get insightActionViewGoal;
 }
 
 class _AppLocalizationsDelegate

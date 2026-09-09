@@ -120,6 +120,7 @@ void main() {
           onOpenComingSoon: (_) {},
           onOpenSyncStatus: () {},
           onOpenQuickAccessOrder: () {},
+          onOpenNotifications: () {},
         ),
       ),
       brightness: brightness,

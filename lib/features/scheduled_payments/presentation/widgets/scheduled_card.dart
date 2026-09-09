@@ -148,18 +148,7 @@ class ScheduledCard extends StatelessWidget {
                               frequency: payment.frequency,
                             ),
                           ),
-                        // HU-08: a configured reminder takes the slot and
-                        // names its anticipation. It supersedes the generic
-                        // manual-mode "Te avisamos" instead of stacking with
-                        // it — two chips promising a notice, one of them
-                        // vague, is worse than either alone.
-                        if (!isFinished && reminder != null) ...[
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: ScheduledReminderChip(reminder: reminder),
-                          ),
-                        ] else if (!isFinished &&
-                            payment.requiresConfirmation) ...[
+                        if (!isFinished && payment.requiresConfirmation) ...[
                           const SizedBox(width: 6),
                           const Flexible(child: ScheduledManualModeChip()),
                         ],
@@ -183,6 +172,23 @@ class ScheduledCard extends StatelessWidget {
                   ),
                 ],
               ),
+              // `tit0W/v5a9Gq` "Aviso Row": the reminder chip gets its **own**
+              // row, not a slot next to the frequency chip. Measured in the
+              // frame: with the real copy ("Te avisamos una semana antes") it
+              // does not fit beside the cadence chip and the countdown in
+              // 350px. It also coexists with the manual-mode chip instead of
+              // replacing it — they say different things (how the payment
+              // behaves vs. when we warn about it) and the design keeps both.
+              //
+              // Absent when there is no reminder: the missing chip *is* the
+              // "sin recordatorio" signal, there is no negative chip.
+              if (!isFinished && reminder != null) ...[
+                const SizedBox(height: _cardGap),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: ScheduledReminderChip(reminder: reminder),
+                ),
+              ],
             ],
           ),
         ),

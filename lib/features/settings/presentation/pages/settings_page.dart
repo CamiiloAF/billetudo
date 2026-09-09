@@ -16,7 +16,6 @@ import '../cubit/app_settings_state.dart';
 import '../widgets/ai_settings_section.dart';
 import '../widgets/appearance_field.dart';
 import '../widgets/envelope_mode_field.dart';
-import '../widgets/notification_settings_section.dart';
 import '../widgets/settings_section_label.dart';
 import '../widgets/settings_session_card.dart';
 import '../widgets/sheets/envelope_info_sheet.dart';
@@ -36,6 +35,7 @@ class SettingsPage extends StatelessWidget {
     required this.onOpenComingSoon,
     required this.onOpenSyncStatus,
     required this.onOpenQuickAccessOrder,
+    required this.onOpenNotifications,
     super.key,
   });
 
@@ -46,6 +46,11 @@ class SettingsPage extends StatelessWidget {
   /// Opens "Orden del acceso rápido" (`QuickAccessOrderPage`): reorders the
   /// Home quick-access chips.
   final VoidCallback onOpenQuickAccessOrder;
+
+  /// Opens "Notificaciones" (`NotificationSettingsPage`). A navigation row,
+  /// not a switch: the per-kind granularity lives on the stacked screen
+  /// (`W2383p`), not here.
+  final VoidCallback onOpenNotifications;
 
   /// Opens "Estado de sincronización" (HU-08). Only reachable with a session:
   /// without one there is no cloud to report on, and Ajustes offers
@@ -125,6 +130,13 @@ class SettingsPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       SettingsField(
+                        icon: LucideIcons.bellRing,
+                        label: l10n.settingsNotifications,
+                        sublabel: l10n.settingsNotificationsSubtitle,
+                        onTap: onOpenNotifications,
+                      ),
+                      const SizedBox(height: 12),
+                      SettingsField(
                         icon: LucideIcons.listOrdered,
                         label: l10n.settingsQuickAccessOrder,
                         sublabel: l10n.settingsQuickAccessOrderSubtitle,
@@ -141,8 +153,6 @@ class SettingsPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
-                      const NotificationSettingsSection(),
                       const SizedBox(height: 20),
                       const AiSettingsSection(),
                       const SizedBox(height: 32),

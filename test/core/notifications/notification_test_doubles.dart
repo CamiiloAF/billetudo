@@ -46,6 +46,15 @@ class FakeNotificationScheduler implements NotificationScheduler {
     return Right(permissionGranted);
   }
 
+  /// Whether the app was sent to the phone's settings screen.
+  bool systemSettingsOpened = false;
+
+  @override
+  FutureResult<Unit> openSystemSettings() async {
+    systemSettingsOpened = true;
+    return const Right(unit);
+  }
+
   @override
   FutureResult<Unit> schedule(ScheduledLocalNotification notification) async {
     if (failEverything) {

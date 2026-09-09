@@ -25,6 +25,11 @@ abstract class NotificationScheduler {
   /// permanently.
   FutureResult<bool> requestPermission();
 
+  /// Opens the OS settings page for this app, the only place a permanently
+  /// denied notification permission can be granted again — [requestPermission]
+  /// silently resolves to `false` once the user denied it for good.
+  FutureResult<Unit> openSystemSettings();
+
   /// Schedules (or replaces, same [ScheduledLocalNotification.id])
   /// [notification]. A [notification] whose `fireAt` is already in the past
   /// is dropped, not fired immediately — a reminder for a date that already

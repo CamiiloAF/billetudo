@@ -6,12 +6,15 @@ import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/scheduled_payment_reminder.dart';
 
 /// The "🔔 Te avisamos 3 días antes" chip of a `Scheduled Card` (HU-08,
-/// chip `dIIG3` of `tit0W`).
+/// `f9bkiv` inside the `Aviso Row` `v5a9Gq` of `tit0W`).
 ///
 /// Only rendered when the template actually carries a reminder, and it names
 /// the anticipation the user chose. The chip had been removed precisely
 /// because it promised something the app could not do yet; it comes back
 /// bound to a real, configured reminder, never to a mode or a default.
+///
+/// Lives on its own row in the card, below the cadence/countdown axis — see
+/// `ScheduledCard`.
 class ScheduledReminderChip extends StatelessWidget {
   const ScheduledReminderChip({required this.reminder, super.key});
 
