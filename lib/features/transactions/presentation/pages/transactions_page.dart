@@ -245,6 +245,15 @@ class TransactionsPage extends StatelessWidget {
                       // Empty period: the carousel is pinned above the message
                       // (there is nothing to scroll here) so the balances stay
                       // visible when there are accounts but no movements yet.
+                      //
+                      // A pending capture is not a `Transaction`, so it never
+                      // shows up in `state.items` — this branch fires just as
+                      // easily for someone with zero real movements but one
+                      // bank notification waiting (the ghost block's own
+                      // reason to exist). Without the slot here, that capture
+                      // would be unreachable from Movimientos: this branch
+                      // renders instead of `TransactionsListView`, which is
+                      // the block's only other home.
                       TransactionsListStatus.ready when state.items.isEmpty =>
                         Column(
                           children: [
@@ -253,6 +262,10 @@ class TransactionsPage extends StatelessWidget {
                                 state: state,
                                 onOpenAccount: onOpenAccount,
                               ),
+                            PendingCapturesListSlot(
+                              filter: state.filter,
+                              onTap: onDispatchCapture,
+                            ),
                             Expanded(
                               child: TransactionsEmptyState(
                                 message: _isUnfiltered(state.filter)
