@@ -11,6 +11,7 @@ import 'scheduled_category_icon_wrap.dart';
 import 'scheduled_debt_chip.dart';
 import 'scheduled_finished_chip.dart';
 import 'scheduled_manual_mode_chip.dart';
+import 'scheduled_reminder_chip.dart';
 
 /// `tit0W` geometry: 18 of corner radius, 14 of padding and 12 between the two
 /// axes — the card is slightly tighter and rounder than the generic
@@ -49,6 +50,7 @@ class ScheduledCard extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final payment = entry.scheduledPayment;
+    final reminder = payment.reminder;
     final isTransfer = payment.isTransfer;
     final title = ScheduledPaymentFormat.templateName(
       note: payment.note,
@@ -146,7 +148,18 @@ class ScheduledCard extends StatelessWidget {
                               frequency: payment.frequency,
                             ),
                           ),
-                        if (!isFinished && payment.requiresConfirmation) ...[
+                        // HU-08: a configured reminder takes the slot and
+                        // names its anticipation. It supersedes the generic
+                        // manual-mode "Te avisamos" instead of stacking with
+                        // it — two chips promising a notice, one of them
+                        // vague, is worse than either alone.
+                        if (!isFinished && reminder != null) ...[
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: ScheduledReminderChip(reminder: reminder),
+                          ),
+                        ] else if (!isFinished &&
+                            payment.requiresConfirmation) ...[
                           const SizedBox(width: 6),
                           const Flexible(child: ScheduledManualModeChip()),
                         ],

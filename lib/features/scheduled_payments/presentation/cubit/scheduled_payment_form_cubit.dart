@@ -3,11 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
+import '../../../../core/notifications/domain/usecases/ensure_notification_permission.dart';
 import '../../../../core/utils/money_formatter.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../../categories/domain/entities/category.dart' show CategoryKind;
 import '../../domain/entities/scheduled_payment.dart';
 import '../../domain/entities/scheduled_payment_draft.dart';
+import '../../domain/entities/scheduled_payment_reminder.dart';
 import '../../domain/usecases/create_scheduled_payment.dart';
 import '../../domain/usecases/delete_scheduled_payment.dart';
 import '../../domain/usecases/get_scheduled_payment_detail.dart';
@@ -29,6 +31,7 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
     this._setScheduledPaymentTags,
     this._deleteScheduledPayment,
     this._watchAccounts,
+    this._ensureNotificationPermission,
   ) : super(ScheduledPaymentFormState());
 
   final CreateScheduledPayment _createScheduledPayment;
@@ -37,6 +40,7 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
   final SetScheduledPaymentTags _setScheduledPaymentTags;
   final DeleteScheduledPayment _deleteScheduledPayment;
   final WatchAccounts _watchAccounts;
+  final EnsureNotificationPermission _ensureNotificationPermission;
 
   /// `ValidationFailure.field` used when a debt cuota's amount exceeds the
   /// debt's outstanding balance (fix 4a-ii). Distinct from
@@ -123,6 +127,7 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
             originalNextDate: payment.nextDate,
             endDate: payment.endDate,
             requiresConfirmation: payment.requiresConfirmation,
+            reminder: payment.reminder,
             tagIds: {for (final tag in detail.tags) tag.id},
             // Preserve the cuota link across an edit: even a plain-form edit
             // resubmits it so the debt installment never gets silently
@@ -286,6 +291,34 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
       ? emit(state.copyWith(clearEndDate: true))
       : emit(state.copyWith(endDate: date));
 
+  /// HU-08: picks how far ahead to be reminded, or `null` for "sin
+  /// recordatorio" (the default).
+  ///
+  /// This is the **in-context** moment the OS permission is requested — and
+  /// the only one. Choosing a reminder is the first time the user has told
+  /// the app they want to be notified, so the prompt finally has a visible
+  /// reason; asking at startup instead is what gets it denied forever.
+  ///
+  /// A denied permission does NOT block anything: the preference is kept and
+  /// the form saves normally, the state just records that it will not fire so
+  /// the field can say so (HU-08).
+  Future<void> reminderChanged(ScheduledPaymentReminder? option) async {
+    if (option == null) {
+      emit(state.copyWith(clearReminder: true, notificationsAllowed: true));
+      return;
+    }
+    emit(state.copyWith(reminder: option));
+    final granted = await _ensureNotificationPermission();
+    if (isClosed) {
+      return;
+    }
+    emit(
+      state.copyWith(
+        notificationsAllowed: granted.getOrElse((_) => false),
+      ),
+    );
+  }
+
   // ignore: avoid_positional_boolean_parameters
   void requiresConfirmationChanged(bool value) =>
       emit(state.copyWith(requiresConfirmation: value));
@@ -430,6 +463,7 @@ class ScheduledPaymentFormCubit extends Cubit<ScheduledPaymentFormState> {
       requiresConfirmation: state.requiresConfirmation,
       tagIds: state.tagIds.toList(),
       debtId: state.debtId,
+      reminderLeadDays: state.reminder?.leadDays,
     ).validated();
   }
 }

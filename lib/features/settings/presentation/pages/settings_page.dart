@@ -16,6 +16,7 @@ import '../cubit/app_settings_state.dart';
 import '../widgets/ai_settings_section.dart';
 import '../widgets/appearance_field.dart';
 import '../widgets/envelope_mode_field.dart';
+import '../widgets/notification_settings_section.dart';
 import '../widgets/settings_section_label.dart';
 import '../widgets/settings_session_card.dart';
 import '../widgets/sheets/envelope_info_sheet.dart';
@@ -140,6 +141,8 @@ class SettingsPage extends StatelessWidget {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 20),
+                      const NotificationSettingsSection(),
                       const SizedBox(height: 20),
                       const AiSettingsSection(),
                       const SizedBox(height: 32),

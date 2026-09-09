@@ -6440,4 +6440,157 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAiConsentWithdrawSheetConfirm => 'Withdraw';
+
+  @override
+  String get notificationsChannelRemindersName => 'Payment reminders';
+
+  @override
+  String get notificationsChannelRemindersDescription =>
+      'Alerts for the scheduled payments you set up.';
+
+  @override
+  String get notificationsChannelCapturesName => 'Record movements';
+
+  @override
+  String get notificationsChannelCapturesDescription =>
+      'Nudges to record a movement when you asked for them.';
+
+  @override
+  String get notificationsChannelMilestonesName => 'Goal milestones';
+
+  @override
+  String get notificationsChannelMilestonesDescription =>
+      'Alerts when one of your goals reaches a milestone.';
+
+  @override
+  String remindersNotificationBodyToday(String amount, String account) {
+    return '$amount is paid today from $account';
+  }
+
+  @override
+  String remindersNotificationBodyTomorrow(String amount, String account) {
+    return '$amount is paid tomorrow from $account';
+  }
+
+  @override
+  String remindersNotificationBodyInDays(
+      int days, String amount, String account) {
+    return '$amount is paid in $days days from $account';
+  }
+
+  @override
+  String get remindersFieldSectionLabel => 'Reminder';
+
+  @override
+  String get remindersFieldHint =>
+      'We\'ll let you know as far ahead as you choose.';
+
+  @override
+  String get remindersOptionNone => 'No reminder';
+
+  @override
+  String get remindersOptionOnDueDate => 'On the payment day';
+
+  @override
+  String get remindersOptionOneDayBefore => '1 day before';
+
+  @override
+  String get remindersOptionThreeDaysBefore => '3 days before';
+
+  @override
+  String get remindersOptionOneWeekBefore => 'A week before';
+
+  @override
+  String get remindersPermissionNotice =>
+      'We saved your choice. To actually get the alert, turn on Billetudo notifications in your phone settings.';
+
+  @override
+  String get remindersChipOnDueDate => 'We\'ll remind you on the payment day';
+
+  @override
+  String get remindersChipOneDayBefore => 'We\'ll remind you 1 day before';
+
+  @override
+  String remindersChipDaysBefore(int days) {
+    return 'We\'ll remind you $days days before';
+  }
+
+  @override
+  String get remindersChipOneWeekBefore => 'We\'ll remind you a week before';
+
+  @override
+  String get settingsNotificationsSection => 'Alerts';
+
+  @override
+  String get notificationsSettingsPaymentReminders => 'Payment reminders';
+
+  @override
+  String get notificationsSettingsPaymentRemindersSubtitle =>
+      'The ones you turned on for each scheduled payment.';
+
+  @override
+  String get notificationsSettingsUpcomingCharges => 'Upcoming charges';
+
+  @override
+  String get notificationsSettingsUpcomingChargesSubtitle =>
+      'A heads-up when a payment you already scheduled is close.';
+
+  @override
+  String get notificationsSettingsPendingConfirmations => 'Payments to confirm';
+
+  @override
+  String get notificationsSettingsPendingConfirmationsSubtitle =>
+      'When a manual payment is waiting for your confirmation.';
+
+  @override
+  String get notificationsSettingsGoalMilestones => 'Goal milestones';
+
+  @override
+  String get notificationsSettingsGoalMilestonesSubtitle =>
+      'When you reach a milestone in a goal.';
+
+  @override
+  String insightUpcomingChargeTitle(String name) {
+    return '$name is paid soon';
+  }
+
+  @override
+  String insightUpcomingChargeBodyToday(String amount) {
+    return 'Today · $amount';
+  }
+
+  @override
+  String insightUpcomingChargeBodyTomorrow(String amount) {
+    return 'Tomorrow · $amount';
+  }
+
+  @override
+  String insightUpcomingChargeBodyInDays(int days, String amount) {
+    return 'In $days days · $amount';
+  }
+
+  @override
+  String insightPendingOccurrenceTitle(String name) {
+    return '$name is waiting for your confirmation';
+  }
+
+  @override
+  String insightPendingOccurrenceBody(String amount) {
+    return 'We\'ll record it when you confirm · $amount';
+  }
+
+  @override
+  String insightGoalMilestoneTitle(String name, int percent) {
+    return '$name is at $percent%';
+  }
+
+  @override
+  String insightGoalCompletedTitle(String name) {
+    return 'You reached $name!';
+  }
+
+  @override
+  String insightGoalMilestoneBody(String amount, String target) {
+    return 'You\'ve saved $amount of $target';
+  }
 }

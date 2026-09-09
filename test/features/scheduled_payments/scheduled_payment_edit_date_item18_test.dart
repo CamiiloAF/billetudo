@@ -1,6 +1,7 @@
 import 'package:billetudo/core/crash/noop_crash_reporter.dart';
 import 'package:billetudo/core/database/app_database.dart';
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/core/notifications/domain/usecases/ensure_notification_permission.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/accounts/domain/repositories/account_repository.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
@@ -10,6 +11,7 @@ import 'package:billetudo/features/scheduled_payments/data/repositories/schedule
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment.dart'
     as d;
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_draft.dart';
+import 'package:billetudo/features/scheduled_payments/domain/usecases/cancel_scheduled_payment_reminder.dart';
 import 'package:billetudo/features/scheduled_payments/domain/usecases/create_scheduled_payment.dart';
 import 'package:billetudo/features/scheduled_payments/domain/usecases/delete_scheduled_payment.dart';
 import 'package:billetudo/features/scheduled_payments/domain/usecases/get_scheduled_payment_detail.dart';
@@ -19,6 +21,8 @@ import 'package:billetudo/features/scheduled_payments/presentation/cubit/schedul
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_form_state.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../core/notifications/notification_test_doubles.dart';
 
 /// The edit form never reads accounts (that branch is create-only), so a
 /// no-op account repository is enough to build the cubit for these edit tests.
@@ -47,12 +51,17 @@ void main() {
   tearDown(() async => database.close());
 
   ScheduledPaymentFormCubit buildFormCubit() => ScheduledPaymentFormCubit(
-        CreateScheduledPayment(repository),
-        UpdateScheduledPayment(repository),
+        CreateScheduledPayment(repository, noopSyncReminders()),
+        UpdateScheduledPayment(repository, noopSyncReminders()),
         GetScheduledPaymentDetail(repository),
         SetScheduledPaymentTags(repository),
-        DeleteScheduledPayment(repository),
+        DeleteScheduledPayment(
+          repository,
+          CancelScheduledPaymentReminder(FakeNotificationScheduler()),
+          noopSyncReminders(),
+        ),
         WatchAccounts(_EmptyAccountRepository()),
+        EnsureNotificationPermission(FakeNotificationScheduler()),
       );
 
   test(

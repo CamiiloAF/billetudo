@@ -118,6 +118,7 @@ import '../../features/scheduled_payments/presentation/pages/scheduled_payment_d
 import '../../features/scheduled_payments/presentation/pages/scheduled_payment_form_page.dart';
 import '../../features/scheduled_payments/presentation/pages/scheduled_payments_page.dart';
 import '../../features/settings/presentation/cubit/app_settings_cubit.dart';
+import '../../features/settings/presentation/cubit/notification_settings_cubit.dart';
 import '../../features/settings/presentation/pages/quick_access_order_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transactions/domain/entities/transaction.dart';
@@ -1147,6 +1148,13 @@ GoRoute _settingsRoute() => GoRoute(
           BlocProvider(
             create: (context) =>
                 _started(getIt<SyncStatusCubit>(), (c) => c.start()),
+          ),
+          // Per-type switches of the "Avisos" section.
+          BlocProvider(
+            create: (context) => _started(
+              getIt<NotificationSettingsCubit>(),
+              (c) => c.start(),
+            ),
           ),
         ],
         child: SettingsPage(
