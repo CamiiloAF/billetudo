@@ -6,6 +6,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/error/result.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
+import '../../../categories/domain/usecases/get_category.dart';
 import '../../domain/entities/issuer_catalog_entry.dart';
 import '../../domain/entities/pending_capture.dart';
 import '../../domain/usecases/watch_issuer_catalog.dart';
@@ -27,11 +28,13 @@ class PendingCapturesCubit extends Cubit<PendingCapturesState> {
     this._watchPendingCaptures,
     this._watchIssuerCatalog,
     this._watchAccounts,
+    this._getCategory,
   ) : super(const PendingCapturesState());
 
   final WatchPendingCaptures _watchPendingCaptures;
   final WatchIssuerCatalog _watchIssuerCatalog;
   final WatchAccounts _watchAccounts;
+  final GetCategory _getCategory;
 
   StreamSubscription<Result<List<PendingCapture>>>? _capturesSub;
   StreamSubscription<Result<List<IssuerCatalogEntry>>>? _issuersSub;
@@ -40,6 +43,13 @@ class PendingCapturesCubit extends Cubit<PendingCapturesState> {
   List<PendingCapture> _captures = const <PendingCapture>[];
   Map<String, String> _accountNames = const <String, String>{};
   Map<String, String> _issuerNames = const <String, String>{};
+
+  /// Resolved category names, keyed by category id. A key present with a
+  /// `null` value means "already looked up, no name" (the category was
+  /// deleted) — without that distinction the lookup below would retry
+  /// forever.
+  final Map<String, String?> _categoryNames = <String, String?>{};
+  final Set<String> _categoryLookupsInFlight = <String>{};
 
   void start() {
     _capturesSub ??= _watchPendingCaptures().listen((result) {
@@ -80,15 +90,37 @@ class PendingCapturesCubit extends Cubit<PendingCapturesState> {
       if (accountName == null) {
         continue;
       }
+      final categoryId = capture.suggestedCategoryId;
       items.add(
         CaptureReviewItem(
           capture: capture,
           accountName: accountName,
           issuerName: _issuerNames[capture.sourcePackage],
+          suggestedCategoryName:
+              categoryId == null ? null : _categoryNames[categoryId],
         ),
       );
+      if (categoryId != null &&
+          !_categoryNames.containsKey(categoryId) &&
+          !_categoryLookupsInFlight.contains(categoryId)) {
+        unawaited(_resolveCategoryName(categoryId));
+      }
     }
     emit(state.copyWith(items: items));
+  }
+
+  Future<void> _resolveCategoryName(String categoryId) async {
+    _categoryLookupsInFlight.add(categoryId);
+    final result = await _getCategory(categoryId);
+    if (isClosed) {
+      return;
+    }
+    _categoryLookupsInFlight.remove(categoryId);
+    _categoryNames[categoryId] = switch (result) {
+      Right(value: final category) => category.name,
+      Left() => null,
+    };
+    _recompute();
   }
 
   @override

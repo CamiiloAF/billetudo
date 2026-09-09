@@ -6509,8 +6509,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get captureDuplicateOtherAction => 'It is another purchase';
 
   @override
-  String captureDuplicateExistingSubtitle(String account, String when) {
-    return 'Already recorded · $account · $when';
+  String captureDuplicateExistingSubtitle(
+      String category, String account, String when) {
+    return '$category · $account · $when';
   }
 
   @override
@@ -6690,5 +6691,69 @@ class AppLocalizationsEn extends AppLocalizations {
       one: 'Listening to 1 app',
     );
     return '$_temp0';
+  }
+
+  @override
+  String captureBlockReviewAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Review the $count captures',
+      one: 'Review 1 capture',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get captureDuplicateVerdictSameAmount => 'Same amount';
+
+  @override
+  String captureDuplicateVerdictMinutesBefore(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutes before',
+      one: '1 minute before',
+      zero: 'Less than 1 minute before',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String captureDuplicateVerdictMinutesAfter(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutes after',
+      one: '1 minute after',
+      zero: 'Less than 1 minute after',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get captureDuplicateVerdictSameAccount => 'same account';
+
+  @override
+  String get captureDuplicateExistingKicker => 'Already recorded';
+
+  @override
+  String get captureDuplicateNoCategory => 'No category';
+
+  @override
+  String get captureDuplicateConsequenceCaption =>
+      'If you discard it, you can undo it · Reviewing saves nothing';
+
+  @override
+  String captureGroupedSourceLabel(String wallet, String bank) {
+    return 'One single payment · $wallet + $bank';
+  }
+
+  @override
+  String get captureIssuerUnknown => 'another app';
+
+  @override
+  String captureSuggestedCategoryLabel(String category) {
+    return 'Suggested: $category';
   }
 }

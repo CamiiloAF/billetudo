@@ -6,6 +6,8 @@ import 'package:billetudo/features/capture/domain/entities/pending_capture.dart'
 import 'package:billetudo/features/capture/domain/usecases/watch_issuer_catalog.dart';
 import 'package:billetudo/features/capture/domain/usecases/watch_pending_captures.dart';
 import 'package:billetudo/features/capture/presentation/cubit/pending_captures_cubit.dart';
+import 'package:billetudo/features/categories/domain/entities/category.dart';
+import 'package:billetudo/features/categories/domain/usecases/get_category.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -18,10 +20,13 @@ class MockWatchIssuerCatalog extends Mock implements WatchIssuerCatalog {}
 
 class MockWatchAccounts extends Mock implements WatchAccounts {}
 
+class MockGetCategory extends Mock implements GetCategory {}
+
 void main() {
   late MockWatchPendingCaptures watchCaptures;
   late MockWatchIssuerCatalog watchIssuers;
   late MockWatchAccounts watchAccounts;
+  late MockGetCategory getCategory;
 
   setUpAll(registerCaptureFallbacks);
 
@@ -29,6 +34,7 @@ void main() {
     watchCaptures = MockWatchPendingCaptures();
     watchIssuers = MockWatchIssuerCatalog();
     watchAccounts = MockWatchAccounts();
+    getCategory = MockGetCategory();
 
     when(() => watchIssuers()).thenAnswer(
       (_) => Stream.value(
@@ -54,8 +60,12 @@ void main() {
     );
   });
 
-  PendingCapturesCubit build() =>
-      PendingCapturesCubit(watchCaptures, watchIssuers, watchAccounts);
+  PendingCapturesCubit build() => PendingCapturesCubit(
+        watchCaptures,
+        watchIssuers,
+        watchAccounts,
+        getCategory,
+      );
 
   void stubCaptures(List<PendingCapture> captures) {
     when(() => watchCaptures()).thenAnswer(
@@ -102,6 +112,44 @@ void main() {
     await pumpEventQueue();
 
     expect(cubit.state.isEmpty, isTrue);
+    await cubit.close();
+  });
+
+  test('resolves the suggested category name for the chip', () async {
+    stubCaptures([
+      buildPendingCapture(
+        suggestedAccountId: 'acc-1',
+        suggestedCategoryId: 'cat-1',
+      ),
+    ]);
+    when(() => getCategory('cat-1')).thenAnswer(
+      (_) async => Right<Failure, Category>(
+        Category(
+          id: 'cat-1',
+          name: 'Mercado',
+          kind: CategoryKind.expense,
+          icon: 'shopping-cart',
+          color: 'mint',
+          sortOrder: 0,
+          createdAt: DateTime(2026),
+          updatedAt: 0,
+        ),
+      ),
+    );
+
+    final cubit = build()..start();
+    await pumpEventQueue();
+
+    expect(cubit.state.items.single.suggestedCategoryName, 'Mercado');
+    await cubit.close();
+  });
+
+  test('leaves the chip off when there is no suggested category', () async {
+    stubCaptures([buildPendingCapture(suggestedAccountId: 'acc-1')]);
+    final cubit = build()..start();
+    await pumpEventQueue();
+
+    expect(cubit.state.items.single.suggestedCategoryName, isNull);
     await cubit.close();
   });
 }

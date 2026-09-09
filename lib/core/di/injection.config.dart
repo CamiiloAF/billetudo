@@ -2190,6 +2190,12 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i14.UnarchiveGoal>(),
           gh<_i837.WatchAccounts>(),
         ));
+    gh.factory<_i1047.PendingCapturesCubit>(() => _i1047.PendingCapturesCubit(
+          gh<_i593.WatchPendingCaptures>(),
+          gh<_i739.WatchIssuerCatalog>(),
+          gh<_i837.WatchAccounts>(),
+          gh<_i382.GetCategory>(),
+        ));
     gh.singleton<_i629.AuthCubit>(() => _i629.AuthCubit(
           gh<_i716.WatchAuthSession>(),
           gh<_i1066.SignOut>(),
@@ -2336,11 +2342,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i382.GetCategory>(),
           gh<_i371.DiscardPendingCapture>(),
           gh<_i917.RestorePendingCapture>(),
-        ));
-    gh.factory<_i1047.PendingCapturesCubit>(() => _i1047.PendingCapturesCubit(
-          gh<_i593.WatchPendingCaptures>(),
-          gh<_i739.WatchIssuerCatalog>(),
-          gh<_i837.WatchAccounts>(),
         ));
     gh.factory<_i531.AccountsListCubit>(() => _i531.AccountsListCubit(
           gh<_i837.WatchAccounts>(),

@@ -2333,7 +2333,7 @@
   "captureDuplicatePill": "Possible duplicate",
   "captureDuplicateSameAction": "It is the same one",
   "captureDuplicateOtherAction": "It is another purchase",
-  "captureDuplicateExistingSubtitle": "Already recorded · {account} · {when}",
+  "captureDuplicateExistingSubtitle": "{category} · {account} · {when}",
   "captureGhostBlockTitle": "Pending confirmation",
   "captureGhostBlockCount": "{count, plural, =1{1 proposal · does not add up} other{{count} proposals · do not add up}}",
   "captureDiscardedMessage": "Capture discarded",
@@ -2381,5 +2381,16 @@
   "captureSettingsSubtitleOff": "Off · turn it on whenever you want",
   "captureSettingsSubtitleNoIssuers": "On, but no apps picked yet",
   "captureIssuersActiveCount": "{count} of {total} active",
-  "captureSettingsSubtitleListening": "{count, plural, =1{Listening to 1 app} other{Listening to {count} apps}}"
+  "captureSettingsSubtitleListening": "{count, plural, =1{Listening to 1 app} other{Listening to {count} apps}}",
+  "captureBlockReviewAction": "{count, plural, =1{Review 1 capture} other{Review the {count} captures}}",
+  "captureDuplicateVerdictSameAmount": "Same amount",
+  "captureDuplicateVerdictMinutesBefore": "{minutes, plural, =0{Less than 1 minute before} =1{1 minute before} other{{minutes} minutes before}}",
+  "captureDuplicateVerdictMinutesAfter": "{minutes, plural, =0{Less than 1 minute after} =1{1 minute after} other{{minutes} minutes after}}",
+  "captureDuplicateVerdictSameAccount": "same account",
+  "captureDuplicateExistingKicker": "Already recorded",
+  "captureDuplicateNoCategory": "No category",
+  "captureDuplicateConsequenceCaption": "If you discard it, you can undo it · Reviewing saves nothing",
+  "captureGroupedSourceLabel": "One single payment · {wallet} + {bank}",
+  "captureIssuerUnknown": "another app",
+  "captureSuggestedCategoryLabel": "Suggested: {category}"
 }

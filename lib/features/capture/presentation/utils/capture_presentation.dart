@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/utils/money_formatter.dart';
 import '../../../transactions/domain/entities/transaction.dart';
+import '../cubit/capture_review_item.dart';
 
 /// The amount label of a pending capture (`Rhix1`).
 ///
@@ -34,7 +35,8 @@ String captureWhenLabel(AppLocalizations l10n, DateTime postedAt) {
   final String dayLabel;
   if (DateUtils.isSameDay(day, today)) {
     dayLabel = l10n.transactionsGroupToday;
-  } else if (DateUtils.isSameDay(day, today.subtract(const Duration(days: 1)))) {
+  } else if (DateUtils.isSameDay(
+      day, today.subtract(const Duration(days: 1)))) {
     dayLabel = l10n.transactionsGroupYesterday;
   } else {
     dayLabel = DateFormat("d 'de' MMMM", 'es_CO').format(day);
@@ -53,3 +55,54 @@ String captureWhenLabel(AppLocalizations l10n, DateTime postedAt) {
 IconData captureIcon(TransactionType type) => type == TransactionType.income
     ? LucideIcons.arrowDownLeft
     : LucideIcons.bellRing;
+
+/// The compare strip's verdict line (`ZUmyl`, HU-07): "Mismo monto · 3
+/// minutos antes · misma cuenta" — the calculated fact that actually resolves
+/// the case, not just a restatement of the two rows above it.
+///
+/// The amount clause is unconditional: [CaptureDuplicateView] only exists for
+/// a candidate that already matched on amount and currency. The account
+/// clause is dropped, never printed as a mismatch, when
+/// [CaptureDuplicateView.accountMatches] is `false` — the account is itself a
+/// guess (HU-03), so a mismatch there is not evidence against the duplicate.
+String captureDuplicateVerdict(
+  AppLocalizations l10n, {
+  required DateTime capturePostedAt,
+  required CaptureDuplicateView duplicate,
+}) {
+  final diffMinutes = capturePostedAt.difference(duplicate.date).inMinutes;
+  final minutesPart = diffMinutes >= 0
+      ? l10n.captureDuplicateVerdictMinutesBefore(diffMinutes)
+      : l10n.captureDuplicateVerdictMinutesAfter(-diffMinutes);
+  return [
+    l10n.captureDuplicateVerdictSameAmount,
+    minutesPart,
+    if (duplicate.accountMatches) l10n.captureDuplicateVerdictSameAccount,
+  ].join(' · ');
+}
+
+/// "categoría · cuenta · fecha-hora" line of the existing transaction in the
+/// compare strip (`G6iQN`). The category is named in text, never conveyed
+/// only by an icon's color — HU-07's requirement.
+String captureDuplicateExistingLine(
+  AppLocalizations l10n,
+  CaptureDuplicateView duplicate,
+) =>
+    l10n.captureDuplicateExistingSubtitle(
+      duplicate.categoryName ?? l10n.captureDuplicateNoCategory,
+      duplicate.accountName ?? l10n.captureNoAccount,
+      captureWhenLabel(l10n, duplicate.date),
+    );
+
+/// "Un solo pago · Google Wallet + Bancolombia" (`vteXS`) — the only thing
+/// that tells the user why one card shows up when their phone rang twice.
+/// `null` legs fall back to a neutral placeholder rather than inventing a
+/// brand name neither notification carried.
+String captureGroupSourceLabel(
+  AppLocalizations l10n,
+  CaptureGroupView group,
+) =>
+    l10n.captureGroupedSourceLabel(
+      group.walletIssuerName ?? l10n.captureIssuerUnknown,
+      group.bankIssuerName ?? l10n.captureIssuerUnknown,
+    );

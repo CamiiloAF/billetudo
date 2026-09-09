@@ -33,6 +33,7 @@ class PendingCapturesListSlot extends StatelessWidget {
   });
 
   final TransactionFilter filter;
+
   /// `null` hides the block: link mode picks an existing movement, and a
   /// capture is not one.
   final ValueChanged<CaptureReviewItem>? onTap;

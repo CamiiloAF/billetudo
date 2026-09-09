@@ -10650,8 +10650,9 @@ abstract class AppLocalizations {
   /// No description provided for @captureDuplicateExistingSubtitle.
   ///
   /// In es, this message translates to:
-  /// **'Ya registrado · {account} · {when}'**
-  String captureDuplicateExistingSubtitle(String account, String when);
+  /// **'{category} · {account} · {when}'**
+  String captureDuplicateExistingSubtitle(
+      String category, String account, String when);
 
   /// No description provided for @captureGhostBlockTitle.
   ///
@@ -10940,6 +10941,72 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{count, plural, =1{Escuchando 1 app} other{Escuchando {count} apps}}'**
   String captureSettingsSubtitleListening(int count);
+
+  /// No description provided for @captureBlockReviewAction.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{Revisar 1 captura} other{Revisar las {count} capturas}}'**
+  String captureBlockReviewAction(int count);
+
+  /// No description provided for @captureDuplicateVerdictSameAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Mismo monto'**
+  String get captureDuplicateVerdictSameAmount;
+
+  /// No description provided for @captureDuplicateVerdictMinutesBefore.
+  ///
+  /// In es, this message translates to:
+  /// **'{minutes, plural, =0{Menos de 1 minuto antes} =1{1 minuto antes} other{{minutes} minutos antes}}'**
+  String captureDuplicateVerdictMinutesBefore(int minutes);
+
+  /// No description provided for @captureDuplicateVerdictMinutesAfter.
+  ///
+  /// In es, this message translates to:
+  /// **'{minutes, plural, =0{Menos de 1 minuto después} =1{1 minuto después} other{{minutes} minutos después}}'**
+  String captureDuplicateVerdictMinutesAfter(int minutes);
+
+  /// No description provided for @captureDuplicateVerdictSameAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'misma cuenta'**
+  String get captureDuplicateVerdictSameAccount;
+
+  /// No description provided for @captureDuplicateExistingKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya registrado'**
+  String get captureDuplicateExistingKicker;
+
+  /// No description provided for @captureDuplicateNoCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin categoría'**
+  String get captureDuplicateNoCategory;
+
+  /// No description provided for @captureDuplicateConsequenceCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'Si descartas, puedes deshacerlo · Revisar no guarda nada'**
+  String get captureDuplicateConsequenceCaption;
+
+  /// No description provided for @captureGroupedSourceLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Un solo pago · {wallet} + {bank}'**
+  String captureGroupedSourceLabel(String wallet, String bank);
+
+  /// No description provided for @captureIssuerUnknown.
+  ///
+  /// In es, this message translates to:
+  /// **'otra app'**
+  String get captureIssuerUnknown;
+
+  /// No description provided for @captureSuggestedCategoryLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Sugerida: {category}'**
+  String captureSuggestedCategoryLabel(String category);
 }
 
 class _AppLocalizationsDelegate

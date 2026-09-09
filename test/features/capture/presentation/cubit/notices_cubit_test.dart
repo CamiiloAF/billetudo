@@ -30,11 +30,9 @@ class MockFindDuplicateCandidates extends Mock
 
 class MockGetCategory extends Mock implements GetCategory {}
 
-class MockDiscardPendingCapture extends Mock
-    implements DiscardPendingCapture {}
+class MockDiscardPendingCapture extends Mock implements DiscardPendingCapture {}
 
-class MockRestorePendingCapture extends Mock
-    implements RestorePendingCapture {}
+class MockRestorePendingCapture extends Mock implements RestorePendingCapture {}
 
 void main() {
   late MockWatchPendingCaptures watchCaptures;
@@ -113,8 +111,7 @@ void main() {
     await cubit.close();
   });
 
-  test('leaves the account name null when the capture suggests none',
-      () async {
+  test('leaves the account name null when the capture suggests none', () async {
     stubCaptures([buildPendingCapture()]);
     final cubit = build()..start();
     await pumpEventQueue();
@@ -207,7 +204,8 @@ void main() {
       () async {
     stubCaptures([buildPendingCapture(suggestedAccountId: 'acc-1')]);
     when(
-      () => discard(any(), duplicateOfTransactionId: any(named: 'duplicateOfTransactionId')),
+      () => discard(any(),
+          duplicateOfTransactionId: any(named: 'duplicateOfTransactionId')),
     ).thenAnswer((_) async => const Right<Failure, Unit>(unit));
 
     final cubit = build()..start();
@@ -224,7 +222,8 @@ void main() {
   test('undo restores the capture and clears the affordance', () async {
     stubCaptures([buildPendingCapture(suggestedAccountId: 'acc-1')]);
     when(
-      () => discard(any(), duplicateOfTransactionId: any(named: 'duplicateOfTransactionId')),
+      () => discard(any(),
+          duplicateOfTransactionId: any(named: 'duplicateOfTransactionId')),
     ).thenAnswer((_) async => const Right<Failure, Unit>(unit));
     when(() => restore(any()))
         .thenAnswer((_) async => const Right<Failure, Unit>(unit));
@@ -254,4 +253,124 @@ void main() {
     expect(cubit.state.hiddenCaptureCount, 0);
     await cubit.close();
   });
+
+  test(
+      'a possible-duplicate card drops the solo cap to 3 and always shows '
+      'the block row', () async {
+    stubCaptures([
+      buildPendingCapture(id: 'a'),
+      buildPendingCapture(id: 'b'),
+      buildPendingCapture(id: 'c', suggestedAccountId: 'acc-1'),
+    ]);
+    when(() => findDuplicates(any(that: _hasId('c')))).thenAnswer(
+      (_) async => Right<Failure, List<DuplicateCandidate>>([
+        TransactionDuplicateCandidate(
+          Transaction(
+            id: 'tx-1',
+            accountId: 'acc-1',
+            amountMinor: 4590000,
+            currency: 'COP',
+            type: TransactionType.expense,
+            date: DateTime(2026, 9, 1, 11),
+            source: TransactionSource.manual,
+            createdAt: DateTime(2026, 9, 1),
+            updatedAt: 0,
+          ),
+          accountMatches: true,
+        ),
+      ]),
+    );
+
+    final cubit = build()..start();
+    await pumpEventQueue();
+
+    expect(cubit.state.captureLimit, 3);
+    expect(cubit.state.visibleCaptures, hasLength(3));
+    expect(cubit.state.showCaptureBlockRow, isTrue);
+    await cubit.close();
+  });
+
+  test(
+      'groups a wallet+bank pair into one item, the bank leg, and hides the '
+      'wallet leg', () async {
+    when(() => watchIssuers()).thenAnswer(
+      (_) => Stream.value(
+        const Right<Failure, List<IssuerCatalogEntry>>([
+          IssuerCatalogEntry(
+            packageName: 'com.bancolombia',
+            displayName: 'Bancolombia',
+            kind: IssuerKind.bank,
+            enabled: true,
+          ),
+          IssuerCatalogEntry(
+            packageName: 'com.google.wallet',
+            displayName: 'Google Wallet',
+            kind: IssuerKind.wallet,
+            enabled: true,
+          ),
+        ]),
+      ),
+    );
+    final bankCapture = buildPendingCapture(
+      id: 'bank',
+      sourcePackage: 'com.bancolombia',
+      merchantRaw: null,
+      amountMinor: 1870000,
+    );
+    final walletCapture = buildPendingCapture(
+      id: 'wallet',
+      sourcePackage: 'com.google.wallet',
+      merchantRaw: 'CAFETERIA LA ESPIGA',
+      amountMinor: 1870000,
+    );
+    stubCaptures([bankCapture, walletCapture]);
+    when(() => findDuplicates(any(that: _hasId('bank')))).thenAnswer(
+      (_) async => Right<Failure, List<DuplicateCandidate>>([
+        CaptureDuplicateCandidate(
+          walletCapture,
+          sameIssuer: false,
+          confidence: DuplicateConfidence.high,
+        ),
+      ]),
+    );
+    when(() => findDuplicates(any(that: _hasId('wallet')))).thenAnswer(
+      (_) async => Right<Failure, List<DuplicateCandidate>>([
+        CaptureDuplicateCandidate(
+          bankCapture,
+          sameIssuer: false,
+          confidence: DuplicateConfidence.high,
+        ),
+      ]),
+    );
+
+    final cubit = build()..start();
+    await pumpEventQueue();
+
+    expect(cubit.state.captures, hasLength(1));
+    final item = cubit.state.captures.single;
+    expect(item.id, 'bank');
+    expect(item.isGrouped, isTrue);
+    expect(item.group!.merchantRaw, 'CAFETERIA LA ESPIGA');
+    expect(item.group!.walletIssuerName, 'Google Wallet');
+    expect(item.group!.bankIssuerName, 'Bancolombia');
+    await cubit.close();
+  });
+}
+
+/// Matches a `PendingCapture` argument by id, so each stub of
+/// `findDuplicates` only answers for the capture it is written for.
+_CaptureIdMatcher _hasId(String id) => _CaptureIdMatcher(id);
+
+class _CaptureIdMatcher extends Matcher {
+  const _CaptureIdMatcher(this.id);
+
+  final String id;
+
+  @override
+  bool matches(dynamic item, Map<dynamic, dynamic> matchState) =>
+      item is PendingCapture && item.id == id;
+
+  @override
+  Description describe(Description description) =>
+      description.add('a PendingCapture with id "$id"');
 }

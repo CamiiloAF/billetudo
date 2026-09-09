@@ -18,7 +18,10 @@ CapturePrefill capturePrefillFor(CaptureReviewItem item) {
     type: capture.entryType,
     postedAt: capture.postedAt,
     accountId: capture.suggestedAccountId,
-    note: capture.merchantRaw,
+    // A grouped capture (`RSizy`) hands over the wallet leg's merchant when
+    // it has one — it is usually the better-formatted of the two — never a
+    // name neither notification actually sent.
+    note: item.group?.merchantRaw ?? capture.merchantRaw,
     categoryId: capture.suggestedCategoryId,
   );
 }

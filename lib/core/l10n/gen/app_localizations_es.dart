@@ -6523,8 +6523,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get captureDuplicateOtherAction => 'Es otra compra';
 
   @override
-  String captureDuplicateExistingSubtitle(String account, String when) {
-    return 'Ya registrado · $account · $when';
+  String captureDuplicateExistingSubtitle(
+      String category, String account, String when) {
+    return '$category · $account · $when';
   }
 
   @override
@@ -6706,5 +6707,69 @@ class AppLocalizationsEs extends AppLocalizations {
       one: 'Escuchando 1 app',
     );
     return '$_temp0';
+  }
+
+  @override
+  String captureBlockReviewAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Revisar las $count capturas',
+      one: 'Revisar 1 captura',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get captureDuplicateVerdictSameAmount => 'Mismo monto';
+
+  @override
+  String captureDuplicateVerdictMinutesBefore(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutos antes',
+      one: '1 minuto antes',
+      zero: 'Menos de 1 minuto antes',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String captureDuplicateVerdictMinutesAfter(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutos después',
+      one: '1 minuto después',
+      zero: 'Menos de 1 minuto después',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get captureDuplicateVerdictSameAccount => 'misma cuenta';
+
+  @override
+  String get captureDuplicateExistingKicker => 'Ya registrado';
+
+  @override
+  String get captureDuplicateNoCategory => 'Sin categoría';
+
+  @override
+  String get captureDuplicateConsequenceCaption =>
+      'Si descartas, puedes deshacerlo · Revisar no guarda nada';
+
+  @override
+  String captureGroupedSourceLabel(String wallet, String bank) {
+    return 'Un solo pago · $wallet + $bank';
+  }
+
+  @override
+  String get captureIssuerUnknown => 'otra app';
+
+  @override
+  String captureSuggestedCategoryLabel(String category) {
+    return 'Sugerida: $category';
   }
 }

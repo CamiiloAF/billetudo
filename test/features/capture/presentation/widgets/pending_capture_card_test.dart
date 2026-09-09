@@ -2,9 +2,7 @@ import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_colors.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/features/capture/presentation/cubit/capture_review_item.dart';
-import 'package:billetudo/features/capture/presentation/widgets/capture_status_pill.dart';
-import 'package:billetudo/features/capture/presentation/widgets/duplicate_compare_card.dart';
-import 'package:billetudo/features/capture/presentation/widgets/duplicate_compare_strip.dart';
+import 'package:billetudo/features/capture/presentation/widgets/capture_card_shell.dart';
 import 'package:billetudo/features/capture/presentation/widgets/pending_capture_card.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
 import 'package:flutter/material.dart';
@@ -13,22 +11,22 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../capture_mocks.dart';
 
-/// A pending capture is NOT money. The design carries five redundant signals
-/// that say so, and each one was audited individually — these tests exist so
-/// none of them can be dropped silently on either surface.
+/// `skjlg` — the Avisos-centre capture card. Five redundant signals say this
+/// is not money; these tests keep them from drifting silently.
 void main() {
   Widget appWith(Widget child) => MaterialApp(
         theme: AppTheme.light(),
         locale: const Locale('es'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(body: child),
+        home: Scaffold(body: SizedBox(width: 350, child: child)),
       );
 
   CaptureReviewItem itemWith({
     TransactionType entryType = TransactionType.expense,
     String? merchantRaw = 'TIENDA D1 SANTA ROSA',
     String? accountName = 'Cuenta Nu',
+    String? issuerName = 'Nu',
   }) =>
       CaptureReviewItem(
         capture: buildPendingCapture(
@@ -37,19 +35,29 @@ void main() {
           amountMinor: 5847000,
         ),
         accountName: accountName,
-        issuerName: 'Nu',
+        issuerName: issuerName,
       );
 
-  testWidgets('carries the pill, the bell tile and the issuer line',
+  testWidgets('carries the kicker and the issuer line, no button',
       (tester) async {
     await tester.pumpWidget(
       appWith(PendingCaptureCard(item: itemWith(), onTap: () {})),
     );
 
-    expect(find.byType(CaptureStatusPill), findsOneWidget);
     expect(find.text('No suma a tu saldo'), findsOneWidget);
-    expect(find.byIcon(LucideIcons.bellRing), findsOneWidget);
     expect(find.text('Aviso de Nu'), findsOneWidget);
+    expect(find.text('Confirmar'), findsNothing);
+    expect(find.byIcon(LucideIcons.chevronRight), findsOneWidget);
+  });
+
+  testWidgets('the whole card is the tap target', (tester) async {
+    var taps = 0;
+    await tester.pumpWidget(
+      appWith(PendingCaptureCard(item: itemWith(), onTap: () => taps++)),
+    );
+
+    await tester.tap(find.byType(CaptureCardShell));
+    expect(taps, 1);
   });
 
   testWidgets('the amount is attenuated and an expense carries no minus sign',
@@ -61,7 +69,6 @@ void main() {
     final amount = tester.widget<Text>(find.text(r'$58.470'));
     final colors = AppTheme.light().extension<AppColors>()!;
     expect(amount.style?.color, colors.textSecondary);
-    // A `-` would read as money already subtracted, which it is not.
     expect(find.text(r'-$58.470'), findsNothing);
   });
 
@@ -80,40 +87,18 @@ void main() {
     final colors = AppTheme.light().extension<AppColors>()!;
     expect(amount.style?.color, colors.textSecondary);
     expect(amount.style?.color, isNot(colors.incomeText));
-    expect(find.byIcon(LucideIcons.arrowDownLeft), findsOneWidget);
-  });
-
-  testWidgets('the movements-list variant drops the action but keeps the pill',
-      (tester) async {
-    await tester.pumpWidget(
-      appWith(
-        PendingCaptureCard(
-          item: itemWith(),
-          showAction: false,
-          onTap: () {},
-        ),
-      ),
-    );
-
-    expect(find.text('Confirmar'), findsNothing);
-    // The critical signal must NOT degrade where it lives beside real money.
-    expect(find.byType(CaptureStatusPill), findsOneWidget);
-    expect(find.text('No suma a tu saldo'), findsOneWidget);
   });
 
   testWidgets('a long merchant name truncates instead of overflowing',
       (tester) async {
     await tester.pumpWidget(
       appWith(
-        SizedBox(
-          width: 350,
-          child: PendingCaptureCard(
-            item: itemWith(
-              merchantRaw: 'GRANERO Y SUPERMERCADO LA ESPERANZA DEL '
-                  'NORTE SAS SUCURSAL POBLADO',
-            ),
-            onTap: () {},
+        PendingCaptureCard(
+          item: itemWith(
+            merchantRaw: 'GRANERO Y SUPERMERCADO LA ESPERANZA DEL '
+                'NORTE SAS SUCURSAL POBLADO',
           ),
+          onTap: () {},
         ),
       ),
     );
@@ -137,136 +122,14 @@ void main() {
     expect(find.textContaining('Sin cuenta'), findsOneWidget);
   });
 
-  group('possible duplicate', () {
-    CaptureReviewItem duplicateItem() => CaptureReviewItem(
-          capture: buildPendingCapture(amountMinor: 11525000),
-          accountName: 'Cuenta Nu',
-          issuerName: 'Nu',
-          duplicate: CaptureDuplicateView(
-            transactionId: 'tx-1',
-            amountMinor: 11525000,
-            currency: 'COP',
-            type: TransactionType.expense,
-            date: DateTime(2026, 9, 1, 11, 9),
-            title: 'Mercado de la semana',
-            accountName: 'Cuenta Nu',
-            categoryIcon: 'shopping-cart',
-            categoryColor: 'mint',
-          ),
-        );
+  testWidgets('hides the issuer line rather than printing an empty one',
+      (tester) async {
+    await tester.pumpWidget(
+      appWith(
+        PendingCaptureCard(item: itemWith(issuerName: null), onTap: () {}),
+      ),
+    );
 
-    testWidgets('offers both answers with exactly the same visual weight',
-        (tester) async {
-      await tester.pumpWidget(
-        appWith(
-          SizedBox(
-            width: 350,
-            child: DuplicateCompareCard(
-              item: duplicateItem(),
-              onSame: () {},
-              onDifferent: () {},
-            ),
-          ),
-        ),
-      );
-
-      final buttons = tester
-          .widgetList<DuplicateActionButton>(
-            find.byType(DuplicateActionButton),
-          )
-          .toList();
-      expect(buttons, hasLength(2));
-      expect(find.text('Es la misma'), findsOneWidget);
-      expect(find.text('Es otra compra'), findsOneWidget);
-
-      // Same rendered width: neither answer may be nudged by layout.
-      final sizes = tester
-          .widgetList<Material>(
-            find.descendant(
-              of: find.byType(DuplicateActionButton),
-              matching: find.byType(Material),
-            ),
-          )
-          .toList();
-      expect(sizes, hasLength(2));
-      final first = tester.getSize(find.byType(DuplicateActionButton).first);
-      final second = tester.getSize(find.byType(DuplicateActionButton).last);
-      expect(first.width, second.width);
-
-      // Same label colour, and neither is the brand violet that used to push
-      // the user towards discarding.
-      final colors = AppTheme.light().extension<AppColors>()!;
-      final same = tester.widget<Text>(find.text('Es la misma'));
-      final other = tester.widget<Text>(find.text('Es otra compra'));
-      expect(same.style?.color, other.style?.color);
-      expect(same.style?.color, colors.textPrimary);
-      expect(same.style?.fontWeight, other.style?.fontWeight);
-    });
-
-    testWidgets('marks the duplicate in amber, never in the expense red',
-        (tester) async {
-      await tester.pumpWidget(
-        appWith(
-          SizedBox(
-            width: 350,
-            child: DuplicateCompareCard(
-              item: duplicateItem(),
-              onSame: () {},
-              onDifferent: () {},
-            ),
-          ),
-        ),
-      );
-
-      final colors = AppTheme.light().extension<AppColors>()!;
-      final label = tester.widget<Text>(find.text('Posible duplicado'));
-      expect(label.style?.color, colors.amberText);
-      expect(label.style?.color, isNot(colors.expense));
-      expect(label.style?.color, isNot(colors.expenseText));
-    });
-
-    testWidgets('the compared movement is not tappable', (tester) async {
-      await tester.pumpWidget(
-        appWith(
-          SizedBox(
-            width: 350,
-            child: DuplicateCompareCard(
-              item: duplicateItem(),
-              onSame: () {},
-              onDifferent: () {},
-            ),
-          ),
-        ),
-      );
-
-      expect(
-        find.descendant(
-          of: find.byType(DuplicateCompareStrip),
-          matching: find.byType(InkWell),
-        ),
-        findsNothing,
-      );
-    });
-
-    testWidgets('neither answer fires on its own', (tester) async {
-      var same = 0;
-      var different = 0;
-      await tester.pumpWidget(
-        appWith(
-          SizedBox(
-            width: 350,
-            child: DuplicateCompareCard(
-              item: duplicateItem(),
-              onSame: () => same++,
-              onDifferent: () => different++,
-            ),
-          ),
-        ),
-      );
-      await tester.pump();
-
-      expect(same, 0);
-      expect(different, 0);
-    });
+    expect(find.textContaining('Aviso de'), findsNothing);
   });
 }

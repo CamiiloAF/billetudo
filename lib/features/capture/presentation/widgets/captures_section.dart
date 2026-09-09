@@ -4,8 +4,9 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../cubit/capture_review_item.dart';
 import '../cubit/notices_state.dart';
-import 'captures_overflow_row.dart';
+import 'capture_block_action_row.dart';
 import 'duplicate_compare_card.dart';
+import 'grouped_capture_card.dart';
 import 'pending_capture_card.dart';
 
 /// `pSVZm`/`Uigwo` — the "Capturas por confirmar" section of the Avisos
@@ -17,8 +18,8 @@ import 'pending_capture_card.dart';
 /// something other than the page's own "Avisos" title and, more importantly,
 /// declares that these rows do not affect the balance yet.
 ///
-/// There is no "confirmar todas" here, and there must not be: it would be N
-/// blind confirmations of amounts and accounts the user never looked at.
+/// There is no "confirmar todas" here, and there must not be: the block row
+/// ([CaptureBlockActionRow]) only opens a guided, one-by-one review.
 class CapturesSection extends StatelessWidget {
   const CapturesSection({
     required this.state,
@@ -30,7 +31,8 @@ class CapturesSection extends StatelessWidget {
 
   final NoticesState state;
 
-  /// Opens the pre-filled transaction form for a capture.
+  /// Opens the pre-filled transaction form for a capture (also used for a
+  /// grouped capture: the merged prefill still comes from a single item).
   final ValueChanged<CaptureReviewItem> onDispatch;
 
   /// "Es la misma" on a possible duplicate.
@@ -44,7 +46,6 @@ class CapturesSection extends StatelessWidget {
     final colors = context.colors;
     final theme = Theme.of(context);
     final visible = state.visibleCaptures;
-    final hidden = state.hiddenCaptureCount;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,12 +83,17 @@ class CapturesSection extends StatelessWidget {
               onSame: () => onDiscardDuplicate(item),
               onDifferent: () => onDispatch(item),
             )
+          else if (item.isGrouped)
+            GroupedCaptureCard(item: item, onTap: () => onDispatch(item))
           else
             PendingCaptureCard(item: item, onTap: () => onDispatch(item)),
         ],
-        if (hidden > 0) ...[
+        if (state.showCaptureBlockRow) ...[
           const SizedBox(height: 10),
-          CapturesOverflowRow(hiddenCount: hidden, onTap: onExpand),
+          CaptureBlockActionRow(
+            captureCount: state.captures.length,
+            onTap: onExpand,
+          ),
         ],
       ],
     );

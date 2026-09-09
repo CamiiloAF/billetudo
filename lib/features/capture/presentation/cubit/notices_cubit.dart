@@ -56,6 +56,7 @@ class NoticesCubit extends Cubit<NoticesState> {
   List<PendingCapture>? _captures;
   Map<String, String> _accountNames = const <String, String>{};
   Map<String, String> _issuerNames = const <String, String>{};
+  Map<String, IssuerKind> _issuerKinds = const <String, IssuerKind>{};
 
   /// Resolved duplicate lookups, keyed by capture id. A key present with a
   /// `null` value means "already looked up, no duplicate" — without that
@@ -63,8 +64,14 @@ class NoticesCubit extends Cubit<NoticesState> {
   final Map<String, CaptureDuplicateView?> _duplicates =
       <String, CaptureDuplicateView?>{};
 
-  /// Captures whose duplicate lookup is in flight, so a second emission of
-  /// the stream does not fire the same query twice.
+  /// Resolved wallet/bank grouping candidates (HU-07, high confidence),
+  /// keyed by capture id. Same `null`-means-"looked up, nothing" convention
+  /// as [_duplicates].
+  final Map<String, CaptureDuplicateCandidate?> _groupCandidates =
+      <String, CaptureDuplicateCandidate?>{};
+
+  /// Captures whose duplicate/grouping lookup is in flight, so a second
+  /// emission of the stream does not fire the same query twice.
   final Set<String> _duplicatesInFlight = <String>{};
 
   void start() {
@@ -86,6 +93,7 @@ class NoticesCubit extends Cubit<NoticesState> {
         // session does not keep growing a map of ids nobody renders.
         final ids = captures.map((capture) => capture.id).toSet();
         _duplicates.removeWhere((id, _) => !ids.contains(id));
+        _groupCandidates.removeWhere((id, _) => !ids.contains(id));
         _recompute();
     }
   }
@@ -97,6 +105,9 @@ class NoticesCubit extends Cubit<NoticesState> {
     if (result case Right(value: final issuers)) {
       _issuerNames = {
         for (final issuer in issuers) issuer.packageName: issuer.displayName,
+      };
+      _issuerKinds = {
+        for (final issuer in issuers) issuer.packageName: issuer.kind,
       };
       final hasEnabled = issuers.any((issuer) => issuer.enabled);
       emit(state.copyWith(hasEnabledIssuers: hasEnabled));
@@ -117,27 +128,65 @@ class NoticesCubit extends Cubit<NoticesState> {
   }
 
   /// Rebuilds the rendered list from the latest emission of every stream.
-  /// Emits with whatever duplicate lookups have already resolved and kicks
-  /// off the missing ones; each resolution calls back here, and finds itself
-  /// cached, so this terminates.
+  /// Emits with whatever duplicate/group lookups have already resolved and
+  /// kicks off the missing ones; each resolution calls back here, and finds
+  /// itself cached, so this terminates.
   void _recompute() {
     final captures = _captures;
     if (captures == null || isClosed) {
       return;
     }
+
+    // Fold a wallet/bank pair into ONE rendered item (HU-07, high
+    // confidence): the bank leg survives as the visible card — it is the one
+    // that actually knows the account — and the wallet leg is dropped from
+    // this list entirely. Neither row is touched in the database; this is
+    // presentation-only, per capture.
+    final hiddenGroupedIds = <String>{};
+    final groupViews = <String, CaptureGroupView>{};
+    for (final capture in captures) {
+      if (groupViews.containsKey(capture.id) ||
+          hiddenGroupedIds.contains(capture.id)) {
+        continue;
+      }
+      final candidate = _groupCandidates[capture.id];
+      if (candidate == null) {
+        continue;
+      }
+      final other = candidate.capture;
+      if (!captures.any((c) => c.id == other.id)) {
+        continue;
+      }
+      final myKind = _issuerKinds[capture.sourcePackage];
+      final otherKind = _issuerKinds[other.sourcePackage];
+      if (myKind == null || otherKind == null || myKind == otherKind) {
+        continue;
+      }
+      final bank = myKind == IssuerKind.bank ? capture : other;
+      final wallet = myKind == IssuerKind.wallet ? capture : other;
+      hiddenGroupedIds.add(wallet.id);
+      groupViews[bank.id] = CaptureGroupView(
+        merchantRaw: wallet.merchantRaw,
+        walletIssuerName: _issuerNames[wallet.sourcePackage],
+        bankIssuerName: _issuerNames[bank.sourcePackage],
+      );
+    }
+
     emit(
       state.copyWith(
         status: NoticesStatus.ready,
         captures: [
           for (final capture in captures)
-            CaptureReviewItem(
-              capture: capture,
-              accountName: capture.suggestedAccountId == null
-                  ? null
-                  : _accountNames[capture.suggestedAccountId],
-              issuerName: _issuerNames[capture.sourcePackage],
-              duplicate: _duplicates[capture.id],
-            ),
+            if (!hiddenGroupedIds.contains(capture.id))
+              CaptureReviewItem(
+                capture: capture,
+                accountName: capture.suggestedAccountId == null
+                    ? null
+                    : _accountNames[capture.suggestedAccountId],
+                issuerName: _issuerNames[capture.sourcePackage],
+                duplicate: _duplicates[capture.id],
+                group: groupViews[capture.id],
+              ),
         ],
       ),
     );
@@ -149,11 +198,12 @@ class NoticesCubit extends Cubit<NoticesState> {
     }
   }
 
-  /// Looks up whether [capture] may be repeating a movement the user already
-  /// recorded (HU-07). Only `TransactionDuplicateCandidate` reaches the UI:
-  /// a capture-against-capture match is a pairing the review flow handles on
-  /// its own, and showing it as "posible duplicado" would ask the user to
-  /// compare two things neither of which is money yet.
+  /// Looks up whether [capture] may be repeating something else in the app
+  /// (HU-07): a `TransactionDuplicateCandidate` (possible, against something
+  /// the user typed by hand) becomes the "posible duplicado" card, and a
+  /// high-confidence `CaptureDuplicateCandidate` from a *different* issuer
+  /// kind (the wallet/bank pairing, never the same-issuer-twice case, which
+  /// this branch does not group) feeds [_recompute]'s fold above.
   Future<void> _resolveDuplicate(PendingCapture capture) async {
     _duplicatesInFlight.add(capture.id);
     final result = await _findDuplicateCandidates(capture);
@@ -161,11 +211,19 @@ class NoticesCubit extends Cubit<NoticesState> {
       return;
     }
     CaptureDuplicateView? view;
+    CaptureDuplicateCandidate? group;
     if (result case Right(value: final candidates)) {
       for (final candidate in candidates) {
-        if (candidate is TransactionDuplicateCandidate) {
-          view = await _viewFor(candidate);
-          break;
+        switch (candidate) {
+          case TransactionDuplicateCandidate():
+            view ??= await _viewFor(candidate);
+          case CaptureDuplicateCandidate(
+              confidence: DuplicateConfidence.high,
+              sameIssuer: false,
+            ):
+            group ??= candidate;
+          case CaptureDuplicateCandidate():
+            break;
         }
       }
     }
@@ -174,6 +232,7 @@ class NoticesCubit extends Cubit<NoticesState> {
     }
     _duplicatesInFlight.remove(capture.id);
     _duplicates[capture.id] = view;
+    _groupCandidates[capture.id] = group;
     _recompute();
   }
 
@@ -199,18 +258,23 @@ class NoticesCubit extends Cubit<NoticesState> {
       currency: transaction.currency,
       type: transaction.type,
       date: transaction.date,
-      // The note is what the user actually wrote; the category name is the
-      // next best thing before falling back to a neutral label in the widget.
-      title: transaction.note ?? categoryName,
+      accountMatches: candidate.accountMatches,
+      // The note is what the user actually wrote; a neutral label is the
+      // widget's job when there is none. The category has its own slot now
+      // (HU-07) and is never folded into the title.
+      title: transaction.note,
       accountName: _accountNames[transaction.accountId],
+      categoryName: categoryName,
       categoryIcon: categoryIcon,
       categoryColor: categoryColor,
     );
   }
 
-  /// Reveals every capture behind the overflow row (`sCJCZ`). One-way: the
-  /// cap only exists to protect the first paint, so re-collapsing a list the
-  /// user asked to see would be arbitrary.
+  /// Reveals every capture behind the block-action row
+  /// (`CaptureBlockActionRow`, "Revisar las N capturas"): the guided,
+  /// one-by-one review, never a bulk confirmation. One-way: the cap only
+  /// exists to protect the first paint, so re-collapsing a list the user
+  /// asked to see would be arbitrary.
   void expandCaptures() => emit(state.copyWith(capturesExpanded: true));
 
   /// Throws a capture away (HU-05). Creates no transaction and touches no

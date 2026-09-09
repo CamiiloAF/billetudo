@@ -22,12 +22,20 @@ class NoticesState extends Equatable {
     this.failure,
   });
 
-  /// How many captures the screen shows before collapsing the rest behind
-  /// the overflow row (`sCJCZ`). Only applied when the notices section also
-  /// has content: the cap exists to keep both sections visible without
-  /// scrolling on a 390x844 phone, and what gets cut is always the captures,
-  /// never the notices.
-  static const int collapsedCaptureLimit = 2;
+  /// Cap when both sections have content (`bXnXo`, the measured worst case):
+  /// each section shows at most 2 elements plus its footer row (`YliJD`).
+  /// What gets cut is always the captures, never the notices.
+  static const int bothSectionsCaptureLimit = 2;
+
+  /// Cap when captures are the only section on screen and none of them is a
+  /// possible-duplicate card (`E3DGD`'s general case).
+  static const int soloCaptureLimit = 4;
+
+  /// Cap when captures are the only section AND the list includes a possible
+  /// duplicate (`EqRlj`, 299px, ~3.7 ordinary cards): that one card alone
+  /// eats the budget four would need, so the cap drops to 3 and the footer
+  /// row is always shown — measured in `E91A7T`, not estimated.
+  static const int soloCaptureLimitWithDuplicate = 3;
 
   final NoticesStatus status;
   final List<CaptureReviewItem> captures;
@@ -39,8 +47,8 @@ class NoticesState extends Equatable {
   /// because that stream landed a beat later.
   final bool hasEnabledIssuers;
 
-  /// Set by the overflow row: shows every capture instead of the first
-  /// [collapsedCaptureLimit].
+  /// Set by the block-action row: shows every capture instead of the first
+  /// [captureLimit].
   final bool capturesExpanded;
 
   /// The capture just discarded, so the page can offer "Deshacer". `null`
@@ -58,6 +66,21 @@ class NoticesState extends Equatable {
 
   bool get hasCaptures => captures.isNotEmpty;
 
+  /// Whether the queue includes the expensive possible-duplicate card, which
+  /// alone justifies dropping the solo cap from 4 to 3.
+  bool get _hasDuplicateCapture => captures.any((item) => item.hasDuplicate);
+
+  /// The cap currently in force, chosen by which sections compete for the
+  /// viewport and by whether a possible-duplicate card is in the queue.
+  int get captureLimit {
+    if (hasNotices) {
+      return bothSectionsCaptureLimit;
+    }
+    return _hasDuplicateCapture
+        ? soloCaptureLimitWithDuplicate
+        : soloCaptureLimit;
+  }
+
   /// Nothing at all to review: the single full-screen empty state.
   bool get isEmpty =>
       status == NoticesStatus.ready && !hasNotices && !hasCaptures;
@@ -67,15 +90,24 @@ class NoticesState extends Equatable {
   /// else on screen.
   bool get isEmptyWithoutIssuers => isEmpty && !hasEnabledIssuers;
 
-  /// The captures actually rendered. Capped only while the notices section
-  /// is competing for the same viewport.
+  /// The captures actually rendered, per [captureLimit].
   List<CaptureReviewItem> get visibleCaptures =>
-      capturesExpanded || !hasNotices || captures.length <= collapsedCaptureLimit
+      capturesExpanded || captures.length <= captureLimit
           ? captures
-          : captures.sublist(0, collapsedCaptureLimit);
+          : captures.sublist(0, captureLimit);
 
-  /// How many captures the overflow row stands for. `0` hides the row.
+  /// How many captures stay off screen behind the block-action row
+  /// (`YliJD`, "Revisar las N capturas"). `0` when everything fits.
   int get hiddenCaptureCount => captures.length - visibleCaptures.length;
+
+  /// Whether the block-action row shows. Normally only when something is
+  /// actually hidden, but a possible-duplicate card in a captures-only queue
+  /// always earns the row — even at exactly [soloCaptureLimitWithDuplicate]
+  /// items — because that card alone is worth routing through the guided,
+  /// one-by-one review rather than resolving inline.
+  bool get showCaptureBlockRow =>
+      !capturesExpanded &&
+      (hiddenCaptureCount > 0 || (!hasNotices && _hasDuplicateCapture));
 
   NoticesState copyWith({
     NoticesStatus? status,
@@ -91,7 +123,8 @@ class NoticesState extends Equatable {
         captures: captures ?? this.captures,
         hasEnabledIssuers: hasEnabledIssuers ?? this.hasEnabledIssuers,
         capturesExpanded: capturesExpanded ?? this.capturesExpanded,
-        discardedId: clearDiscardedId ? null : (discardedId ?? this.discardedId),
+        discardedId:
+            clearDiscardedId ? null : (discardedId ?? this.discardedId),
         failure: failure,
       );
 

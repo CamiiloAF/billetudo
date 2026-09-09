@@ -4,29 +4,30 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../cubit/capture_review_item.dart';
-import 'capture_card_header.dart';
-import 'capture_status_pill.dart';
+import '../utils/capture_presentation.dart';
+import 'capture_card_shell.dart';
+import 'capture_guarantee_kicker.dart';
 
-/// `vRWd5` — the single card for a capture waiting to be reviewed
-/// (HU-04/HU-05).
+/// `skjlg` — the ordinary pending-capture card of the Avisos centre
+/// (HU-04/HU-05). Rebuilt 2026-09-09: zero-tint chasis identical to a Notice
+/// Card (`cYVQm`), a 4px `$primary-on-soft` rail as the only accent, no icon
+/// wrap, no "Confirmar" button.
 ///
-/// One component for both surfaces: the Avisos centre shows it with the
-/// "Confirmar" affordance, the movements list turns it off ([showAction] is
-/// `false`, mirroring `w5AfEL enabled:false`) because there the card sits
-/// among real movements and must not compete with them. Everything else —
-/// including the pill — is identical by design; the earlier split into two
-/// components had already let the issuer weight and the pill copy drift.
+/// **The whole card is the tap target** (350x81, ~8x a 96x44 button) and it
+/// navigates to the ordinary transaction form, pre-filled (HU-05) — it never
+/// writes a `Transaction` itself. There is deliberately no solid `$primary`
+/// button here: with two notices already using one, a third would make
+/// "solid" stop meaning priority.
 ///
-/// Five redundant signals say this is **not money**: the `$primary-soft`
-/// fill, the `bell-ring` tile, the attenuated amount, the "No suma a tu
-/// saldo" pill, and the "Aviso de X" issuer line. None of them is decorative.
+/// This is the Avisos-centre-only member of the capture-card family. The
+/// movements list uses a different component, `MovementPendingCaptureCard`
+/// (`vRWd5`) — the two used to share one widget, but the 2026-09-09 redesign
+/// gave them genuinely different chrome (tint vs. none, icon wrap vs. none,
+/// a category chip vs. none) and forcing them back into one class is what let
+/// details drift silently before.
 class PendingCaptureCard extends StatelessWidget {
-  const PendingCaptureCard({
-    required this.item,
-    required this.onTap,
-    this.showAction = true,
-    super.key,
-  });
+  const PendingCaptureCard(
+      {required this.item, required this.onTap, super.key});
 
   final CaptureReviewItem item;
 
@@ -34,75 +35,105 @@ class PendingCaptureCard extends StatelessWidget {
   /// "quick confirm" with rules of its own.
   final VoidCallback onTap;
 
-  final bool showAction;
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
     final theme = Theme.of(context);
+    final capture = item.capture;
     final issuerName = item.issuerName;
 
-    return Material(
-      color: colors.primarySoft,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        // `$primary-on-soft` 1px: the whole card is the tap target, and
-        // `$primary-soft` on `$background` is 1.06:1 — WCAG 1.4.11 asks 3:1
-        // for a control's boundary.
-        side: BorderSide(color: colors.primaryOnSoft),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CaptureCardHeader(item: item),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  const CaptureStatusPill(),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      issuerName == null
-                          ? ''
-                          : l10n.captureIssuerLabel(issuerName),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: colors.textSecondary,
-                      ),
-                    ),
+    return CaptureCardShell(
+      railColor: colors.primaryOnSoft,
+      onTap: onTap,
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  capture.merchantRaw ?? l10n.captureNoMerchant,
+                  // Pencil does not render ellipsis: real issuer strings run
+                  // to "GRANERO Y SUPERM LA ESPERANZA SAS". One line, clipped,
+                  // keeps every card the same height so the block reads as a
+                  // list.
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    height: 1.3,
+                    color: colors.textPrimary,
                   ),
-                  if (showAction) ...[
-                    const SizedBox(width: 8),
-                    Text(
-                      l10n.captureConfirmAction,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: colors.primaryOnSoftStrong,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  l10n.captureSubtitle(
+                    item.accountName ?? l10n.captureNoAccount,
+                    captureWhenLabel(l10n, capture.postedAt),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: colors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Row(
+                  children: [
+                    const CaptureGuaranteeKicker(),
+                    if (issuerName != null) ...[
+                      const SizedBox(width: 5),
+                      Text(
+                        '·',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: colors.textSecondary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 2),
-                    Icon(
-                      LucideIcons.chevronRight,
-                      size: 14,
-                      color: colors.primaryOnSoftStrong,
-                    ),
+                      const SizedBox(width: 5),
+                      Expanded(
+                        child: Text(
+                          l10n.captureIssuerLabel(issuerName),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: colors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
-        ),
+          const SizedBox(width: 10),
+          Text(
+            captureAmountLabel(
+              amountMinor: capture.amountMinor,
+              currencyCode: capture.currency,
+              type: capture.entryType,
+            ),
+            // `$text-secondary`, never `$income-text`/`$text-primary`: an
+            // attenuated amount is one of the signals that this figure has
+            // not moved any balance yet.
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: colors.textSecondary,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Icon(LucideIcons.chevronRight, size: 16, color: colors.textSecondary),
+        ],
       ),
     );
   }
