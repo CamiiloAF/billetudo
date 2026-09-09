@@ -25,11 +25,17 @@
 // next date is future, due today, or overdue").
 import 'dart:async';
 
+import 'package:billetudo/core/database/app_database.dart' hide CategoryKind;
+import 'package:billetudo/core/di/injection.dart';
+import 'package:billetudo/core/notifications/domain/entities/app_notification_channel.dart';
+import 'package:billetudo/core/notifications/domain/entities/notification_id.dart';
+import 'package:billetudo/core/notifications/domain/repositories/notification_scheduler.dart';
 import 'package:billetudo/core/router/app_router.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/account_select_row.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart'
     show CategoryKind;
 import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_payment_date_field.dart';
+import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_payment_reminder_field.dart';
 import 'package:billetudo/features/transactions/presentation/pages/transaction_form_page.dart'
     show AccountPickerField;
 import 'package:billetudo/features/transactions/presentation/widgets/numeric_keypad.dart';
@@ -155,6 +161,54 @@ Future<void> _pickCategory(PatrolIntegrationTester $, String name) async {
   await _scrollUntilVisible($, chip);
   await $.tester.tap(chip);
   await $.tester.pumpAndSettle();
+}
+
+/// Opens the "Recordatorio" field (`ScheduledPaymentReminderField`) and picks
+/// [optionLabel] (e.g. "3 días antes") from the sheet it opens. The whole
+/// field is one `TransactionFormFieldButton`, unambiguous by its own `label`
+/// field the same way `_pickAccountField`/`_pickFutureDate` key off their
+/// widgets' `label` — this form has no other field of that type carrying
+/// "Recordatorio".
+Future<void> _pickReminder(
+  PatrolIntegrationTester $,
+  String optionLabel,
+) async {
+  final field = find.byWidgetPredicate(
+    (widget) => widget is ScheduledPaymentReminderField,
+  );
+  await _scrollUntilVisible($, field);
+  await $.tester.tap(field);
+  await $.tester.pumpAndSettle();
+  await $.tester.tap(find.text(optionLabel));
+  await $.tester.pumpAndSettle();
+}
+
+/// Reads the persisted `ScheduledPayments` row named [note] straight off the
+/// on-device Drift database — the same real `AppDatabase` the running app
+/// writes to (`getIt`, no mock), not a UI-only proxy. Used to assert
+/// `reminderLeadDays` and the notification scheduler's own pending-id set,
+/// neither of which has a visible UI surface of its own.
+Future<ScheduledPayment> _scheduledPaymentByNote(String note) async {
+  final database = getIt<AppDatabase>();
+  return (database.select(database.scheduledPayments)
+        ..where((row) => row.note.equals(note)))
+      .getSingle();
+}
+
+/// Whether a reminder notification is currently pending (scheduled with the
+/// real `flutter_local_notifications` plugin on this device) for the
+/// scheduled-payment template with [templateId] — computed the exact same
+/// way `SyncScheduledPaymentReminders`/`CancelScheduledPaymentReminder` key
+/// their own notifications, so this proves the *actual* OS-level pending set,
+/// not just what the repository/UI believe.
+Future<bool> _hasPendingReminder(String templateId) async {
+  final pending = await getIt<NotificationScheduler>().pendingIds();
+  final ids = pending.getOrElse((_) => const <int>[]);
+  final expectedId = NotificationId.forKey(
+    templateId,
+    AppNotificationChannel.reminders,
+  );
+  return ids.contains(expectedId);
 }
 
 /// Types [digits] on the anchored calculator keypad, starting from whatever
@@ -674,6 +728,138 @@ void main() {
 
       expect(find.text('Spotify'), findsOneWidget);
       expect(find.text('-\$400'), findsOneWidget);
+    },
+  );
+
+  patrolTest(
+    'HU-08: configurar "3 días antes" al crear un pago programado persiste '
+    'el lead y muestra el chip "Te avisamos" en la tarjeta',
+    ($) async {
+      await startApp($);
+      await _createCashAccount($, 'Efectivo');
+      await _createCategory($, 'Suscripciones');
+
+      _goToScheduledPayments($);
+      await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
+      await _openNewScheduledPaymentForm($);
+      await _enterAmount($, [7, 0, 0]); // $700 COP
+      await _pickAccountField($, 'Cuenta', 'Efectivo');
+      await _pickCategory($, 'Suscripciones');
+      await _enterNote($, 'Internet fibra');
+      await _pickReminder($, '3 días antes');
+      // A due date comfortably in the future keeps the reminder's own
+      // `fireAt` (due date minus 3 days) after "now" too, so it is real
+      // scheduled state, not one `SyncScheduledPaymentReminders` silently
+      // dropped as already elapsed.
+      await _pickFutureDate($, label: 'Primer pago');
+      await _submitScheduledPaymentForm($);
+
+      // The chip names the exact anticipation chosen, not a generic "on".
+      expect(find.text('Te avisamos 3 días antes'), findsOneWidget);
+
+      final row = await _scheduledPaymentByNote('Internet fibra');
+      expect(row.reminderLeadDays, 3);
+    },
+  );
+
+  patrolTest(
+    'HU-08: cambiar a "Sin recordatorio" al editar un pago programado quita '
+    'el chip "Te avisamos" de su tarjeta',
+    ($) async {
+      await startApp($);
+      await _createCashAccount($, 'Efectivo');
+      await _createCategory($, 'Hogar');
+
+      _goToScheduledPayments($);
+      await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
+      await _openNewScheduledPaymentForm($);
+      await _enterAmount($, [5, 5, 0]); // $550 COP
+      await _pickAccountField($, 'Cuenta', 'Efectivo');
+      await _pickCategory($, 'Hogar');
+      await _enterNote($, 'Agua');
+      await _pickReminder($, 'El día del pago');
+      await _pickFutureDate($, label: 'Primer pago');
+      await _submitScheduledPaymentForm($);
+
+      expect(find.text('Te avisamos el día del pago'), findsOneWidget);
+
+      await $.tester.tap(find.text('Agua'));
+      await $.tester.pumpAndSettle();
+      await _openDetailActions($);
+      await $.tester.tap(find.text('Editar'));
+      await $.tester.pumpAndSettle();
+
+      await _pickReminder($, 'Sin recordatorio');
+      await _submitScheduledPaymentForm($);
+
+      // Editing pops back to the detail (see `_submitScheduledPaymentForm`'s
+      // own HU-05 scenario comment above) — the chip only lives on the list
+      // card, so go back there to see it gone.
+      await $.tester.tap(find.byTooltip('Atrás'));
+      await $.tester.pumpAndSettle();
+
+      expect(find.text('Te avisamos el día del pago'), findsNothing);
+
+      final row = await _scheduledPaymentByNote('Agua');
+      expect(row.reminderLeadDays, isNull);
+    },
+  );
+
+  patrolTest(
+    'HU-08: borrar un pago programado con recordatorio cancela su '
+    'notificación pendiente (no queda huérfana) y lo quita del listado',
+    ($) async {
+      await startApp($);
+      await _createCashAccount($, 'Efectivo');
+      await _createCategory($, 'Streaming');
+
+      _goToScheduledPayments($);
+      await $.tester.pumpAndSettle();
+      await dismissAutoTutorialIfShown($);
+      await _openNewScheduledPaymentForm($);
+      await _enterAmount($, [3, 5, 0]); // $350 COP
+      await _pickAccountField($, 'Cuenta', 'Efectivo');
+      await _pickCategory($, 'Streaming');
+      await _enterNote($, 'Disney Plus');
+      await _pickReminder($, 'Una semana antes');
+      // Far enough out that a 7-day lead still fires in the future, so the
+      // template really has a live pending notification to cancel below.
+      await _pickFutureDate($, label: 'Primer pago');
+      await _submitScheduledPaymentForm($);
+
+      expect(find.text('Te avisamos una semana antes'), findsOneWidget);
+
+      final template = await _scheduledPaymentByNote('Disney Plus');
+      expect(
+        await _hasPendingReminder(template.id),
+        isTrue,
+        reason: 'the reminder just configured should be really scheduled '
+            'with the device notification plugin before this scenario '
+            'deletes the template',
+      );
+
+      await $.tester.tap(find.text('Disney Plus'));
+      await $.tester.pumpAndSettle();
+      await _openDetailActions($);
+      await $.tester.tap(find.text('Eliminar pago programado'));
+      await $.tester.pumpAndSettle();
+      await $.tester.tap(find.text('Eliminar'));
+      // Same async-hop caveat `_submitScheduledPaymentForm`'s HU-05 scenario
+      // documents: the delete write, the reminder cancel and the pop back to
+      // the list are separate awaits.
+      await $.tester.pump(const Duration(milliseconds: 500));
+      await $.tester.pumpAndSettle();
+
+      expect(find.text('Disney Plus'), findsNothing);
+      expect(
+        await _hasPendingReminder(template.id),
+        isFalse,
+        reason: 'deleting the template must cancel its reminder '
+            '(CancelScheduledPaymentReminder), never leave a notification '
+            'ringing for a payment that no longer exists',
+      );
     },
   );
 }
