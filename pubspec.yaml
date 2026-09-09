@@ -103,7 +103,14 @@ dependencies:
   timezone: ^0.11.1
   # Necesario para el permiso POST_NOTIFICATIONS (Android 13+) y para
   # RECORD_AUDIO, ambos en runtime.
-  permission_handler: ^13.0.2
+  #
+  # 12.x, NO 13.x: permission_handler_android 14.1.0 (que arrastra la 13.0.2)
+  # trae un build.gradle.kts con `kotlin { compilerOptions { ... } }` que este
+  # proyecto no resuelve — "Unresolved reference: compilerOptions" — y rompe
+  # cualquier build de Android antes siquiera de compilar codigo propio.
+  # Verificado: con 12.0.1 el APK dev compila. No subir sin volver a probar
+  # `flutter build apk --debug --flavor dev`.
+  permission_handler: ^12.0.1
 
   # --- Utilidades ---
   intl: ^0.20.2
