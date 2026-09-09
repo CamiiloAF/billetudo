@@ -1,0 +1,95 @@
+import 'package:billetudo/core/router/app_router.dart';
+import 'package:billetudo/features/capture/domain/entities/capture_shortcut.dart';
+import 'package:billetudo/features/capture/presentation/utils/capture_shortcut_destination.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  group('CaptureShortcutDestination.routeFor', () {
+    test('expense opens the movement form with type=expense preselected', () {
+      expect(
+        CaptureShortcutDestination.routeFor(CaptureShortcut.expense),
+        '/movimientos/nuevo?type=expense',
+      );
+    });
+
+    test('income opens the movement form with type=income preselected', () {
+      expect(
+        CaptureShortcutDestination.routeFor(CaptureShortcut.income),
+        '/movimientos/nuevo?type=income',
+      );
+    });
+
+    test('a destination not wired yet degrades to the manual form', () {
+      // Voice (`feat/capture-voice`) and the bank inbox
+      // (`feat/fase2-fundamentos`) have no `GoRoute` here yet: the shortcut
+      // must land on a usable form, never on the router's error page.
+      for (final shortcut in [
+        CaptureShortcut.voice,
+        CaptureShortcut.bankInbox,
+      ]) {
+        expect(
+          CaptureShortcutDestination.routeFor(shortcut),
+          '/movimientos/nuevo?type=expense',
+          reason: 'pending destination ${shortcut.id} must have a fallback',
+        );
+      }
+    });
+  });
+
+  group('CaptureShortcutDestination.resolve', () {
+    test('navigates when the app is somewhere else', () {
+      expect(
+        CaptureShortcutDestination.resolve(
+          shortcut: CaptureShortcut.expense,
+          currentLocation: AppRoutes.home,
+        ),
+        '/movimientos/nuevo?type=expense',
+      );
+    });
+
+    test('does nothing when that very form is already open', () {
+      // HU-01: a half-filled form is never discarded without asking.
+      expect(
+        CaptureShortcutDestination.resolve(
+          shortcut: CaptureShortcut.expense,
+          currentLocation: '/movimientos/nuevo?type=expense',
+        ),
+        isNull,
+      );
+    });
+
+    test('pushes on top when a different form is open', () {
+      // Pushing (not replacing) keeps whatever was typed underneath.
+      expect(
+        CaptureShortcutDestination.resolve(
+          shortcut: CaptureShortcut.income,
+          currentLocation: '/movimientos/nuevo?type=expense',
+        ),
+        '/movimientos/nuevo?type=income',
+      );
+    });
+
+    test('does not interrupt the welcome flow', () {
+      expect(
+        CaptureShortcutDestination.resolve(
+          shortcut: CaptureShortcut.expense,
+          currentLocation: AppRoutes.onboardingAccount,
+        ),
+        isNull,
+      );
+    });
+  });
+
+  group('CaptureShortcut.fromId', () {
+    test('maps the ids the native widgets send', () {
+      expect(CaptureShortcut.fromId('expense'), CaptureShortcut.expense);
+      expect(CaptureShortcut.fromId('income'), CaptureShortcut.income);
+      expect(CaptureShortcut.fromId('voice'), CaptureShortcut.voice);
+      expect(CaptureShortcut.fromId('bank_inbox'), CaptureShortcut.bankInbox);
+    });
+
+    test('ignores an id this build does not know', () {
+      expect(CaptureShortcut.fromId('receipt_photo'), isNull);
+    });
+  });
+}

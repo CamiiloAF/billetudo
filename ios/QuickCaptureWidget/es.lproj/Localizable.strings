@@ -1,0 +1,23 @@
+/*
+  Textos del widget de captura rápida (HU-09 de
+  docs/requirements/fase-2/20-widget-captura-rapida.md).
+
+  DUPLICACIÓN DELIBERADA E INEVITABLE: la extensión de WidgetKit no ejecuta
+  Dart, así que no puede leer `AppLocalizations` ni los `.arb` de
+  `lib/core/l10n/arb/`. Estas etiquetas son las mismas de
+  `android/app/src/main/res/values/strings.xml`; al cambiar una hay que
+  cambiarla en los tres sitios (es, en y Android).
+
+  El widget sigue el idioma del SISTEMA, igual que la app.
+*/
+"widget_quick_capture_name" = "Captura rápida";
+"widget_quick_capture_description" = "Registra un movimiento en un toque, sin abrir la app.";
+
+"widget_shortcut_expense" = "Gasto";
+"widget_shortcut_income" = "Ingreso";
+"widget_shortcut_voice" = "Voz";
+
+/* Etiquetas de accesibilidad: genéricas, nunca datos (HU-08). */
+"widget_shortcut_expense_a11y" = "Registrar un gasto";
+"widget_shortcut_income_a11y" = "Registrar un ingreso";
+"widget_shortcut_voice_a11y" = "Registrar por voz";

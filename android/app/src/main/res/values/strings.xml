@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Textos del widget de captura rápida
+  (docs/requirements/fase-2/20-widget-captura-rapida.md, HU-09).
+
+  DUPLICACIÓN DELIBERADA E INEVITABLE: el widget vive fuera del proceso de
+  Flutter, así que no puede ejecutar `AppLocalizations` ni leer los `.arb` de
+  `lib/core/l10n/arb/`. Estas seis etiquetas son el juego mínimo de strings
+  nativos; su equivalente en inglés está en `values-en/strings.xml` y su
+  equivalente iOS en `ios/QuickCaptureWidget/{es,en}.lproj/Localizable.strings`.
+  Al cambiar una etiqueta hay que cambiarla en los tres sitios.
+
+  `values/` (sin calificador) es el idioma por defecto de la app: español.
+  Ningún literal va en el layout — todo sale de aquí.
+
+  Nada de publicidad ni de invitaciones a Premium: el widget es Nivel 0 puro.
+-->
+<resources>
+    <string name="widget_quick_capture_name">Captura rápida</string>
+    <string name="widget_quick_capture_description">Registra un movimiento en un toque, sin abrir la app.</string>
+
+    <string name="widget_shortcut_expense">Gasto</string>
+    <string name="widget_shortcut_income">Ingreso</string>
+    <string name="widget_shortcut_voice">Voz</string>
+    <string name="widget_shortcut_inbox">Pendientes</string>
+
+    <!-- Descripciones de contenido: etiquetas genéricas, nunca datos (HU-08). -->
+    <string name="widget_shortcut_expense_a11y">Registrar un gasto</string>
+    <string name="widget_shortcut_income_a11y">Registrar un ingreso</string>
+    <string name="widget_shortcut_voice_a11y">Registrar por voz</string>
+    <string name="widget_shortcut_inbox_a11y">Abrir movimientos pendientes</string>
+</resources>

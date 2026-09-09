@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  English strings of the quick-capture widget (HU-09). See the duplication
+  note in `values/strings.xml`: these live outside `AppLocalizations` because
+  the widget process cannot run Dart.
+-->
+<resources>
+    <string name="widget_quick_capture_name">Quick capture</string>
+    <string name="widget_quick_capture_description">Log a movement in one tap, without opening the app.</string>
+
+    <string name="widget_shortcut_expense">Expense</string>
+    <string name="widget_shortcut_income">Income</string>
+    <string name="widget_shortcut_voice">Voice</string>
+    <string name="widget_shortcut_inbox">Pending</string>
+
+    <string name="widget_shortcut_expense_a11y">Log an expense</string>
+    <string name="widget_shortcut_income_a11y">Log an income</string>
+    <string name="widget_shortcut_voice_a11y">Log by voice</string>
+    <string name="widget_shortcut_inbox_a11y">Open pending movements</string>
+</resources>

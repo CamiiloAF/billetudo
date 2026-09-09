@@ -25,6 +25,25 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!--
+            Widget de captura rápida
+            (docs/requirements/fase-2/20-widget-captura-rapida.md).
+            `exported="false"`: el único que lo dispara es el sistema de
+            widgets; sus toques abren MainActivity con un intent explícito,
+            no con un deep link público.
+        -->
+        <receiver
+            android:name=".widget.QuickCaptureWidgetProvider"
+            android:label="@string/widget_quick_capture_name"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/quick_capture_widget_info" />
+        </receiver>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

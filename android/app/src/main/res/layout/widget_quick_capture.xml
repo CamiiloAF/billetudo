@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Widget de captura rápida (docs/requirements/fase-2/20-widget-captura-rapida.md).
+
+  Una sola fila de atajos. `QuickCaptureWidgetProvider` esconde los de la
+  derecha según el ancho disponible (HU-06): Android redimensiona en un rango
+  continuo, así que se muestran menos atajos en vez de apretarlos por debajo
+  del área tocable mínima.
+
+  No muestra ningún dato financiero — es un atajo puro (decisión de alcance
+  2026-08-17), así que no hay nada que refrescar ni que pueda quedar viejo.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center"
+    android:background="@drawable/widget_background"
+    android:padding="8dp">
+
+    <LinearLayout
+        android:id="@+id/widget_shortcut_expense"
+        style="@style/WidgetShortcut"
+        android:contentDescription="@string/widget_shortcut_expense_a11y">
+
+        <ImageView
+            style="@style/WidgetShortcutIcon"
+            android:src="@drawable/ic_widget_expense" />
+
+        <TextView
+            style="@style/WidgetShortcutLabel"
+            android:text="@string/widget_shortcut_expense" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/widget_shortcut_income"
+        style="@style/WidgetShortcut"
+        android:contentDescription="@string/widget_shortcut_income_a11y">
+
+        <ImageView
+            style="@style/WidgetShortcutIcon"
+            android:src="@drawable/ic_widget_income" />
+
+        <TextView
+            style="@style/WidgetShortcutLabel"
+            android:text="@string/widget_shortcut_income" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/widget_shortcut_voice"
+        style="@style/WidgetShortcut"
+        android:contentDescription="@string/widget_shortcut_voice_a11y">
+
+        <ImageView
+            style="@style/WidgetShortcutIcon"
+            android:src="@drawable/ic_widget_voice" />
+
+        <TextView
+            style="@style/WidgetShortcutLabel"
+            android:text="@string/widget_shortcut_voice" />
+    </LinearLayout>
+
+    <!--
+      Solo Android: la captura por notificación bancaria no existe en iOS
+      (no se pueden leer notificaciones ajenas), así que allá el atajo no
+      aparece en vez de mostrarse deshabilitado.
+    -->
+    <LinearLayout
+        android:id="@+id/widget_shortcut_inbox"
+        style="@style/WidgetShortcut"
+        android:contentDescription="@string/widget_shortcut_inbox_a11y">
+
+        <ImageView
+            style="@style/WidgetShortcutIcon"
+            android:src="@drawable/ic_widget_inbox" />
+
+        <TextView
+            style="@style/WidgetShortcutLabel"
+            android:text="@string/widget_shortcut_inbox" />
+    </LinearLayout>
+</LinearLayout>

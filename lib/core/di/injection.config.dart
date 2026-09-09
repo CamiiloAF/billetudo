@@ -337,6 +337,18 @@ import 'package:billetudo/features/budgets/presentation/cubit/budgets_list_cubit
     as _i244;
 import 'package:billetudo/features/budgets/presentation/cubit/zero_based_summary_cubit.dart'
     as _i843;
+import 'package:billetudo/features/capture/data/datasources/capture_shortcut_channel_datasource.dart'
+    as _i1003;
+import 'package:billetudo/features/capture/data/repositories/capture_shortcut_repository_impl.dart'
+    as _i983;
+import 'package:billetudo/features/capture/domain/repositories/capture_shortcut_repository.dart'
+    as _i223;
+import 'package:billetudo/features/capture/domain/usecases/get_initial_capture_shortcut.dart'
+    as _i461;
+import 'package:billetudo/features/capture/domain/usecases/watch_capture_shortcuts.dart'
+    as _i871;
+import 'package:billetudo/features/capture/presentation/cubit/capture_shortcut_cubit.dart'
+    as _i959;
 import 'package:billetudo/features/categories/data/datasources/categories_local_datasource.dart'
     as _i151;
 import 'package:billetudo/features/categories/data/datasources/category_seeds_remote_datasource.dart'
@@ -839,6 +851,7 @@ import 'package:billetudo/features/tutorials/presentation/cubit/tutorial_gate_cu
     as _i829;
 import 'package:billetudo/features/tutorials/presentation/utils/tutorial_navigation_guard.dart'
     as _i773;
+import 'package:flutter/services.dart' as _i281;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i558;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
@@ -951,6 +964,10 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i180.CategorySeedsRemoteDatasource>(
         () => _i180.CategorySeedsRemoteDatasource(gh<_i454.SupabaseClient>()));
+    gh.lazySingleton<_i281.MethodChannel>(
+      () => registerModule.captureShortcutChannel(),
+      instanceName: 'captureShortcutChannel',
+    );
     gh.lazySingleton<_i867.MappingTemplateRepository>(
         () => _i1025.MappingTemplateRepositoryImpl(
               gh<_i476.MappingTemplatesLocalDatasource>(),
@@ -1235,6 +1252,9 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i964.UndoSkipScheduledOccurrence>(),
               gh<_i319.UndoSnoozeScheduledOccurrence>(),
             ));
+    gh.lazySingleton<_i1003.CaptureShortcutChannelDatasource>(() =>
+        _i1003.CaptureShortcutChannelDatasource(
+            gh<_i281.MethodChannel>(instanceName: 'captureShortcutChannel')));
     gh.factory<_i667.CategoryBreakdownCubit>(() =>
         _i667.CategoryBreakdownCubit(gh<_i645.WatchCategoryBreakdownReport>()));
     gh.factory<_i885.CreateCategory>(
@@ -1368,6 +1388,9 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i795.BudgetCategoryScopeResolver>(),
           gh<_i474.CrashReporter>(),
         ));
+    gh.lazySingleton<_i223.CaptureShortcutRepository>(() =>
+        _i983.CaptureShortcutRepositoryImpl(
+            gh<_i1003.CaptureShortcutChannelDatasource>()));
     gh.lazySingleton<_i696.GoalRepository>(() => _i1066.GoalRepositoryImpl(
           gh<_i822.GoalsLocalDatasource>(),
           gh<_i903.GoalProgressCalculator>(),
@@ -1710,6 +1733,10 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i693.SeedDefaultCategories>(),
               gh<_i474.CrashReporter>(),
             ));
+    gh.factory<_i461.GetInitialCaptureShortcut>(() =>
+        _i461.GetInitialCaptureShortcut(gh<_i223.CaptureShortcutRepository>()));
+    gh.factory<_i871.WatchCaptureShortcuts>(() =>
+        _i871.WatchCaptureShortcuts(gh<_i223.CaptureShortcutRepository>()));
     gh.factory<_i774.TransactionDetailCubit>(() => _i774.TransactionDetailCubit(
           gh<_i276.WatchTransactionDetail>(),
           gh<_i612.DeleteTransaction>(),
@@ -1956,6 +1983,11 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i639.ParseBackupHeader>(),
           gh<_i881.RestoreBackup>(),
         ));
+    gh.lazySingleton<_i959.CaptureShortcutCubit>(
+        () => _i959.CaptureShortcutCubit(
+              gh<_i461.GetInitialCaptureShortcut>(),
+              gh<_i871.WatchCaptureShortcuts>(),
+            ));
     gh.factory<_i5.BuildFinancialSnapshot>(() => _i5.BuildFinancialSnapshot(
           gh<_i837.WatchAccounts>(),
           gh<_i902.WatchAccountsOverview>(),

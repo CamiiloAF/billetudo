@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Descriptor del widget de captura rápida (HU-06).
+
+  `updatePeriodMillis="0"`: sin refresco periódico, a propósito. El widget no
+  muestra datos, así que no hay nada que actualizar — y así tampoco gasta
+  batería (HU-05).
+
+  `minWidth` ≈ 2 columnas (variante compacta, 2 atajos) y es redimensionable
+  hasta la fila completa de 4; el provider decide cuántos caben.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="110dp"
+    android:minHeight="60dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="60dp"
+    android:targetCellWidth="4"
+    android:targetCellHeight="1"
+    android:maxResizeWidth="320dp"
+    android:maxResizeHeight="110dp"
+    android:updatePeriodMillis="0"
+    android:initialLayout="@layout/widget_quick_capture"
+    android:previewLayout="@layout/widget_quick_capture"
+    android:description="@string/widget_quick_capture_description"
+    android:resizeMode="horizontal"
+    android:widgetCategory="home_screen" />

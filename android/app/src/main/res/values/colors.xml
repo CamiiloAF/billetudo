@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Colores del widget de captura rápida
+  (docs/requirements/fase-2/20-widget-captura-rapida.md, HU-10).
+
+  DUPLICACIÓN DELIBERADA: el widget corre en el proceso del launcher, no en el
+  de Flutter, así que no puede leer `lib/core/theme/app_colors.dart` ni las
+  variables de `billetudo.pen`. Estos valores son la réplica nativa de los
+  tokens del sistema de diseño (tema claro; el oscuro en `values-night`).
+  Si un token cambia en el .pen, hay que cambiarlo aquí también.
+
+  El widget sigue el tema del SISTEMA (decisión 7 del requisito), no el de
+  Ajustes → Apariencia: leer esa preferencia exigiría el espejo de datos entre
+  procesos que el alcance de "atajo puro" eliminó.
+-->
+<resources>
+    <!-- $surface -->
+    <color name="widget_surface">#FFFFFFFF</color>
+    <!-- $border -->
+    <color name="widget_border">#FFECEBF3</color>
+    <!-- $primary -->
+    <color name="widget_primary">#FF6C5CE7</color>
+    <!-- $on-primary -->
+    <color name="widget_on_primary">#FFFFFFFF</color>
+    <!-- $text-primary -->
+    <color name="widget_text_primary">#FF1C1B29</color>
+    <!-- $text-secondary -->
+    <color name="widget_text_secondary">#FF6B6980</color>
+</resources>

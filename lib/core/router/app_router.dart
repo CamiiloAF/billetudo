@@ -199,6 +199,36 @@ abstract final class AppRoutes {
   static const String importCsv = '$importExport/importar';
   static const String importBatches = '$importExport/importaciones';
 
+  /// Voice capture (`docs/requirements/fase-2/17-captura-voz.md`).
+  ///
+  /// **PENDIENTE DE CABLEAR:** the screen behind this path is being built on
+  /// `feat/capture-voice`; no `GoRoute` declares it here yet, so it is listed
+  /// in [pendingWidgetTargets] and the home-screen widget's "Voz" shortcut
+  /// degrades to the manual form until that branch lands (HU-02: a
+  /// unavailable capture never dead-ends the user). Wiring it up is deleting
+  /// it from that set — nothing on the native side changes.
+  static const String voiceCapture = '/captura/voz';
+
+  /// Bank-notification inbox behind the bell
+  /// (`docs/requirements/fase-2/19-notificaciones-bancarias.md`).
+  ///
+  /// **PENDIENTE DE CABLEAR:** its base route lives on
+  /// `feat/fase2-fundamentos`. Same deal as [voiceCapture].
+  static const String bankInbox = '/movimientos/por-confirmar';
+
+  /// Destinations the home-screen widget can point at that no `GoRoute`
+  /// serves yet. Anything listed here falls back to the manual movement form
+  /// instead of landing on the router's error page — HU-01 is explicit that a
+  /// widget tap costs a slower launch, never an error.
+  static const Set<String> pendingWidgetTargets = {voiceCapture, bankInbox};
+
+  /// The new-movement form with [type] preselected — the destination of the
+  /// home-screen widget's "Gasto"/"Ingreso" shortcuts (HU-01/HU-02 of
+  /// `docs/requirements/fase-2/20-widget-captura-rapida.md`). Read back by
+  /// `_typeFromQuery`.
+  static String newTransactionOfType(TransactionType type) =>
+      '$newTransaction?type=${type.name}';
+
   /// The new-movement form preselecting [accountId] — used when the movements
   /// list is filtered down to a single account (HU-06a). The form still lets
   /// the user change it.

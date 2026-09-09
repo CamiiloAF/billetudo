@@ -18,6 +18,8 @@ import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart';
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.dart';
 import 'package:billetudo/features/budgets/domain/usecases/watch_featured_budget_progress.dart';
+import 'package:billetudo/features/capture/presentation/cubit/capture_shortcut_cubit.dart';
+import 'package:billetudo/features/capture/presentation/cubit/capture_shortcut_state.dart';
 import 'package:billetudo/features/home/domain/usecases/dismiss_home_insight.dart';
 import 'package:billetudo/features/home/domain/usecases/record_home_insight_shown.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_has_any_budget.dart';
@@ -40,6 +42,9 @@ class _MockWatchAccounts extends Mock implements WatchAccounts {}
 
 class _MockThemeModeCubit extends MockCubit<ThemeMode>
     implements ThemeModeCubit {}
+
+class _MockCaptureShortcutCubit extends MockCubit<CaptureShortcutState>
+    implements CaptureShortcutCubit {}
 
 class _MockWatchMonthTransactions extends Mock
     implements WatchMonthTransactions {}
@@ -182,6 +187,20 @@ void main() {
           cubit,
           const Stream<AppSettingsState>.empty(),
           initialState: const AppSettingsState(),
+        );
+        when(cubit.start).thenAnswer((_) async {});
+        return cubit;
+      })
+      // `BilletudoApp` también resuelve el cubit de los atajos del widget de
+      // la pantalla de inicio directo de `getIt`; el real habla por un canal
+      // de plataforma que no existe bajo `flutter test`.
+      ..registerFactory<CaptureShortcutCubit>(() {
+        final cubit = _MockCaptureShortcutCubit();
+        when(() => cubit.state).thenReturn(const CaptureShortcutState());
+        whenListen(
+          cubit,
+          const Stream<CaptureShortcutState>.empty(),
+          initialState: const CaptureShortcutState(),
         );
         when(cubit.start).thenAnswer((_) async {});
         return cubit;
