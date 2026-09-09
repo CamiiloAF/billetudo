@@ -6454,4 +6454,134 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsAiConsentWithdrawSheetConfirm => 'Retirar';
+
+  @override
+  String get captureVoiceListening => 'Escuchando…';
+
+  @override
+  String get captureVoicePreparing => 'Preparando el micrófono…';
+
+  @override
+  String get captureVoiceHint => 'Di algo como «gasté veinte mil en almuerzo»';
+
+  @override
+  String get captureVoicePrivacyCaption =>
+      'El audio no se guarda. Solo se usa para llenar el formulario.';
+
+  @override
+  String get captureVoicePartialCaption =>
+      'Al terminar abrimos el formulario con lo que se entendió. Tú confirmas.';
+
+  @override
+  String get captureVoiceCancel => 'Cancelar';
+
+  @override
+  String get captureVoiceDone => 'Listo';
+
+  @override
+  String get captureVoiceSoundLevelLabel => 'Nivel del micrófono';
+
+  @override
+  String get captureVoiceNoAmountTitle => 'No alcanzamos a captar el monto';
+
+  @override
+  String get captureVoiceNoAmountMessage =>
+      'Lo que dijiste no se pierde: se va como nota al formulario.';
+
+  @override
+  String get captureVoiceRetry => 'Intentar de nuevo';
+
+  @override
+  String get captureVoiceWriteByHand => 'Escribir a mano';
+
+  @override
+  String get captureVoicePermissionTitle => 'El micrófono está desactivado';
+
+  @override
+  String get captureVoicePermissionMessage =>
+      'Lo usamos solo mientras dictas, para llenar el formulario por ti. El audio no se guarda.';
+
+  @override
+  String get captureVoicePermissionFact1Title => 'Solo mientras dictas';
+
+  @override
+  String get captureVoicePermissionFact1Body =>
+      'El micrófono se apaga en cuanto terminas la frase o cancelas.';
+
+  @override
+  String get captureVoicePermissionFact2Title => 'El audio no se guarda';
+
+  @override
+  String get captureVoicePermissionFact2Body =>
+      'Se usa para entender la frase y se descarta al terminar. No se respalda ni se sincroniza.';
+
+  @override
+  String get captureVoicePermissionFact3Title => 'Puedes seguir sin él';
+
+  @override
+  String get captureVoicePermissionFact3Body =>
+      'Escribir un movimiento a mano funciona igual que siempre, con o sin micrófono.';
+
+  @override
+  String get captureVoicePermissionOpenSettings => 'Abrir ajustes';
+
+  @override
+  String get captureVoicePermissionAllow => 'Activar el micrófono';
+
+  @override
+  String get captureVoiceUnavailableTitle =>
+      'El dictado no está disponible aquí';
+
+  @override
+  String get captureVoiceUnavailableMessage =>
+      'Tu teléfono no puede transcribir en el idioma de la app ahora mismo. Escribir a mano funciona igual que siempre.';
+
+  @override
+  String get captureVoiceOnDeviceUnavailableMessage =>
+      'Tu teléfono no puede transcribir sin enviar el audio a internet, y no lo hacemos sin preguntarte antes. Escribir a mano funciona igual que siempre.';
+
+  @override
+  String get captureVoiceNoConnectionMessage =>
+      'El dictado necesita conexión en este teléfono y ahora no la hay. Escribir a mano funciona igual que siempre.';
+
+  @override
+  String get captureVoiceBusyMessage =>
+      'Otra app está usando el micrófono. Cuando la cierres puedes volver a dictar.';
+
+  @override
+  String get captureVoiceDictate => 'Dictar';
+
+  @override
+  String get captureVoiceDictateTooltip => 'Dictar el movimiento';
+
+  @override
+  String get captureVoiceFabLongPressHint => 'Mantén presionado para dictar';
+
+  @override
+  String get tutorialVoiceCaptureTitle => 'Dicta un gasto sin teclear';
+
+  @override
+  String get tutorialVoiceCapturePoint1Heading =>
+      'Mantén presionado el botón +';
+
+  @override
+  String get tutorialVoiceCapturePoint1Body =>
+      'En Inicio, deja el dedo un segundo sobre el botón + y empieza a hablar.';
+
+  @override
+  String get tutorialVoiceCapturePoint2Heading => 'Di la frase de corrido';
+
+  @override
+  String get tutorialVoiceCapturePoint2Body =>
+      '«Gasté veinte mil en almuerzo con Nequi». De ahí salen el monto, la categoría y la cuenta.';
+
+  @override
+  String get tutorialVoiceCapturePoint3Heading => 'Tú confirmas siempre';
+
+  @override
+  String get tutorialVoiceCapturePoint3Body =>
+      'La app llena el formulario con lo que entendió. Nada queda registrado hasta que tocas guardar.';
+
+  @override
+  String get tutorialVoiceCaptureCta => 'Probar ahora';
 }

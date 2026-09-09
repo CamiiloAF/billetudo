@@ -361,6 +361,8 @@ import 'package:billetudo/features/capture/domain/usecases/stop_voice_capture.da
     as _i334;
 import 'package:billetudo/features/capture/domain/usecases/watch_voice_capture_updates.dart'
     as _i853;
+import 'package:billetudo/features/capture/presentation/cubit/voice_capture_cubit.dart'
+    as _i782;
 import 'package:billetudo/features/categories/data/datasources/categories_local_datasource.dart'
     as _i151;
 import 'package:billetudo/features/categories/data/datasources/category_seeds_remote_datasource.dart'
@@ -1872,6 +1874,18 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i545.WatchArchivedAccounts(gh<_i1067.AccountRepository>()));
     gh.factory<_i511.EditGoalMovementCubit>(
         () => _i511.EditGoalMovementCubit(gh<_i1000.UpdateGoalMovement>()));
+    gh.factory<_i782.VoiceCaptureCubit>(() => _i782.VoiceCaptureCubit(
+          gh<_i184.GetVoiceCaptureAvailability>(),
+          gh<_i695.RequestMicrophonePermission>(),
+          gh<_i1073.OpenMicrophoneSettings>(),
+          gh<_i1048.StartVoiceCapture>(),
+          gh<_i334.StopVoiceCapture>(),
+          gh<_i545.CancelVoiceCapture>(),
+          gh<_i853.WatchVoiceCaptureUpdates>(),
+          gh<_i996.ParseSpokenTransaction>(),
+          gh<_i837.WatchAccounts>(),
+          gh<_i722.WatchCategories>(),
+        ));
     gh.factory<_i479.WatchBudgetPeriodOptions>(
         () => _i479.WatchBudgetPeriodOptions(gh<_i674.GetActiveBudgets>()));
     gh.factory<_i11.ScheduledPaymentDetailCubit>(

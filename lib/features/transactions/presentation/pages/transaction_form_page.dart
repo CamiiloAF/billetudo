@@ -44,7 +44,11 @@ import '../widgets/transaction_type_segmented_control.dart';
 /// (Segmented Control -> Cuenta(s) -> Categoría -> Fecha -> Nota -> Etiquetas);
 /// the amount lives in the anchored Zona Fija at the bottom.
 class TransactionFormPage extends StatefulWidget {
-  const TransactionFormPage({this.onConvertToScheduledPayment, super.key});
+  const TransactionFormPage({
+    this.onConvertToScheduledPayment,
+    this.onDictate,
+    super.key,
+  });
 
   /// HU-06/criterion 14: called instead of `cubit.submit()` when the user
   /// accepts turning a future-dated new movement into a scheduled payment.
@@ -55,6 +59,20 @@ class TransactionFormPage extends StatefulWidget {
   /// from it. `null` (e.g. in tests) simply disables the puente: Guardar
   /// always behaves like today.
   final ValueChanged<TransactionFormState>? onConvertToScheduledPayment;
+
+  /// The secondary voice trigger (`17-captura-voz.md` HU-02): the "Dictar"
+  /// pill of the amount `Zona Fija`.
+  ///
+  /// Supplied by the router for the same reason as
+  /// [onConvertToScheduledPayment] — it is the only layer allowed to know
+  /// both Transacciones and Captura, so this page never imports the capture
+  /// feature and Transacciones stays uncoupled from it. It receives the cubit
+  /// so it can fill the form in place with `completeFromVoice`; nothing is
+  /// ever saved on its own. `null` (e.g. in tests) simply hides the pill.
+  final Future<void> Function(
+    BuildContext context,
+    TransactionFormCubit cubit,
+  )? onDictate;
 
   @override
   State<TransactionFormPage> createState() => _TransactionFormPageState();
@@ -161,6 +179,11 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
                         onEquals: cubit.amountEqualsPressed,
                         onBackspace: cubit.amountBackspace,
                         onBackspaceLongPress: cubit.amountCleared,
+                        onDictate: widget.onDictate == null
+                            ? null
+                            : () => unawaited(
+                                  widget.onDictate!(context, cubit),
+                                ),
                         errorText: state.failedField ==
                                 TransactionDraft.fieldAmountMinor
                             ? l10n.transactionErrorAmount
@@ -251,8 +274,7 @@ class TransactionFormScrollZone extends StatefulWidget {
       _TransactionFormScrollZoneState();
 }
 
-class _TransactionFormScrollZoneState
-    extends State<TransactionFormScrollZone> {
+class _TransactionFormScrollZoneState extends State<TransactionFormScrollZone> {
   late final FocusNode _noteFocusNode;
 
   @override
@@ -528,8 +550,8 @@ class TransferAccountsGroupBody extends StatelessWidget {
                     state.failedField == TransactionDraft.fieldTransferAccountId
                         ? l10n.transactionErrorTransferAccount
                         : null,
-                beforeOpen: () =>
-                    showAccountGateIfNeeded(context, AccountGateSurface.transfer),
+                beforeOpen: () => showAccountGateIfNeeded(
+                    context, AccountGateSurface.transfer),
               ),
             ),
           ],

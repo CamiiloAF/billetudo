@@ -45,6 +45,12 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   /// since it is never rendered — only diffed against the pending draft.
   Transaction? _original;
 
+  /// The state the form was born with, used by [completeFromVoice] to tell
+  /// "still the default the form opened with" from "the user chose this".
+  /// Not in the state either: it describes the editing session, not the
+  /// movement.
+  TransactionFormState? _initialState;
+
   /// Loads the transaction to edit, or prepares an empty form of [type] when
   /// [id] is null.
   Future<void> load(
@@ -84,6 +90,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
           focusedField: TransactionFormFocusedField.amount,
         ),
       );
+      _initialState = state;
       return;
     }
 
@@ -103,6 +110,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       case Right(value: final entry):
         _original = entry.transaction;
         emit(_formFor(entry));
+        _initialState = state;
     }
   }
 
@@ -159,6 +167,65 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
         focusedField: amountMinor == null || amountIsUncertain
             ? TransactionFormFocusedField.amount
             : TransactionFormFocusedField.none,
+      ),
+    );
+  }
+
+  /// Fills in from a voice capture started **from an already open form**
+  /// (`E1vEe7`'s "Dictar" pill), as opposed to [loadFromVoice], which builds
+  /// the form from scratch.
+  ///
+  /// It **completes, it does not overwrite**: only fields the user has not
+  /// touched since the form opened take a dictated value (HU-05). "Touched"
+  /// is measured against the state the form was born with, so the account and
+  /// the date — which always open with a default rather than empty — still
+  /// count as dictatable until the user picks something themselves.
+  ///
+  /// The `source` is *not* flipped to voice: a movement the user started
+  /// typing by hand and then completed by dictating is not a voice capture,
+  /// and the source measures where the record came from, not which controls
+  /// were used along the way.
+  void completeFromVoice({
+    int? amountMinor,
+    bool amountIsUncertain = false,
+    TransactionType? type,
+    String? accountId,
+    String? categoryId,
+    String? categoryName,
+    CategoryKind? categoryKind,
+    DateTime? date,
+    String? note,
+  }) {
+    if (state.status != TransactionFormStatus.ready) {
+      return;
+    }
+    final baseline = _initialState;
+    final canFillAmount = state.amountMinor == 0;
+    final canFillCategory = state.categoryId == null;
+    final canFillNote = state.note.isEmpty;
+    final canFillAccount =
+        baseline == null || state.accountId == baseline.accountId;
+    final canFillDate = baseline == null || state.date == baseline.date;
+    final fillsAmount = amountMinor != null && canFillAmount;
+
+    emit(
+      state.copyWith(
+        type: type != null && state.amountMinor == 0 ? type : state.type,
+        amountMinor: fillsAmount ? amountMinor : state.amountMinor,
+        amountIsUncertain: fillsAmount && amountIsUncertain,
+        entryFractionDigits: fillsAmount ? -1 : state.entryFractionDigits,
+        accountId:
+            canFillAccount && accountId != null ? accountId : state.accountId,
+        categoryId: canFillCategory ? categoryId : state.categoryId,
+        categoryName: canFillCategory ? categoryName : state.categoryName,
+        categoryKind: canFillCategory ? categoryKind : state.categoryKind,
+        date: canFillDate && date != null ? date : state.date,
+        note: canFillNote && note != null ? note : state.note,
+        // Same landing as the voice-opened form: whatever still needs the user
+        // takes the focus, and an inferred amount always does.
+        focusedField: fillsAmount && !amountIsUncertain
+            ? TransactionFormFocusedField.none
+            : TransactionFormFocusedField.amount,
       ),
     );
   }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../features/tutorials/domain/entities/tutorial_content.dart';
 import '../../features/tutorials/presentation/utils/tutorial_icons.dart';
@@ -19,7 +18,7 @@ enum TutorialSheetResult {
 }
 
 /// The one shared minitutorial sheet (`docs/requirements/fase-1/16-minitutoriales.md`)
-/// every one of the 12 tutorials renders through — parameterized by
+/// every tutorial renders through — parameterized by
 /// [TutorialContent], never a bespoke widget per feature.
 ///
 /// Two shapes, driven by [TutorialContent.hasNavigationCta]:
@@ -114,13 +113,16 @@ class TutorialSheet extends StatelessWidget {
         const SizedBox(height: 18),
         if (hasCta) ...[
           FilledButton(
-            onPressed: () =>
-                Navigator.of(context).pop(TutorialSheetResult.cta),
+            onPressed: () => Navigator.of(context).pop(TutorialSheetResult.cta),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(LucideIcons.plus, size: 18, color: colors.onPrimary),
+                Icon(
+                  TutorialIcons.iconFor(content.ctaIconName),
+                  size: 18,
+                  color: colors.onPrimary,
+                ),
                 const SizedBox(width: 8),
                 Text(content.ctaLabel!),
               ],
@@ -128,8 +130,7 @@ class TutorialSheet extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           InkWell(
-            onTap: () =>
-                Navigator.of(context).pop(TutorialSheetResult.gotIt),
+            onTap: () => Navigator.of(context).pop(TutorialSheetResult.gotIt),
             borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
             child: SizedBox(
               height: 44,

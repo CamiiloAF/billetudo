@@ -1,4 +1,4 @@
-/// The 12 stable contextual-help minitutorials (`docs/requirements/fase-1/16-minitutoriales.md`).
+/// The stable contextual-help minitutorials (`docs/requirements/fase-1/16-minitutoriales.md`).
 ///
 /// [id] is the value persisted as `TutorialViews.id` — a small fixed string,
 /// NOT a random UUID, so it stays stable across app versions and is shared
@@ -55,20 +55,34 @@ enum TutorialKey {
   /// the moment the "¿cuál se destaca en Inicio?" ambiguity first appears —
   /// the first budget was already auto-featured with no user action needed,
   /// so nothing to explain existed before this point.
-  budgetFeaturedChoice('tutorial-budget-featured-choice');
+  budgetFeaturedChoice('tutorial-budget-featured-choice'),
+
+  /// HU-02 of `17-captura-voz.md` — long-pressing the Inicio FAB to dictate a
+  /// movement. Grouped with the screen tutorials because it has their exact
+  /// shape (3 points plus a CTA that performs the real action), even though
+  /// what it teaches is a gesture on Inicio rather than a whole section.
+  ///
+  /// It is the one tutorial whose whole reason to exist is that the gesture is
+  /// invisible: nobody discovers a long-press on their own. So it also has to
+  /// reach users who were already using the app before it existed — which
+  /// needs no migration at all, since a key that was never recorded as seen
+  /// simply is not seen.
+  voiceCaptureGesture('tutorial-voice-capture-gesture');
 
   const TutorialKey(this.id);
 
   /// Stable key persisted as `TutorialViews.id`. See class doc.
   final String id;
 
-  /// The 4 HU-01 screen-level tutorials — the ones with a navigation CTA and
-  /// a `?` reopen affordance in their screen's header.
+  /// The screen-level tutorials — the ones with a navigation CTA, 2-3 points
+  /// and (for the 4 HU-01 ones) a `?` reopen affordance in their screen's
+  /// header.
   static const Set<TutorialKey> screenTutorials = {
     budgetsScreen,
     goalsScreen,
     debtsScreen,
     scheduledPaymentsScreen,
+    voiceCaptureGesture,
   };
 
   /// The 8 HU-02 sub-flow tutorials — short, no navigation CTA.
@@ -83,7 +97,7 @@ enum TutorialKey {
     budgetFeaturedChoice,
   };
 
-  /// Whether this is one of the 4 HU-01 screen tutorials (vs. a HU-02
+  /// Whether this is one of the screen-level tutorials (vs. a HU-02
   /// sub-flow one).
   bool get isScreenTutorial => screenTutorials.contains(this);
 }

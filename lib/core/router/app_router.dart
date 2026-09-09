@@ -46,6 +46,7 @@ import '../../features/budgets/presentation/pages/archived_budgets_page.dart';
 import '../../features/budgets/presentation/pages/budget_detail_page.dart';
 import '../../features/budgets/presentation/pages/budget_form_page.dart';
 import '../../features/budgets/presentation/pages/budgets_page.dart';
+import '../../features/capture/presentation/widgets/voice_capture_sheet.dart';
 import '../../features/categories/domain/entities/category.dart';
 import '../../features/categories/presentation/cubit/categories_list_cubit.dart';
 import '../../features/categories/presentation/cubit/category_form_cubit.dart';
@@ -753,6 +754,7 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
                 builder: (context) => BlocProvider(
                   create: (context) => _startedTransactionForm(state.uri),
                   child: TransactionFormPage(
+                    onDictate: _dictateIntoTransactionForm,
                     // pushReplacement, not push: the transaction form must leave
                     // the stack as the scheduled-payment form opens, so popping
                     // the PP form (after saving it) returns to the movements
@@ -2311,9 +2313,8 @@ TransactionFormCubit _startedTransactionForm(Uri uri) {
     cubit.loadFromVoice(
       amountMinor: int.tryParse(uri.queryParameters['amountMinor'] ?? ''),
       amountIsUncertain: uri.queryParameters['amountIsUncertain'] == 'true',
-      type: uri.queryParameters.containsKey('type')
-          ? _typeFromQuery(uri)
-          : null,
+      type:
+          uri.queryParameters.containsKey('type') ? _typeFromQuery(uri) : null,
       accountId: uri.queryParameters['accountId'],
       categoryId: uri.queryParameters['categoryId'],
       categoryName: uri.queryParameters['categoryName'],
@@ -2328,6 +2329,37 @@ TransactionFormCubit _startedTransactionForm(Uri uri) {
     ),
   );
   return cubit;
+}
+
+/// The "Dictar" pill of an already open movement form
+/// (`17-captura-voz.md` HU-02).
+///
+/// Same reason this lives in the router as `_startedTransactionForm` above:
+/// it is the only layer that may know both Transacciones and Captura, so the
+/// form page stays free of any import from the capture feature.
+///
+/// Unlike the Inicio trigger it navigates nowhere — the user is already on the
+/// form. The draft only *completes* the fields they have not touched, and
+/// nothing is written until they press Guardar.
+Future<void> _dictateIntoTransactionForm(
+  BuildContext context,
+  TransactionFormCubit cubit,
+) async {
+  final draft = await VoiceCaptureSheet.show(context);
+  if (draft == null) {
+    return;
+  }
+  cubit.completeFromVoice(
+    amountMinor: draft.amountMinor,
+    amountIsUncertain: draft.amountIsUncertain,
+    type: draft.type,
+    accountId: draft.accountId,
+    categoryId: draft.categoryId,
+    categoryName: draft.categoryName,
+    categoryKind: draft.categoryKind,
+    date: draft.date,
+    note: draft.note,
+  );
 }
 
 TransactionType _typeFromQuery(Uri uri) {
