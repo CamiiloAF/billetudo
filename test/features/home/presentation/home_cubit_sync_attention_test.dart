@@ -13,6 +13,7 @@ import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart';
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.dart';
 import 'package:billetudo/features/budgets/domain/usecases/watch_featured_budget_progress.dart';
+import 'package:billetudo/features/capture/domain/usecases/watch_pending_capture_count.dart';
 import 'package:billetudo/features/home/domain/entities/home_ai_insight.dart';
 import 'package:billetudo/features/home/domain/entities/month_spending.dart';
 import 'package:billetudo/features/home/domain/usecases/dismiss_home_insight.dart';
@@ -60,6 +61,9 @@ class MockWatchHomeAiInsight extends Mock implements WatchHomeAiInsight {}
 class MockWatchPendingScheduledPaymentCount extends Mock
     implements WatchPendingScheduledPaymentCount {}
 
+class MockWatchPendingCaptureCount extends Mock
+    implements WatchPendingCaptureCount {}
+
 class MockCheckAiAccess extends Mock implements CheckAiAccess {}
 
 class MockGetConversationForInsight extends Mock
@@ -88,6 +92,7 @@ void main() {
   late MockWatchHasAnyBudget watchHasAnyBudget;
   late MockWatchHomeAiInsight watchHomeAiInsight;
   late MockWatchPendingScheduledPaymentCount watchPendingScheduledPaymentCount;
+  late MockWatchPendingCaptureCount watchPendingCaptureCount;
   late MockCheckAiAccess checkAiAccess;
   late MockGetConversationForInsight getConversationForInsight;
   late MockDismissHomeInsight dismissHomeInsight;
@@ -117,6 +122,7 @@ void main() {
     watchHasAnyBudget = MockWatchHasAnyBudget();
     watchHomeAiInsight = MockWatchHomeAiInsight();
     watchPendingScheduledPaymentCount = MockWatchPendingScheduledPaymentCount();
+    watchPendingCaptureCount = MockWatchPendingCaptureCount();
     checkAiAccess = MockCheckAiAccess();
     getConversationForInsight = MockGetConversationForInsight();
     when(() => getConversationForInsight(any()))
@@ -130,6 +136,8 @@ void main() {
     when(() => watchHasAnyBudget())
         .thenAnswer((_) => Stream<Result<bool>>.value(const Right(true)));
     when(() => watchPendingScheduledPaymentCount())
+        .thenAnswer((_) => Stream<Result<int>>.value(const Right(0)));
+    when(() => watchPendingCaptureCount())
         .thenAnswer((_) => Stream<Result<int>>.value(const Right(0)));
     when(
       () => watchHomeAiInsight(
@@ -185,6 +193,7 @@ void main() {
       watchHasAnyBudget,
       watchHomeAiInsight,
       watchPendingScheduledPaymentCount,
+      watchPendingCaptureCount,
       checkAiAccess,
       getConversationForInsight,
       dismissHomeInsight,
@@ -358,6 +367,7 @@ void main() {
       watchHasAnyBudget,
       watchHomeAiInsight,
       watchPendingScheduledPaymentCount,
+      watchPendingCaptureCount,
       checkAiAccess,
       getConversationForInsight,
       dismissHomeInsight,

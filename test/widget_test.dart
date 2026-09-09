@@ -18,6 +18,7 @@ import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart';
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.dart';
 import 'package:billetudo/features/budgets/domain/usecases/watch_featured_budget_progress.dart';
+import 'package:billetudo/features/capture/domain/usecases/watch_pending_capture_count.dart';
 import 'package:billetudo/features/home/domain/usecases/dismiss_home_insight.dart';
 import 'package:billetudo/features/home/domain/usecases/record_home_insight_shown.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_has_any_budget.dart';
@@ -67,6 +68,9 @@ class _MockWatchHomeAiInsight extends Mock implements WatchHomeAiInsight {}
 class _MockWatchPendingScheduledPaymentCount extends Mock
     implements WatchPendingScheduledPaymentCount {}
 
+class _MockWatchPendingCaptureCount extends Mock
+    implements WatchPendingCaptureCount {}
+
 class _MockCheckAiAccess extends Mock implements CheckAiAccess {}
 
 class _MockGetConversationForInsight extends Mock
@@ -103,6 +107,7 @@ void main() {
     final watchHomeAiInsight = _MockWatchHomeAiInsight();
     final watchPendingScheduledPaymentCount =
         _MockWatchPendingScheduledPaymentCount();
+    final watchPendingCaptureCount = _MockWatchPendingCaptureCount();
     final checkAiAccess = _MockCheckAiAccess();
     final getConversationForInsight = _MockGetConversationForInsight();
     final dismissHomeInsight = _MockDismissHomeInsight();
@@ -129,6 +134,8 @@ void main() {
         .thenAnswer((_) => const Stream<Result<bool>>.empty());
     when(watchPendingScheduledPaymentCount.call)
         .thenAnswer((_) => const Stream<Result<int>>.empty());
+    when(watchPendingCaptureCount.call)
+        .thenAnswer((_) => const Stream<Result<int>>.empty());
     // `HomeCubit.start()` asks the server whether the assistant is available.
     // This smoke test is not about IA: `denied` is the neutral answer (it is
     // also the fail-closed default of `AiAccess`), so the AI card stays hidden
@@ -151,6 +158,7 @@ void main() {
           watchHasAnyBudget,
           watchHomeAiInsight,
           watchPendingScheduledPaymentCount,
+          watchPendingCaptureCount,
           checkAiAccess,
           getConversationForInsight,
           dismissHomeInsight,

@@ -1,7 +1,9 @@
 import 'package:billetudo/core/preferences/account_filter_preference_datasource.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
+import 'package:billetudo/features/capture/domain/usecases/confirm_pending_capture.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart'
     show CategoryKind;
+import 'package:billetudo/features/categories/domain/usecases/get_category.dart';
 import 'package:billetudo/features/categories/domain/usecases/get_category_subtree_ids.dart';
 import 'package:billetudo/features/categories/domain/usecases/watch_categories.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
@@ -84,3 +86,8 @@ void registerPresentationFallbacks() {
     ),
   );
 }
+
+class MockConfirmPendingCapture extends Mock
+    implements ConfirmPendingCapture {}
+
+class MockGetCategory extends Mock implements GetCategory {}

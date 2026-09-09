@@ -390,7 +390,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'No pudimos leer el número guardado en este dispositivo. Lo dejamos tal cual está: si quieres cambiarlo, escríbelo de nuevo.';
 
   @override
-  String get accountFormLast4Label => 'Últimos 4 dígitos';
+  String get accountFormLast4Label => 'Últimos 4 dígitos de la cuenta';
 
   @override
   String get accountFormLast4Hint => 'Ej. 4321';
@@ -6454,4 +6454,110 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsAiConsentWithdrawSheetConfirm => 'Retirar';
+
+  @override
+  String get captureNoticesTitle => 'Avisos';
+
+  @override
+  String get captureSectionTitle => 'Capturas por confirmar';
+
+  @override
+  String get captureSectionCaption =>
+      'Aún no afectan tu saldo. Se registran solo cuando tú lo confirmas.';
+
+  @override
+  String get captureSectionCaptionCompact =>
+      'Aún no afectan tu saldo hasta que tú confirmes.';
+
+  @override
+  String captureOverflowLabel(int count) {
+    return 'Ver las otras $count capturas';
+  }
+
+  @override
+  String get captureEmptyTitle => 'Todo al día';
+
+  @override
+  String get captureEmptyDescription =>
+      'No tienes nada por revisar. Cuando tu banco te avise de una compra, o se acerque un pago, aparecerá aquí.';
+
+  @override
+  String get captureNoIssuersTitle => 'Todavía no escuchamos ninguna app';
+
+  @override
+  String get captureNoIssuersDescription =>
+      'Elige de qué apps de banco quieres que leamos los avisos de compra. Sin eso, aquí no aparece nada.';
+
+  @override
+  String get captureNoIssuersCta => 'Elegir apps';
+
+  @override
+  String get captureNotBalancePill => 'No suma a tu saldo';
+
+  @override
+  String captureIssuerLabel(String issuer) {
+    return 'Aviso de $issuer';
+  }
+
+  @override
+  String get captureConfirmAction => 'Confirmar';
+
+  @override
+  String get captureNoAccount => 'Sin cuenta';
+
+  @override
+  String get captureNoMerchant => 'Movimiento sin descripción';
+
+  @override
+  String captureSubtitle(String account, String when) {
+    return '$account · $when';
+  }
+
+  @override
+  String get captureDuplicatePill => 'Posible duplicado';
+
+  @override
+  String get captureDuplicateSameAction => 'Es la misma';
+
+  @override
+  String get captureDuplicateOtherAction => 'Es otra compra';
+
+  @override
+  String captureDuplicateExistingSubtitle(String account, String when) {
+    return 'Ya registrado · $account · $when';
+  }
+
+  @override
+  String get captureGhostBlockTitle => 'Pendientes de confirmar';
+
+  @override
+  String captureGhostBlockCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count propuestas · no suman',
+      one: '1 propuesta · no suma',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get captureDiscardedMessage => 'Captura descartada';
+
+  @override
+  String get captureBellTooltip => 'Avisos';
+
+  @override
+  String get captureAccountCardLast4Label =>
+      'Últimos 4 dígitos de la tarjeta (opcional)';
+
+  @override
+  String get captureAccountCardLast4Hint => 'Ej. 4321';
+
+  @override
+  String get captureAccountCardLast4Helper =>
+      'Cuando tu banco te avise de una compra, usamos estos 4 dígitos para sugerirte esta cuenta.';
+
+  @override
+  String get captureAccountCardLast4Error => 'Deben ser exactamente 4 dígitos.';
 }

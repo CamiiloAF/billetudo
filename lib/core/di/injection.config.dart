@@ -391,6 +391,10 @@ import 'package:billetudo/features/capture/domain/usecases/watch_pending_capture
     as _i179;
 import 'package:billetudo/features/capture/domain/usecases/watch_pending_captures.dart'
     as _i593;
+import 'package:billetudo/features/capture/presentation/cubit/notices_cubit.dart'
+    as _i166;
+import 'package:billetudo/features/capture/presentation/cubit/pending_captures_cubit.dart'
+    as _i1047;
 import 'package:billetudo/features/categories/data/datasources/categories_local_datasource.dart'
     as _i151;
 import 'package:billetudo/features/categories/data/datasources/category_seeds_remote_datasource.dart'
@@ -1947,6 +1951,16 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i739.WatchActiveAccountsCount(gh<_i1067.AccountRepository>()));
     gh.factory<_i545.WatchArchivedAccounts>(
         () => _i545.WatchArchivedAccounts(gh<_i1067.AccountRepository>()));
+    gh.factory<_i724.TransactionFormCubit>(() => _i724.TransactionFormCubit(
+          gh<_i990.CreateTransaction>(),
+          gh<_i885.UpdateTransaction>(),
+          gh<_i276.WatchTransactionDetail>(),
+          gh<_i604.GetTransactionEditImpact>(),
+          gh<_i460.SetTransactionTags>(),
+          gh<_i837.WatchAccounts>(),
+          gh<_i185.ConfirmPendingCapture>(),
+          gh<_i382.GetCategory>(),
+        ));
     gh.factory<_i511.EditGoalMovementCubit>(
         () => _i511.EditGoalMovementCubit(gh<_i1000.UpdateGoalMovement>()));
     gh.factory<_i479.WatchBudgetPeriodOptions>(
@@ -2069,6 +2083,25 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i117.SetAiNotesAccessEnabled>(),
           gh<_i377.ClearAiConsent>(),
         ));
+    gh.factory<_i199.HomeCubit>(() => _i199.HomeCubit(
+          gh<_i837.WatchAccounts>(),
+          gh<_i426.WatchMonthTransactions>(),
+          gh<_i188.WatchRecentTransactions>(),
+          gh<_i716.WatchAuthSession>(),
+          gh<_i773.WatchSyncStatusDetails>(),
+          gh<_i177.RestoreTransaction>(),
+          gh<_i241.WatchFeaturedBudgetProgress>(),
+          gh<_i871.GetBudgetById>(),
+          gh<_i559.GetBudgetProgress>(),
+          gh<_i738.WatchHasAnyBudget>(),
+          gh<_i434.WatchHomeAiInsight>(),
+          gh<_i196.WatchPendingScheduledPaymentCount>(),
+          gh<_i179.WatchPendingCaptureCount>(),
+          gh<_i699.CheckAiAccess>(),
+          gh<_i142.GetConversationForInsight>(),
+          gh<_i589.DismissHomeInsight>(),
+          gh<_i332.RecordHomeInsightShown>(),
+        ));
     gh.factory<_i881.RestoreBackup>(() => _i881.RestoreBackup(
           gh<_i418.BackupRepository>(),
           gh<_i639.ParseBackupHeader>(),
@@ -2153,24 +2186,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i574.DeleteAccount>(),
           gh<_i486.SecureClipboard>(),
         ));
-    gh.factory<_i199.HomeCubit>(() => _i199.HomeCubit(
-          gh<_i837.WatchAccounts>(),
-          gh<_i426.WatchMonthTransactions>(),
-          gh<_i188.WatchRecentTransactions>(),
-          gh<_i716.WatchAuthSession>(),
-          gh<_i773.WatchSyncStatusDetails>(),
-          gh<_i177.RestoreTransaction>(),
-          gh<_i241.WatchFeaturedBudgetProgress>(),
-          gh<_i871.GetBudgetById>(),
-          gh<_i559.GetBudgetProgress>(),
-          gh<_i738.WatchHasAnyBudget>(),
-          gh<_i434.WatchHomeAiInsight>(),
-          gh<_i196.WatchPendingScheduledPaymentCount>(),
-          gh<_i699.CheckAiAccess>(),
-          gh<_i142.GetConversationForInsight>(),
-          gh<_i589.DismissHomeInsight>(),
-          gh<_i332.RecordHomeInsightShown>(),
-        ));
     gh.factory<_i805.ReportsDashboardCubit>(
         () => _i805.ReportsDashboardCubit(gh<_i118.WatchReportsDashboard>()));
     gh.lazySingleton<_i536.TransactionsListCubit>(
@@ -2183,20 +2198,26 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i248.AccountFilterPreferenceDatasource>(),
               gh<_i941.GetCategorySubtreeIds>(),
             ));
-    gh.factory<_i724.TransactionFormCubit>(() => _i724.TransactionFormCubit(
-          gh<_i990.CreateTransaction>(),
-          gh<_i885.UpdateTransaction>(),
-          gh<_i276.WatchTransactionDetail>(),
-          gh<_i604.GetTransactionEditImpact>(),
-          gh<_i460.SetTransactionTags>(),
-          gh<_i837.WatchAccounts>(),
-        ));
     gh.factory<_i414.DebtPaymentCubit>(() => _i414.DebtPaymentCubit(
           gh<_i135.RegisterDebtCashEvent>(),
           gh<_i62.RegisterDebtLedgerEvent>(),
           gh<_i837.WatchAccounts>(),
           gh<_i554.DebtPaymentTogglePreferenceDatasource>(),
           gh<_i382.GetCategory>(),
+        ));
+    gh.factory<_i166.NoticesCubit>(() => _i166.NoticesCubit(
+          gh<_i593.WatchPendingCaptures>(),
+          gh<_i739.WatchIssuerCatalog>(),
+          gh<_i837.WatchAccounts>(),
+          gh<_i810.FindDuplicateCandidates>(),
+          gh<_i382.GetCategory>(),
+          gh<_i371.DiscardPendingCapture>(),
+          gh<_i917.RestorePendingCapture>(),
+        ));
+    gh.factory<_i1047.PendingCapturesCubit>(() => _i1047.PendingCapturesCubit(
+          gh<_i593.WatchPendingCaptures>(),
+          gh<_i739.WatchIssuerCatalog>(),
+          gh<_i837.WatchAccounts>(),
         ));
     gh.factory<_i531.AccountsListCubit>(() => _i531.AccountsListCubit(
           gh<_i837.WatchAccounts>(),

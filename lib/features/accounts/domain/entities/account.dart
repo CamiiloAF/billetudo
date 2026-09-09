@@ -46,6 +46,7 @@ class Account extends Equatable {
     required this.updatedAt,
     this.institution,
     this.last4,
+    this.cardLast4,
     this.interestRateBps,
     this.creditLimitMinor,
     this.statementDay,
@@ -78,6 +79,14 @@ class Account extends Equatable {
   /// Last 4 digits of the account number. The only syncable fragment (HU-03).
   final String? last4;
 
+  /// Last 4 digits of the **physical card** tied to this account
+  /// (`Accounts.cardLast4`). Deliberately distinct from [last4]: on a bank
+  /// account with a debit card the two do not coincide, and it is the card's
+  /// digits — not the account's — that a purchase notification quotes. Used
+  /// only to suggest this account when a capture arrives (HU-03), never to
+  /// identify the account.
+  final String? cardLast4;
+
   /// Annual interest rate in whole basis points (24.5% -> 2450). Informative in
   /// phase 0.
   final int? interestRateBps;
@@ -109,6 +118,7 @@ class Account extends Equatable {
         updatedAt,
         institution,
         last4,
+        cardLast4,
         interestRateBps,
         creditLimitMinor,
         statementDay,

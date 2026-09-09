@@ -46,6 +46,10 @@ import '../../features/budgets/presentation/pages/archived_budgets_page.dart';
 import '../../features/budgets/presentation/pages/budget_detail_page.dart';
 import '../../features/budgets/presentation/pages/budget_form_page.dart';
 import '../../features/budgets/presentation/pages/budgets_page.dart';
+import '../../features/capture/presentation/cubit/notices_cubit.dart';
+import '../../features/capture/presentation/cubit/pending_captures_cubit.dart';
+import '../../features/capture/presentation/pages/notices_page.dart';
+import '../../features/capture/presentation/utils/capture_prefill_mapper.dart';
 import '../../features/categories/domain/entities/category.dart';
 import '../../features/categories/presentation/cubit/categories_list_cubit.dart';
 import '../../features/categories/presentation/cubit/category_form_cubit.dart';
@@ -122,6 +126,7 @@ import '../../features/settings/presentation/pages/quick_access_order_page.dart'
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transactions/domain/entities/transaction.dart';
 import '../../features/transactions/domain/usecases/has_any_transaction.dart';
+import '../../features/transactions/presentation/cubit/capture_prefill.dart';
 import '../../features/transactions/presentation/cubit/transaction_detail_cubit.dart';
 import '../../features/transactions/presentation/cubit/transaction_form_cubit.dart';
 import '../../features/transactions/presentation/cubit/transactions_list_cubit.dart';
@@ -192,6 +197,14 @@ abstract final class AppRoutes {
   /// it only reads what is already on the device. Takes `conversationId` as
   /// a query parameter, same shape as [ai]'s own `conversationId` param.
   static const String aiConversationRead = '/asistente/conversacion';
+  /// The Avisos centre behind Home's bell (`Bk8zW`) — a full screen on its
+  /// own route, not a bottom sheet.
+  static const String notices = '/avisos';
+
+  /// The transaction form opened from a pending capture (HU-05). A child of
+  /// [notices] so popping it returns to the inbox; the `CapturePrefill`
+  /// travels as `extra`.
+  static const String dispatchCapture = '$notices/despachar';
   static const String pendingScheduledPayments =
       '/pagos-programados/por-confirmar';
   static const String importExport = '/mas/importar-exportar';
@@ -518,6 +531,7 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.home}) {
       _debtLinkModeRoute(),
       _goalLinkModeRoute(),
       _importExportRoute(),
+      _noticesRoute(),
       _reportsRoute(),
       _aiRoute(),
       _aiHistoryRoute(),
@@ -649,10 +663,13 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
                 _started(getIt<TransactionsListCubit>(), (c) => c.start());
             final carouselCubit =
                 _started(getIt<BalanceCarouselCubit>(), (c) => c.load());
+            final capturesCubit =
+                _started(getIt<PendingCapturesCubit>(), (c) async => c.start());
             return MultiBlocProvider(
               providers: [
                 BlocProvider.value(value: listCubit),
                 BlocProvider.value(value: carouselCubit),
+                BlocProvider.value(value: capturesCubit),
               ],
               child: TransactionsPage(
                 onAddTransaction: (accountId) => context.push(
@@ -663,6 +680,10 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
                 onOpenTransaction: (id) =>
                     context.push<String>(AppRoutes.transaction(id)),
                 onOpenAccount: (id) => context.push(AppRoutes.account(id)),
+                onDispatchCapture: (item) => context.push(
+                  AppRoutes.dispatchCapture,
+                  extra: capturePrefillFor(item),
+                ),
                 // Wired unconditionally: `TransactionsPage` only shows this
                 // as the header's leading button while
                 // `TransactionsListState.arrivedFromReports` is true. This
@@ -1326,6 +1347,53 @@ GoRoute _accountsRoute() => GoRoute(
 // Header` (no `Tab Bar`) hosting `ReportsPage`'s own 4-tab shell. One
 // `ReportsShellCubit` plus the 4 per-tab cubits, all provided once for the
 // life of the page so switching tabs never re-fetches (the shared period).
+/// The Avisos centre (`Bk8zW`) and the capture dispatch that hangs off it.
+///
+/// Dispatching reuses `TransactionFormPage` verbatim, pre-filled: a capture
+/// never gets a confirmation surface of its own with rules of its own. The
+/// account gate applies here for the same reason it applies to the ordinary
+/// new-movement route — a form with no account to save into is unusable, and
+/// the bridge offers to create one instead of showing a dead grey button.
+GoRoute _noticesRoute() => GoRoute(
+      path: AppRoutes.notices,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => BlocProvider(
+        create: (context) => _started(getIt<NoticesCubit>(), (c) async => c.start()),
+        child: NoticesPage(
+          onDispatchCapture: (item) => context.push(
+            AppRoutes.dispatchCapture,
+            extra: capturePrefillFor(item),
+          ),
+          // HU-02's issuer catalog has no screen yet; the generic
+          // "Próximamente" page is the honest placeholder until it does.
+          onChooseIssuers: () => context.push(
+            AppRoutes.comingSoonTitled(
+              AppLocalizations.of(context).captureNoIssuersCta,
+            ),
+          ),
+        ),
+      ),
+      routes: [
+        GoRoute(
+          path: 'despachar',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => AccountGatedRoute(
+            surface: AccountGateSurface.movement,
+            builder: (context) => BlocProvider(
+              create: (context) => _started(
+                getIt<TransactionFormCubit>(),
+                (c) => c.load(
+                  null,
+                  capture: state.extra! as CapturePrefill,
+                ),
+              ),
+              child: const TransactionFormPage(),
+            ),
+          ),
+        ),
+      ],
+    );
+
 GoRoute _reportsRoute() => GoRoute(
       path: AppRoutes.reports,
       parentNavigatorKey: _rootNavigatorKey,

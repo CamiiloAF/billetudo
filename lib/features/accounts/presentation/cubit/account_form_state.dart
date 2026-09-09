@@ -36,6 +36,7 @@ class AccountFormState extends Equatable {
     this.fullAccountNumber,
     this.numberReadFailed = false,
     this.last4 = '',
+    this.cardLast4 = '',
     this.typePickerExpanded = false,
     this.numberVisible = false,
     this.needsConfirmation = false,
@@ -91,6 +92,10 @@ class AccountFormState extends Equatable {
   final bool numberReadFailed;
 
   final String last4;
+
+  /// Raw text of the optional "últimos 4 dígitos de la tarjeta" field
+  /// (`Py1lL`). Empty means "not set", which is a valid account.
+  final String cardLast4;
   final bool typePickerExpanded;
 
   /// Whether the number field shows its value. Ephemeral, like the detail's.
@@ -158,6 +163,7 @@ class AccountFormState extends Equatable {
     bool clearFullAccountNumber = false,
     bool? numberReadFailed,
     String? last4,
+    String? cardLast4,
     bool? typePickerExpanded,
     bool? numberVisible,
     bool? needsConfirmation,
@@ -181,6 +187,7 @@ class AccountFormState extends Equatable {
             : fullAccountNumber ?? this.fullAccountNumber,
         numberReadFailed: numberReadFailed ?? this.numberReadFailed,
         last4: last4 ?? this.last4,
+        cardLast4: cardLast4 ?? this.cardLast4,
         typePickerExpanded: typePickerExpanded ?? this.typePickerExpanded,
         numberVisible: numberVisible ?? this.numberVisible,
         // Both are answers to the last submit: any later edit clears them
@@ -206,6 +213,7 @@ class AccountFormState extends Equatable {
         fullAccountNumber,
         numberReadFailed,
         last4,
+        cardLast4,
         typePickerExpanded,
         numberVisible,
         needsConfirmation,
