@@ -1,11 +1,12 @@
 {
   "_readme": "Versioned snapshot of the `public` schema in Supabase, table -> sorted column names. Consumed by test/core/database/schema_parity_test.dart so CI can detect drift between lib/core/database/powersync_schema.dart and the real database WITHOUT hitting the network. Do not edit by hand: refresh it with `dart run tool/check_schema_parity.dart --refresh` (needs DATABASE_URL) and commit the diff together with the migration in supabase/migrations/ that caused it.",
-  "generatedAt": "2026-08-25",
-  "source": "supabase prod, schema `public`, after every migration through 20260825140000_ai_reports. Refreshed manually through the Supabase MCP against prod: the MCP does not expose DATABASE_URL, so `tool/check_schema_parity.dart --refresh` (which shells out to psql) could not be run in that session — same constraint as the previous refreshes recorded here. The delta was verified column by column against prod's own information_schema before being written. Note that `ai_messages` is deliberately absent: it is a `Table.localOnly` and never reaches Postgres.",
+  "generatedAt": "2026-09-09",
+  "source": "supabase prod, schema `public`, after every migration through 20260909000000_fase2_capture_schema",
   "tables": {
     "accounts": [
       "archived",
       "card_balance_primary",
+      "card_last4",
       "color",
       "created_at",
       "credit_limit_minor",
@@ -253,6 +254,39 @@
       "updated_at",
       "user_id"
     ],
+    "merchant_category_learning": [
+      "category_id",
+      "created_at",
+      "deleted_at",
+      "hit_count",
+      "id",
+      "merchant_key",
+      "tombstoned_at",
+      "updated_at",
+      "user_id"
+    ],
+    "pending_captures": [
+      "account_hint",
+      "amount_minor",
+      "created_at",
+      "currency",
+      "deleted_at",
+      "duplicate_of_transaction_id",
+      "entry_type",
+      "id",
+      "merchant_raw",
+      "posted_at",
+      "source",
+      "source_package",
+      "source_rule_id",
+      "status",
+      "suggested_account_id",
+      "suggested_category_id",
+      "tombstoned_at",
+      "transaction_id",
+      "updated_at",
+      "user_id"
+    ],
     "scheduled_payment_occurrences": [
       "created_at",
       "deleted_at",
@@ -292,6 +326,7 @@
       "interval",
       "next_date",
       "note",
+      "reminder_lead_days",
       "requires_confirmation",
       "tombstoned_at",
       "transfer_account_id",
