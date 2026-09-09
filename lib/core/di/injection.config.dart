@@ -337,6 +337,58 @@ import 'package:billetudo/features/budgets/presentation/cubit/budgets_list_cubit
     as _i244;
 import 'package:billetudo/features/budgets/presentation/cubit/zero_based_summary_cubit.dart'
     as _i843;
+import 'package:billetudo/features/capture/data/datasources/issuer_settings_preference_datasource.dart'
+    as _i715;
+import 'package:billetudo/features/capture/data/datasources/merchant_learning_local_datasource.dart'
+    as _i777;
+import 'package:billetudo/features/capture/data/datasources/pending_captures_local_datasource.dart'
+    as _i791;
+import 'package:billetudo/features/capture/data/repositories/capture_learning_repository_impl.dart'
+    as _i184;
+import 'package:billetudo/features/capture/data/repositories/issuer_settings_repository_impl.dart'
+    as _i946;
+import 'package:billetudo/features/capture/data/repositories/pending_capture_repository_impl.dart'
+    as _i181;
+import 'package:billetudo/features/capture/domain/repositories/capture_learning_repository.dart'
+    as _i415;
+import 'package:billetudo/features/capture/domain/repositories/issuer_settings_repository.dart'
+    as _i824;
+import 'package:billetudo/features/capture/domain/repositories/pending_capture_repository.dart'
+    as _i869;
+import 'package:billetudo/features/capture/domain/usecases/confirm_pending_capture.dart'
+    as _i185;
+import 'package:billetudo/features/capture/domain/usecases/delete_all_capture_data.dart'
+    as _i836;
+import 'package:billetudo/features/capture/domain/usecases/disable_all_issuers.dart'
+    as _i705;
+import 'package:billetudo/features/capture/domain/usecases/discard_captures_before.dart'
+    as _i456;
+import 'package:billetudo/features/capture/domain/usecases/discard_pending_capture.dart'
+    as _i371;
+import 'package:billetudo/features/capture/domain/usecases/find_duplicate_candidates.dart'
+    as _i810;
+import 'package:billetudo/features/capture/domain/usecases/forget_capture_learning.dart'
+    as _i867;
+import 'package:billetudo/features/capture/domain/usecases/ingest_parsed_captures.dart'
+    as _i954;
+import 'package:billetudo/features/capture/domain/usecases/learn_merchant_category.dart'
+    as _i91;
+import 'package:billetudo/features/capture/domain/usecases/purge_discarded_captures.dart'
+    as _i725;
+import 'package:billetudo/features/capture/domain/usecases/restore_pending_capture.dart'
+    as _i917;
+import 'package:billetudo/features/capture/domain/usecases/set_issuer_enabled.dart'
+    as _i348;
+import 'package:billetudo/features/capture/domain/usecases/suggest_account_for_capture.dart'
+    as _i167;
+import 'package:billetudo/features/capture/domain/usecases/suggest_category_for_merchant.dart'
+    as _i1025;
+import 'package:billetudo/features/capture/domain/usecases/watch_issuer_catalog.dart'
+    as _i739;
+import 'package:billetudo/features/capture/domain/usecases/watch_pending_capture_count.dart'
+    as _i179;
+import 'package:billetudo/features/capture/domain/usecases/watch_pending_captures.dart'
+    as _i593;
 import 'package:billetudo/features/categories/data/datasources/categories_local_datasource.dart'
     as _i151;
 import 'package:billetudo/features/categories/data/datasources/category_seeds_remote_datasource.dart'
@@ -935,6 +987,9 @@ extension GetItInjectableX on _i174.GetIt {
         _i207.ThemePreferenceDatasource(gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i464.EverSignedInDatasource>(
         () => _i464.EverSignedInDatasource(gh<_i460.SharedPreferencesAsync>()));
+    gh.lazySingleton<_i715.IssuerSettingsPreferenceDatasource>(() =>
+        _i715.IssuerSettingsPreferenceDatasource(
+            gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i525.BackupStatusLocalDatasource>(() =>
         _i525.BackupStatusLocalDatasource(gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i476.MappingTemplatesLocalDatasource>(() =>
@@ -975,6 +1030,11 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i407.ThemeModeCubit(gh<_i207.ThemePreferenceDatasource>()));
     gh.lazySingleton<_i826.AiReportRepository>(() =>
         _i166.AiReportRepositoryImpl(gh<_i827.AiReportRemoteDatasource>()));
+    gh.lazySingleton<_i824.IssuerSettingsRepository>(
+        () => _i946.IssuerSettingsRepositoryImpl(
+              gh<_i715.IssuerSettingsPreferenceDatasource>(),
+              gh<_i474.CrashReporter>(),
+            ));
     gh.lazySingleton<_i967.DataOwnershipClaimer>(() => registerModule
         .dataOwnershipClaimer(gh<_i718.LocalDataOwnershipDatasource>()));
     gh.lazySingleton<_i765.BackupIdCollisionResolver>(() => registerModule
@@ -985,6 +1045,12 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i811.SyncLogStore>(),
           gh<_i474.CrashReporter>(),
         ));
+    gh.factory<_i705.DisableAllIssuers>(
+        () => _i705.DisableAllIssuers(gh<_i824.IssuerSettingsRepository>()));
+    gh.factory<_i348.SetIssuerEnabled>(
+        () => _i348.SetIssuerEnabled(gh<_i824.IssuerSettingsRepository>()));
+    gh.factory<_i739.WatchIssuerCatalog>(
+        () => _i739.WatchIssuerCatalog(gh<_i824.IssuerSettingsRepository>()));
     gh.lazySingleton<_i568.SyncQuarantineStore>(
         () => _i312.JsonSyncQuarantineStore(gh<_i766.SyncStorageDirectory>()));
     gh.lazySingleton<_i1034.SecureStorageService>(
@@ -1001,6 +1067,10 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i835.LocalDataSummaryDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i99.BudgetsLocalDatasource>(
         () => _i99.BudgetsLocalDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i777.MerchantLearningLocalDatasource>(
+        () => _i777.MerchantLearningLocalDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i791.PendingCapturesLocalDatasource>(
+        () => _i791.PendingCapturesLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i151.CategoriesLocalDatasource>(
         () => _i151.CategoriesLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i907.DebtsLocalDatasource>(
@@ -1031,6 +1101,11 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i556.TransactionsLocalDatasource(gh<_i249.AppDatabase>()));
     gh.lazySingleton<_i808.TutorialViewsLocalDatasource>(
         () => _i808.TutorialViewsLocalDatasource(gh<_i249.AppDatabase>()));
+    gh.lazySingleton<_i869.PendingCaptureRepository>(
+        () => _i181.PendingCaptureRepositoryImpl(
+              gh<_i791.PendingCapturesLocalDatasource>(),
+              gh<_i474.CrashReporter>(),
+            ));
     gh.lazySingleton<_i400.SyncQuarantineRepository>(
         () => _i850.SyncQuarantineRepositoryImpl(
               gh<_i568.SyncQuarantineStore>(),
@@ -1083,6 +1158,11 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i799.ImportDestinationsLocalDatasource>(),
           gh<_i545.ImportBatchesLocalDatasource>(),
         ));
+    gh.lazySingleton<_i415.CaptureLearningRepository>(
+        () => _i184.CaptureLearningRepositoryImpl(
+              gh<_i777.MerchantLearningLocalDatasource>(),
+              gh<_i474.CrashReporter>(),
+            ));
     gh.lazySingleton<_i179.AiHistoryRepository>(
         () => _i99.AiHistoryRepositoryImpl(
               gh<_i981.AiHistoryLocalDatasource>(),
@@ -1283,15 +1363,31 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i1039.WatchAiConversations(gh<_i179.AiHistoryRepository>()));
     gh.factory<_i817.WatchAiMessages>(
         () => _i817.WatchAiMessages(gh<_i179.AiHistoryRepository>()));
+    gh.factory<_i810.FindDuplicateCandidates>(
+        () => _i810.FindDuplicateCandidates(
+              gh<_i869.PendingCaptureRepository>(),
+              gh<_i824.IssuerSettingsRepository>(),
+            ));
     gh.factory<_i304.CategoryQuickPickerCubit>(
         () => _i304.CategoryQuickPickerCubit(
               gh<_i415.GetMostUsedCategories>(),
               gh<_i382.GetCategory>(),
             ));
+    gh.factory<_i867.ForgetCaptureLearning>(() =>
+        _i867.ForgetCaptureLearning(gh<_i415.CaptureLearningRepository>()));
+    gh.factory<_i91.LearnMerchantCategory>(() =>
+        _i91.LearnMerchantCategory(gh<_i415.CaptureLearningRepository>()));
+    gh.factory<_i1025.SuggestCategoryForMerchant>(() =>
+        _i1025.SuggestCategoryForMerchant(
+            gh<_i415.CaptureLearningRepository>()));
     gh.factory<_i281.CreateTag>(
         () => _i281.CreateTag(gh<_i716.TagRepository>()));
     gh.factory<_i121.WatchTags>(
         () => _i121.WatchTags(gh<_i716.TagRepository>()));
+    gh.factory<_i836.DeleteAllCaptureData>(() => _i836.DeleteAllCaptureData(
+          gh<_i869.PendingCaptureRepository>(),
+          gh<_i415.CaptureLearningRepository>(),
+        ));
     gh.factory<_i929.UnifiedFiltersCubit>(() => _i929.UnifiedFiltersCubit(
           gh<_i722.WatchCategories>(),
           gh<_i121.WatchTags>(),
@@ -1349,6 +1445,20 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i636.SetZeroBasedEnabled(gh<_i487.AppSettingsRepository>()));
     gh.factory<_i494.ReportAiMessage>(
         () => _i494.ReportAiMessage(gh<_i826.AiReportRepository>()));
+    gh.factory<_i456.DiscardCapturesBefore>(() =>
+        _i456.DiscardCapturesBefore(gh<_i869.PendingCaptureRepository>()));
+    gh.factory<_i371.DiscardPendingCapture>(() =>
+        _i371.DiscardPendingCapture(gh<_i869.PendingCaptureRepository>()));
+    gh.factory<_i725.PurgeDiscardedCaptures>(() =>
+        _i725.PurgeDiscardedCaptures(gh<_i869.PendingCaptureRepository>()));
+    gh.factory<_i917.RestorePendingCapture>(() =>
+        _i917.RestorePendingCapture(gh<_i869.PendingCaptureRepository>()));
+    gh.factory<_i167.SuggestAccountForCapture>(() =>
+        _i167.SuggestAccountForCapture(gh<_i869.PendingCaptureRepository>()));
+    gh.factory<_i179.WatchPendingCaptureCount>(() =>
+        _i179.WatchPendingCaptureCount(gh<_i869.PendingCaptureRepository>()));
+    gh.factory<_i593.WatchPendingCaptures>(
+        () => _i593.WatchPendingCaptures(gh<_i869.PendingCaptureRepository>()));
     gh.factory<_i569.CreateGoalQuickAmount>(() =>
         _i569.CreateGoalQuickAmount(gh<_i34.GoalQuickAmountsRepository>()));
     gh.factory<_i1040.DeleteGoalQuickAmount>(() =>
@@ -1417,6 +1527,10 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i723.NetWorthCubit>(
         () => _i723.NetWorthCubit(gh<_i1003.WatchNetWorthReport>()));
+    gh.factory<_i185.ConfirmPendingCapture>(() => _i185.ConfirmPendingCapture(
+          gh<_i869.PendingCaptureRepository>(),
+          gh<_i91.LearnMerchantCategory>(),
+        ));
     gh.factory<_i99.CategoryFormCubit>(() => _i99.CategoryFormCubit(
           gh<_i885.CreateCategory>(),
           gh<_i275.UpdateCategory>(),
@@ -1657,6 +1771,12 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i1047.WithdrawFromGoal(gh<_i696.GoalRepository>()));
     gh.factory<_i446.SignOutSheetCubit>(
         () => _i446.SignOutSheetCubit(gh<_i102.GetPendingUploadCount>()));
+    gh.factory<_i954.IngestParsedCaptures>(() => _i954.IngestParsedCaptures(
+          gh<_i869.PendingCaptureRepository>(),
+          gh<_i824.IssuerSettingsRepository>(),
+          gh<_i167.SuggestAccountForCapture>(),
+          gh<_i1025.SuggestCategoryForMerchant>(),
+        ));
     gh.factory<_i696.SyncStatusCubit>(() => _i696.SyncStatusCubit(
           gh<_i773.WatchSyncStatusDetails>(),
           gh<_i239.WatchQuarantinedOperations>(),
