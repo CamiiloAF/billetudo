@@ -127,6 +127,11 @@ Future<void> _pumpUntilFound(
   for (var i = 0; i < maxFrames && finder.evaluate().isEmpty; i++) {
     await $.tester.pump(const Duration(milliseconds: 100));
   }
+  if (finder.evaluate().isEmpty) {
+    throw TestFailure(
+      'Timed out after ${maxFrames * 100}ms waiting for $finder',
+    );
+  }
 }
 
 /// Waits (bounded, small increments) for [text] to appear — never
@@ -292,7 +297,13 @@ void main() {
       // The ghost block (`vNjim`): its own title, count and the capture's
       // card, all above the (empty, here) day-grouped list — nothing else on
       // this fresh install could produce a "Rappi" row otherwise.
-      await _pumpUntilFound($, find.text('Rappi'));
+      //
+      // Generous 15s budget (vs. the 3s default): this route builds
+      // `PendingCapturesCubit`, `TransactionsListCubit` and
+      // `BalanceCarouselCubit` together right after a cold `push` into the
+      // Movimientos branch, and `PendingCapturesCubit` alone combines three
+      // freshly-constructed Drift streams — slow on a software emulator.
+      await _pumpUntilFound($, find.text('Rappi'), maxFrames: 150);
       expect(find.text('Pendientes de confirmar'), findsOneWidget);
       expect(find.text('Rappi'), findsOneWidget);
 

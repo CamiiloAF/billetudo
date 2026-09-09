@@ -26,7 +26,8 @@ consolida el estado actual por feature.
 | Splash | ⬜️ N/A | — | ❌ | — | Sin suite propia, pero es solo una pantalla de transición (1 archivo) ya cubierta indirectamente por `startApp` en las otras 5 suites — baja prioridad. |
 | Deudas | ✅ Verde | 2026-07-24 | ✅ (`integration_test/debts_patrol_test.dart` + `integration_test/debts_installment_patrol_test.dart` + `integration_test/debts_lifecycle_patrol_test.dart`) | corrida `patrol-e2e-runner` 2026-07-24, segunda pasada tras aplicar 3 fixes (Pixel_9a/emulator-5554, flavor `dev`) | ✅ **32/32** (`debts_patrol_test.dart` 20/20, 4m30s + `debts_installment_patrol_test.dart` 6/6, 2m55s + `debts_lifecycle_patrol_test.dart` 6/6, 2m1s — este último con su 6to escenario corriendo por primera vez). Recupera los 9 escenarios rotos en la corrida inmediatamente anterior del mismo día (ver sección "Deudas: resultado real en device de la corrida 2026-07-24" abajo, con los 3 fixes que lo lograron): (1) `qa-automator` portó `_openEditForm` de `debts_patrol_test.dart` al patrón de menú ⋮ (5 escenarios recuperados); (2) `qa-automator` quitó el `/` literal del nombre del escenario "tab Cerradas" que crasheaba `AndroidTestOrchestrator` (1 escenario, nunca había corrido); (3) `flutter-dev` corrigió una carrera real entre `DebtPaymentSheet`/`DebtUpdateBalanceSheet` y `DebtCelebrationSheet` — dos hojas modales disparadas por la misma escritura podían pisarse (`pop()` cerraba la hoja equivocada); nuevo `BottomSheetBase.dismiss(context)` resuelve el pop por referencia de ruta (3 escenarios de felicitación recuperados). Sin bugs abiertos ni bloqueos de infraestructura pendientes en Deudas. Histórico: **BUG DE APP DEL ABONO — RESUELTO (flutter-dev, previo):** el CTA de la hoja de abono estaba DENTRO del `SingleChildScrollView`; con el toggle "Sí" + teclado con héroe autofocus, el botón quedaba bajo el fold → el tap de submit no aterrizaba. Fix: CTA como footer fijo fuera del scroll. |
 | Import/Export | ✅ Verde | 2026-08-07 | ✅ (`integration_test/import_export_patrol_test.dart`) | corrida `patrol-e2e-runner` 2026-08-07, 2 corridas consecutivas estables, emulator-5554, flavor `dev` | ✅ **4/4 en 2 corridas seguidas** (1m42s / 1m49s), sin flakiness. Cubre HU-05/06/07/08 (importar CSV propio de punta a punta + deshacer desde el historial), HU-03 (exportar a CSV desde el hub), HU-03/04 (guardar copia local) y HU-04 (restaurar con Fusionar recreando un movimiento borrado desde una copia real generada por el propio flujo, no un fixture a mano). Primera corrida de esta suite en device — 5 iteraciones hasta quedar en verde, todas con causa raíz confirmada antes de corregir (nunca un fix a ciegas): (1) bug del propio test — 3 de los 4 escenarios repetían una llamada a `_openImportExportHub` después de un helper que ya dejaba la app parada ahí, aislado corriendo el escenario solo antes de concluir causa; (2) **bug real de `lib/`** — `ImportExportHubCubit.markBackupJustSaved` existía pero nunca se llamaba, así que el hero card se quedaba en "Aún no has guardado una copia" tras un `SaveCopySheet` exitoso; fix: `SaveCopySheet.show` devuelve el `savedAt` real y el router lo reenvía al cubit ya montado del hub (`_saveCopy`, `app_router.dart`); (3) **bug real de `lib/`** — `hasAnyTransactions` venía hardcodeado en `true` tanto en `ImportExportHubCubit.start()` como en `ExportCubit.start()`, dejando inalcanzables los estados vacíos (`Am9cg`/`calDR`) sin importar el contenido real de la BD; fix: nuevo caso de uso `HasAnyTransaction` (mismo patrón que `HasAnyActiveAccount` del gate de cuentas) cableado en el router; (4) al arreglar (3), el test quedó desalineado — con BD vacía el hub ahora renderiza correctamente `ImportExportEmptyHub`, cuyo CTA es "Importar un CSV", no "Importar desde un CSV" (el de la variante con datos) — fix de test, no de `lib/`; (5) **bug real de `lib/`** — `hasAnyTransactions` era un snapshot fijado una sola vez al abrir el hub, nunca se refrescaba tras importar en la misma sesión de pantalla, dejando el hub atascado en el estado vacío pese a que la transacción sí se escribió; fix: `ImportExportHubCubit` se suscribe reactivamente a `HasAnyTransaction` (mismo patrón que ya usaba con `WatchImportBatches`), con test unitario dedicado; (6) **bug real de `lib/`** — al cablear el fix de (2), `_saveCopy` capturaba el `context` del builder de la ruta, que es *ancestro* de `BlocProvider<ImportExportHubCubit>` (no descendiente), así que `context.read` nunca lo encontraba (`ProviderNotFoundException` en device, reproducido 2 veces antes de corregir); fix: `Builder` envolviendo el child para capturar un context descendiente del provider. Sin bugs abiertos ni bloqueos de infraestructura pendientes en Import/Export. |
-| Metas, Reportes, Captura, Improvement | ⬜️ N/A | — | ❌ | — | Sin implementación en `lib/features/` (solo `.gitkeep`) — lienzo en blanco, no aplica escribir suite Patrol todavía. |
+| Captura (bandeja de avisos bancarios) | 🟡 Parcial | 2026-09-09 | ✅ (`integration_test/capture_inbox_patrol_test.dart`) | corrida `qa-automator` 2026-09-09, 2 corridas consecutivas, emulator-5554, flavor `dev` | **5/6**, determinístico en 2 corridas. El único fallo es un **bug real de `lib/`**, ver detalle abajo ("Captura: fila fantasma nunca se muestra sin movimientos reales"). Los 5 que pasan cubren HU-05 (despacho feliz: tocar la captura en el Centro de avisos abre el formulario pre-llenado, confirmar la retira de la bandeja y crea la `Transaction` con `source=notification`), el estado vacío del Centro de avisos ("Todo al día"), descartar con deshacer desde el snackbar, la rama de duplicado "Es otra compra" (continúa al form sin descartar) y la activación del permiso/catálogo de apps. De paso se endureció `_pumpUntilFound` (arrojaba silenciosamente sin lanzar excepción si se agotaba el presupuesto de frames, dejando que el siguiente `expect` reportara un error genérico) para que lance `TestFailure` con el finder y el tiempo agotado — sin eso, el fallo real de abajo se habría seguido reportando como "Found 0 widgets" sin pista de que era un timeout, no una ausencia inmediata. |
+| Metas, Reportes, Improvement | ⬜️ N/A | — | ❌ | — | Sin implementación en `lib/features/` (solo `.gitkeep`) — lienzo en blanco, no aplica escribir suite Patrol todavía. |
 
 ## Bloqueo del 2026-07-20 (YA CORREGIDO): las 5 suites fallaban por un bug de infraestructura, no por las features
 
@@ -217,3 +218,81 @@ corrigieron, pendiente RE-correr para confirmar.**
   `debts_lifecycle_patrol_test.dart` completas en device para confirmar que los 5 + 1
   escenarios afectados ahora pasan (el escenario del `/` renombrado sigue sin
   ejecutarse nunca en device real, más allá de compilar).
+
+## Captura: fila fantasma nunca se muestra sin movimientos reales — bug real, pendiente `flutter-dev` (2026-09-09)
+
+Investigado en `.claude/worktrees/capture-inbox` (`emulator-5554`, flavor `dev`) tras un
+reporte de "Fila fantasma en Movimientos" fallando de forma determinística en 2 corridas.
+Dos hipótesis se plantearon antes de investigar: (A) el propio `_pumpUntilFound` del test
+fallaba en silencio si agotaba su presupuesto de frames sin encontrar el finder — posible
+falso negativo de paciencia; (B) bug real en `PendingCapturesCubit` o en cómo se combinan
+sus tres streams (`_watchPendingCaptures`, `_watchIssuerCatalog`, `_watchAccounts`) tras un
+`push` en frío a la rama de Movimientos.
+
+**Se confirmó (B), un bug real de `lib/`, no (A).** Se endureció primero `_pumpUntilFound`
+para lanzar `TestFailure` con el finder y el tiempo agotado en vez de fallar en silencio
+(el siguiente `expect` reportaba un error genérico que no distinguía "nunca apareció" de
+"llegó tarde"), y se subió el presupuesto de esa llamada puntual a 150 frames (15s, vs. los
+3s por defecto de las demás llamadas en el archivo — sin tocar el default global, para no
+enmascarar timeouts reales en otros escenarios). Con 15s de margen el escenario **sigue
+fallando**, de forma determinística: el finder de "Rappi" nunca aparece.
+
+Diagnóstico con un `print` temporal (revertido, no quedó en el archivo) volcando los textos
+en pantalla justo después del primer `pumpAndSettle` tras el `push`, capturado vía
+`adb logcat`:
+
+```
+[diag] texts on screen: [Movimientos, Buscar por nota, Nu, Todas, Limpiar, Filtros, Nu,
+Efectivo, Saldo, $0, Todavía no hay movimientos registrados., Inicio, Movimientos,
+Presupuestos, Metas, Más, ...]
+```
+
+La cuenta "Nu" sí se resolvió (aparece en el chip de filtro y en el carrusel de saldo:
+`_watchAccounts` sí emitió), pero el bloque `PendingCapturesBlock`/"Pendientes de
+confirmar" nunca se monta — en su lugar se ve el copy de la lista vacía
+("Todavía no hay movimientos registrados.").
+
+**Causa raíz, en `lib/features/transactions/presentation/pages/transactions_page.dart`**
+(`TransactionsPage.build`, rama del `switch (state.status)`):
+
+```dart
+TransactionsListStatus.ready when state.items.isEmpty =>
+  Column(
+    children: [
+      if (showCarousel) MovementsBalanceCarousel(...),
+      Expanded(child: TransactionsEmptyState(...)),
+    ],
+  ),
+TransactionsListStatus.ready => TransactionsListView(
+    state: state,
+    onOpenTransaction: onRowTap,
+    onOpenAccount: onOpenAccount,
+    onDispatchCapture: onDispatchCapture,
+    showCarousel: showCarousel,
+  ),
+```
+
+`PendingCapturesListSlot` (el bloque "Pendientes de confirmar") solo se renderiza dentro de
+`TransactionsListView` — y esa rama del `switch` **solo se alcanza cuando
+`state.items.isNotEmpty`**, es decir, cuando hay al menos una `Transaction` real.
+`state.items` viene de `TransactionsListCubit` (la lista de `Transaction`s), que es una
+entidad completamente distinta de las `PendingCapture`s que alimenta
+`PendingCapturesCubit`. El escenario de la fila fantasma seedea únicamente una
+`PendingCapture` (ninguna `Transaction` real) — exactamente el caso de uso documentado por
+el propio `vNjim`/`PendingCapturesBlock` ("una captura pendiente aparece fijada arriba del
+listado"). Con cero transacciones reales, la página cae en la rama `isEmpty`, que nunca
+monta `TransactionsListView` ni por tanto `PendingCapturesListSlot` — así que el bloque de
+capturas pendientes quedó, en la práctica, inalcanzable en el caso más común de captura
+(usuario nuevo o cuenta sin movimientos manuales todavía, solo con avisos bancarios por
+confirmar).
+
+**No se corrigió** — fuera del alcance de `qa-automator` (solo `test/`+`integration_test/`).
+Pendiente para `flutter-dev`: la rama `isEmpty` de `TransactionsPage.build` necesita
+mostrar `PendingCapturesListSlot` también (encima del `TransactionsEmptyState`, igual que ya
+hace con el carrusel de saldo) cuando haya capturas pendientes, en vez de decidir el layout
+completo solo a partir de `state.items` (que nunca incluye capturas).
+
+El escenario de test (`integration_test/capture_inbox_patrol_test.dart`, "Fila fantasma en
+Movimientos...") quedó **sin modificar en su aserción** — describe el comportamiento
+correcto y seguirá fallando hasta que se corrija el bug de arriba; no se debilitó el
+`expect` para forzarlo a pasar.
