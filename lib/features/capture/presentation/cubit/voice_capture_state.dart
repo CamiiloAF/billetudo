@@ -21,6 +21,11 @@ enum VoiceCaptureStatus {
   /// it. Nothing is lost — the transcript still travels to the form as a note.
   noAmount,
 
+  /// `kJG43`: this phone cannot transcribe on its own, so dictating at all
+  /// requires sending the audio to Google (Android) or Apple (iOS). Shown
+  /// **before** anything leaves the device, with two exits of equal weight.
+  cloudConsentNeeded,
+
   /// Not a designed frame: the recognizer, the app's locale or the on-device
   /// route is unavailable, so no session can start at all. Same two exits as
   /// [noAmount] minus the retry, since retrying would fail identically.
@@ -39,6 +44,12 @@ enum VoiceCaptureUnavailableReason {
   /// On-device recognition is not available here and the app refuses to
   /// silently route the audio through the vendor's cloud (HU-06).
   onDeviceUnavailable,
+
+  /// Same situation as [onDeviceUnavailable], except the user has already
+  /// been asked and said no (`kJG43`). It is a distinct reason because the
+  /// copy has to be different: nothing is pending, the app is honouring a
+  /// decision, and the way back is Ajustes — not this sheet asking again.
+  cloudConsentDeclined,
 
   /// The recognizer needs a network it does not have.
   network,

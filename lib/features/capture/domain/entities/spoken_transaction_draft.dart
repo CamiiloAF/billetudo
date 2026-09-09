@@ -24,6 +24,7 @@ class SpokenTransactionDraft extends Equatable {
     required this.transcript,
     this.amountMinor,
     this.amountIsUncertain = false,
+    this.amountSpokenText,
     this.type,
     this.categoryId,
     this.categoryName,
@@ -53,6 +54,12 @@ class SpokenTransactionDraft extends Equatable {
   /// explicitly. The flow must surface it for confirmation instead of
   /// treating it as a fact.
   final bool amountIsUncertain;
+
+  /// The words [amountMinor] was read from, verbatim ("veinte"). Only
+  /// meaningful alongside [amountIsUncertain]: the form quotes it back so the
+  /// assumption can be checked against what was actually said, instead of the
+  /// user having to trust a number that appeared on its own.
+  final String? amountSpokenText;
 
   /// `expense` or `income`, or `null` when no polarity verb was recognized —
   /// in which case the form keeps its own default rather than the parser
@@ -95,6 +102,7 @@ class SpokenTransactionDraft extends Equatable {
         transcript,
         amountMinor,
         amountIsUncertain,
+        amountSpokenText,
         type,
         categoryId,
         categoryName,

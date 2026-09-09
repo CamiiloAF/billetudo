@@ -134,6 +134,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   Future<void> loadFromVoice({
     int? amountMinor,
     bool amountIsUncertain = false,
+    String? amountSpokenText,
     TransactionType? type,
     String? accountId,
     String? categoryId,
@@ -155,6 +156,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
         source: TransactionSource.voice,
         amountMinor: amountMinor,
         amountIsUncertain: amountMinor != null && amountIsUncertain,
+        amountSpokenText: amountSpokenText,
         categoryId: categoryId,
         categoryName: categoryName,
         categoryKind: categoryKind,
@@ -188,6 +190,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   void completeFromVoice({
     int? amountMinor,
     bool amountIsUncertain = false,
+    String? amountSpokenText,
     TransactionType? type,
     String? accountId,
     String? categoryId,
@@ -213,6 +216,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
         type: type != null && state.amountMinor == 0 ? type : state.type,
         amountMinor: fillsAmount ? amountMinor : state.amountMinor,
         amountIsUncertain: fillsAmount && amountIsUncertain,
+        amountSpokenText: fillsAmount ? amountSpokenText : null,
         entryFractionDigits: fillsAmount ? -1 : state.entryFractionDigits,
         accountId:
             canFillAccount && accountId != null ? accountId : state.accountId,
@@ -402,13 +406,14 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     final base = _startFreshOperandIfNeeded(state);
     if (base.entryFractionDigits >= 0) {
       // A second '.' does nothing, but a pending fresh-operand reset still
-      // needs to land.
-      if (!identical(base, state)) {
-        emit(base);
+      // needs to land — as does dropping the "Supusimos…" hint, since
+      // pressing the decimal key is already the user editing the amount.
+      if (!identical(base, state) || state.amountIsUncertain) {
+        emit(base.copyWith(amountIsUncertain: false));
       }
       return;
     }
-    emit(base.copyWith(entryFractionDigits: 0));
+    emit(base.copyWith(entryFractionDigits: 0, amountIsUncertain: false));
   }
 
   /// An operator key (÷ × − +). Evaluates any pending operation first so that
@@ -460,6 +465,12 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
 
   void amountBackspace() {
     var s = state;
+    if (s.amountIsUncertain) {
+      // Same rule as [amountDigitPressed]: any key that edits the amount is
+      // the user taking it over, so the "Supusimos…" hint goes away. Cleared
+      // here, on the base state, because every branch below copies from it.
+      s = s.copyWith(amountIsUncertain: false);
+    }
     if (s.justEvaluated) {
       // Editing a result turns it back into a plain operand.
       s = s.copyWith(justEvaluated: false, clearCalc: true);
@@ -499,6 +510,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   void amountCleared() => emit(
         state.copyWith(
           amountMinor: 0,
+          amountIsUncertain: false,
           entryFractionDigits: -1,
           startNewOperand: false,
           justEvaluated: false,

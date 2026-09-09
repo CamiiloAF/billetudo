@@ -6,6 +6,8 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/error/result.dart';
 import '../../../budgets/domain/entities/budget_with_progress.dart';
 import '../../../budgets/domain/usecases/get_active_budgets.dart';
+import '../../../capture/domain/usecases/get_cloud_transcription_consent.dart';
+import '../../../capture/domain/usecases/set_cloud_transcription_consent.dart';
 import '../../../home/domain/entities/quick_access_item.dart';
 import '../../../tutorials/domain/usecases/set_tutorials_enabled.dart';
 import '../../../tutorials/domain/usecases/watch_help_enabled.dart';
@@ -47,6 +49,8 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
     this._setQuickAccessOrder,
     this._setAiNotesAccessEnabled,
     this._clearAiConsent,
+    this._getCloudTranscriptionConsent,
+    this._setCloudTranscriptionConsent,
   ) : super(const AppSettingsState(isLoaded: false));
 
   final GetAppSettings _getAppSettings;
@@ -59,6 +63,8 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
   final SetQuickAccessOrder _setQuickAccessOrder;
   final SetAiNotesAccessEnabled _setAiNotesAccessEnabled;
   final ClearAiConsent _clearAiConsent;
+  final GetCloudTranscriptionConsent _getCloudTranscriptionConsent;
+  final SetCloudTranscriptionConsent _setCloudTranscriptionConsent;
 
   StreamSubscription<Result<AppSettings>>? _settingsSubscription;
   StreamSubscription<Result<List<BudgetWithProgress>>>? _budgetsSubscription;
@@ -95,6 +101,14 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
         (enabled) => emit(state.copyWith(showHelpOnSectionEntry: enabled)),
       );
     });
+    // A one-shot read, not a stream: the consent lives in this device's
+    // preferences and only this screen writes it, so there is nothing to
+    // watch for.
+    final consent = await _getCloudTranscriptionConsent();
+    if (isClosed) {
+      return;
+    }
+    emit(state.copyWith(cloudTranscriptionEnabled: consent.isGranted));
   }
 
   /// Persists the "Modo sobres" flag (HU-06). The stream re-emits the stored
@@ -145,6 +159,17 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
   /// The settings stream re-emits the stored values, so both the switch and
   /// the action's own visibility update without manual state juggling.
   Future<void> clearAiConsent() => _clearAiConsent();
+
+  /// Persists "Transcribir mi voz en la nube", the reversal the cloud consent
+  /// sheet (`kJG43`) promises in its caption.
+  ///
+  /// Emitted optimistically because — unlike every toggle above — there is no
+  /// stream re-emitting the stored value: the consent is per-device
+  /// preference state, so this cubit is the one that has to move the switch.
+  Future<void> setCloudTranscriptionEnabled({required bool enabled}) async {
+    emit(state.copyWith(cloudTranscriptionEnabled: enabled));
+    await _setCloudTranscriptionConsent.setAllowed(allowed: enabled);
+  }
 
   @override
   Future<void> close() async {

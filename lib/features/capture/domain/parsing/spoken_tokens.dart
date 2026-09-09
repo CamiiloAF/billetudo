@@ -87,7 +87,20 @@ class SpokenTokens {
   /// The raw words still unclaimed, trimmed of the punctuation the note
   /// should not carry over.
   List<String> get freeWords => <String>[
-        for (final index in freeIndices)
-          raw[index].replaceAll(RegExp(r'''^[¿¡"'(\[]+|[,.;:!?"')\]]+$'''), ''),
+        for (final index in freeIndices) _trimPunctuation(raw[index]),
       ];
+
+  /// The **original** words of the span `[start, end)`, joined and trimmed of
+  /// edge punctuation.
+  ///
+  /// Used to quote the user back to themselves ("Supusimos $20.000 por
+  /// «veinte»"): the quote has to be what they actually said, accents and
+  /// casing included, so it reads [raw] and never [normalized].
+  String rawText(int start, int end) => <String>[
+        for (var i = start; i < end && i < raw.length; i++)
+          if (i >= 0) _trimPunctuation(raw[i]),
+      ].where((word) => word.isNotEmpty).join(' ');
+
+  static String _trimPunctuation(String word) =>
+      word.replaceAll(RegExp(r'''^[¿¡"'(\[]+|[,.;:!?"')\]]+$'''), '');
 }

@@ -184,6 +184,9 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
                             : () => unawaited(
                                   widget.onDictate!(context, cubit),
                                 ),
+                        amountSpokenText: state.showsAmountAssumption
+                            ? state.amountSpokenText
+                            : null,
                         errorText: state.failedField ==
                                 TransactionDraft.fieldAmountMinor
                             ? l10n.transactionErrorAmount

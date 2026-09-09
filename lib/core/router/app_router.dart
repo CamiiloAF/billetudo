@@ -377,6 +377,7 @@ abstract final class AppRoutes {
   static String newTransactionFromVoice({
     int? amountMinor,
     bool amountIsUncertain = false,
+    String? amountSpokenText,
     String? type,
     String? accountId,
     String? categoryId,
@@ -389,6 +390,10 @@ abstract final class AppRoutes {
       'source': 'voice',
       if (amountMinor != null) 'amountMinor': amountMinor.toString(),
       if (amountIsUncertain) 'amountIsUncertain': 'true',
+      if (amountIsUncertain &&
+          amountSpokenText != null &&
+          amountSpokenText.isNotEmpty)
+        'amountSpokenText': amountSpokenText,
       if (type != null) 'type': type,
       if (accountId != null) 'accountId': accountId,
       if (categoryId != null) 'categoryId': categoryId,
@@ -2313,6 +2318,7 @@ TransactionFormCubit _startedTransactionForm(Uri uri) {
     cubit.loadFromVoice(
       amountMinor: int.tryParse(uri.queryParameters['amountMinor'] ?? ''),
       amountIsUncertain: uri.queryParameters['amountIsUncertain'] == 'true',
+      amountSpokenText: uri.queryParameters['amountSpokenText'],
       type:
           uri.queryParameters.containsKey('type') ? _typeFromQuery(uri) : null,
       accountId: uri.queryParameters['accountId'],
@@ -2352,6 +2358,7 @@ Future<void> _dictateIntoTransactionForm(
   cubit.completeFromVoice(
     amountMinor: draft.amountMinor,
     amountIsUncertain: draft.amountIsUncertain,
+    amountSpokenText: draft.amountSpokenText,
     type: draft.type,
     accountId: draft.accountId,
     categoryId: draft.categoryId,

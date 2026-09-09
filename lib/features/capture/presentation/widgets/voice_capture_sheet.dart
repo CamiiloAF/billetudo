@@ -9,6 +9,7 @@ import '../../domain/entities/spoken_transaction_draft.dart';
 import '../cubit/voice_capture_cubit.dart';
 import '../cubit/voice_capture_state.dart';
 import '../utils/voice_locale_id.dart';
+import 'voice_capture_cloud_consent_body.dart';
 import 'voice_capture_listening_body.dart';
 import 'voice_capture_no_amount_body.dart';
 import 'voice_capture_permission_body.dart';
@@ -82,6 +83,12 @@ class _VoiceCaptureSheetState extends State<VoiceCaptureSheet> {
     Navigator.of(context).pop(draft);
   }
 
+  Future<void> _declineAndWriteByHand() async {
+    final draft = _cubit.draftForManualEntry();
+    await _cubit.declineCloudTranscription();
+    _close(draft);
+  }
+
   Future<void> _cancel() async {
     await _cubit.cancel();
     _close();
@@ -111,6 +118,13 @@ class _VoiceCaptureSheetState extends State<VoiceCaptureSheet> {
               onRequest: () => unawaited(_cubit.requestPermission()),
               onOpenSettings: () => unawaited(_cubit.openSystemSettings()),
               onWriteByHand: () => _close(_cubit.draftForManualEntry()),
+            ),
+          VoiceCaptureStatus.cloudConsentNeeded =>
+            VoiceCaptureCloudConsentBody(
+              onAllow: () => unawaited(_cubit.allowCloudTranscription()),
+              // The refusal is persisted before the sheet closes, so the next
+              // "Dictar" honours it instead of asking again.
+              onWriteByHand: () => unawaited(_declineAndWriteByHand()),
             ),
           VoiceCaptureStatus.noAmount => VoiceCaptureNoAmountBody(
               transcript: state.transcript,

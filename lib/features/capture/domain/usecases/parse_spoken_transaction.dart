@@ -90,6 +90,11 @@ class ParseSpokenTransaction {
       transcript: input.transcript,
       amountMinor: amount?.amountMinor,
       amountIsUncertain: amount?.isUncertain ?? false,
+      // Only carried when the amount was actually guessed: a literal amount
+      // has nothing to justify, and a quote next to it would read as doubt
+      // about a number the user gave in full.
+      amountSpokenText:
+          (amount?.isUncertain ?? false) ? amount?.spokenText : null,
       type: type,
       categoryId: category?.category.id,
       categoryName: category?.category.name,

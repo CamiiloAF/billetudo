@@ -339,14 +339,20 @@ import 'package:billetudo/features/budgets/presentation/cubit/zero_based_summary
     as _i843;
 import 'package:billetudo/features/capture/data/repositories/permission_handler_microphone_gate.dart'
     as _i1016;
+import 'package:billetudo/features/capture/data/repositories/preferences_cloud_transcription_consent_store.dart'
+    as _i1054;
 import 'package:billetudo/features/capture/data/repositories/speech_to_text_recognizer.dart'
     as _i159;
+import 'package:billetudo/features/capture/domain/repositories/cloud_transcription_consent_store.dart'
+    as _i149;
 import 'package:billetudo/features/capture/domain/repositories/microphone_permission_gate.dart'
     as _i129;
 import 'package:billetudo/features/capture/domain/repositories/speech_recognizer.dart'
     as _i312;
 import 'package:billetudo/features/capture/domain/usecases/cancel_voice_capture.dart'
     as _i545;
+import 'package:billetudo/features/capture/domain/usecases/get_cloud_transcription_consent.dart'
+    as _i553;
 import 'package:billetudo/features/capture/domain/usecases/get_voice_capture_availability.dart'
     as _i184;
 import 'package:billetudo/features/capture/domain/usecases/open_microphone_settings.dart'
@@ -355,6 +361,8 @@ import 'package:billetudo/features/capture/domain/usecases/parse_spoken_transact
     as _i996;
 import 'package:billetudo/features/capture/domain/usecases/request_microphone_permission.dart'
     as _i695;
+import 'package:billetudo/features/capture/domain/usecases/set_cloud_transcription_consent.dart'
+    as _i615;
 import 'package:billetudo/features/capture/domain/usecases/start_voice_capture.dart'
     as _i1048;
 import 'package:billetudo/features/capture/domain/usecases/stop_voice_capture.dart'
@@ -998,6 +1006,9 @@ extension GetItInjectableX on _i174.GetIt {
             ));
     gh.lazySingleton<_i766.SyncStorageDirectory>(
         () => const _i766.AppDocumentsSyncStorageDirectory());
+    gh.lazySingleton<_i149.CloudTranscriptionConsentStore>(() =>
+        _i1054.PreferencesCloudTranscriptionConsentStore(
+            gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i24.BackupStatusRepository>(
         () => _i220.BackupStatusRepositoryImpl(
               gh<_i525.BackupStatusLocalDatasource>(),
@@ -1340,6 +1351,12 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i415.GetMostUsedCategories>(),
               gh<_i382.GetCategory>(),
             ));
+    gh.factory<_i553.GetCloudTranscriptionConsent>(() =>
+        _i553.GetCloudTranscriptionConsent(
+            gh<_i149.CloudTranscriptionConsentStore>()));
+    gh.factory<_i615.SetCloudTranscriptionConsent>(() =>
+        _i615.SetCloudTranscriptionConsent(
+            gh<_i149.CloudTranscriptionConsentStore>()));
     gh.factory<_i281.CreateTag>(
         () => _i281.CreateTag(gh<_i716.TagRepository>()));
     gh.factory<_i121.WatchTags>(
@@ -1756,6 +1773,20 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i813.WatchImportBatches>(),
           gh<_i296.HasAnyTransaction>(),
         ));
+    gh.factory<_i270.AppSettingsCubit>(() => _i270.AppSettingsCubit(
+          gh<_i182.GetAppSettings>(),
+          gh<_i636.SetZeroBasedEnabled>(),
+          gh<_i674.GetActiveBudgets>(),
+          gh<_i643.SetFeaturedBudget>(),
+          gh<_i594.ClearFeaturedBudget>(),
+          gh<_i895.WatchHelpEnabled>(),
+          gh<_i134.SetTutorialsEnabled>(),
+          gh<_i785.SetQuickAccessOrder>(),
+          gh<_i117.SetAiNotesAccessEnabled>(),
+          gh<_i377.ClearAiConsent>(),
+          gh<_i553.GetCloudTranscriptionConsent>(),
+          gh<_i615.SetCloudTranscriptionConsent>(),
+        ));
     gh.factory<_i633.WipeLocalDataAfterDeletion>(
         () => _i633.WipeLocalDataAfterDeletion(
               gh<_i537.WipeLocalData>(),
@@ -1874,18 +1905,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i545.WatchArchivedAccounts(gh<_i1067.AccountRepository>()));
     gh.factory<_i511.EditGoalMovementCubit>(
         () => _i511.EditGoalMovementCubit(gh<_i1000.UpdateGoalMovement>()));
-    gh.factory<_i782.VoiceCaptureCubit>(() => _i782.VoiceCaptureCubit(
-          gh<_i184.GetVoiceCaptureAvailability>(),
-          gh<_i695.RequestMicrophonePermission>(),
-          gh<_i1073.OpenMicrophoneSettings>(),
-          gh<_i1048.StartVoiceCapture>(),
-          gh<_i334.StopVoiceCapture>(),
-          gh<_i545.CancelVoiceCapture>(),
-          gh<_i853.WatchVoiceCaptureUpdates>(),
-          gh<_i996.ParseSpokenTransaction>(),
-          gh<_i837.WatchAccounts>(),
-          gh<_i722.WatchCategories>(),
-        ));
     gh.factory<_i479.WatchBudgetPeriodOptions>(
         () => _i479.WatchBudgetPeriodOptions(gh<_i674.GetActiveBudgets>()));
     gh.factory<_i11.ScheduledPaymentDetailCubit>(
@@ -1961,6 +1980,20 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i306.GetAccountNumber>(),
           gh<_i731.MoneyFormatter>(),
         ));
+    gh.factory<_i782.VoiceCaptureCubit>(() => _i782.VoiceCaptureCubit(
+          gh<_i184.GetVoiceCaptureAvailability>(),
+          gh<_i695.RequestMicrophonePermission>(),
+          gh<_i1073.OpenMicrophoneSettings>(),
+          gh<_i1048.StartVoiceCapture>(),
+          gh<_i334.StopVoiceCapture>(),
+          gh<_i545.CancelVoiceCapture>(),
+          gh<_i853.WatchVoiceCaptureUpdates>(),
+          gh<_i996.ParseSpokenTransaction>(),
+          gh<_i837.WatchAccounts>(),
+          gh<_i722.WatchCategories>(),
+          gh<_i553.GetCloudTranscriptionConsent>(),
+          gh<_i615.SetCloudTranscriptionConsent>(),
+        ));
     gh.factory<_i44.AiConversationReadCubit>(() => _i44.AiConversationReadCubit(
           gh<_i817.WatchAiMessages>(),
           gh<_i837.WatchAccounts>(),
@@ -1993,18 +2026,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.singleton<_i629.AuthCubit>(() => _i629.AuthCubit(
           gh<_i716.WatchAuthSession>(),
           gh<_i1066.SignOut>(),
-        ));
-    gh.factory<_i270.AppSettingsCubit>(() => _i270.AppSettingsCubit(
-          gh<_i182.GetAppSettings>(),
-          gh<_i636.SetZeroBasedEnabled>(),
-          gh<_i674.GetActiveBudgets>(),
-          gh<_i643.SetFeaturedBudget>(),
-          gh<_i594.ClearFeaturedBudget>(),
-          gh<_i895.WatchHelpEnabled>(),
-          gh<_i134.SetTutorialsEnabled>(),
-          gh<_i785.SetQuickAccessOrder>(),
-          gh<_i117.SetAiNotesAccessEnabled>(),
-          gh<_i377.ClearAiConsent>(),
         ));
     gh.factory<_i881.RestoreBackup>(() => _i881.RestoreBackup(
           gh<_i418.BackupRepository>(),

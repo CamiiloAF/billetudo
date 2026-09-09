@@ -12,6 +12,7 @@ import 'package:billetudo/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_state.dart';
 import 'package:billetudo/features/settings/presentation/pages/settings_page.dart';
+import 'package:billetudo/features/settings/presentation/widgets/cloud_transcription_field.dart';
 import 'package:billetudo/features/settings/presentation/widgets/settings_session_card.dart';
 import 'package:billetudo/features/settings/presentation/widgets/show_help_on_entry_field.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -399,6 +400,44 @@ void main() {
       await tester.pump();
 
       expect(opened, 1);
+    });
+  });
+
+  group('"Transcribir mi voz en la nube"', () {
+    testWidgets(
+        'la hoja de consentimiento promete esta fila, así que existe y se '
+        'puede apagar en un toque', (tester) async {
+      when(() => appSettingsCubit.state).thenReturn(
+        const AppSettingsState(cloudTranscriptionEnabled: true),
+      );
+      whenListen(
+        appSettingsCubit,
+        const Stream<AppSettingsState>.empty(),
+        initialState: const AppSettingsState(cloudTranscriptionEnabled: true),
+      );
+      when(() => appSettingsCubit.setCloudTranscriptionEnabled(
+            enabled: any(named: 'enabled'),
+          )).thenAnswer((_) async {});
+      await pumpSettings(tester, session: const AuthSession.signedOut());
+
+      await tester.scrollUntilVisible(
+        find.byType(CloudTranscriptionField),
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.pump();
+      await tester.tap(find.descendant(
+        of: find.byType(CloudTranscriptionField),
+        matching: find.byType(Switch),
+      ));
+      await tester.pump();
+
+      verify(() => appSettingsCubit.setCloudTranscriptionEnabled(
+            enabled: false,
+          )).called(1);
+      // Withdrawing a permission never asks twice.
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.byType(Dialog), findsNothing);
     });
   });
 }

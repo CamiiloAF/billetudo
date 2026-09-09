@@ -4,10 +4,12 @@ import 'package:billetudo/features/accounts/domain/entities/account_with_balance
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
 import 'package:billetudo/features/capture/domain/entities/speech_recognition.dart';
 import 'package:billetudo/features/capture/domain/usecases/cancel_voice_capture.dart';
+import 'package:billetudo/features/capture/domain/usecases/get_cloud_transcription_consent.dart';
 import 'package:billetudo/features/capture/domain/usecases/get_voice_capture_availability.dart';
 import 'package:billetudo/features/capture/domain/usecases/open_microphone_settings.dart';
 import 'package:billetudo/features/capture/domain/usecases/parse_spoken_transaction.dart';
 import 'package:billetudo/features/capture/domain/usecases/request_microphone_permission.dart';
+import 'package:billetudo/features/capture/domain/usecases/set_cloud_transcription_consent.dart';
 import 'package:billetudo/features/capture/domain/usecases/start_voice_capture.dart';
 import 'package:billetudo/features/capture/domain/usecases/stop_voice_capture.dart';
 import 'package:billetudo/features/capture/domain/usecases/watch_voice_capture_updates.dart';
@@ -21,6 +23,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../capture_fixtures.dart';
+import '../fake_cloud_transcription_consent_store.dart';
 import '../fake_speech_recognizer.dart';
 
 class _MockWatchAccounts extends Mock implements WatchAccounts {}
@@ -32,6 +35,7 @@ void main() {
   late FakeMicrophonePermissionGate gate;
   late _MockWatchAccounts watchAccounts;
   late _MockWatchCategories watchCategories;
+  late FakeCloudTranscriptionConsentStore consentStore;
 
   VoiceCaptureCubit buildCubit() => VoiceCaptureCubit(
         GetVoiceCaptureAvailability(recognizer, gate),
@@ -44,6 +48,8 @@ void main() {
         const ParseSpokenTransaction(),
         watchAccounts,
         watchCategories,
+        GetCloudTranscriptionConsent(consentStore),
+        SetCloudTranscriptionConsent(consentStore),
       );
 
   Future<void> startAndSettle(VoiceCaptureCubit cubit) async {
@@ -58,6 +64,7 @@ void main() {
     gate = FakeMicrophonePermissionGate();
     watchAccounts = _MockWatchAccounts();
     watchCategories = _MockWatchCategories();
+    consentStore = FakeCloudTranscriptionConsentStore();
     when(watchAccounts.call).thenAnswer(
       (_) => Stream.value(
         Right(
@@ -236,11 +243,13 @@ void main() {
       );
       await Future<void>.delayed(Duration.zero);
 
-      expect(cubit.state.status, VoiceCaptureStatus.unavailable);
-      expect(
-        cubit.state.unavailableReason,
-        VoiceCaptureUnavailableReason.onDeviceUnavailable,
-      );
+      // It used to dead-end here. Now it asks (`kJG43`) — but the invariant
+      // this test guards is unchanged and still the point: nothing was sent
+      // through the vendor on the app's own initiative. The consent flow
+      // itself is covered by `voice_capture_cloud_consent_flow_test.dart`.
+      expect(cubit.state.status, VoiceCaptureStatus.cloudConsentNeeded);
+      expect(recognizer.lastAllowCloudRecognition, isFalse);
+      expect(recognizer.startCalls, 1);
       await cubit.close();
     });
   });

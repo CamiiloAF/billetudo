@@ -7,6 +7,7 @@ class SpokenAmountMatch {
   const SpokenAmountMatch({
     required this.amountMinor,
     required this.isUncertain,
+    required this.spokenText,
     required this.start,
     required this.end,
   });
@@ -17,6 +18,12 @@ class SpokenAmountMatch {
 
   /// True when the magnitude-elision heuristic had to guess the scale.
   final bool isUncertain;
+
+  /// The words the amount was read from, verbatim ("veinte", "mil
+  /// quinientos"). Kept so the UI can quote the user when it has to say what
+  /// it assumed — a guess is only reviewable if the person can see which of
+  /// their own words produced it.
+  final String spokenText;
 
   final int start;
   final int end;
@@ -223,6 +230,7 @@ class SpokenAmountParser {
     return SpokenAmountMatch(
       amountMinor: elides ? total * _elisionMultiplier : total,
       isUncertain: elides,
+      spokenText: tokens.rawText(start, end),
       start: start,
       end: end,
     );

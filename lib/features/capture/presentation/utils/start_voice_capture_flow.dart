@@ -47,6 +47,7 @@ String routeForDraft(SpokenTransactionDraft draft) {
   return AppRoutes.newTransactionFromVoice(
     amountMinor: draft.amountMinor,
     amountIsUncertain: draft.amountIsUncertain,
+    amountSpokenText: draft.amountSpokenText,
     type: draft.type?.name,
     accountId: draft.accountId,
     categoryId: draft.categoryId,

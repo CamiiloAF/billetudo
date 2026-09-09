@@ -10443,6 +10443,18 @@ abstract class AppLocalizations {
   /// **'Asistente de IA'**
   String get settingsAiSection;
 
+  /// No description provided for @settingsCloudTranscription.
+  ///
+  /// In es, this message translates to:
+  /// **'Transcribir mi voz en la nube'**
+  String get settingsCloudTranscription;
+
+  /// No description provided for @settingsCloudTranscriptionSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando este teléfono no puede convertir la voz en texto por su cuenta, el audio se envía a {vendor} solo para transcribirlo. billetudo no lo guarda ni lo sincroniza.'**
+  String settingsCloudTranscriptionSubtitle(String vendor);
+
   /// No description provided for @settingsAiNotesAccess.
   ///
   /// In es, this message translates to:
@@ -10712,6 +10724,90 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Mantén presionado para dictar'**
   String get captureVoiceFabLongPressHint;
+
+  /// Nombre del servicio que transcribe la voz en Android.
+  ///
+  /// In es, this message translates to:
+  /// **'Google'**
+  String get captureVoiceVendorGoogle;
+
+  /// Nombre del servicio que transcribe la voz en iOS.
+  ///
+  /// In es, this message translates to:
+  /// **'Apple'**
+  String get captureVoiceVendorApple;
+
+  /// No description provided for @captureVoiceCloudConsentTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Para dictar, {vendor} transcribe tu voz'**
+  String captureVoiceCloudConsentTitle(String vendor);
+
+  /// No description provided for @captureVoiceCloudConsentMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Este teléfono no puede convertir la voz en texto por su cuenta. Si lo permites, el audio se envía a {vendor} solo para transcribirlo.'**
+  String captureVoiceCloudConsentMessage(String vendor);
+
+  /// No description provided for @captureVoiceCloudConsentFact1Title.
+  ///
+  /// In es, this message translates to:
+  /// **'El audio sale del teléfono'**
+  String get captureVoiceCloudConsentFact1Title;
+
+  /// No description provided for @captureVoiceCloudConsentFact1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'{vendor} recibe lo que dictas y devuelve el texto. Ese es el paso que este teléfono no puede hacer solo.'**
+  String captureVoiceCloudConsentFact1Body(String vendor);
+
+  /// No description provided for @captureVoiceCloudConsentFact2Title.
+  ///
+  /// In es, this message translates to:
+  /// **'billetudo no guarda nada'**
+  String get captureVoiceCloudConsentFact2Title;
+
+  /// No description provided for @captureVoiceCloudConsentFact2Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Ni el audio ni la transcripción se guardan, respaldan o sincronizan.'**
+  String get captureVoiceCloudConsentFact2Body;
+
+  /// No description provided for @captureVoiceCloudConsentFact3Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Tú confirmas antes de guardar'**
+  String get captureVoiceCloudConsentFact3Title;
+
+  /// No description provided for @captureVoiceCloudConsentFact3Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo dictado solo llena el formulario. Nada se registra hasta que lo revises.'**
+  String get captureVoiceCloudConsentFact3Body;
+
+  /// No description provided for @captureVoiceCloudConsentAllow.
+  ///
+  /// In es, this message translates to:
+  /// **'Permitir y dictar'**
+  String get captureVoiceCloudConsentAllow;
+
+  /// No description provided for @captureVoiceCloudConsentReversible.
+  ///
+  /// In es, this message translates to:
+  /// **'Puedes cambiar esta decisión cuando quieras en Ajustes.'**
+  String get captureVoiceCloudConsentReversible;
+
+  /// No description provided for @captureVoiceCloudConsentDeclinedMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegiste que tu voz no se transcriba en la nube, y lo respetamos. Puedes cambiarlo en Ajustes. Escribir a mano funciona igual que siempre.'**
+  String get captureVoiceCloudConsentDeclinedMessage;
+
+  /// Pastilla bajo el monto cuando el parser infirió la magnitud de lo dictado.
+  ///
+  /// In es, this message translates to:
+  /// **'Supusimos {amount} por «{spoken}»'**
+  String captureVoiceAmountAssumption(String amount, String spoken);
 
   /// No description provided for @tutorialVoiceCaptureTitle.
   ///

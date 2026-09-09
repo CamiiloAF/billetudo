@@ -78,6 +78,12 @@ class VoiceCaptureUnavailableBody extends StatelessWidget {
   String _messageFor(AppLocalizations l10n) => switch (reason) {
         VoiceCaptureUnavailableReason.onDeviceUnavailable =>
           l10n.captureVoiceOnDeviceUnavailableMessage,
+        // Already asked, already answered. This does not re-open `kJG43`:
+        // repeating a consent sheet someone has declined is nagging, not
+        // consent. It states the decision, points at where to change it, and
+        // gets out of the way.
+        VoiceCaptureUnavailableReason.cloudConsentDeclined =>
+          l10n.captureVoiceCloudConsentDeclinedMessage,
         VoiceCaptureUnavailableReason.network =>
           l10n.captureVoiceNoConnectionMessage,
         VoiceCaptureUnavailableReason.busy => l10n.captureVoiceBusyMessage,

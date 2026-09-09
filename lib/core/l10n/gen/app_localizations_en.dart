@@ -6390,6 +6390,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAiSection => 'AI assistant';
 
   @override
+  String get settingsCloudTranscription => 'Transcribe my voice in the cloud';
+
+  @override
+  String settingsCloudTranscriptionSubtitle(String vendor) {
+    return 'When this phone can\'t turn speech into text on its own, the audio is sent to $vendor just to transcribe it. billetudo doesn\'t store or sync it.';
+  }
+
+  @override
   String get settingsAiNotesAccess => 'Let the assistant read my notes';
 
   @override
@@ -6541,6 +6549,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get captureVoiceFabLongPressHint => 'Press and hold to dictate';
+
+  @override
+  String get captureVoiceVendorGoogle => 'Google';
+
+  @override
+  String get captureVoiceVendorApple => 'Apple';
+
+  @override
+  String captureVoiceCloudConsentTitle(String vendor) {
+    return 'To dictate, $vendor transcribes your voice';
+  }
+
+  @override
+  String captureVoiceCloudConsentMessage(String vendor) {
+    return 'This phone can\'t turn speech into text on its own. If you allow it, the audio is sent to $vendor just to transcribe it.';
+  }
+
+  @override
+  String get captureVoiceCloudConsentFact1Title => 'The audio leaves the phone';
+
+  @override
+  String captureVoiceCloudConsentFact1Body(String vendor) {
+    return '$vendor receives what you dictate and returns the text. That\'s the step this phone can\'t do by itself.';
+  }
+
+  @override
+  String get captureVoiceCloudConsentFact2Title => 'billetudo keeps nothing';
+
+  @override
+  String get captureVoiceCloudConsentFact2Body =>
+      'Neither the audio nor the transcription is saved, backed up or synced.';
+
+  @override
+  String get captureVoiceCloudConsentFact3Title => 'You confirm before saving';
+
+  @override
+  String get captureVoiceCloudConsentFact3Body =>
+      'What you dictate only fills the form. Nothing is recorded until you review it.';
+
+  @override
+  String get captureVoiceCloudConsentAllow => 'Allow and dictate';
+
+  @override
+  String get captureVoiceCloudConsentReversible =>
+      'You can change this decision whenever you want in Settings.';
+
+  @override
+  String get captureVoiceCloudConsentDeclinedMessage =>
+      'You chose not to have your voice transcribed in the cloud, and we respect that. You can change it in Settings. Typing it by hand works just like always.';
+
+  @override
+  String captureVoiceAmountAssumption(String amount, String spoken) {
+    return 'We assumed $amount from “$spoken”';
+  }
 
   @override
   String get tutorialVoiceCaptureTitle => 'Dictate an expense without typing';

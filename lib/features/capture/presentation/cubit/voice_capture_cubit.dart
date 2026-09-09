@@ -9,14 +9,17 @@ import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../../categories/domain/entities/category.dart';
 import '../../../categories/domain/entities/category_node.dart';
 import '../../../categories/domain/usecases/watch_categories.dart';
+import '../../domain/entities/cloud_transcription_consent.dart';
 import '../../domain/entities/speech_recognition.dart';
 import '../../domain/entities/spoken_transaction_draft.dart';
 import '../../domain/entities/spoken_transaction_input.dart';
 import '../../domain/usecases/cancel_voice_capture.dart';
+import '../../domain/usecases/get_cloud_transcription_consent.dart';
 import '../../domain/usecases/get_voice_capture_availability.dart';
 import '../../domain/usecases/open_microphone_settings.dart';
 import '../../domain/usecases/parse_spoken_transaction.dart';
 import '../../domain/usecases/request_microphone_permission.dart';
+import '../../domain/usecases/set_cloud_transcription_consent.dart';
 import '../../domain/usecases/start_voice_capture.dart';
 import '../../domain/usecases/stop_voice_capture.dart';
 import '../../domain/usecases/watch_voice_capture_updates.dart';
@@ -48,6 +51,8 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
     this._parse,
     this._watchAccounts,
     this._watchCategories,
+    this._getCloudConsent,
+    this._setCloudConsent,
   ) : super(const VoiceCaptureState());
 
   final GetVoiceCaptureAvailability _getAvailability;
@@ -60,8 +65,14 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
   final ParseSpokenTransaction _parse;
   final WatchAccounts _watchAccounts;
   final WatchCategories _watchCategories;
+  final GetCloudTranscriptionConsent _getCloudConsent;
+  final SetCloudTranscriptionConsent _setCloudConsent;
 
   StreamSubscription<SpeechRecognitionUpdate>? _updates;
+
+  /// This device's answer about cloud transcription, read once per session so
+  /// every decision below reads the same value.
+  CloudTranscriptionConsent _cloudConsent = CloudTranscriptionConsent.unset;
 
   /// The user's vocabulary, loaded once per session so the parser stays a
   /// pure function (`SpokenTransactionInput` does no I/O of its own).
@@ -85,6 +96,10 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
     _languageCode = languageCode;
     emit(const VoiceCaptureState());
 
+    _cloudConsent = await _getCloudConsent();
+    if (isClosed) {
+      return;
+    }
     await _loadVocabulary();
     final availability = await _getAvailability(localeId: localeId);
     if (isClosed) {
@@ -152,6 +167,28 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
     await _stopCapture();
   }
 
+  /// "Permitir y dictar" on `kJG43`: records the consent and starts a fresh
+  /// session, this time allowed to continue through the vendor's service when
+  /// on-device recognition fails again — which it will, since that is what
+  /// brought us here.
+  Future<void> allowCloudTranscription() async {
+    await _setCloudConsent(CloudTranscriptionConsent.granted);
+    if (isClosed) {
+      return;
+    }
+    await start(localeId: _localeId, languageCode: _languageCode);
+  }
+
+  /// "Escribir a mano" on `kJG43`.
+  ///
+  /// The refusal is **persisted**, not just obeyed once: the two exits carry
+  /// equal weight, so choosing the manual form is a real answer to the
+  /// question. From here on this device falls straight back to the manual
+  /// form instead of re-opening the sheet on every attempt, and Ajustes is
+  /// the way back — exactly what the sheet's caption promises.
+  Future<void> declineCloudTranscription() =>
+      _setCloudConsent(CloudTranscriptionConsent.declined);
+
   /// "Intentar de nuevo" from the `lLKTv` / unavailable surfaces.
   Future<void> retry() =>
       start(localeId: _localeId, languageCode: _languageCode);
@@ -188,7 +225,13 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
   Future<void> _listen() async {
     await _updates?.cancel();
     _updates = _watchUpdates().listen(_onUpdate);
-    final started = await _startCapture(localeId: _localeId);
+    final started = await _startCapture(
+      localeId: _localeId,
+      // Never true unless this device's owner said so on `kJG43`. The default
+      // is still on-device first; this only decides whether the session may
+      // continue when that turns out to be impossible.
+      allowCloudRecognition: _cloudConsent.isGranted,
+    );
     if (isClosed) {
       return;
     }
@@ -228,8 +271,27 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
     switch (update.error) {
       case SpeechRecognitionErrorKind.permission:
         emit(state.copyWith(status: VoiceCaptureStatus.permissionNeeded));
+      // This phone cannot transcribe on its own. Nothing has left it: the
+      // session asked for on-device recognition and stopped there, so the
+      // question can still be asked before any audio travels (`kJG43`).
       case SpeechRecognitionErrorKind.onDeviceUnavailable:
-        _emitUnavailable(VoiceCaptureUnavailableReason.onDeviceUnavailable);
+        switch (_cloudConsent) {
+          case CloudTranscriptionConsent.granted:
+            // Consent is on record but the retry did not happen — treat it as
+            // the recognizer being unavailable rather than asking again.
+            _emitUnavailable(
+              VoiceCaptureUnavailableReason.onDeviceUnavailable,
+            );
+          case CloudTranscriptionConsent.declined:
+            _emitUnavailable(
+              VoiceCaptureUnavailableReason.cloudConsentDeclined,
+            );
+          case CloudTranscriptionConsent.unset:
+            emit(state.copyWith(
+              status: VoiceCaptureStatus.cloudConsentNeeded,
+              soundLevel: 0,
+            ));
+        }
       case SpeechRecognitionErrorKind.network:
         _emitUnavailable(VoiceCaptureUnavailableReason.network);
       case SpeechRecognitionErrorKind.busy:
