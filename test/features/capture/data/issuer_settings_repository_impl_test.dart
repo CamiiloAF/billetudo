@@ -157,18 +157,25 @@ void main() {
     expect(result.getLeft().toNullable(), isA<ValidationFailure>());
   });
 
-  test('the confirmed package names are in the catalog', () {
+  test('the catalog holds exactly the issuers that have parsing rules', () {
     final packages =
         launchIssuerCatalog.map((issuer) => issuer.packageName).toSet();
 
+    // Not `containsAll` but an exact match, on purpose. An issuer offered here
+    // without rules in `assets/capture/issuer_rules.json` is switched on by the
+    // user and then captures nothing, forever and silently — the failure mode
+    // the "never promise coverage the app cannot deliver" rule exists to stop.
+    //
+    // Bancolombia is deliberately absent: it only sends SMS, and an SMS is a
+    // notification of the messaging app, so reading it would mean listening to
+    // the whole inbox.
     expect(
       packages,
-      containsAll(<String>[
-        'co.com.bancolombia.personas.superapp',
+      <String>{
         'com.nu.production',
         'com.nequi.MobileApp',
         'com.google.android.apps.walletnfcrel',
-      ]),
+      },
     );
   });
 

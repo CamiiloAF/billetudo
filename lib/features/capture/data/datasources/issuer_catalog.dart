@@ -8,27 +8,29 @@ import '../../domain/entities/issuer_catalog_entry.dart';
 /// handled by widening the catalog in a later release, never by letting the
 /// user type a package name in.
 ///
-/// **Interim location.** The requirement puts the issuer rules in a single
-/// `assets/capture/issuer_rules.json`, read by the Kotlin listener in
-/// production and mirrored by a Dart engine for tests, so a rule can never
-/// exist on one side only. That asset does not exist yet (the native parser
-/// is a separate piece of work), so this list holds the identity half of the
-/// catalog — package and display name, no parsing rules — until the asset
-/// lands, at which point this must be derived from it instead of restated.
+/// **This list must stay in lockstep with `assets/capture/issuer_rules.json`,
+/// which is the single source of truth for the catalog.** An issuer listed
+/// here but missing from the asset is worse than one that is absent: the user
+/// sees it, switches it on, and it captures nothing — forever, and silently.
+/// That is exactly the "don't promise coverage the app cannot deliver" rule
+/// the requirement makes non-negotiable.
 ///
-/// **Only four package names are confirmed** against real notifications on a
-/// device: `co.com.bancolombia.personas.superapp`, `com.nu.production`,
-/// `com.nequi.MobileApp` and `com.google.android.apps.walletnfcrel`. The rest
-/// are still unverified, and the requirement flags confirming each app's real
-/// `packageName` as a prerequisite for writing its parsing rules — a wrong
-/// package name here silently listens to nothing, which is the failure mode
-/// this comment exists to prevent.
+/// Four issuers were removed on 2026-09-09 for that reason:
+///  - **Bancolombia** does not push at all, only SMS. An SMS arrives as a
+///    notification of the *messaging* app, so capturing it would mean
+///    listening to the whole inbox and reading every sender — including
+///    one-time codes — to decide what to keep. That breaks the HU-08 rule of
+///    filtering by package *before* reading anything, and it is the single
+///    likeliest cause of a Play rejection.
+///  - **Davivienda, Daviplata and BBVA Colombia** have no parsing rules yet,
+///    and neither their package names nor their notification formats have
+///    been verified against a real device.
+///
+/// Widening the catalog means adding the rules to the asset first, validated
+/// against real notification text, and only then adding the entry here.
+// TODO(cami): derive this list from `issuer_rules.json` at load time so the
+// two cannot drift. Today they are two sources of truth for one thing.
 const List<IssuerCatalogEntry> launchIssuerCatalog = <IssuerCatalogEntry>[
-  IssuerCatalogEntry(
-    packageName: 'co.com.bancolombia.personas.superapp',
-    displayName: 'Bancolombia',
-    kind: IssuerKind.bank,
-  ),
   IssuerCatalogEntry(
     packageName: 'com.nu.production',
     displayName: 'Nu',
@@ -38,21 +40,6 @@ const List<IssuerCatalogEntry> launchIssuerCatalog = <IssuerCatalogEntry>[
     packageName: 'com.nequi.MobileApp',
     displayName: 'Nequi',
     kind: IssuerKind.wallet,
-  ),
-  IssuerCatalogEntry(
-    packageName: 'com.davivienda.daviviendaapp',
-    displayName: 'Davivienda',
-    kind: IssuerKind.bank,
-  ),
-  IssuerCatalogEntry(
-    packageName: 'com.davivienda.daviplataapp',
-    displayName: 'Daviplata',
-    kind: IssuerKind.wallet,
-  ),
-  IssuerCatalogEntry(
-    packageName: 'com.bbva.nxt_col',
-    displayName: 'BBVA Colombia',
-    kind: IssuerKind.bank,
   ),
   IssuerCatalogEntry(
     packageName: 'com.google.android.apps.walletnfcrel',
