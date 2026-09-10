@@ -113,13 +113,37 @@ Future<void> _openNewScheduledPaymentForm(PatrolIntegrationTester $) async {
 /// form is a plain `ListView`, so fields below the fold (mode cards, note,
 /// delete link) can be discarded from the tree by the sliver's cache extent
 /// — same reasoning as `accounts_patrol_test.dart`'s `_scrollUntilVisible`.
+///
+/// Resets to the top of the list first: several scenarios below look up
+/// fields out of top-to-bottom order (e.g. picking "Manual" mode or typing
+/// Nota — both below "Primer pago" in the form — *before* going back up to
+/// pick the date). Once HU-08's `ScheduledPaymentReminderField` made the
+/// form tall enough, an earlier field scrolled past like that falls outside
+/// the `ListView`'s cache extent and is dropped from the tree — and
+/// `dragUntilVisible` only drags downward (its fixed `Offset(0, -250)`), so
+/// once the target is *above* the current scroll offset it can never reach
+/// it and exhausts its iterations instead (`Bad state: No element` — proven
+/// against a real emulator run: before the reminder field this same
+/// out-of-order lookup worked, because the earlier field's `Element` was
+/// still mounted just outside the viewport and `Scrollable.ensureVisible`
+/// alone — called unconditionally once `dragUntilVisible`'s own loop finds
+/// it already present — fixed up the scroll offset regardless of
+/// direction, since `dragUntilVisible`'s own drag always moves downward).
+/// Starting every lookup from a known top position, then dragging
+/// downward, keeps this helper direction-agnostic no matter which order
+/// the caller needs fields in.
 Future<void> _scrollUntilVisible(
   PatrolIntegrationTester $,
   Finder finder,
 ) async {
+  final scrollable = find.byType(Scrollable).first;
+  for (var i = 0; i < 20; i++) {
+    await $.tester.drag(scrollable, const Offset(0, 250));
+    await $.tester.pump(const Duration(milliseconds: 50));
+  }
   await $.tester.dragUntilVisible(
     finder,
-    find.byType(Scrollable).first,
+    scrollable,
     const Offset(0, -250),
   );
   await $.tester.pumpAndSettle();
@@ -518,15 +542,26 @@ void main() {
       await $.tester.tap(find.text('Confirmar'));
       await $.tester.pumpAndSettle();
 
-      // Back on the detail: the History section is no longer empty, and the
-      // new confirmed row carries the template's own name — once in the
-      // Identity Strip, once in the History row.
+      // Back on the detail, still scrolled to the top: the hero's own copy
+      // of the template's name is there.
+      expect(find.text('Internet'), findsOneWidget);
+
+      // The History section is no longer empty, and its new confirmed row
+      // also carries the template's name — checked as a *separate* scroll
+      // position rather than a single `findsNWidgets(2)` alongside the hero
+      // above: the detail page is a plain `ListView`, so scrolling far
+      // enough to reveal "Historial" pushes the hero's own name Text out of
+      // the sliver's cache extent — both copies are never in the tree at
+      // the same time on a real device (verified against a real emulator
+      // run; same caveat `_scrollUntilVisible`'s own doc comment documents
+      // for the form).
+      await _scrollUntilVisible($, find.text('Historial'));
       expect(
         find.text('Todavía no se ha generado ningún movimiento de este pago '
             'programado.'),
         findsNothing,
       );
-      expect(find.text('Internet'), findsNWidgets(2));
+      expect(find.text('Internet'), findsOneWidget);
     },
   );
 
@@ -561,16 +596,14 @@ void main() {
 
       // Back on the detail: the skipped occurrence shows up in the History
       // as "Omitido", not as a punitive red entry (tone rule) — with a
-      // "Recuperar" link.
+      // "Recuperar" link. The History section can sit below the fold:
+      // `find.text` matching a widget is not the same as it being on screen
+      // (the detail page is a plain `ListView`, same caveat as the form's
+      // own fields) — scroll to its title first.
+      await _scrollUntilVisible($, find.text('Historial'));
       expect(find.text('Omitido'), findsOneWidget);
       expect(find.text('Recuperar'), findsOneWidget);
 
-      // The History section can sit below the fold: `find.text` matching a
-      // widget is not the same as it being on screen (the detail page is a
-      // plain `ListView`, same caveat as the form's own fields) — scroll it
-      // into view before tapping, or the tap can land on whatever *is*
-      // visible at that same screen coordinate instead.
-      await _scrollUntilVisible($, find.text('Recuperar'));
       await $.tester.tap(find.text('Recuperar'));
 
       // Reversible (page spec "Recuperar", Fase 2): the snackbar offers its
@@ -603,6 +636,18 @@ void main() {
       await $.tester.tap(find.text('Único'));
       await $.tester.pumpAndSettle();
       await _enterNote($, 'Boleto concierto');
+      // A future date, not the form's own `clock.now()` default: a `once`
+      // template due *today* already has `GetScheduledPaymentDetail`
+      // computing a live `pendingOccurrence` the moment the detail page
+      // loads (`detail.isActive && pending != null` — no async catch-up
+      // job, no race, the "Estado" row just reads "Pendiente de confirmar"
+      // deterministically for any due-or-overdue `nextDate`) — so without
+      // this the very next assertion below would never see "Activa" for
+      // any date at or before today, verified against a real emulator run.
+      // The recurring sibling scenario above (`"Confirmar ahora" registra
+      // la ocurrencia`) already relies on the same future-date pick for the
+      // same reason.
+      await _pickFutureDate($, label: 'Fecha del pago');
       await _submitScheduledPaymentForm($);
 
       await $.tester.tap(find.text('Boleto concierto'));
@@ -620,25 +665,45 @@ void main() {
       // Criteria 1/2: a skipped `once`'s only occurrence reads as done —
       // the ficha says "Terminada", not "Activa" — but the hero never
       // claims the payment was executed (skip ≠ confirm: no transaction was
-      // ever generated for it).
+      // ever generated for it). Both "Terminada" (the InfoCard's "Estado"
+      // row) and "Omitido"/"Recuperar" (the History row) can sit below the
+      // fold on this `ListView` detail page — same caveat
+      // `_scrollUntilVisible`'s own doc comment documents for the form —
+      // so scroll to "Historial" first.
+      await _scrollUntilVisible($, find.text('Historial'));
       expect(find.text('Omitido'), findsOneWidget);
       expect(find.text('Recuperar'), findsOneWidget);
       expect(find.text('Terminada'), findsOneWidget);
       expect(find.text('Activa'), findsNothing);
       expect(find.text('PAGO EJECUTADO'), findsNothing);
 
-      await _scrollUntilVisible($, find.text('Recuperar'));
       await $.tester.tap(find.text('Recuperar'));
       await _expectSnackbar($, 'Pago recuperado');
       await $.tester.pumpAndSettle();
 
-      // Criterio 3: recovering brings the template back to life — the
-      // occurrence is `pending` again, so "Estado" reads "Pendiente de
-      // confirmar" (same as the recurring skip/recover scenario above),
-      // never the terminal "Terminada" it just left.
+      // Criterio 3 (this scenario's own title: "recuperarlo lo vuelve
+      // Activa" — unlike the recurring sibling above, which recovers back
+      // to "Pendiente de confirmar"): the occurrence this scenario recovers
+      // was materialized by "Confirmar ahora" at the template's own future
+      // `nextDate` (`_ensureDuePendingOccurrence`'s `force: true` branch
+      // inserts at `template.nextDate`, not at today), so once it is
+      // `pending` again the *non-force* read path's own due-date gate
+      // (`ScheduledPaymentOccurrence.dateIsDueOn`) does not surface it as
+      // `pendingOccurrence` until that future date actually arrives — the
+      // template genuinely reads "Activa" again, not "Pendiente de
+      // confirmar", verified against a real emulator run (`DEBUG2` dump of
+      // every `Text` on screen at this point during diagnosis showed
+      // "Estado, Activa"). Scroll to the "Estado" label itself, not
+      // "Historial": recovering empties the History section back out
+      // (shorter page overall), so scrolling as far as "Historial" now
+      // over-scrolls past the InfoCard and drops "Estado"/"Activa" out of
+      // the `ListView`'s cache extent — the same one-directional-scroll
+      // pitfall documented above, just pointed the other way.
+      await _scrollUntilVisible($, find.text('Estado'));
       expect(find.text('Omitido'), findsNothing);
       expect(find.text('Terminada'), findsNothing);
-      expect(find.text('Pendiente de confirmar'), findsOneWidget);
+      expect(find.text('Pendiente de confirmar'), findsNothing);
+      expect(find.text('Activa'), findsOneWidget);
     },
   );
 
