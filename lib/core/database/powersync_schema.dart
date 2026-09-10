@@ -67,6 +67,11 @@ const powerSyncSchema = Schema([
     Column.integer('statement_day'),
     Column.integer('payment_due_day'),
     Column.text('card_balance_primary'),
+    // Last 4 digits of the CARD attached to this account (schemaVersion 34,
+    // Fase 2 captura). Distinct from `last4`, which identifies the account;
+    // this one is what a notification's `account_hint` is matched against.
+    // Nullable = unknown / no card. See Accounts.cardLast4.
+    Column.text('card_last4'),
     // The import batch this account was created by (schemaVersion 25).
     // Nullable = created by hand; see Accounts.importBatchId.
     Column.text('import_batch_id'),
@@ -213,6 +218,11 @@ const powerSyncSchema = Schema([
     // recurring goal contribution. Nullable, exclusive with `debt_id` — see
     // `ScheduledPaymentDraft.validated()`.
     Column.text('goal_id'),
+    // Days before the due date to fire a local reminder (schemaVersion 34).
+    // Nullable, and NULL means "no reminder" — never backfilled, so a
+    // template that predates the column stays silent. See
+    // ScheduledPayments.reminderLeadDays.
+    Column.integer('reminder_lead_days'),
     ..._syncColumns,
   ]),
   Table('tags', [
@@ -314,6 +324,48 @@ const powerSyncSchema = Schema([
     Column.integer('rows_imported'),
     Column.integer('rows_skipped'),
     Column.integer('reverted_at'),
+    ..._syncColumns,
+  ]),
+  // Review inbox of transaction candidates parsed from bank notifications
+  // (schemaVersion 34, Fase 2) — see `PendingCaptures` in
+  // `app_database.dart`. SYNCED on purpose (not `Table.localOnly`): the inbox
+  // must survive a reinstall and a capture confirmed on one device must not
+  // be re-proposed on another.
+  //
+  // **There is deliberately no column for the notification's literal text**
+  // (`raw_text`/`title`/`big_text`), and none may be added here or in
+  // Postgres: zero retention is a product decision, and anything declared
+  // here would be uploaded and kept in backups. Only structured fields.
+  //
+  // `posted_at` is epoch SECONDS in `bigint` like every Drift DateTimeColumn
+  // — never `timestamptz` on a synced table (see the type note at the top).
+  Table('pending_captures', [
+    Column.text('source'),
+    Column.text('source_package'),
+    Column.text('source_rule_id'),
+    Column.integer('posted_at'),
+    Column.integer('amount_minor'),
+    Column.text('currency'),
+    Column.text('entry_type'),
+    Column.text('merchant_raw'),
+    Column.text('account_hint'),
+    Column.text('suggested_account_id'),
+    Column.text('suggested_category_id'),
+    Column.text('status'),
+    Column.text('transaction_id'),
+    Column.text('duplicate_of_transaction_id'),
+    ..._syncColumns,
+  ]),
+  // Learned merchant -> category pairing (schemaVersion 34, Fase 2), so the
+  // next capture from the same merchant arrives pre-categorized. Synced: the
+  // learning belongs to the user and must follow them across devices. Holds
+  // no notification content — a normalized merchant name and a category id.
+  // `merchant_key` is UNIQUE (per user) in Postgres; see
+  // `MerchantCategoryLearning` in `app_database.dart`.
+  Table('merchant_category_learning', [
+    Column.text('merchant_key'),
+    Column.text('category_id'),
+    Column.integer('hit_count'),
     ..._syncColumns,
   ]),
   // AI assistant chat history (schemaVersion 30). **The only local-only table
