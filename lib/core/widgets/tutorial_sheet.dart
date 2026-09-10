@@ -59,55 +59,73 @@ class TutorialSheet extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: colors.primarySoft,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Icon(
-                TutorialIcons.iconFor(content.iconName),
-                color: colors.primaryOnSoft,
-                size: 18,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                content.title,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  height: 1.25,
-                  color: colors.textPrimary,
+        // The icon+title and the points card are the part that grows with
+        // the tutorial's content (some have up to 3 points), while the CTA(s)
+        // below must always stay reachable regardless of how tall that gets —
+        // same "CTA fixed outside the scroll" shape as
+        // `UnifiedFiltersSheet`/`NewTagSheet`. `BottomSheetBase` already
+        // bounds this sheet's max height, so `Flexible` here has real
+        // constraints to shrink against instead of growing unbounded past the
+        // screen.
+        Flexible(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: colors.primarySoft,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Icon(
+                        TutorialIcons.iconFor(content.iconName),
+                        color: colors.primaryOnSoft,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        content.title,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          height: 1.25,
+                          color: colors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: colors.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: colors.border),
-          ),
-          child: Column(
-            children: [
-              for (var i = 0; i < content.points.length; i++) ...[
-                if (i > 0) const SizedBox(height: 14),
-                TutorialSheetPointRow(
-                  point: content.points[i],
-                  showDivider: i < content.points.length - 1,
+                const SizedBox(height: 14),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: colors.border),
+                  ),
+                  child: Column(
+                    children: [
+                      for (var i = 0; i < content.points.length; i++) ...[
+                        if (i > 0) const SizedBox(height: 14),
+                        TutorialSheetPointRow(
+                          point: content.points[i],
+                          showDivider: i < content.points.length - 1,
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ],
-            ],
+            ),
           ),
         ),
         const SizedBox(height: 18),

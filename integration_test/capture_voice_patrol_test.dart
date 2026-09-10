@@ -394,6 +394,12 @@ void main() {
       // `docs/requirements/fase-2/17-captura-voz.md` HU-02), so it has to
       // observe the sheet itself rather than dismiss it blindly.
       await _pumpUntilFound($, find.text('Dicta un gasto sin teclear'));
+      // `_pumpUntilFound` only waits for the CTA to exist in the tree, not
+      // for the sheet's entrance slide-in to finish — tapping mid-animation
+      // hits whatever offset the button is passing through, which can still
+      // be below the viewport while it slides up, unrelated to whether the
+      // resting layout itself fits.
+      await $.tester.pumpAndSettle();
       expect(find.text('Probar ahora'), findsOneWidget);
 
       // The CTA performs the real gesture (`onCta: startVoiceCaptureFlow`),
