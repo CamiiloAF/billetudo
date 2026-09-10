@@ -1,7 +1,4 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
-import 'package:billetudo/core/sync/domain/entities/sync_state.dart';
-import 'package:billetudo/core/sync/domain/entities/sync_status_snapshot.dart';
-import 'package:billetudo/core/sync/presentation/widgets/sync_hero.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
@@ -20,9 +17,9 @@ import '../pump_widget.dart';
 
 class MockHomeCubit extends MockCubit<HomeState> implements HomeCubit {}
 
-/// "Tu cuenta" (criterios 2 y 14): sus 3 variantes, y que el bloque de sync
-/// reusa `SyncHero` en modo compacto, tocable como un todo hacia "Estado de
-/// sincronización", sin CTA propio.
+/// "Tu cuenta" (issue #34, Propuesta B "hero + lista"): sus 3 variantes, y
+/// que la fila "Estado de sincronización" navega al detalle en vez de
+/// resumir el estado en la propia hoja.
 void main() {
   late MockHomeCubit cubit;
   final month = DateTime(2026, 7);
@@ -83,16 +80,16 @@ void main() {
       final l10n =
           AppLocalizations.of(tester.element(find.byType(AccountSheet)));
 
-      expect(find.byType(AccountAvatar), findsOneWidget);
+      expect(find.text(l10n.homeAccountSheetNoAccountTitle), findsOneWidget);
       expect(find.text(l10n.homeAccountSheetActivateBackup), findsOneWidget);
-      expect(find.text(l10n.moreSettings), findsNothing);
+      expect(find.text(l10n.moreSettings), findsOneWidget);
+      expect(find.text(l10n.settingsSyncStatus), findsNothing);
       expect(find.text(l10n.moreSignOut), findsNothing);
-      expect(find.byType(SyncHero), findsNothing);
     });
 
     testWidgets(
-        'con sesión + sin conexión: Identity Row + bloque de sync + '
-        'Ajustes + Cerrar sesión', (tester) async {
+        'con sesión + sin conexión: Hero Card + pill "Sin conexión" + '
+        'Estado de sincronización + Ajustes + Cerrar sesión', (tester) async {
       await pumpSheet(
         tester,
         stateWith(user: user, syncStatus: HomeSyncStatus.attention),
@@ -102,15 +99,21 @@ void main() {
 
       expect(find.text(user.displayName), findsOneWidget);
       expect(find.text(user.email!), findsOneWidget);
-      expect(find.byType(SyncHero), findsOneWidget);
-      expect(find.text(l10n.homeAccountSheetOfflineTitle), findsOneWidget);
+      expect(find.text(l10n.homeAccountSheetOfflinePill), findsOneWidget);
+      expect(find.text(l10n.settingsSyncStatus), findsOneWidget);
       expect(find.text(l10n.moreSettings), findsOneWidget);
       expect(find.text(l10n.moreSignOut), findsOneWidget);
+
+      // The avatar inside the Hero Card mirrors the pill it sits next to:
+      // in the offline/attention state it shows its own status badge too
+      // (that's what justifies the "Sin conexión" pill next to it).
+      final avatar = tester.widget<AccountAvatar>(find.byType(AccountAvatar));
+      expect(avatar.badge, AccountAvatarBadge.attention);
     });
 
     testWidgets(
-        'con sesión + sincronizado: Identity Row + bloque de sync + '
-        'Ajustes + Cerrar sesión', (tester) async {
+        'con sesión + sincronizado: Hero Card + pill "Sincronizado" + '
+        'Estado de sincronización + Ajustes + Cerrar sesión', (tester) async {
       await pumpSheet(
         tester,
         stateWith(user: user, syncStatus: HomeSyncStatus.synced),
@@ -118,10 +121,15 @@ void main() {
       final l10n =
           AppLocalizations.of(tester.element(find.byType(AccountSheet)));
 
-      expect(find.byType(SyncHero), findsOneWidget);
-      expect(find.text(l10n.homeAccountSheetSyncedTitle), findsOneWidget);
+      expect(find.text(l10n.homeAccountSheetSyncedPill), findsOneWidget);
+      expect(find.text(l10n.settingsSyncStatus), findsOneWidget);
       expect(find.text(l10n.moreSettings), findsOneWidget);
       expect(find.text(l10n.moreSignOut), findsOneWidget);
+
+      // Only the synced state switches the avatar's badge off, so a
+      // healthy avatar doesn't contradict the mint pill next to it.
+      final avatar = tester.widget<AccountAvatar>(find.byType(AccountAvatar));
+      expect(avatar.badge, AccountAvatarBadge.synced);
     });
   });
 
@@ -152,6 +160,22 @@ void main() {
     expect(tapped, 1);
   });
 
+  testWidgets('tocar "Estado de sincronización" dispara onOpenSyncStatus',
+      (tester) async {
+    var tapped = 0;
+    await pumpSheet(
+      tester,
+      stateWith(user: user),
+      onOpenSyncStatus: () => tapped++,
+    );
+    final l10n = AppLocalizations.of(tester.element(find.byType(AccountSheet)));
+
+    await tester.tap(find.text(l10n.settingsSyncStatus));
+    await tester.pump();
+
+    expect(tapped, 1);
+  });
+
   testWidgets('tocar "Cerrar sesión" dispara onSignOut', (tester) async {
     var tapped = 0;
     await pumpSheet(tester, stateWith(user: user), onSignOut: () => tapped++);
@@ -161,57 +185,6 @@ void main() {
     await tester.pump();
 
     expect(tapped, 1);
-  });
-
-  group('criterio 14: el bloque de sync reusa SyncHero en modo compacto', () {
-    testWidgets(
-        'SyncHero se parametriza compact:true, trailingChevron:true y sin '
-        'cta propio', (tester) async {
-      await pumpSheet(tester, stateWith(user: user));
-
-      final hero = tester.widget<SyncHero>(find.byType(SyncHero));
-
-      expect(hero.compact, isTrue);
-      expect(hero.trailingChevron, isTrue);
-      expect(hero.cta, isNull,
-          reason: 'no own button — the whole block is tappable instead');
-    });
-
-    testWidgets(
-        'tocar el bloque completo dispara onOpenSyncStatus (toda la '
-        'superficie es tocable, sin botón propio)', (tester) async {
-      var tapped = 0;
-      await pumpSheet(
-        tester,
-        stateWith(user: user),
-        onOpenSyncStatus: () => tapped++,
-      );
-
-      await tester.tap(find.byType(SyncHero));
-      await tester.pump();
-
-      expect(tapped, 1);
-    });
-
-    testWidgets('refleja el timestamp real de syncSnapshot.lastSyncedAt',
-        (tester) async {
-      final syncedAt = DateTime(2026, 7, 20, 10);
-      await pumpSheet(
-        tester,
-        stateWith(user: user).copyWith(
-          syncSnapshot: SyncStatusSnapshot(
-            state: SyncState.synced,
-            quarantinedCount: 0,
-            lastSyncedAt: syncedAt,
-            hasSyncedEver: true,
-          ),
-        ),
-      );
-      final l10n =
-          AppLocalizations.of(tester.element(find.byType(AccountSheet)));
-
-      expect(find.text(l10n.syncNeverSyncedLabel), findsNothing);
-    });
   });
 
   testWidgets('tema oscuro: renderiza las 3 variantes sin excepción (HU-11)',
@@ -302,16 +275,18 @@ void main() {
     });
 
     testWidgets(
-        'tocar el bloque de sync dispara onOpenSyncStatus Y cierra la hoja',
-        (tester) async {
+        'tocar "Estado de sincronización" dispara onOpenSyncStatus Y cierra '
+        'la hoja', (tester) async {
       var tapped = 0;
       await pumpPresentedSheet(
         tester,
         stateWith(user: user),
         onOpenSyncStatus: () => tapped++,
       );
+      final l10n =
+          AppLocalizations.of(tester.element(find.byType(ElevatedButton)));
 
-      await tester.tap(find.byType(SyncHero));
+      await tester.tap(find.text(l10n.settingsSyncStatus));
       await tester.pumpAndSettle();
 
       expect(tapped, 1);

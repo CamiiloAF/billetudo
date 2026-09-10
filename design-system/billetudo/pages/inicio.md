@@ -4,7 +4,7 @@ Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `bill
 
 ## Estado
 
-**Aprobado** (2026-08-27). Claro y oscuro cerrados — 41 frames en total (16 pares del hero/card de IA/hoja de saldos + 1 par adicional de hero "Presupuestos sin destacar" + 4 frames de la hoja de cuenta con sus pares oscuros), auditados por `ui-ux-reviewer` en varias pasadas, sin ninguna marca de revisión pendiente en el canvas. **Regla dura del proyecto: el tema oscuro nunca se vuelve a tocar hasta que el usuario apruebe el claro explícitamente** — ya cumplida acá; cualquier cambio nuevo de diseño reabre esa secuencia (claro primero, oscuro después).
+**Aprobado en general** (2026-08-27), con una excepción abierta desde el 2026-09-10: la **Hoja de cuenta** se reabrió por el issue #34 (ver sección propia abajo) — la Propuesta B (`svGeu`) está aprobada solo para el estado "sin conexión" en tema claro; los estados "sincronizado"/"sin cuenta" y el tema oscuro completo de esa hoja quedan pendientes de reconstruir sobre la nueva estructura. El resto del paquete (hero, card de IA, hoja de saldos, header) sigue cerrado en ambos temas — 41 frames en total, auditados por `ui-ux-reviewer` en varias pasadas, sin marca de revisión pendiente. **Regla dura del proyecto: el tema oscuro nunca se vuelve a tocar hasta que el usuario apruebe el claro explícitamente** — cualquier cambio nuevo de diseño reabre esa secuencia (claro primero, oscuro después); la Hoja de cuenta está hoy en ese punto de la secuencia.
 
 > **Nota de historia:** este paquete reemplaza dos generaciones de diseño anteriores, ambas borradas del `.pen` el 2026-08-27: la variante "V2" con tira "Mis cuentas" + banner de IA al fondo (`LktTm`/`AVgUv`), y antes de esa, la variante A "actividad primero" (`aOhoY`/`A9v7s`/`DliNF`/`AmifS` + oscuros). El hero compacto de este paquete ya cubre con/sin presupuesto en un solo componente (`xRSdl`), y `s8ZgCk`/`Zq0iW` cubren vacío/carga — no hace falta portar nada de las generaciones viejas.
 
@@ -107,32 +107,58 @@ Bottom sheet ("Tu dinero") sobre el fondo real del Home (`Home BG` con `Status B
 - La nota "No incluye tarjetas de crédito ni inversiones" solo se dibuja en el grupo donde el total deja algo afuera — el grupo con una sola cuenta bancaria (sin tarjetas) no la lleva.
 - **Filas tocables → Movimientos filtrados por esa cuenta** (no detalle de cuenta), reusando la navegación `onOpenAccountMovements` ya existente en `home_page.dart`/`app_router.dart` — es el mismo atajo que ofrecía la tira "Mis cuentas" que se eliminó del Home. Sin chevron ni otra señal visual adicional (`pages/cuentas.md` ya descartó chevrons en `Account Card`, y ningún otro componente de fila del sistema los usa). Tap target 350×74, muy sobre el mínimo de 44pt.
 
-## Hoja de cuenta (destino del avatar) — 4 pares claro/oscuro
+## Hoja de cuenta (destino del avatar) — Propuesta B aprobada (`svGeu`), reemplaza la generación anterior
 
 El avatar tocable (`fPMzQ`) abre "Tu cuenta". A diferencia de la hoja de saldos, no tiene doc propia en `pages/` todavía (toda la decisión vive en los `context` del `.pen`) — se documenta acá como parte de Inicio porque el avatar que la abre es parte del header del Home.
 
+**Issue GitHub #34** reportó que la generación anterior de esta hoja (ver historia abajo) se veía "como un Frankenstein" — mezclaba 4 lenguajes visuales distintos (Identity Row sin chrome, bloque de sync tipo alerta, Menu Row plana, separador ad-hoc) en una sola hoja de 5 elementos. Se generaron 3 propuestas de refactor (A: card unificada, B: hero + lista, C: minimal sin card) contra `MASTER.md`, y el usuario **aprobó explícitamente la Propuesta B**. A y C se borraron del canvas junto con sus markers de revisión.
+
+**Aprobado en los 3 estados y ambos temas** (2026-09-10) — 6 frames, sin marca de revisión pendiente:
+
+| Estado | Claro | Oscuro |
+|---|---|---|
+| Base / sin conexión (algo merece tu atención) | `svGeu` | `mwnHe` |
+| Sincronizado | `AkTan` | `Z95Se7` |
+| Sin cuenta | `e0c5v8` | `aRNMx` |
+
+**Correcciones aplicadas en la ronda de cierre** (post-aprobación inicial de `svGeu`, antes de la aprobación final):
+- **Sincronizado** heredaba por defecto el `Status Badge` del `Account Avatar` (`fPMzQ`) dentro del Hero Card — quedaba con ícono `cloud-off`/`$amber` ("requiere atención") contradiciendo la pill "Sincronizado" al lado. Fix: `descendants:{"UILBZ":{"enabled":false}}` sobre la instancia del avatar en el Hero Card, en ambos temas — mismo criterio que ya usaba el Header de fondo del frame.
+- **Sin cuenta** tenía el Hero Card sin `layout` definido, así que renderizaba horizontal en vez de vertical (Icon Circle + texto + CTA apretados en una fila) — causa real de que "se viera horrible", no un problema de color/copy. Fix: `layout:"vertical"` + copy simplificado de "Respalda tus datos en la nube"/"Guarda tus datos de forma segura" (redundante) a título "Respalda tus datos" + subtítulo "Así no los pierdes si cambias de teléfono".
+
+**Estructura** (dentro del `Bottom Sheet Base`, instancia `tjgIe` → `Content` `AtmXo`):
+
+1. **Hero Card** (`D0WrY`): fill `$primary-soft`, `cornerRadius:20`, padding 18, centrado. Contiene `Account Avatar` (ref a `fPMzQ`) + columna de identidad (`HgiCM`): nombre (17/700, `$text-primary`) y una fila de estado inline (`OVJTt`) con correo (`$text-secondary`, 12/500) + separador "·" + **pill de estado** (`WeZke`: fill `$amber-soft`, texto `$amber-text` 11/700, ej. "Sin conexión"). A diferencia de la generación anterior (bloque de sync completo tipo `XxHV3` debajo del hero), acá el estado de sync se resume en una pill dentro del hero mismo — más compacto.
+2. **List Card separada** (`bRo5A`): fill `$surface`, stroke `$border` 1px, `cornerRadius:16`, sin padding propio. Dos filas `Menu Row` (ref a `hIbs3`): "Estado de sincronización" (ícono `refresh-cw`) y "Ajustes" (ícono `settings`), separadas por un `Divider` de 1px `$border`. Ambas navegan fuera de la hoja (sync status / ajustes reales). "Ajustes" sigue siendo acceso **duplicado** con Más — el borrado de cuenta es requisito de Apple/Google y no puede colgar solo de un avatar del Home.
+3. **"Cerrar sesión"** (`izRyw`): link de texto suelto, sin card ni stroke — ícono `log-out` + label 14/700, ambos `$expense-text`, padding vertical 14, centrado horizontalmente. Separado de la List Card por el gap del `Content` (16px), mismo criterio de "aire + hairline visual" que el resto del sistema, sin fila de chrome propia.
+
+**Issue #35 (pantalla "Más") — sin cambios.** Se evaluó y se **descartó explícitamente** fusionar la identidad de cuenta dentro de "Más" (propuesta `gDCYK`, borrada del canvas junto con dos borradores huérfanos previos, `Flxf1`/`OkAV4`, que apuntaban en esa dirección sin terminar). La pantalla "Más" real (`gXcHt`, "Mas — Final (Claro)") queda **exactamente como estaba**, sin ningún acceso a identidad de cuenta embebido — su único punto de entrada a "Tu cuenta" sigue siendo el avatar del header de Inicio.
+
+**Gate cumplido:** los 3 estados están cerrados en ambos temas, auditados por `ui-ux-reviewer` sin hallazgos pendientes. Los frames obsoletos de la generación anterior (`sauTn`/`ZjL0H`, `b8ffs`/`t9ImpN`, `HKhFc`/`Noi1D`) se borraron del canvas al construir la Propuesta B; la tira comparativa del badge (`uT2fj`/`q16Bo`) se conservó porque sigue vigente, no es parte de esta hoja. **Implementación en Flutter (`flutter-dev`): pendiente de iniciar.**
+
+### Historia — generación anterior (obsoleta, issue #34)
+
+Documentado por referencia, no vigente:
+
 | Frame | Claro | Oscuro | Notas |
 |---|---|---|---|
-| Tira comparativa de 4 estados del badge | `uT2fj` | `q16Bo` | No es una pantalla — 4 instancias de `v8CGbF` lado a lado con caption explicando cada estado. Documenta el contrato, no forma parte del flujo real. |
-| Hoja del avatar — con sesión, sin conexión | `sauTn` | `ZjL0H` | Estado "algo merece tu atención" (sin conexión, 3 cambios esperando) — el que justifica el badge ámbar del avatar. |
-| Hoja del avatar — con sesión, sincronizado | `b8ffs` | `t9ImpN` | Estado "todo bien" — reusa el copy ya aprobado de la familia de sincronización ("Todo está sincronizado", `cloud-check`, `$mint`). |
-| Hoja del avatar — sin cuenta | `HKhFc` | `Noi1D` | Punto de conversión que se perdía al quitar la nube del header. No intrusivo: requiere tocar el avatar (HU-07), nunca un modal al abrir la app. |
+| Tira comparativa de 4 estados del badge | `uT2fj` | `q16Bo` | No es una pantalla — 4 instancias de `v8CGbF` lado a lado con caption explicando cada estado. Documenta el contrato del badge, sigue vigente independientemente del refactor de la hoja. |
+| Hoja del avatar — con sesión, sin conexión | `sauTn` | `ZjL0H` | Reemplazada por `svGeu` (Propuesta B). |
+| Hoja del avatar — con sesión, sincronizado | `b8ffs` | `t9ImpN` | Estado aún no reconstruido sobre la Propuesta B — ver "Pendiente" arriba. |
+| Hoja del avatar — sin cuenta | `HKhFc` | `Noi1D` | Estado aún no reconstruido sobre la Propuesta B — ver "Pendiente" arriba. |
 
-**Estructura de la hoja** (los 4 frames con sesión, ambos temas): Title "Tu cuenta" → Identity Row (avatar + nombre + correo/proveedor) → **bloque de sync** → "Ajustes" (`Menu Row`, acceso **duplicado** con Más — el borrado de cuenta es requisito de Apple/Google y no puede colgar solo de un avatar) → separador → "Cerrar sesión" (aire + hairline, `$expense-text`, sin chevron porque no navega). El frame sin cuenta reemplaza Identity Row + bloque de sync por una invitación con CTA primario "Activar respaldo", y no lleva "Cerrar sesión".
+Estructura vieja (para contexto de por qué se rechazó, issue #34): Title "Tu cuenta" → Identity Row sin chrome → bloque de sync completo (parametrización de `XxHV3`, ver detalle histórico abajo) → "Ajustes" (`Menu Row` plana) → separador ad-hoc → "Cerrar sesión". El frame sin cuenta reemplazaba Identity Row + bloque de sync por una invitación con CTA primario "Activar respaldo".
 
-### El bloque de sync — parametrización del componente `XxHV3` (Sync Hero), no un componente aparte
+### El bloque de sync de la generación vieja — parametrización del componente `XxHV3` (Sync Hero)
 
-Pasó por varias iteraciones el 2026-08-27, documentadas para que quien lo retome entienda el porqué de cada decisión:
+Pasó por varias iteraciones el 2026-08-27, documentadas para que quien retome la reconstrucción de los estados "sincronizado"/"sin cuenta" sobre la Propuesta B entienda el porqué de cada decisión previa (el criterio de fondo — reusar `XxHV3` en vez de un componente paralelo — sigue aplicando aunque el chrome visual cambió con la Propuesta B):
 
 1. **Primer intento: componente nuevo** (`Sync Row · Compacta`). El usuario lo rechazó explícitamente — quería el **mismo componente** que ya usa la pantalla real de "Estado de sincronización" (`pages/sincronizacion.md`), solo parametrizado, no uno paralelo.
-2. **Se agregó un modo compacto a `XxHV3` vía overrides opcionales** que, ausentes, dejan el componente exactamente como está en sus ~20 usos de `sincronizacion.md` — mismo patrón después reusado para el chevron (ver punto 4). El modo compacto: `cornerRadius`/`padding`/`gap` reducidos, párrafo largo de contención apagado o acortado a una frase, botón "Sincronizar ahora" **mismo componente `Button/Secondary` (`pNjOz`)** que la pantalla completa, no reconstruido con texto+ícono sueltos.
-3. **El botón se quitó del todo.** El usuario pidió que el bloque entero fuera tocable y navegara a "Estado de sincronización" en vez de tener un CTA propio — el botón real vive en la pantalla completa. El CTA queda `enabled:false` en el override (no borrado), documentado en el `context`.
-4. **Se agregó un chevron**, también como override opcional nuevo del componente (`Q7KLYg`, nace `enabled:false`, verificado que las ~20 instancias de `sincronizacion.md` no lo heredan encendido). Motivo: sin botón ni chevron, el bloque "sincronizado" no tenía ningún límite visual (`fill`/`stroke` transparentes) y se leía como texto suelto, mientras la fila "Ajustes" justo debajo sí mostraba su chevron — inconsistencia real que el usuario notó en el render. **Ambos estados** (sincronizado y sin conexión) llevan el chevron encendido hoy.
+2. **Se agregó un modo compacto a `XxHV3` vía overrides opcionales** que, ausentes, dejan el componente exactamente como está en sus ~20 usos de `sincronizacion.md`. El modo compacto: `cornerRadius`/`padding`/`gap` reducidos, párrafo largo de contención apagado o acortado a una frase, botón "Sincronizar ahora" **mismo componente `Button/Secondary` (`pNjOz`)** que la pantalla completa, no reconstruido con texto+ícono sueltos.
+3. **El botón se quitó del todo.** El usuario pidió que el bloque entero fuera tocable y navegara a "Estado de sincronización" en vez de tener un CTA propio.
+4. **Se agregó un chevron**, también como override opcional nuevo del componente (`Q7KLYg`, nace `enabled:false`).
 5. **La fila `Menu Row` "Estado de sincronización" que vivía debajo se borró** — quedó redundante una vez que el bloque de arriba se volvió tocable hacia el mismo destino.
 
-**Estados del bloque:**
-- **Sincronizado** (`e2EBxp`/`t9r4P`): sin fill/stroke — se funde con la lista, mismo trato que una fila más. Ícono `cloud-check` en `$mint`/`$mint-soft`. Chevron encendido.
-- **Sin conexión** (`ICqxW`/`PJgY8`): fill `$amber-soft` sin borde (presencia por fondo, no por contorno — mismo criterio que el resto del sistema de sync). Ícono `cloud-off` en `$amber`. Chevron encendido. Nota corta: "Sincronizaremos solos en cuanto haya conexión."
+En la Propuesta B este criterio se resume aún más: el estado de sync ya no es un bloque separado, es una pill dentro del Hero Card (ver estructura arriba), y la fila "Estado de sincronización" de la List Card vuelve a navegar al detalle completo — mismo destino, presentación distinta.
 
 ## Componentes reutilizables (tabla resumen)
 

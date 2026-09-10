@@ -22,6 +22,7 @@ class AuthSignInButtonsGroup extends StatelessWidget {
     required this.onApple,
     required this.onSkip,
     this.isGoogleLoading = false,
+    this.isAppleLoading = false,
     super.key,
   });
 
@@ -29,6 +30,14 @@ class AuthSignInButtonsGroup extends StatelessWidget {
   final VoidCallback? onApple;
   final VoidCallback onSkip;
   final bool isGoogleLoading;
+
+  /// Mirrors [isGoogleLoading] for the Apple button. Never both true at once
+  /// (GH-25) — the caller derives each from `LoginState.lastProvider`.
+  ///
+  /// `SignInWithAppleButton` (the official widget, see class doc) has no
+  /// built-in loading state, so this swaps its label and overlays a spinner
+  /// instead of swapping its content like `GoogleSignInButton` does.
+  final bool isAppleLoading;
 
   bool get _showApple => !kIsWeb && Platform.isIOS;
 
@@ -44,10 +53,33 @@ class AuthSignInButtonsGroup extends StatelessWidget {
           SizedBox(
             height: 50,
             width: double.infinity,
-            child: SignInWithAppleButton(
-              onPressed: onApple ?? () {},
-              text: l10n.authContinueWithApple,
-              borderRadius: BorderRadius.circular(12),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // AbsorbPointer, not just `onPressed: null`, because the
+                // caller already disables `onApple` while loading — this
+                // only blocks stray taps landing during the spinner overlay
+                // below, which the native button otherwise still accepts.
+                AbsorbPointer(
+                  absorbing: isAppleLoading,
+                  child: SignInWithAppleButton(
+                    onPressed: onApple ?? () {},
+                    text: isAppleLoading
+                        ? l10n.authAppleLoading
+                        : l10n.authContinueWithApple,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                if (isAppleLoading)
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  ),
+              ],
             ),
           ),
           const SizedBox(height: 12),

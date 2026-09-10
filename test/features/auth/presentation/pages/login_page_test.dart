@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
@@ -131,6 +133,53 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(signedIn, isTrue);
+  });
+
+  testWidgets(
+      'GH-25: un login con Apple no muestra el botón de Google como '
+      'cargando', (tester) async {
+    late LoginCubit cubit;
+    when(() => signInWithApple()).thenAnswer((_) async {
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      return const Right(
+        SignedIn(
+          AuthUser(
+            id: 'apple-1',
+            displayName: 'Camila',
+            provider: AuthProvider.apple,
+          ),
+        ),
+      );
+    });
+
+    await tester.pumpAuthWidget(
+      BlocProvider(
+        create: (_) => cubit = LoginCubit(
+          signInWithGoogle,
+          signInWithApple,
+          resolveAccountConflict,
+          cancelAccountConflict,
+        ),
+        child: LoginPage(
+          onSignedIn: ({required signedInAfterConflict}) {},
+          onSkip: () {},
+        ),
+      ),
+      wrapInScaffold: false,
+    );
+
+    unawaited(cubit.continueWithApple());
+    await tester.pump();
+
+    // Mid-flight: only the provider that is actually loading shows a
+    // spinner — the Google button (the only one this test host can render,
+    // see the `SignInWithAppleButton` note above) must stay in its resting
+    // state.
+    final button =
+        tester.widget<GoogleSignInButton>(find.byType(GoogleSignInButton));
+    expect(button.isLoading, isFalse);
+
+    await tester.pumpAndSettle();
   });
 
   testWidgets(

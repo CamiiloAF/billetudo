@@ -2648,58 +2648,28 @@ abstract class AppLocalizations {
   /// **'{currency} · {count, plural, =1{1 cuenta} other{{count} cuentas}}'**
   String homeBalancesSheetCurrencyCount(String currency, int count);
 
-  /// No description provided for @homeAccountSheetTitle.
+  /// No description provided for @homeAccountSheetSyncedPill.
   ///
   /// In es, this message translates to:
-  /// **'Tu cuenta'**
-  String get homeAccountSheetTitle;
+  /// **'Sincronizado'**
+  String get homeAccountSheetSyncedPill;
 
-  /// No description provided for @homeAccountSheetSyncedTitle.
-  ///
-  /// In es, this message translates to:
-  /// **'Todo está sincronizado'**
-  String get homeAccountSheetSyncedTitle;
-
-  /// No description provided for @homeAccountSheetSyncedKicker.
-  ///
-  /// In es, this message translates to:
-  /// **'Todo bien'**
-  String get homeAccountSheetSyncedKicker;
-
-  /// No description provided for @homeAccountSheetSyncedBody.
-  ///
-  /// In es, this message translates to:
-  /// **'Tus datos están respaldados y al día en la nube.'**
-  String get homeAccountSheetSyncedBody;
-
-  /// No description provided for @homeAccountSheetOfflineTitle.
+  /// No description provided for @homeAccountSheetOfflinePill.
   ///
   /// In es, this message translates to:
   /// **'Sin conexión'**
-  String get homeAccountSheetOfflineTitle;
-
-  /// No description provided for @homeAccountSheetOfflineKicker.
-  ///
-  /// In es, this message translates to:
-  /// **'Algo merece tu atención'**
-  String get homeAccountSheetOfflineKicker;
-
-  /// No description provided for @homeAccountSheetOfflineBody.
-  ///
-  /// In es, this message translates to:
-  /// **'Sincronizaremos solos en cuanto haya conexión.'**
-  String get homeAccountSheetOfflineBody;
+  String get homeAccountSheetOfflinePill;
 
   /// No description provided for @homeAccountSheetNoAccountTitle.
   ///
   /// In es, this message translates to:
-  /// **'Respalda tu información'**
+  /// **'Respalda tus datos'**
   String get homeAccountSheetNoAccountTitle;
 
   /// No description provided for @homeAccountSheetNoAccountBody.
   ///
   /// In es, this message translates to:
-  /// **'Inicia sesión para no perder tus datos si cambias de teléfono.'**
+  /// **'Así no los pierdes si cambias de teléfono'**
   String get homeAccountSheetNoAccountBody;
 
   /// No description provided for @homeAccountSheetActivateBackup.
@@ -3813,6 +3783,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Conectando con Google…'**
   String get authGoogleLoading;
+
+  /// No description provided for @authAppleLoading.
+  ///
+  /// In es, this message translates to:
+  /// **'Conectando con Apple…'**
+  String get authAppleLoading;
 
   /// No description provided for @authGoogleErrorSnackbar.
   ///

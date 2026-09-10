@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -12,6 +11,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_fab.dart';
 import '../../../../core/widgets/coming_soon_sheet.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/scroll_aware_fab.dart';
+import '../../../../core/widgets/scroll_aware_fab_visibility.dart';
 import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
 import '../../../accounts/presentation/widgets/account_gate_copy.dart';
 import '../../../settings/presentation/cubit/app_settings_cubit.dart';
@@ -139,12 +140,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  final ScrollController _scrollController = ScrollController();
-
-  /// HU-02: the FAB hides on scroll down and comes back on scroll up.
-  bool _fabVisible = true;
-
+class _HomePageState extends State<HomePage>
+    with ScrollAwareFabVisibility<HomePage> {
   /// Guards every AI-card tap handler below (`_onAskQuestion`,
   /// `_onCreateBudgetOrAskAi`, `_onStartInsightConversation`,
   /// `_onContinueInsightConversation`) against opening the chat more than
@@ -157,27 +154,6 @@ class _HomePageState extends State<HomePage> {
   /// while another is still resolving must be blocked too, not just repeats
   /// of the exact same one.
   bool _openingAi = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  void _onScroll() {
-    final direction = _scrollController.position.userScrollDirection;
-    if (direction == ScrollDirection.reverse && _fabVisible) {
-      setState(() => _fabVisible = false);
-    } else if (direction == ScrollDirection.forward && !_fabVisible) {
-      setState(() => _fabVisible = true);
-    }
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
 
   Future<void> _openBellSheet(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -373,17 +349,12 @@ class _HomePageState extends State<HomePage> {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      floatingActionButton: AnimatedSlide(
-        duration: const Duration(milliseconds: 200),
-        offset: _fabVisible ? Offset.zero : const Offset(0, 2),
-        child: AnimatedOpacity(
-          duration: const Duration(milliseconds: 200),
-          opacity: _fabVisible ? 1 : 0,
-          child: AppFab(
-            icon: LucideIcons.plus,
-            tooltip: l10n.transactionsAdd,
-            onPressed: () => unawaited(_addTransaction(context)),
-          ),
+      floatingActionButton: ScrollAwareFab(
+        visible: fabVisible,
+        child: AppFab(
+          icon: LucideIcons.plus,
+          tooltip: l10n.transactionsAdd,
+          onPressed: () => unawaited(_addTransaction(context)),
         ),
       ),
       body: SafeArea(
@@ -408,7 +379,7 @@ class _HomePageState extends State<HomePage> {
           },
           builder: (context, state) {
             return CustomScrollView(
-              controller: _scrollController,
+              controller: fabScrollController,
               slivers: [
                 SliverToBoxAdapter(
                   child: Padding(
