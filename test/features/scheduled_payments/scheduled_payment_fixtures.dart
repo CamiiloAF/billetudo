@@ -30,6 +30,7 @@ ScheduledPayment buildScheduledPayment({
   int? updatedAt,
   String? debtId,
   String? goalId,
+  int? reminderLeadDays,
 }) =>
     ScheduledPayment(
       id: id,
@@ -55,6 +56,7 @@ ScheduledPayment buildScheduledPayment({
       createdAt: testInstant,
       updatedAt: updatedAt ?? testInstantMillis,
       tombstonedAt: tombstonedAt,
+      reminderLeadDays: reminderLeadDays,
     );
 
 /// [categoryId]/[categoryKind] default to a matching expense category since

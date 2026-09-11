@@ -17,6 +17,7 @@ import 'crash/sentry_crash_reporter.dart';
 import 'database/database_connection.dart';
 import 'di/injection.dart';
 import 'error/result.dart';
+import 'notifications/domain/usecases/initialize_notifications.dart';
 import 'router/app_router.dart';
 
 /// Shared entry point: mounts [AppBootstrapGate] (which shows the splash
@@ -39,7 +40,8 @@ import 'router/app_router.dart';
 /// wiring up (that now happens asynchronously inside [_initApp], behind the
 /// splash screen), so they resolve [CrashReporter] lazily and tolerate it not
 /// being registered yet — see [_reportBootError].
-Future<void> bootstrap(Widget Function({String initialLocation}) builder) async {
+Future<void> bootstrap(
+    Widget Function({String initialLocation}) builder) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final gate = AppBootstrapGate(init: () => _initApp(builder));
@@ -115,6 +117,24 @@ Future<Widget Function()> _initApp(
 
   final crash = getIt<CrashReporter>();
   await crash.init();
+
+  // Local notifications: timezone database, device timezone and the Android
+  // channels. No permission is requested here on purpose — that happens in
+  // context, the first time the user configures a reminder (HU-08). A prompt
+  // at startup has no visible reason and is the one that gets denied for
+  // good.
+  //
+  // Rescheduling every reminder is NOT done here: it rides on the scheduled
+  // payments catch-up below (`GenerateDueScheduledPayments` reconciles the
+  // reminder set after running), which also covers Android dropping every
+  // alarm on `RECEIVE_BOOT_COMPLETED` — the device comes back up, the app
+  // opens, and the reminders are rebuilt from the templates.
+  final notificationsResult = await getIt<InitializeNotifications>()();
+  if (notificationsResult case Left(value: final failure)) {
+    unawaited(
+      crash.recordFailure(failure, context: 'initializeNotifications'),
+    );
+  }
 
   // Bug corregido (2026-08-17, docs/requirements/fase-1/05-auth-sync.md): must run
   // before ANY local seed below. `SeedDefaultCategories()()` just below is

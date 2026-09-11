@@ -33,6 +33,7 @@ abstract final class ScheduledPaymentMapper {
         tombstonedAt: row.tombstonedAt,
         debtId: row.debtId,
         goalId: row.goalId,
+        reminderLeadDays: row.reminderLeadDays,
       );
 
   /// Insert companion. `id` is left to Drift's `clientDefault` (UUID).
@@ -63,6 +64,7 @@ abstract final class ScheduledPaymentMapper {
         requiresConfirmation: Value(draft.requiresConfirmation),
         debtId: Value(draft.debtId),
         goalId: Value(draft.goalId),
+        reminderLeadDays: Value(draft.reminderLeadDays),
         createdAt: Value(now),
         updatedAt: Value(now.millisecondsSinceEpoch),
       );
@@ -113,6 +115,11 @@ abstract final class ScheduledPaymentMapper {
         // this from `null` to a real value, via a targeted update, not this
         // full-draft edit path.
         goalId: Value(draft.goalId),
+        // HU-08: written explicitly on every edit, `Value(null)` included —
+        // choosing "sin recordatorio" must actually clear the column (and,
+        // through the reconciler, cancel the pending notification), not
+        // leave the old lead in place.
+        reminderLeadDays: Value(draft.reminderLeadDays),
         updatedAt: Value(now.millisecondsSinceEpoch),
       );
 

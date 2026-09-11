@@ -6454,4 +6454,205 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsAiConsentWithdrawSheetConfirm => 'Retirar';
+
+  @override
+  String get notificationsChannelRemindersName => 'Recordatorios de pagos';
+
+  @override
+  String get notificationsChannelRemindersDescription =>
+      'Avisos de los pagos programados que tú configuraste.';
+
+  @override
+  String get notificationsChannelCapturesName => 'Registro de movimientos';
+
+  @override
+  String get notificationsChannelCapturesDescription =>
+      'Avisos para registrar un movimiento cuando lo pediste.';
+
+  @override
+  String get notificationsChannelMilestonesName => 'Logros de tus metas';
+
+  @override
+  String get notificationsChannelMilestonesDescription =>
+      'Avisos cuando una de tus metas llega a un hito.';
+
+  @override
+  String remindersNotificationBodyToday(String amount, String account) {
+    return 'Hoy se paga $amount desde $account';
+  }
+
+  @override
+  String remindersNotificationBodyTomorrow(String amount, String account) {
+    return 'Mañana se paga $amount desde $account';
+  }
+
+  @override
+  String remindersNotificationBodyInDays(
+      int days, String amount, String account) {
+    return 'En $days días se paga $amount desde $account';
+  }
+
+  @override
+  String get remindersFieldSectionLabel => 'Recordatorio';
+
+  @override
+  String get remindersOptionNone => 'Sin recordatorio';
+
+  @override
+  String get remindersSheetCaption =>
+      'Te mandamos una notificación antes de que llegue la fecha.';
+
+  @override
+  String get remindersOptionOnDueDate => 'El día del pago';
+
+  @override
+  String get remindersOptionOneDayBefore => '1 día antes';
+
+  @override
+  String get remindersOptionThreeDaysBefore => '3 días antes';
+
+  @override
+  String get remindersOptionOneWeekBefore => 'Una semana antes';
+
+  @override
+  String get remindersPermissionNotice =>
+      'Guardamos tu preferencia. Para que el aviso llegue, activa las notificaciones de Billetudo en los ajustes de tu teléfono.';
+
+  @override
+  String get remindersChipOnDueDate => 'Te avisamos el día del pago';
+
+  @override
+  String get remindersChipOneDayBefore => 'Te avisamos 1 día antes';
+
+  @override
+  String remindersChipDaysBefore(int days) {
+    return 'Te avisamos $days días antes';
+  }
+
+  @override
+  String get remindersChipOneWeekBefore => 'Te avisamos una semana antes';
+
+  @override
+  String get notificationsSettingsPaymentReminders => 'Recordatorios de pago';
+
+  @override
+  String get notificationsSettingsPaymentRemindersSubtitle =>
+      'Te avisamos antes de la fecha de un pago programado, con la anticipación que elegiste en cada uno.';
+
+  @override
+  String get notificationsSettingsUpcomingCharges => 'Cobros próximos';
+
+  @override
+  String get notificationsSettingsUpcomingChargesSubtitle =>
+      'Un aviso cuando se acerca un pago que ya tienes programado.';
+
+  @override
+  String get notificationsSettingsPendingConfirmations => 'Pagos por confirmar';
+
+  @override
+  String get notificationsSettingsPendingConfirmationsSubtitle =>
+      'Cuando un pago manual quedó esperando tu confirmación.';
+
+  @override
+  String get notificationsSettingsGoalMilestones => 'Hitos de metas';
+
+  @override
+  String get notificationsSettingsGoalMilestonesSubtitle =>
+      'Cuando llegas a la mitad de una meta y cuando la completas.';
+
+  @override
+  String insightGoalMilestoneTitle(String name, int percent) {
+    return '$name va en $percent%';
+  }
+
+  @override
+  String insightGoalCompletedTitle(String name) {
+    return '¡Llegaste a tu meta $name!';
+  }
+
+  @override
+  String insightGoalMilestoneBody(String amount, String target) {
+    return 'Llevas $amount de $target';
+  }
+
+  @override
+  String get settingsNotifications => 'Notificaciones';
+
+  @override
+  String get settingsNotificationsSubtitle =>
+      'Recordatorios de pago, cobros próximos y metas';
+
+  @override
+  String get notificationsSettingsIntro =>
+      'Tú eliges qué te avisamos. Lo que apagues aquí deja de llegar y puedes volver a encenderlo cuando quieras.';
+
+  @override
+  String get notificationsSettingsDeniedIntro =>
+      'Cuando vuelvas a permitir las notificaciones, estos ajustes quedan como los tenías. No se pierde nada.';
+
+  @override
+  String get notificationsPermissionDeniedTitle =>
+      'Tu teléfono tiene las notificaciones apagadas';
+
+  @override
+  String get notificationsPermissionDeniedBody =>
+      'Mientras el permiso esté apagado no te llega ningún aviso, aunque aquí los dejes encendidos. Se activa desde los ajustes del teléfono.';
+
+  @override
+  String get notificationsPermissionDeniedCta => 'Abrir ajustes del teléfono';
+
+  @override
+  String insightUpcomingChargeTitleToday(Object name) {
+    return '$name se cobra hoy';
+  }
+
+  @override
+  String insightUpcomingChargeTitleTomorrow(Object name) {
+    return '$name se cobra mañana';
+  }
+
+  @override
+  String insightUpcomingChargeTitleInDays(Object days, Object name) {
+    return '$name se cobra en $days días';
+  }
+
+  @override
+  String insightUpcomingChargeSubtitle(Object amount) {
+    return '$amount · Pago programado';
+  }
+
+  @override
+  String insightPendingConfirmationTitleToday(Object name) {
+    return '$name estaba programado para hoy';
+  }
+
+  @override
+  String insightPendingConfirmationTitleYesterday(Object name) {
+    return '$name estaba programado para ayer';
+  }
+
+  @override
+  String insightPendingConfirmationTitleDaysAgo(Object days, Object name) {
+    return '$name estaba programado hace $days días';
+  }
+
+  @override
+  String insightPendingConfirmationSubtitle(Object amount) {
+    return '$amount · Espera tu confirmación';
+  }
+
+  @override
+  String get insightActionViewPayment => 'Ver pago';
+
+  @override
+  String get insightActionRemindLater => 'Recordar después';
+
+  @override
+  String get insightActionConfirmPayment => 'Confirmar pago';
+
+  @override
+  String get insightActionNotYet => 'Todavía no';
+
+  @override
+  String get insightActionViewGoal => 'Ver meta';
 }
