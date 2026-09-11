@@ -5,6 +5,7 @@ import 'package:billetudo/features/scheduled_payments/domain/usecases/create_sch
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../core/notifications/notification_test_doubles.dart';
 import '../../scheduled_payment_fixtures.dart';
 import 'scheduled_payment_repository_mock.dart';
 
@@ -16,7 +17,8 @@ void main() {
 
   setUp(() {
     repository = MockScheduledPaymentRepository();
-    createScheduledPayment = CreateScheduledPayment(repository);
+    createScheduledPayment =
+        CreateScheduledPayment(repository, noopSyncReminders());
     when(() => repository.createScheduledPayment(any())).thenAnswer(
       (invocation) async => Right(
         buildScheduledPayment(

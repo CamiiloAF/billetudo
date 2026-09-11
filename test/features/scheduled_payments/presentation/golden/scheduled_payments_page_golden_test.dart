@@ -58,7 +58,11 @@ void main() {
 
   final items = [
     ScheduledPaymentSummary(
-      scheduledPayment: buildScheduledPayment(nextDate: inDays(5)),
+      // `reminderLeadDays: 3` (HU-08) so the "with data" states also cover
+      // `ScheduledReminderChip` — the reminder feature's only visible mark on
+      // this list, otherwise untested here.
+      scheduledPayment:
+          buildScheduledPayment(nextDate: inDays(5), reminderLeadDays: 3),
       accountName: 'Bancolombia',
       categoryName: 'Arriendo',
       categoryIcon: 'house',

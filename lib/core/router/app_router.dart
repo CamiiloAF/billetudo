@@ -118,6 +118,8 @@ import '../../features/scheduled_payments/presentation/pages/scheduled_payment_d
 import '../../features/scheduled_payments/presentation/pages/scheduled_payment_form_page.dart';
 import '../../features/scheduled_payments/presentation/pages/scheduled_payments_page.dart';
 import '../../features/settings/presentation/cubit/app_settings_cubit.dart';
+import '../../features/settings/presentation/cubit/notification_settings_cubit.dart';
+import '../../features/settings/presentation/pages/notification_settings_page.dart';
 import '../../features/settings/presentation/pages/quick_access_order_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transactions/domain/entities/transaction.dart';
@@ -177,6 +179,7 @@ abstract final class AppRoutes {
       '/mas/ajustes/sincronizacion/cambios';
   static const String mergeConfirmation = '/mas/ajustes/respaldar/fusion';
   static const String quickAccessOrder = '/mas/ajustes/acceso-rapido';
+  static const String notificationSettings = '/mas/ajustes/notificaciones';
   static const String accountDeleted = '/mas/cuenta-eliminada';
   static const String debts = '/deudas';
   static const String newDebt = '/deudas/nueva';
@@ -1191,10 +1194,25 @@ GoRoute _settingsRoute() => GoRoute(
           onOpenSyncStatus: () => context.push(AppRoutes.syncStatus),
           onOpenQuickAccessOrder: () =>
               context.push(AppRoutes.quickAccessOrder),
+          onOpenNotifications: () =>
+              context.push(AppRoutes.notificationSettings),
         ),
       ),
       routes: [
         _syncStatusRoute(),
+        // Stacked on the root navigator like the rest of Ajustes: `Page
+        // Header` and `Tab Bar` are mutually exclusive (MASTER).
+        GoRoute(
+          path: 'notificaciones',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) => _started(
+              getIt<NotificationSettingsCubit>(),
+              (c) => c.start(),
+            ),
+            child: const NotificationSettingsPage(),
+          ),
+        ),
         GoRoute(
           path: 'acceso-rapido',
           parentNavigatorKey: _rootNavigatorKey,

@@ -5,6 +5,7 @@ import 'package:billetudo/features/scheduled_payments/domain/usecases/snooze_sch
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../core/notifications/notification_test_doubles.dart';
 import 'scheduled_payment_repository_mock.dart';
 
 void main() {
@@ -23,7 +24,7 @@ void main() {
 
   setUp(() {
     repository = MockScheduledPaymentRepository();
-    snooze = SnoozeScheduledOccurrence(repository);
+    snooze = SnoozeScheduledOccurrence(repository, noopSyncReminders());
     when(
       () => repository.snoozeOccurrence(
         scheduledPaymentId: any(named: 'scheduledPaymentId'),
