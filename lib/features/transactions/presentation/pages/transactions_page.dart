@@ -242,9 +242,10 @@ class TransactionsPage extends StatelessWidget {
                       TransactionsListStatus.failure => TransactionsErrorView(
                           onRetry: context.read<TransactionsListCubit>().start,
                         ),
-                      // Empty period: the carousel is pinned above the message
-                      // (there is nothing to scroll here) so the balances stay
-                      // visible when there are accounts but no movements yet.
+                      // Empty period: the carousel is pinned above the
+                      // message and `SliverFillRemaining` centers it in
+                      // whatever space is left in the viewport, same as the
+                      // plain `Expanded` this replaced.
                       //
                       // A pending capture is not a `Transaction`, so it never
                       // shows up in `state.items` — this branch fires just as
@@ -254,19 +255,34 @@ class TransactionsPage extends StatelessWidget {
                       // would be unreachable from Movimientos: this branch
                       // renders instead of `TransactionsListView`, which is
                       // the block's only other home.
+                      //
+                      // The slot can now render one or more pending-capture
+                      // cards instead of nothing, so the carousel + slot no
+                      // longer reliably leave enough room for the message —
+                      // `SliverFillRemaining(hasScrollBody: false)` fills the
+                      // leftover space when there is any, and — unlike a
+                      // plain `Expanded`, which forced a fixed height and
+                      // overflowed once the slot grew past it — lets the
+                      // whole `CustomScrollView` scroll instead of
+                      // overflowing when there is not.
                       TransactionsListStatus.ready when state.items.isEmpty =>
-                        Column(
-                          children: [
+                        CustomScrollView(
+                          slivers: [
                             if (showCarousel)
-                              MovementsBalanceCarousel(
-                                state: state,
-                                onOpenAccount: onOpenAccount,
+                              SliverToBoxAdapter(
+                                child: MovementsBalanceCarousel(
+                                  state: state,
+                                  onOpenAccount: onOpenAccount,
+                                ),
                               ),
-                            PendingCapturesListSlot(
-                              filter: state.filter,
-                              onTap: onDispatchCapture,
+                            SliverToBoxAdapter(
+                              child: PendingCapturesListSlot(
+                                filter: state.filter,
+                                onTap: onDispatchCapture,
+                              ),
                             ),
-                            Expanded(
+                            SliverFillRemaining(
+                              hasScrollBody: false,
                               child: TransactionsEmptyState(
                                 message: _isUnfiltered(state.filter)
                                     ? l10n.transactionsEmptyMessage
@@ -385,12 +401,11 @@ class _TransactionsSearchRowState extends State<TransactionsSearchRow> {
                             },
                           ),
                     hintText: l10n.transactionsSearchHint,
-                    hintStyle:
-                        Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: colors.textSecondary,
-                            ),
+                    hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: colors.textSecondary,
+                        ),
                   ),
                   onChanged: cubit.searchChanged,
                 );
