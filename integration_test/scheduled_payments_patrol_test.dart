@@ -36,6 +36,7 @@ import 'package:billetudo/features/categories/domain/entities/category.dart'
     show CategoryKind;
 import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_payment_date_field.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_payment_reminder_field.dart';
+import 'package:billetudo/features/scheduled_payments/presentation/widgets/sheets/reminder_option_row.dart';
 import 'package:billetudo/features/transactions/presentation/pages/transaction_form_page.dart'
     show AccountPickerField;
 import 'package:billetudo/features/transactions/presentation/widgets/numeric_keypad.dart';
@@ -193,6 +194,18 @@ Future<void> _pickCategory(PatrolIntegrationTester $, String name) async {
 /// field the same way `_pickAccountField`/`_pickFutureDate` key off their
 /// widgets' `label` — this form has no other field of that type carrying
 /// "Recordatorio".
+///
+/// The field's `onTap` runs `dismissSystemKeyboard` first, which does a
+/// bounded (up to 320ms) poll with no rebuild in between — on a real device
+/// `pumpAndSettle()` can decide the tree already "settled" mid-poll (no
+/// pending frames: no keyboard animation running yet, sheet not opened yet)
+/// and return control before `ScheduledPaymentReminderSheet` exists. So,
+/// same reasoning as `_expectSnackbar`, this waits for the option row with
+/// small bounded pumps instead of trusting `pumpAndSettle()` right after the
+/// tap that triggers that delay. The row is matched by `ReminderOptionRow`
+/// itself, not bare text: `ScheduledPaymentReminderField` shows the same
+/// "Sin recordatorio" string as its own placeholder when no reminder is set,
+/// which `find.text('Sin recordatorio')` would otherwise also match.
 Future<void> _pickReminder(
   PatrolIntegrationTester $,
   String optionLabel,
@@ -202,8 +215,16 @@ Future<void> _pickReminder(
   );
   await _scrollUntilVisible($, field);
   await $.tester.tap(field);
-  await $.tester.pumpAndSettle();
-  await $.tester.tap(find.text(optionLabel));
+
+  final option = find.byWidgetPredicate(
+    (widget) => widget is ReminderOptionRow && widget.label == optionLabel,
+  );
+  for (var attempt = 0; attempt < 15 && option.evaluate().isEmpty; attempt++) {
+    await $.tester.pump(const Duration(milliseconds: 200));
+  }
+  expect(option, findsOneWidget);
+
+  await $.tester.tap(option);
   await $.tester.pumpAndSettle();
 }
 
