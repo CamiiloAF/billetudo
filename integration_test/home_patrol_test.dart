@@ -11,6 +11,7 @@
 // (every tab label also shows inside its own page). Taps still go through the
 // visible affordances — the tab labels and the FAB tooltip — exactly as a user
 // would drive the shell.
+import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/features/accounts/presentation/pages/accounts_page.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/account_gate_bridge_sheet.dart';
 import 'package:billetudo/features/budgets/presentation/pages/budgets_page.dart';
@@ -18,6 +19,7 @@ import 'package:billetudo/features/goals/presentation/pages/goals_list_page.dart
 import 'package:billetudo/features/home/presentation/pages/home_page.dart';
 import 'package:billetudo/features/home/presentation/pages/more_page.dart';
 import 'package:billetudo/features/home/presentation/widgets/home_tab_bar.dart';
+import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/pages/transaction_form_page.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:patrol/patrol.dart';
@@ -83,6 +85,28 @@ void main() {
     ($) async {
       await startApp($);
 
+      // This scenario is about branch switching in `HomeTabBar`, not about
+      // the minitutorial (`16-minitutoriales.md` criterion 1). Both
+      // `BudgetsPage` and `GoalsListPage` wrap themselves in
+      // `TutorialAutoShow`, which auto-shows a full-screen modal sheet on a
+      // fresh install's first visit — `TutorialGateCubit.evaluate` awaits a
+      // real Drift query first, so the sheet can appear a few frames *after*
+      // the page itself is found, right as the next tab tap lands, and
+      // silently swallow it (`WidgetTester.tap`'s hit-test misses without
+      // throwing unless `warnIfMissed` is inspected).
+      //
+      // A prior fix tried closing the sheet right after each first-time
+      // landing (`dismissAutoTutorialIfShown`) — confirmed unreliable even
+      // with 3-5x longer poll windows (`docs/dev-runs/
+      // patrol-e2e-findings-2026-09-10.md` § "Corrección posterior"): it
+      // still lost the tap to Metas intermittently. Disabling the auto-show
+      // outright for this scenario removes the race instead of trying to
+      // win it — confirmed stable in 2 clean back-to-back runs (8s each, vs.
+      // the previous ~23s + failure). This does not test the minitutorial
+      // itself; that is `16-minitutoriales.md`'s own concern, not this
+      // navigation scenario's.
+      await getIt<AppSettingsCubit>().setShowHelpOnSectionEntry(enabled: false);
+
       // Both Budgets and Goals shipped as real features (BudgetsPage,
       // GoalsListPage): neither tab renders the ComingSoonPage placeholder
       // anymore. Goals recovered its own bottom-nav tab (see
@@ -98,19 +122,6 @@ void main() {
       // hydrate, same reason HU-01's empty state needs it above — a bare
       // `pumpAndSettle` can return before that first emission lands, an
       // intermittent false negative on a real device/emulator.
-      //
-      // Bugfix (flaky "found 0 widgets" on the *next* tab's page): both
-      // `BudgetsPage` and `GoalsListPage` wrap themselves in
-      // `TutorialAutoShow` (`16-minitutoriales.md` criterion 1) — on this
-      // scenario's fresh install (`startApp` always wipes the database), the
-      // very first visit to either auto-shows a full-screen modal sheet that
-      // swallows the *next* tab tap instead of it ever reaching
-      // `HomeTabBar` (`WidgetTester.tap`'s hit-test misses silently unless
-      // `warnIfMissed` is inspected — it does not throw), so the branch
-      // switch this scenario asserts next never actually happens. Dismiss it
-      // right after each first-time landing, same as every other suite that
-      // reaches one of these four screens already does
-      // (`dismissAutoTutorialIfShown`, `support/patrol_app.dart`).
       final tabBar = find.byType(HomeTabBar);
       await $.tester.tap(
         find.descendant(of: tabBar, matching: find.text('Presupuestos')),
@@ -118,7 +129,6 @@ void main() {
       await $.tester.pumpAndSettle();
       await _pumpUntilFound($, find.byType(BudgetsPage));
       expect(find.byType(BudgetsPage), findsOneWidget);
-      await dismissAutoTutorialIfShown($);
 
       await $.tester.tap(
         find.descendant(of: tabBar, matching: find.text('Metas')),
@@ -126,7 +136,6 @@ void main() {
       await $.tester.pumpAndSettle();
       await _pumpUntilFound($, find.byType(GoalsListPage));
       expect(find.byType(GoalsListPage), findsOneWidget);
-      await dismissAutoTutorialIfShown($);
 
       // The tab bar stays visible and lets us return to Inicio.
       await $.tester.tap(
