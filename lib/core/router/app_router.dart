@@ -58,6 +58,7 @@ import '../../features/capture/presentation/pages/capture_permission_page.dart';
 import '../../features/capture/presentation/pages/notices_page.dart';
 import '../../features/capture/presentation/utils/capture_prefill_mapper.dart';
 import '../../features/capture/presentation/widgets/sheets/capture_offer_flow.dart';
+import '../../features/capture/presentation/widgets/voice_capture_sheet.dart';
 import '../../features/categories/domain/entities/category.dart';
 import '../../features/categories/presentation/cubit/categories_list_cubit.dart';
 import '../../features/categories/presentation/cubit/category_form_cubit.dart';
@@ -392,6 +393,56 @@ abstract final class AppRoutes {
         )
         .join('&');
     return '$newScheduledPayment?$query';
+  }
+
+  /// The new-movement form prefilled from a voice capture
+  /// (`17-captura-voz.md`, HU-01). Same [newTransaction] route, same form: the
+  /// voice never registers anything by itself, it only fills the fields the
+  /// user then confirms.
+  ///
+  /// Every parameter is optional because partial parsing is the normal case
+  /// (HU-05). `source=voice` is what tells the route to take this path, and it
+  /// is also what the saved transaction is stamped with.
+  ///
+  /// The transcription travels as a query parameter and therefore lives in the
+  /// in-memory navigation stack only — it is never written to disk, and the
+  /// form only ever persists it if the user leaves it in the note (HU-06,
+  /// retención cero).
+  static String newTransactionFromVoice({
+    int? amountMinor,
+    bool amountIsUncertain = false,
+    String? amountSpokenText,
+    String? type,
+    String? accountId,
+    String? categoryId,
+    String? categoryKind,
+    String? categoryName,
+    DateTime? date,
+    String? note,
+  }) {
+    final params = <String, String>{
+      'source': 'voice',
+      if (amountMinor != null) 'amountMinor': amountMinor.toString(),
+      if (amountIsUncertain) 'amountIsUncertain': 'true',
+      if (amountIsUncertain &&
+          amountSpokenText != null &&
+          amountSpokenText.isNotEmpty)
+        'amountSpokenText': amountSpokenText,
+      if (type != null) 'type': type,
+      if (accountId != null) 'accountId': accountId,
+      if (categoryId != null) 'categoryId': categoryId,
+      if (categoryKind != null) 'categoryKind': categoryKind,
+      if (categoryName != null) 'categoryName': categoryName,
+      if (date != null) 'date': date.toIso8601String(),
+      if (note != null && note.isNotEmpty) 'note': note,
+    };
+    final query = params.entries
+        .map(
+          (entry) =>
+              '${Uri.encodeQueryComponent(entry.key)}=${Uri.encodeQueryComponent(entry.value)}',
+        )
+        .join('&');
+    return '$newTransaction?$query';
   }
 }
 
@@ -748,15 +799,9 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
               builder: (context, state) => AccountGatedRoute(
                 surface: AccountGateSurface.movement,
                 builder: (context) => BlocProvider(
-                  create: (context) => _started(
-                    getIt<TransactionFormCubit>(),
-                    (c) => c.load(
-                      null,
-                      type: _typeFromQuery(state.uri),
-                      accountId: state.uri.queryParameters['accountId'],
-                    ),
-                  ),
+                  create: (context) => _startedTransactionForm(state.uri),
                   child: TransactionFormPage(
+                    onDictate: _dictateIntoTransactionForm,
                     // pushReplacement, not push: the transaction form must leave
                     // the stack as the scheduled-payment form opens, so popping
                     // the PP form (after saving it) returns to the movements
@@ -2421,6 +2466,81 @@ ScheduledPaymentFormCubit _startedScheduledPaymentForm(Uri uri) {
         .toSet(),
   );
   return cubit;
+}
+
+/// Starts the new-movement form, either empty (optionally with a preselected
+/// account) or prefilled from a voice capture when the puente's query params
+/// are present (`AppRoutes.newTransactionFromVoice`).
+///
+/// Parsing the params here — and not in the cubit — is what keeps
+/// Transacciones independent of Captura: the router is the only layer that
+/// knows both sides, same as it already does for the Pagos Programados puente.
+TransactionFormCubit _startedTransactionForm(Uri uri) {
+  final cubit = getIt<TransactionFormCubit>();
+  if (uri.queryParameters['source'] != TransactionSource.voice.name) {
+    unawaited(
+      cubit.load(
+        null,
+        type: _typeFromQuery(uri),
+        accountId: uri.queryParameters['accountId'],
+      ),
+    );
+    return cubit;
+  }
+  final categoryKindRaw = uri.queryParameters['categoryKind'];
+  unawaited(
+    cubit.loadFromVoice(
+      amountMinor: int.tryParse(uri.queryParameters['amountMinor'] ?? ''),
+      amountIsUncertain: uri.queryParameters['amountIsUncertain'] == 'true',
+      amountSpokenText: uri.queryParameters['amountSpokenText'],
+      type:
+          uri.queryParameters.containsKey('type') ? _typeFromQuery(uri) : null,
+      accountId: uri.queryParameters['accountId'],
+      categoryId: uri.queryParameters['categoryId'],
+      categoryName: uri.queryParameters['categoryName'],
+      categoryKind: categoryKindRaw == null
+          ? null
+          : CategoryKind.values.firstWhere(
+              (value) => value.name == categoryKindRaw,
+              orElse: () => CategoryKind.expense,
+            ),
+      date: DateTime.tryParse(uri.queryParameters['date'] ?? ''),
+      note: uri.queryParameters['note'],
+    ),
+  );
+  return cubit;
+}
+
+/// The "Dictar" pill of an already open movement form
+/// (`17-captura-voz.md` HU-02).
+///
+/// Same reason this lives in the router as `_startedTransactionForm` above:
+/// it is the only layer that may know both Transacciones and Captura, so the
+/// form page stays free of any import from the capture feature.
+///
+/// Unlike the Inicio trigger it navigates nowhere — the user is already on the
+/// form. The draft only *completes* the fields they have not touched, and
+/// nothing is written until they press Guardar.
+Future<void> _dictateIntoTransactionForm(
+  BuildContext context,
+  TransactionFormCubit cubit,
+) async {
+  final draft = await VoiceCaptureSheet.show(context);
+  if (draft == null) {
+    return;
+  }
+  cubit.completeFromVoice(
+    amountMinor: draft.amountMinor,
+    amountIsUncertain: draft.amountIsUncertain,
+    amountSpokenText: draft.amountSpokenText,
+    type: draft.type,
+    accountId: draft.accountId,
+    categoryId: draft.categoryId,
+    categoryName: draft.categoryName,
+    categoryKind: draft.categoryKind,
+    date: draft.date,
+    note: draft.note,
+  );
 }
 
 TransactionType _typeFromQuery(Uri uri) {

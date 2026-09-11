@@ -2042,6 +2042,24 @@ abstract class AppLocalizations {
   /// **'Filtros'**
   String get transactionsFiltersButtonLabel;
 
+  /// No description provided for @transactionsChipDateDefaultLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Este mes'**
+  String get transactionsChipDateDefaultLabel;
+
+  /// No description provided for @transactionsPeriodNavPreviousLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Periodo anterior'**
+  String get transactionsPeriodNavPreviousLabel;
+
+  /// No description provided for @transactionsPeriodNavNextLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Periodo siguiente'**
+  String get transactionsPeriodNavNextLabel;
+
   /// No description provided for @transactionsFilterSectionBudget.
   ///
   /// In es, this message translates to:
@@ -10443,6 +10461,18 @@ abstract class AppLocalizations {
   /// **'Asistente de IA'**
   String get settingsAiSection;
 
+  /// No description provided for @settingsCloudTranscription.
+  ///
+  /// In es, this message translates to:
+  /// **'Transcribir mi voz en la nube'**
+  String get settingsCloudTranscription;
+
+  /// No description provided for @settingsCloudTranscriptionSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando este teléfono no puede convertir la voz en texto por su cuenta, el audio se envía a {vendor} solo para transcribirlo. billetudo no lo guarda ni lo sincroniza.'**
+  String settingsCloudTranscriptionSubtitle(String vendor);
+
   /// No description provided for @settingsAiNotesAccess.
   ///
   /// In es, this message translates to:
@@ -11007,6 +11037,318 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Sugerida: {category}'**
   String captureSuggestedCategoryLabel(String category);
+
+  /// No description provided for @captureVoiceListening.
+  ///
+  /// In es, this message translates to:
+  /// **'Escuchando…'**
+  String get captureVoiceListening;
+
+  /// No description provided for @captureVoicePreparing.
+  ///
+  /// In es, this message translates to:
+  /// **'Preparando el micrófono…'**
+  String get captureVoicePreparing;
+
+  /// No description provided for @captureVoiceHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Di algo como «gasté veinte mil en almuerzo»'**
+  String get captureVoiceHint;
+
+  /// No description provided for @captureVoicePrivacyCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'El audio no se guarda. Solo se usa para llenar el formulario.'**
+  String get captureVoicePrivacyCaption;
+
+  /// No description provided for @captureVoicePartialCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'Al terminar abrimos el formulario con lo que se entendió. Tú confirmas.'**
+  String get captureVoicePartialCaption;
+
+  /// No description provided for @captureVoiceCancel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelar'**
+  String get captureVoiceCancel;
+
+  /// No description provided for @captureVoiceDone.
+  ///
+  /// In es, this message translates to:
+  /// **'Listo'**
+  String get captureVoiceDone;
+
+  /// No description provided for @captureVoiceSoundLevelLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nivel del micrófono'**
+  String get captureVoiceSoundLevelLabel;
+
+  /// No description provided for @captureVoiceNoAmountTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No alcanzamos a captar el monto'**
+  String get captureVoiceNoAmountTitle;
+
+  /// No description provided for @captureVoiceNoAmountMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo que dijiste no se pierde: se va como nota al formulario.'**
+  String get captureVoiceNoAmountMessage;
+
+  /// No description provided for @captureVoiceRetry.
+  ///
+  /// In es, this message translates to:
+  /// **'Intentar de nuevo'**
+  String get captureVoiceRetry;
+
+  /// No description provided for @captureVoiceWriteByHand.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribir a mano'**
+  String get captureVoiceWriteByHand;
+
+  /// No description provided for @captureVoicePermissionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'El micrófono está desactivado'**
+  String get captureVoicePermissionTitle;
+
+  /// No description provided for @captureVoicePermissionMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo usamos solo mientras dictas, para llenar el formulario por ti. El audio no se guarda.'**
+  String get captureVoicePermissionMessage;
+
+  /// No description provided for @captureVoicePermissionFact1Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo mientras dictas'**
+  String get captureVoicePermissionFact1Title;
+
+  /// No description provided for @captureVoicePermissionFact1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'El micrófono se apaga en cuanto terminas la frase o cancelas.'**
+  String get captureVoicePermissionFact1Body;
+
+  /// No description provided for @captureVoicePermissionFact2Title.
+  ///
+  /// In es, this message translates to:
+  /// **'El audio no se guarda'**
+  String get captureVoicePermissionFact2Title;
+
+  /// No description provided for @captureVoicePermissionFact2Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Se usa para entender la frase y se descarta al terminar. No se respalda ni se sincroniza.'**
+  String get captureVoicePermissionFact2Body;
+
+  /// No description provided for @captureVoicePermissionFact3Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Puedes seguir sin él'**
+  String get captureVoicePermissionFact3Title;
+
+  /// No description provided for @captureVoicePermissionFact3Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribir un movimiento a mano funciona igual que siempre, con o sin micrófono.'**
+  String get captureVoicePermissionFact3Body;
+
+  /// No description provided for @captureVoicePermissionOpenSettings.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir ajustes'**
+  String get captureVoicePermissionOpenSettings;
+
+  /// No description provided for @captureVoicePermissionAllow.
+  ///
+  /// In es, this message translates to:
+  /// **'Activar el micrófono'**
+  String get captureVoicePermissionAllow;
+
+  /// No description provided for @captureVoiceUnavailableTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'El dictado no está disponible aquí'**
+  String get captureVoiceUnavailableTitle;
+
+  /// No description provided for @captureVoiceUnavailableMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu teléfono no puede transcribir en el idioma de la app ahora mismo. Escribir a mano funciona igual que siempre.'**
+  String get captureVoiceUnavailableMessage;
+
+  /// No description provided for @captureVoiceOnDeviceUnavailableMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu teléfono no puede transcribir sin enviar el audio a internet, y no lo hacemos sin preguntarte antes. Escribir a mano funciona igual que siempre.'**
+  String get captureVoiceOnDeviceUnavailableMessage;
+
+  /// No description provided for @captureVoiceNoConnectionMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'El dictado necesita conexión en este teléfono y ahora no la hay. Escribir a mano funciona igual que siempre.'**
+  String get captureVoiceNoConnectionMessage;
+
+  /// No description provided for @captureVoiceBusyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Otra app está usando el micrófono. Cuando la cierres puedes volver a dictar.'**
+  String get captureVoiceBusyMessage;
+
+  /// No description provided for @captureVoiceDictate.
+  ///
+  /// In es, this message translates to:
+  /// **'Dictar'**
+  String get captureVoiceDictate;
+
+  /// No description provided for @captureVoiceDictateTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Dictar el movimiento'**
+  String get captureVoiceDictateTooltip;
+
+  /// No description provided for @captureVoiceFabLongPressHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Mantén presionado para dictar'**
+  String get captureVoiceFabLongPressHint;
+
+  /// Nombre del servicio que transcribe la voz en Android.
+  ///
+  /// In es, this message translates to:
+  /// **'Google'**
+  String get captureVoiceVendorGoogle;
+
+  /// Nombre del servicio que transcribe la voz en iOS.
+  ///
+  /// In es, this message translates to:
+  /// **'Apple'**
+  String get captureVoiceVendorApple;
+
+  /// No description provided for @captureVoiceCloudConsentTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Para dictar, {vendor} transcribe tu voz'**
+  String captureVoiceCloudConsentTitle(String vendor);
+
+  /// No description provided for @captureVoiceCloudConsentMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Este teléfono no puede convertir la voz en texto por su cuenta. Si lo permites, el audio se envía a {vendor} solo para transcribirlo.'**
+  String captureVoiceCloudConsentMessage(String vendor);
+
+  /// No description provided for @captureVoiceCloudConsentFact1Title.
+  ///
+  /// In es, this message translates to:
+  /// **'El audio sale del teléfono'**
+  String get captureVoiceCloudConsentFact1Title;
+
+  /// No description provided for @captureVoiceCloudConsentFact1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'{vendor} recibe lo que dictas y devuelve el texto. Ese es el paso que este teléfono no puede hacer solo.'**
+  String captureVoiceCloudConsentFact1Body(String vendor);
+
+  /// No description provided for @captureVoiceCloudConsentFact2Title.
+  ///
+  /// In es, this message translates to:
+  /// **'billetudo no guarda nada'**
+  String get captureVoiceCloudConsentFact2Title;
+
+  /// No description provided for @captureVoiceCloudConsentFact2Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Ni el audio ni la transcripción se guardan, respaldan o sincronizan.'**
+  String get captureVoiceCloudConsentFact2Body;
+
+  /// No description provided for @captureVoiceCloudConsentFact3Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Tú confirmas antes de guardar'**
+  String get captureVoiceCloudConsentFact3Title;
+
+  /// No description provided for @captureVoiceCloudConsentFact3Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo dictado solo llena el formulario. Nada se registra hasta que lo revises.'**
+  String get captureVoiceCloudConsentFact3Body;
+
+  /// No description provided for @captureVoiceCloudConsentAllow.
+  ///
+  /// In es, this message translates to:
+  /// **'Permitir y dictar'**
+  String get captureVoiceCloudConsentAllow;
+
+  /// No description provided for @captureVoiceCloudConsentReversible.
+  ///
+  /// In es, this message translates to:
+  /// **'Puedes cambiar esta decisión cuando quieras en Ajustes.'**
+  String get captureVoiceCloudConsentReversible;
+
+  /// No description provided for @captureVoiceCloudConsentDeclinedMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegiste que tu voz no se transcriba en la nube, y lo respetamos. Puedes cambiarlo en Ajustes. Escribir a mano funciona igual que siempre.'**
+  String get captureVoiceCloudConsentDeclinedMessage;
+
+  /// Pastilla bajo el monto cuando el parser infirió la magnitud de lo dictado.
+  ///
+  /// In es, this message translates to:
+  /// **'Supusimos {amount} por «{spoken}»'**
+  String captureVoiceAmountAssumption(String amount, String spoken);
+
+  /// No description provided for @tutorialVoiceCaptureTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Dicta un gasto sin teclear'**
+  String get tutorialVoiceCaptureTitle;
+
+  /// No description provided for @tutorialVoiceCapturePoint1Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Mantén presionado el botón +'**
+  String get tutorialVoiceCapturePoint1Heading;
+
+  /// No description provided for @tutorialVoiceCapturePoint1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'En Inicio, deja el dedo un segundo sobre el botón + y empieza a hablar.'**
+  String get tutorialVoiceCapturePoint1Body;
+
+  /// No description provided for @tutorialVoiceCapturePoint2Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Di la frase de corrido'**
+  String get tutorialVoiceCapturePoint2Heading;
+
+  /// No description provided for @tutorialVoiceCapturePoint2Body.
+  ///
+  /// In es, this message translates to:
+  /// **'«Gasté veinte mil en almuerzo con Nequi». De ahí salen el monto, la categoría y la cuenta.'**
+  String get tutorialVoiceCapturePoint2Body;
+
+  /// No description provided for @tutorialVoiceCapturePoint3Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Tú confirmas siempre'**
+  String get tutorialVoiceCapturePoint3Heading;
+
+  /// No description provided for @tutorialVoiceCapturePoint3Body.
+  ///
+  /// In es, this message translates to:
+  /// **'La app llena el formulario con lo que entendió. Nada queda registrado hasta que tocas guardar.'**
+  String get tutorialVoiceCapturePoint3Body;
+
+  /// No description provided for @tutorialVoiceCaptureCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Probar ahora'**
+  String get tutorialVoiceCaptureCta;
 
   /// No description provided for @notificationsChannelRemindersName.
   ///

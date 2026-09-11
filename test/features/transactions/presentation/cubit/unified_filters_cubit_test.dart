@@ -37,10 +37,12 @@ void main() {
         .thenAnswer((_) => Stream.value(const Right(<CategoryNode>[])));
     when(() => watchCategories(CategoryKind.income))
         .thenAnswer((_) => Stream.value(const Right(<CategoryNode>[])));
-    when(() => watchTags()).thenAnswer((_) => Stream.value(const Right(<Tag>[])));
+    when(() => watchTags())
+        .thenAnswer((_) => Stream.value(const Right(<Tag>[])));
   });
 
-  UnifiedFiltersCubit build() => UnifiedFiltersCubit(watchCategories, watchTags);
+  UnifiedFiltersCubit build() =>
+      UnifiedFiltersCubit(watchCategories, watchTags);
 
   group('start', () {
     blocTest<UnifiedFiltersCubit, UnifiedFiltersState>(
@@ -81,7 +83,8 @@ void main() {
       'hasBudgets is false when the caller passes no active budgets '
       '(criterio #6)',
       build: build,
-      act: (cubit) => cubit.start(filter: TransactionFilter(), budgetOptions: const []),
+      act: (cubit) =>
+          cubit.start(filter: TransactionFilter(), budgetOptions: const []),
       verify: (cubit) {
         expect(cubit.state.hasBudgets, isFalse);
         expect(cubit.state.isDateLockedByBudget, isFalse);
@@ -137,25 +140,6 @@ void main() {
         expect(cubit.state.selectedBudgetId, isNull);
         expect(cubit.state.datePeriod.granularity, DateGranularity.year);
       },
-    );
-
-    blocTest<UnifiedFiltersCubit, UnifiedFiltersState>(
-      'step limpia inmediatamente el presupuesto activo (criterio #8)',
-      build: build,
-      act: (cubit) async {
-        await cubit.start(
-          filter: TransactionFilter(
-            budgetPeriod: DatePeriodFilter.budget(
-              budgetId: 'budget-1',
-              start: DateTime(2026, 7),
-              endExclusive: DateTime(2026, 8),
-            ),
-          ),
-          budgetOptions: [food],
-        );
-        cubit.step(1);
-      },
-      verify: (cubit) => expect(cubit.state.isBudgetActive, isFalse),
     );
 
     blocTest<UnifiedFiltersCubit, UnifiedFiltersState>(
@@ -215,7 +199,8 @@ void main() {
     blocTest<UnifiedFiltersCubit, UnifiedFiltersState>(
       'resuelve budgetPeriod null cuando no hay presupuesto seleccionado',
       build: build,
-      act: (cubit) => cubit.start(filter: TransactionFilter(), budgetOptions: [food]),
+      act: (cubit) =>
+          cubit.start(filter: TransactionFilter(), budgetOptions: [food]),
       verify: (cubit) => expect(cubit.buildResult().budgetPeriod, isNull),
     );
   });

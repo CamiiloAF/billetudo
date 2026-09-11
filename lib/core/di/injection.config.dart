@@ -331,6 +331,8 @@ import 'package:billetudo/features/budgets/domain/usecases/get_archived_budgets.
     as _i829;
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart'
     as _i871;
+import 'package:billetudo/features/budgets/domain/usecases/get_budget_period_window_at.dart'
+    as _i625;
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.dart'
     as _i559;
 import 'package:billetudo/features/budgets/domain/usecases/get_pending_budget_adjustment.dart'
@@ -385,18 +387,32 @@ import 'package:billetudo/features/capture/data/repositories/notification_captur
     as _i674;
 import 'package:billetudo/features/capture/data/repositories/pending_capture_repository_impl.dart'
     as _i181;
+import 'package:billetudo/features/capture/data/repositories/permission_handler_microphone_gate.dart'
+    as _i1016;
+import 'package:billetudo/features/capture/data/repositories/preferences_cloud_transcription_consent_store.dart'
+    as _i1054;
+import 'package:billetudo/features/capture/data/repositories/speech_to_text_recognizer.dart'
+    as _i159;
 import 'package:billetudo/features/capture/domain/repositories/capture_learning_repository.dart'
     as _i415;
 import 'package:billetudo/features/capture/domain/repositories/capture_offer_repository.dart'
     as _i872;
+import 'package:billetudo/features/capture/domain/repositories/cloud_transcription_consent_store.dart'
+    as _i149;
 import 'package:billetudo/features/capture/domain/repositories/issuer_rules_repository.dart'
     as _i925;
 import 'package:billetudo/features/capture/domain/repositories/issuer_settings_repository.dart'
     as _i824;
+import 'package:billetudo/features/capture/domain/repositories/microphone_permission_gate.dart'
+    as _i129;
 import 'package:billetudo/features/capture/domain/repositories/notification_capture_repository.dart'
     as _i416;
 import 'package:billetudo/features/capture/domain/repositories/pending_capture_repository.dart'
     as _i869;
+import 'package:billetudo/features/capture/domain/repositories/speech_recognizer.dart'
+    as _i312;
+import 'package:billetudo/features/capture/domain/usecases/cancel_voice_capture.dart'
+    as _i545;
 import 'package:billetudo/features/capture/domain/usecases/confirm_pending_capture.dart'
     as _i185;
 import 'package:billetudo/features/capture/domain/usecases/delete_all_capture_data.dart'
@@ -413,10 +429,14 @@ import 'package:billetudo/features/capture/domain/usecases/find_duplicate_candid
     as _i810;
 import 'package:billetudo/features/capture/domain/usecases/forget_capture_learning.dart'
     as _i867;
+import 'package:billetudo/features/capture/domain/usecases/get_cloud_transcription_consent.dart'
+    as _i553;
 import 'package:billetudo/features/capture/domain/usecases/get_enabled_issuers.dart'
     as _i1036;
 import 'package:billetudo/features/capture/domain/usecases/get_issuer_apps.dart'
     as _i464;
+import 'package:billetudo/features/capture/domain/usecases/get_voice_capture_availability.dart'
+    as _i184;
 import 'package:billetudo/features/capture/domain/usecases/ingest_parsed_captures.dart'
     as _i954;
 import 'package:billetudo/features/capture/domain/usecases/is_notification_access_granted.dart'
@@ -431,14 +451,22 @@ import 'package:billetudo/features/capture/domain/usecases/load_issuer_rules.dar
     as _i133;
 import 'package:billetudo/features/capture/domain/usecases/mark_notification_capture_offered.dart'
     as _i384;
+import 'package:billetudo/features/capture/domain/usecases/open_microphone_settings.dart'
+    as _i1073;
 import 'package:billetudo/features/capture/domain/usecases/open_notification_access_settings.dart'
     as _i547;
 import 'package:billetudo/features/capture/domain/usecases/parse_bank_notification.dart'
     as _i186;
+import 'package:billetudo/features/capture/domain/usecases/parse_spoken_transaction.dart'
+    as _i996;
 import 'package:billetudo/features/capture/domain/usecases/purge_discarded_captures.dart'
     as _i725;
+import 'package:billetudo/features/capture/domain/usecases/request_microphone_permission.dart'
+    as _i695;
 import 'package:billetudo/features/capture/domain/usecases/restore_pending_capture.dart'
     as _i917;
+import 'package:billetudo/features/capture/domain/usecases/set_cloud_transcription_consent.dart'
+    as _i615;
 import 'package:billetudo/features/capture/domain/usecases/set_enabled_issuers.dart'
     as _i194;
 import 'package:billetudo/features/capture/domain/usecases/set_issuer_enabled.dart'
@@ -447,6 +475,10 @@ import 'package:billetudo/features/capture/domain/usecases/set_issuer_listening.
     as _i293;
 import 'package:billetudo/features/capture/domain/usecases/should_offer_notification_capture.dart'
     as _i348;
+import 'package:billetudo/features/capture/domain/usecases/start_voice_capture.dart'
+    as _i1048;
+import 'package:billetudo/features/capture/domain/usecases/stop_voice_capture.dart'
+    as _i334;
 import 'package:billetudo/features/capture/domain/usecases/suggest_account_for_capture.dart'
     as _i167;
 import 'package:billetudo/features/capture/domain/usecases/suggest_category_for_merchant.dart'
@@ -459,6 +491,8 @@ import 'package:billetudo/features/capture/domain/usecases/watch_pending_capture
     as _i179;
 import 'package:billetudo/features/capture/domain/usecases/watch_pending_captures.dart'
     as _i593;
+import 'package:billetudo/features/capture/domain/usecases/watch_voice_capture_updates.dart'
+    as _i853;
 import 'package:billetudo/features/capture/presentation/cubit/capture_issuers_cubit.dart'
     as _i661;
 import 'package:billetudo/features/capture/presentation/cubit/capture_permission_cubit.dart'
@@ -469,6 +503,8 @@ import 'package:billetudo/features/capture/presentation/cubit/notices_cubit.dart
     as _i166;
 import 'package:billetudo/features/capture/presentation/cubit/pending_captures_cubit.dart'
     as _i1047;
+import 'package:billetudo/features/capture/presentation/cubit/voice_capture_cubit.dart'
+    as _i782;
 import 'package:billetudo/features/categories/data/datasources/categories_local_datasource.dart'
     as _i151;
 import 'package:billetudo/features/categories/data/datasources/category_seeds_remote_datasource.dart'
@@ -929,6 +965,8 @@ import 'package:billetudo/features/transactions/domain/usecases/create_transacti
     as _i990;
 import 'package:billetudo/features/transactions/domain/usecases/delete_transaction.dart'
     as _i612;
+import 'package:billetudo/features/transactions/domain/usecases/get_budget_period_at.dart'
+    as _i788;
 import 'package:billetudo/features/transactions/domain/usecases/get_transaction_edit_impact.dart'
     as _i604;
 import 'package:billetudo/features/transactions/domain/usecases/has_any_transaction.dart'
@@ -1008,6 +1046,8 @@ extension GetItInjectableX on _i174.GetIt {
     final registerModule = _$RegisterModule();
     gh.factory<_i186.ParseBankNotification>(
         () => const _i186.ParseBankNotification());
+    gh.factory<_i996.ParseSpokenTransaction>(
+        () => const _i996.ParseSpokenTransaction());
     gh.factory<_i505.AutodetectColumnMapping>(
         () => const _i505.AutodetectColumnMapping());
     gh.factory<_i394.ResolveDefaultCurrencyForLocale>(
@@ -1103,6 +1143,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i925.IssuerRulesRepository>(() =>
         _i330.IssuerRulesRepositoryImpl(
             gh<_i405.IssuerRulesAssetDatasource>()));
+    gh.lazySingleton<_i129.MicrophonePermissionGate>(
+        () => const _i1016.PermissionHandlerMicrophoneGate());
     gh.lazySingleton<_i200.BackupIdCollisionDatasource>(
         () => _i200.BackupIdCollisionDatasource(gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i636.AiRemoteDatasource>(
@@ -1116,6 +1158,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i180.CategorySeedsRemoteDatasource(gh<_i454.SupabaseClient>()));
     gh.factory<_i133.LoadIssuerRules>(
         () => _i133.LoadIssuerRules(gh<_i925.IssuerRulesRepository>()));
+    gh.lazySingleton<_i312.SpeechRecognizer>(
+        () => _i159.SpeechToTextRecognizer());
     gh.lazySingleton<_i598.NotificationMessages>(
         () => const _i872.LocalizedNotificationMessages());
     gh.lazySingleton<_i867.MappingTemplateRepository>(
@@ -1136,6 +1180,9 @@ extension GetItInjectableX on _i174.GetIt {
             ));
     gh.lazySingleton<_i766.SyncStorageDirectory>(
         () => const _i766.AppDocumentsSyncStorageDirectory());
+    gh.lazySingleton<_i149.CloudTranscriptionConsentStore>(() =>
+        _i1054.PreferencesCloudTranscriptionConsentStore(
+            gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i24.BackupStatusRepository>(
         () => _i220.BackupStatusRepositoryImpl(
               gh<_i525.BackupStatusLocalDatasource>(),
@@ -1145,6 +1192,12 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i407.ThemeModeCubit(gh<_i207.ThemePreferenceDatasource>()));
     gh.lazySingleton<_i826.AiReportRepository>(() =>
         _i166.AiReportRepositoryImpl(gh<_i827.AiReportRemoteDatasource>()));
+    gh.factory<_i545.CancelVoiceCapture>(
+        () => _i545.CancelVoiceCapture(gh<_i312.SpeechRecognizer>()));
+    gh.factory<_i334.StopVoiceCapture>(
+        () => _i334.StopVoiceCapture(gh<_i312.SpeechRecognizer>()));
+    gh.factory<_i853.WatchVoiceCaptureUpdates>(
+        () => _i853.WatchVoiceCaptureUpdates(gh<_i312.SpeechRecognizer>()));
     gh.factory<_i308.ReadNotificationPreferences>(() =>
         _i308.ReadNotificationPreferences(gh<_i173.NotificationPreferences>()));
     gh.factory<_i860.SetNotificationKindEnabled>(() =>
@@ -1388,6 +1441,11 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i545.ImportBatchesLocalDatasource>(),
               gh<_i474.CrashReporter>(),
             ));
+    gh.factory<_i1073.OpenMicrophoneSettings>(() =>
+        _i1073.OpenMicrophoneSettings(gh<_i129.MicrophonePermissionGate>()));
+    gh.factory<_i695.RequestMicrophonePermission>(() =>
+        _i695.RequestMicrophonePermission(
+            gh<_i129.MicrophonePermissionGate>()));
     gh.factory<_i824.ScheduledPaymentTagPickerCubit>(
         () => _i824.ScheduledPaymentTagPickerCubit(
               gh<_i889.GetTags>(),
@@ -1429,6 +1487,15 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i265.GetScheduledPayments>(),
               gh<_i450.ProjectUpcomingOccurrences>(),
             ));
+    gh.factory<_i184.GetVoiceCaptureAvailability>(
+        () => _i184.GetVoiceCaptureAvailability(
+              gh<_i312.SpeechRecognizer>(),
+              gh<_i129.MicrophonePermissionGate>(),
+            ));
+    gh.factory<_i1048.StartVoiceCapture>(() => _i1048.StartVoiceCapture(
+          gh<_i312.SpeechRecognizer>(),
+          gh<_i129.MicrophonePermissionGate>(),
+        ));
     gh.factory<_i667.CategoryBreakdownCubit>(() =>
         _i667.CategoryBreakdownCubit(gh<_i645.WatchCategoryBreakdownReport>()));
     gh.factory<_i885.CreateCategory>(
@@ -1499,6 +1566,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i1025.SuggestCategoryForMerchant>(() =>
         _i1025.SuggestCategoryForMerchant(
             gh<_i415.CaptureLearningRepository>()));
+    gh.factory<_i553.GetCloudTranscriptionConsent>(() =>
+        _i553.GetCloudTranscriptionConsent(
+            gh<_i149.CloudTranscriptionConsentStore>()));
+    gh.factory<_i615.SetCloudTranscriptionConsent>(() =>
+        _i615.SetCloudTranscriptionConsent(
+            gh<_i149.CloudTranscriptionConsentStore>()));
     gh.factory<_i281.CreateTag>(
         () => _i281.CreateTag(gh<_i716.TagRepository>()));
     gh.factory<_i121.WatchTags>(
@@ -1809,6 +1882,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i829.GetArchivedBudgets(gh<_i1023.BudgetRepository>()));
     gh.factory<_i871.GetBudgetById>(
         () => _i871.GetBudgetById(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i625.GetBudgetPeriodWindowAt>(
+        () => _i625.GetBudgetPeriodWindowAt(gh<_i1023.BudgetRepository>()));
     gh.factory<_i641.GetPendingBudgetAdjustment>(
         () => _i641.GetPendingBudgetAdjustment(gh<_i1023.BudgetRepository>()));
     gh.factory<_i458.GetZeroBasedSummary>(
@@ -2043,6 +2118,20 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i813.WatchImportBatches>(),
           gh<_i296.HasAnyTransaction>(),
         ));
+    gh.factory<_i270.AppSettingsCubit>(() => _i270.AppSettingsCubit(
+          gh<_i182.GetAppSettings>(),
+          gh<_i636.SetZeroBasedEnabled>(),
+          gh<_i674.GetActiveBudgets>(),
+          gh<_i643.SetFeaturedBudget>(),
+          gh<_i594.ClearFeaturedBudget>(),
+          gh<_i895.WatchHelpEnabled>(),
+          gh<_i134.SetTutorialsEnabled>(),
+          gh<_i785.SetQuickAccessOrder>(),
+          gh<_i117.SetAiNotesAccessEnabled>(),
+          gh<_i377.ClearAiConsent>(),
+          gh<_i553.GetCloudTranscriptionConsent>(),
+          gh<_i615.SetCloudTranscriptionConsent>(),
+        ));
     gh.factory<_i633.WipeLocalDataAfterDeletion>(
         () => _i633.WipeLocalDataAfterDeletion(
               gh<_i537.WipeLocalData>(),
@@ -2215,6 +2304,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i895.WatchHelpEnabled>(),
           gh<_i773.TutorialNavigationGuard>(),
         ));
+    gh.factory<_i788.GetBudgetPeriodAt>(
+        () => _i788.GetBudgetPeriodAt(gh<_i625.GetBudgetPeriodWindowAt>()));
     gh.factory<_i458.ScheduledPaymentsListCubit>(
         () => _i458.ScheduledPaymentsListCubit(
               gh<_i265.GetScheduledPayments>(),
@@ -2268,6 +2359,20 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i306.GetAccountNumber>(),
           gh<_i731.MoneyFormatter>(),
         ));
+    gh.factory<_i782.VoiceCaptureCubit>(() => _i782.VoiceCaptureCubit(
+          gh<_i184.GetVoiceCaptureAvailability>(),
+          gh<_i695.RequestMicrophonePermission>(),
+          gh<_i1073.OpenMicrophoneSettings>(),
+          gh<_i1048.StartVoiceCapture>(),
+          gh<_i334.StopVoiceCapture>(),
+          gh<_i545.CancelVoiceCapture>(),
+          gh<_i853.WatchVoiceCaptureUpdates>(),
+          gh<_i996.ParseSpokenTransaction>(),
+          gh<_i837.WatchAccounts>(),
+          gh<_i722.WatchCategories>(),
+          gh<_i553.GetCloudTranscriptionConsent>(),
+          gh<_i615.SetCloudTranscriptionConsent>(),
+        ));
     gh.factory<_i44.AiConversationReadCubit>(() => _i44.AiConversationReadCubit(
           gh<_i817.WatchAiMessages>(),
           gh<_i837.WatchAccounts>(),
@@ -2303,21 +2408,20 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i837.WatchAccounts>(),
           gh<_i382.GetCategory>(),
         ));
+    gh.lazySingleton<_i536.TransactionsListCubit>(
+        () => _i536.TransactionsListCubit(
+              gh<_i832.WatchTransactions>(),
+              gh<_i612.DeleteTransaction>(),
+              gh<_i177.RestoreTransaction>(),
+              gh<_i837.WatchAccounts>(),
+              gh<_i479.WatchBudgetPeriodOptions>(),
+              gh<_i788.GetBudgetPeriodAt>(),
+              gh<_i248.AccountFilterPreferenceDatasource>(),
+              gh<_i941.GetCategorySubtreeIds>(),
+            ));
     gh.singleton<_i629.AuthCubit>(() => _i629.AuthCubit(
           gh<_i716.WatchAuthSession>(),
           gh<_i1066.SignOut>(),
-        ));
-    gh.factory<_i270.AppSettingsCubit>(() => _i270.AppSettingsCubit(
-          gh<_i182.GetAppSettings>(),
-          gh<_i636.SetZeroBasedEnabled>(),
-          gh<_i674.GetActiveBudgets>(),
-          gh<_i643.SetFeaturedBudget>(),
-          gh<_i594.ClearFeaturedBudget>(),
-          gh<_i895.WatchHelpEnabled>(),
-          gh<_i134.SetTutorialsEnabled>(),
-          gh<_i785.SetQuickAccessOrder>(),
-          gh<_i117.SetAiNotesAccessEnabled>(),
-          gh<_i377.ClearAiConsent>(),
         ));
     gh.factory<_i199.HomeCubit>(() => _i199.HomeCubit(
           gh<_i837.WatchAccounts>(),
@@ -2421,16 +2525,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i1051.WatchGoalMilestoneInsights>(),
           gh<_i173.NotificationPreferences>(),
         ));
-    gh.lazySingleton<_i536.TransactionsListCubit>(
-        () => _i536.TransactionsListCubit(
-              gh<_i832.WatchTransactions>(),
-              gh<_i612.DeleteTransaction>(),
-              gh<_i177.RestoreTransaction>(),
-              gh<_i837.WatchAccounts>(),
-              gh<_i479.WatchBudgetPeriodOptions>(),
-              gh<_i248.AccountFilterPreferenceDatasource>(),
-              gh<_i941.GetCategorySubtreeIds>(),
-            ));
     gh.factory<_i414.DebtPaymentCubit>(() => _i414.DebtPaymentCubit(
           gh<_i135.RegisterDebtCashEvent>(),
           gh<_i62.RegisterDebtLedgerEvent>(),

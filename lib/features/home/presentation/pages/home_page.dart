@@ -15,8 +15,11 @@ import '../../../../core/widgets/app_fab.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
 import '../../../accounts/presentation/widgets/account_gate_copy.dart';
+import '../../../capture/presentation/utils/start_voice_capture_flow.dart';
 import '../../../settings/presentation/cubit/app_settings_cubit.dart';
 import '../../../settings/presentation/cubit/app_settings_state.dart';
+import '../../../tutorials/domain/entities/tutorial_key.dart';
+import '../../../tutorials/presentation/widgets/tutorial_auto_show.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
 import '../widgets/ai_card.dart';
@@ -364,168 +367,184 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return Scaffold(
-      floatingActionButton: AnimatedSlide(
-        duration: const Duration(milliseconds: 200),
-        offset: _fabVisible ? Offset.zero : const Offset(0, 2),
-        child: AnimatedOpacity(
+    return TutorialAutoShow(
+      // `17-captura-voz.md` HU-02: press-and-hold is invisible, so it is
+      // taught on the first visit to Inicio — and to everyone who was already
+      // using the app before it existed, which needs no migration: a key that
+      // was never recorded as seen simply is not seen. Its CTA does not just
+      // explain the gesture, it performs it.
+      tutorialKey: TutorialKey.voiceCaptureGesture,
+      onCta: startVoiceCaptureFlow,
+      child: Scaffold(
+        floatingActionButton: AnimatedSlide(
           duration: const Duration(milliseconds: 200),
-          opacity: _fabVisible ? 1 : 0,
-          child: AppFab(
-            icon: LucideIcons.plus,
-            tooltip: l10n.transactionsAdd,
-            onPressed: () => unawaited(_addTransaction(context)),
+          offset: _fabVisible ? Offset.zero : const Offset(0, 2),
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 200),
+            opacity: _fabVisible ? 1 : 0,
+            child: AppFab(
+              icon: LucideIcons.plus,
+              tooltip: l10n.transactionsAdd,
+              onPressed: () => unawaited(_addTransaction(context)),
+              // The primary voice trigger. Tap and hold are two different
+              // actions on the same button, both of which end on the same
+              // form — the hold only fills it in first.
+              onLongPress: () => unawaited(startVoiceCaptureFlow(context)),
+              longPressHint: l10n.captureVoiceFabLongPressHint,
+            ),
           ),
         ),
-      ),
-      body: SafeArea(
-        child: BlocConsumer<HomeCubit, HomeState>(
-          listenWhen: (previous, current) =>
-              previous.pendingUndoId != current.pendingUndoId &&
-              current.pendingUndoId != null,
-          listener: (context, state) {
-            final cubit = context.read<HomeCubit>();
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(
-                SnackBar(
-                  content: Text(l10n.transactionsUndoDeletedMessage),
-                  action: SnackBarAction(
-                    label: l10n.transactionsUndoAction,
-                    onPressed: cubit.undoDelete,
+        body: SafeArea(
+          child: BlocConsumer<HomeCubit, HomeState>(
+            listenWhen: (previous, current) =>
+                previous.pendingUndoId != current.pendingUndoId &&
+                current.pendingUndoId != null,
+            listener: (context, state) {
+              final cubit = context.read<HomeCubit>();
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  SnackBar(
+                    content: Text(l10n.transactionsUndoDeletedMessage),
+                    action: SnackBarAction(
+                      label: l10n.transactionsUndoAction,
+                      onPressed: cubit.undoDelete,
+                    ),
+                    persist: false,
                   ),
-                  persist: false,
-                ),
-              );
-          },
-          builder: (context, state) {
-            return CustomScrollView(
-              controller: _scrollController,
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                    child: HomeHeader(
-                      syncStatus: state.syncStatus,
-                      user: state.user,
-                      pendingNoticeCount: state.pendingCaptureCount,
-                      // The bell opens the Avisos centre (`Bk8zW`): a full
-                      // screen on its own route, not a sheet.
-                      onBellTap: () => context.push(AppRoutes.notices),
-                      onAvatarTap: () => unawaited(_openAccountSheet(context)),
-                      onWalletTap: () =>
-                          unawaited(_openBalancesSheet(context, state)),
+                );
+            },
+            builder: (context, state) {
+              return CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                      child: HomeHeader(
+                        syncStatus: state.syncStatus,
+                        user: state.user,
+                        pendingNoticeCount: state.pendingCaptureCount,
+                        // The bell opens the Avisos centre (`Bk8zW`): a full
+                        // screen on its own route, not a sheet.
+                        onBellTap: () => context.push(AppRoutes.notices),
+                        onAvatarTap: () =>
+                            unawaited(_openAccountSheet(context)),
+                        onWalletTap: () =>
+                            unawaited(_openBalancesSheet(context, state)),
+                      ),
                     ),
                   ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                    // Checks `spending == null` rather than `isLoading`: a
-                    // failed first load (no snapshot yet) is not "loading"
-                    // but still has no spending to show, and must fall back
-                    // to the skeleton instead of a null-check crash.
-                    child: state.spending == null
-                        ? const HomeHeroSkeleton()
-                        : HomeHeroCard(
-                            heroState: state.heroState,
-                            spending: state.spending!,
-                            budgetProgress: state.budgetProgress,
-                            // Only ever the fallback caption (criterion 5):
-                            // `HomeHeroCard` ignores it once a budget is
-                            // featured, in favor of the hero's own `Period
-                            // Pill` label. Sourced from the snapshot's own
-                            // `spending.month` (always "now"'s calendar
-                            // month, per `HomeCubit.start`) rather than a
-                            // direct clock read, so this stays deterministic
-                            // and in sync with what `spending` itself counts.
-                            monthLabel: _monthLabel(
-                              context,
-                              state.spending?.month ?? clock.now(),
-                            ),
-                            onCreateBudget: widget.onCreateBudget,
-                            onOpenBudget: state.budgetProgress == null
-                                ? null
-                                : () => widget.onOpenBudget(
-                                      state.budgetProgress!.budget.id,
-                                    ),
-                            onPreviousPeriod: () =>
-                                context.read<HomeCubit>().previousPeriod(),
-                            onNextPeriod: () =>
-                                context.read<HomeCubit>().nextPeriod(),
-                            onOpenMonthPicker: () => _openMonthPickerSheet(
-                              context,
-                              state.spending?.month ?? clock.now(),
-                            ),
-                          ),
-                  ),
-                ),
-                // Card de IA (criterion 10/15): never in the empty state
-                // (nothing to summarize) nor as a loading skeleton — the
-                // slot stays empty until data has actually landed.
-                if (state.status == HomeStatus.ready && !state.isEmpty)
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                      child: AiCard(
-                        insight: state.aiInsight,
-                        budgetChipIsDirectNav: state.budgetChipIsDirectNav,
-                        onAskQuestion: (question) =>
-                            unawaited(_onAskQuestion(context, question)),
-                        onCreateBudget: () =>
-                            unawaited(_onCreateBudgetOrAskAi(context)),
-                        onStartInsightConversation: (question) => unawaited(
-                          _onStartInsightConversation(context, question),
-                        ),
-                        onContinueInsightConversation: (conversationId) =>
-                            unawaited(
-                          _onContinueInsightConversation(
-                            context,
-                            conversationId,
+                      // Checks `spending == null` rather than `isLoading`: a
+                      // failed first load (no snapshot yet) is not "loading"
+                      // but still has no spending to show, and must fall back
+                      // to the skeleton instead of a null-check crash.
+                      child: state.spending == null
+                          ? const HomeHeroSkeleton()
+                          : HomeHeroCard(
+                              heroState: state.heroState,
+                              spending: state.spending!,
+                              budgetProgress: state.budgetProgress,
+                              // Only ever the fallback caption (criterion 5):
+                              // `HomeHeroCard` ignores it once a budget is
+                              // featured, in favor of the hero's own `Period
+                              // Pill` label. Sourced from the snapshot's own
+                              // `spending.month` (always "now"'s calendar
+                              // month, per `HomeCubit.start`) rather than a
+                              // direct clock read, so this stays deterministic
+                              // and in sync with what `spending` itself counts.
+                              monthLabel: _monthLabel(
+                                context,
+                                state.spending?.month ?? clock.now(),
+                              ),
+                              onCreateBudget: widget.onCreateBudget,
+                              onOpenBudget: state.budgetProgress == null
+                                  ? null
+                                  : () => widget.onOpenBudget(
+                                        state.budgetProgress!.budget.id,
+                                      ),
+                              onPreviousPeriod: () =>
+                                  context.read<HomeCubit>().previousPeriod(),
+                              onNextPeriod: () =>
+                                  context.read<HomeCubit>().nextPeriod(),
+                              onOpenMonthPicker: () => _openMonthPickerSheet(
+                                context,
+                                state.spending?.month ?? clock.now(),
+                              ),
+                            ),
+                    ),
+                  ),
+                  // Card de IA (criterion 10/15): never in the empty state
+                  // (nothing to summarize) nor as a loading skeleton — the
+                  // slot stays empty until data has actually landed.
+                  if (state.status == HomeStatus.ready && !state.isEmpty)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                        child: AiCard(
+                          insight: state.aiInsight,
+                          budgetChipIsDirectNav: state.budgetChipIsDirectNav,
+                          onAskQuestion: (question) =>
+                              unawaited(_onAskQuestion(context, question)),
+                          onCreateBudget: () =>
+                              unawaited(_onCreateBudgetOrAskAi(context)),
+                          onStartInsightConversation: (question) => unawaited(
+                            _onStartInsightConversation(context, question),
                           ),
+                          onContinueInsightConversation: (conversationId) =>
+                              unawaited(
+                            _onContinueInsightConversation(
+                              context,
+                              conversationId,
+                            ),
+                          ),
+                          onDismissInsight: state.aiInsight == null
+                              ? null
+                              : () =>
+                                  context.read<HomeCubit>().dismissAiInsight(),
                         ),
-                        onDismissInsight: state.aiInsight == null
-                            ? null
-                            : () =>
-                                context.read<HomeCubit>().dismissAiInsight(),
                       ),
                     ),
-                  ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                    child: BlocBuilder<AppSettingsCubit, AppSettingsState>(
-                      builder: (context, settings) => QuickAccessRow(
-                        order: settings.quickAccessOrder,
-                        pendingScheduledCount: state.pendingScheduledCount,
-                        onOpenScheduledPayments: widget.onOpenScheduledPayments,
-                        onOpenAccounts: widget.onOpenAccounts,
-                        onOpenDebts: widget.onOpenDebts,
-                        onOpenReports: widget.onOpenReports,
-                        onOpenGoals: widget.onOpenGoals,
-                        onCustomize: widget.onOpenQuickAccessOrder,
-                      ),
-                    ),
-                  ),
-                ),
-                // Pencil (`AmifS`/`Y5TnWd`, `DliNF`/`dJDHi`) goes straight
-                // from "Acceso rápido" to the loading/empty state: the
-                // "Movimientos recientes" header only exists once there is
-                // something to head.
-                if (state.status == HomeStatus.ready && !state.isEmpty)
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 4),
-                      child: RecentActivityHeader(
-                        onSeeAll: widget.onSeeAllTransactions,
-                        showSeeAll: true,
+                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                      child: BlocBuilder<AppSettingsCubit, AppSettingsState>(
+                        builder: (context, settings) => QuickAccessRow(
+                          order: settings.quickAccessOrder,
+                          pendingScheduledCount: state.pendingScheduledCount,
+                          onOpenScheduledPayments:
+                              widget.onOpenScheduledPayments,
+                          onOpenAccounts: widget.onOpenAccounts,
+                          onOpenDebts: widget.onOpenDebts,
+                          onOpenReports: widget.onOpenReports,
+                          onOpenGoals: widget.onOpenGoals,
+                          onCustomize: widget.onOpenQuickAccessOrder,
+                        ),
                       ),
                     ),
                   ),
-                ..._bodySlivers(context, state),
-              ],
-            );
-          },
+                  // Pencil (`AmifS`/`Y5TnWd`, `DliNF`/`dJDHi`) goes straight
+                  // from "Acceso rápido" to the loading/empty state: the
+                  // "Movimientos recientes" header only exists once there is
+                  // something to head.
+                  if (state.status == HomeStatus.ready && !state.isEmpty)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 4),
+                        child: RecentActivityHeader(
+                          onSeeAll: widget.onSeeAllTransactions,
+                          showSeeAll: true,
+                        ),
+                      ),
+                    ),
+                  ..._bodySlivers(context, state),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );

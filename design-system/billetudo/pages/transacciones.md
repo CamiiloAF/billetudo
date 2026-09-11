@@ -6,14 +6,14 @@ Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `bill
 
 **Auditoría de tema oscuro — hallazgo crítico corregido:** `ui-ux-reviewer` encontró que `$primary` usado como texto plano sobre `$surface`/`$background` daba ~4.86:1 en claro (pasaba raspando) pero caía a ~3.00:1 en oscuro (falla texto normal) — afectaba "Todas"/"Ninguna" en los 4 filtros y el label activo "Transferencia" del `Segmented Control` en 6 de las 24 pantallas oscuras, más el monto de Transferencia como hallazgo importante (margen insuficiente). Corregido reemplazando `$primary` por `$primary-on-soft` en las 18 instancias afectadas (idéntico visualmente en claro, ~6:1 en oscuro) — regla ahora documentada en `MASTER.md` como extensión del token (antes solo cubría texto sobre `primary-soft`, ahora también sobre `$surface`/`$background` planos). Recoloreo del resto de la feature (24 pantallas oscuras): **100% automático vía variables, sin ningún hex hardcodeado**, confirmando que la disciplina de usar solo `$token` se mantuvo en toda la sesión.
 
-Interacciones aún sin especificar (apertura real de sheets desde sus chips, wrap de año en steppers, animación de expansión de la Zona Fija, estado activo del `Sort Button`) quedan documentadas como pendientes técnicos de comportamiento — no huecos de diseño visual, no bloquean implementación. El estado "N cuentas"/"Todas" del Account Chip ya está instanciado en pantallas reales (`XlXA8`/`s8uIq` claro, `idmDe`/`H3bGO` oscuro). El control de orden por monto (HU-06) ya está construido y auditado sin hallazgos en las 6 pantallas de Lista con datos. **✅ Feature 100% cerrada — lista para pasar a `flutter-dev`.**
+Interacciones aún sin especificar (apertura real de sheets desde sus chips, wrap de año en steppers, animación de expansión de la Zona Fija, estado activo del `Sort Button`) quedan documentadas como pendientes técnicos de comportamiento — no huecos de diseño visual, no bloquean implementación. El multi-select de cuentas ("2+ cuentas seleccionadas"/"Todas seleccionadas", cierre 2026-09-11) ya está instanciado en pantallas reales (`XlXA8`/`s8uIq` claro, `idmDe`/`H3bGO` oscuro). El control de orden por monto (HU-06) ya está construido y auditado sin hallazgos en las 6 pantallas de Lista con datos. **✅ Feature 100% cerrada — lista para pasar a `flutter-dev`.**
 
 ## Frames
 
 | Pantalla / pieza | Node ID (Claro) | Node ID (Oscuro) |
 |---|---|---|
 | Lista de transacciones — con datos | `B3GGa` | `xAk6Y` |
-| Lista de transacciones — Account Chip "N cuentas" | `XlXA8` | `idmDe` |
+| Lista de transacciones — 2+ cuentas seleccionadas | `XlXA8` | `idmDe` |
 | Lista de transacciones — Account Chip "Todas" | `s8uIq` | `H3bGO` |
 | Lista de transacciones — Ordenado por Monto | `tigaH` | `Q8gSaB` |
 | Lista de transacciones — Menú de Orden Abierto | `xXWi0` | `dbTXb` |
@@ -46,6 +46,12 @@ Interacciones aún sin especificar (apertura real de sheets desde sus chips, wra
 | Sheet — Rango Personalizado | `OFdj4` | `Oa2o2` |
 | Sheet — Nueva Etiqueta | `NazyV` | `YHAWB` |
 | Sheet — Aviso Impacto Edición | `L9DJI` | `j8W9a` |
+| Movimientos — Barra de Período Dedicada (Chip Fecha default) | `O2xuVc` | `w1zSgx` |
+| Movimientos — Barra de Período (Presupuesto activo) | `ufP4y` | `nQSNu` |
+| Sheet — Filtros Unificados · Presupuesto con período navegable | `JcJQq` | `I5ETV` |
+| Sheet — Filtros Unificados · Presupuesto con período navegable — Retrocedido | `llEl6` | `cQjrA` |
+| Sheet — Filtros Unificados · Bloqueado por Fecha | `hwYxx` | `c2ZSB` |
+| Movimientos — Chips Cuenta · Icono Teñido por Tipo | `bIg7X` | `rHkkz` |
 | Componente — Button/FAB | `H5mzN` | (mismo componente, tema automático) |
 | Componente — Detail Amount Hero | `npfLO` | (mismo componente, tema automático) |
 | Componente — Detail Actions Row | `jt8dk` | (mismo componente, tema automático) |
@@ -72,25 +78,47 @@ Presupuestos/Metas/Deudas y todo lo que venía después en el canvas se corrió 
 ## Lista de transacciones (`B3GGa`)
 
 1. **Header**: título "Movimientos" (24px/700, `$text-primary`), sin botón de acción (no hay Page Header, la creación de transacción vive en el FAB).
-2. **Search Bar**: icono `search` + placeholder "Buscar por nota o categoría", `$surface`, `cornerRadius:16`, alto 48.
-3. **Chips Row** (scroll horizontal, `gap:8`):
-   - **Account Chip** (mismo patrón de píldora en los 3 estados posibles): mismo tamaño/forma que los demás chips de la fila (altura 44, padding `[10,14]`, gap 6). Icono inline 14px + label 13px/700 + `chevron-down`, los tres en `$primary-on-soft-strong` (mismo token creado para `Category Chip`, da ~5.7:1 de contraste) — fondo `$primary-soft`, borde `$primary`. Refleja HU-06a con los 3 estados resueltos tras explorar 4 variantes y descartar 3 (patrón elegido: misma píldora activa para los 3 estados, se descartó el tratamiento neutral para "Todas" por no convencer al usuario):
-     - **1 cuenta seleccionada**: icono de la cuenta real (ej. `wallet`/`$mint` para "Efectivo") + nombre de la cuenta — instanciado en `B3GGa`/`xAk6Y` con "Nequi".
-     - **2+ cuentas seleccionadas**: icono genérico `layers` + "N cuentas" — instanciado en `XlXA8`/`idmDe` con ejemplo "3 cuentas".
-     - **Todas seleccionadas (sin filtro)**: icono genérico `wallet` + "Todas" — instanciado en `s8uIq`/`H3bGO`.
-     - El frame de referencia que documentaba los 3 estados aislados (`GSVWn`) fue eliminado tras quedar redundante frente a estas 6 pantallas reales.
-   - **Orden de la fila (DEFINITIVO, decisión del usuario 2026-07-21):** `Cuenta → Fecha → Categoría → Tipo → Etiqueta`. El chip de **Fecha va en 2º lugar** (justo después del Account Chip) — el usuario lo pidió así. Reemplaza cualquier mención previa de "Fecha al final"; el código ya lo tiene en 2º y es lo correcto. Los frames de Pencil se corrigieron para reflejarlo.
-   - **Chip Fecha** (2º): igual que los demás + icono `calendar`, label **"Este mes"** (refleja el default de HU-06b, antes decía genéricamente "Fecha"). Es el chip que abre el bottom sheet de selector de fecha (`P5fSkK`, ver sección propia).
-   - **Chip Categoria** / **Chip Tipo** / **Chip Etiqueta** (3º/4º/5º): pill simple `$surface` + stroke `$border`, label `$text-secondary` 12/700, sin icono. El chip de Etiqueta se agregó tras la auditoría (faltaba, HU-06 exige poder filtrar por etiqueta).
-   - **Control de orden (HU-06, "ordenar por monto") — construido.** `Search Bar` pasó a vivir dentro de una fila `Search Row` (`gap:8`) junto a un botón nuevo `Sort Button` (44x48, `cornerRadius:16`, icono `arrow-up-down` 20px `$text-secondary`, `fill:$surface`/`stroke:$border` en estado inactivo/default — mismo tratamiento que un chip de filtro sin seleccionar). Instanciado en las 6 pantallas de Lista con datos reales (los estados vacío/carga/error no lo llevan, no hay filas que ordenar):
+2. **Search Row**: `Search Bar` (icono `search`, placeholder "Buscar por nota o categoría", `$surface`, `cornerRadius:16`, alto 48) + `Sort Button` (44×48, ver abajo) + `Filtros Button` (44×48, `cornerRadius:16`, icono `sliders-horizontal`, mismo tratamiento visual inactivo/activo que `Sort Button`, badge circular absoluto 16×16 `$primary`/texto blanco en la esquina cuando `activeFilterCount > 0` — abre el sheet unificado, ver "Bottom sheet unificado de filtros" más abajo).
+
+3. **Chips Row** (scroll horizontal, `gap:8`) — **redefinida por completo desde el "Bottom sheet unificado de filtros" (GitHub issue #7, cierre 2026-09-02)**. Reemplaza toda la versión anterior de esta sección (un `Account Chip` dropdown con 3 estados + Fecha/Categoría/Tipo/Etiqueta como 4 chips más en la misma fila): Categoría/Tipo/Etiqueta viven ahora dentro del sheet unificado (se abre desde `Filtros Button` en la Search Row, no desde esta fila), y Cuenta pasó de un chip dropdown único a multi-select real, un chip por cuenta. Los 9 frames canónicos de esta fila (`B3GGa`/`xAk6Y` + sus 8 hermanos) quedaron desactualizados tras ese rediseño hasta corregirse el 2026-09-11 — ver "Cierre 2026-09-11" al final de esta sección.
+   - **Chip "Todas"** (círculo 44×44, `cornerRadius:22`, ícono `check-check` 16px, fondo `$primary-soft` fijo, ícono `$text-secondary` — botón utilitario de "seleccionar todas", no un chip de estado activo/inactivo) — primero en la fila.
+   - **Un `Account Chip` por cuenta activa** (`FilterChipPill`, altura 44, padding `[10,14]`, gap 6): ícono de la cuenta dentro de un icon-wrap circular de 20×20 tintado según el **tipo de cuenta** (`AccountTypePresentation`, ver "Cierre 2026-09-10 — color del ícono del Account Chip" abajo) + nombre de la cuenta, 13px/700. Activo (`$primary-soft`/`$primary`/`$primary-on-soft-strong`) cuando esa cuenta está en el filtro; inactivo (`$surface`/`$border`/`$text-secondary`) si no. `selected` vacío = todas activas (default, HU-06a).
+   - **Chip "Limpiar"** (mismo círculo que "Todas" pero ícono `x`, siempre en estado inactivo) — al final de la fila, vuelve el filtro a "todas seleccionadas".
+   - **Chip Fecha condicional**: solo aparece, entre los `Account Chip` y "Limpiar", cuando el periodo activo NO es el default (mes calendario actual, sin presupuesto) — refleja el rango real ("Julio 2026" / "25 ago – 25 sep") en el mismo tratamiento de chip activo (mismo criterio que el Account Chip reflejando el nombre de cuenta). En el estado default no existe ningún chip de fecha en esta fila. Ver "Adición 2026-09-10 — Period Nav Bar" más abajo.
+   - Instanciado en `B3GGa`/`xAk6Y` (estado default, sin chip Fecha) y ejemplos de multi-selección en `XlXA8`/`idmDe` ("2+ cuentas seleccionadas": Efectivo + Nequi activos, Bancolombia Ahorros + Tarjeta Visa inactivos, "Todas" inactivo) y `s8uIq`/`H3bGO` ("Todas seleccionadas": los 4 `Account Chip` activos + "Todas" activo). Estos 2 últimos reemplazan la documentación previa de un "Account Chip con 3 estados" (1 cuenta/N cuentas/Todas como un único chip dropdown) — ese concepto dejó de existir con el multi-select.
+
+**Cierre 2026-09-10 — color del ícono del Account Chip = tipo de cuenta (variante "Icono Teñido"):** se exploró una variante alterna de la `Chips Row` donde, en vez de un único Account Chip con dropdown, cada cuenta aparece como su propio chip individual coloreado (`bIg7X` claro / `rHkkz` oscuro, "Movimientos — Chips Cuenta · Variante Icono Tenido"). El color del ícono de cada chip **se deriva del tipo de cuenta (`AccountType`)**, reusando exactamente el criterio ya implementado en código (`AccountTypePresentation` / `AccountTypeAvatar`, `lib/features/accounts/presentation/widgets/account_type_avatar.dart`) y ya usado en `Account Card`/`Credit Card Account Row` de Cuentas — **no** es un color libre por cuenta ni un campo/picker nuevo:
+
+| Tipo (`AccountType`) | Color | Fondo (`-soft`) |
+|---|---|---|
+| `cash` | `$mint` | `$mint-soft` |
+| `bank` | `$sky` | `$sky-soft` |
+| `card` | `$primary-on-soft` | `$primary-soft` |
+| `savings` | `$teal` | `$teal-soft` |
+| `investment` | `$indigo` | `$indigo-soft` |
+| `other` | `$peach` | `$peach-soft` |
+
+Tipo real de cada cuenta de ejemplo, verificado contra las instancias ya existentes de `Account Card`/`Credit Card Account Row` en Cuentas (mismo nombre, mismo icono/color ya asignado ahí):
+- **Efectivo** → `cash` (icono `banknote`, `$mint`/`$mint-soft`).
+- **Bancolombia Ahorros** → `bank` (icono `landmark`, `$sky`/`$sky-soft` — pese al nombre "Ahorros", la cuenta ya está tipificada como `bank` en el resto del sistema, no `savings`; `savings` queda reservado para otro concepto de cuenta, sin instancia de ejemplo en esta pantalla).
+- **Nequi** → `other` (icono `wallet`, `$peach`/`$peach-soft` — billetera digital, no tiene tipo dedicado en el enum).
+- **Tarjeta Visa** → `card` (icono `credit-card`, `$primary-on-soft`/`$primary-soft`).
+
+**Corrección aplicada:** de los 4 chips, solo **Tarjeta Visa** estaba mal — usaba `$indigo`/`$indigo-soft` (color de `investment`, sin relación con su tipo real `card`). Efectivo/Bancolombia Ahorros/Nequi ya coincidían por coincidencia con la tabla de arriba. Corregido a `$primary-on-soft`/`$primary-soft` en el ícono-wrap (`l1U7m`/`ZgnUC` en claro, propagado automáticamente al oscuro vía `Copy()`).
+
+**Sin campo de color nuevo, sin picker:** confirma la decisión ya vigente en MASTER.md ("las cuentas usan icono/color estándar según tipo, sin personalización") — esta variante de chip no reabre esa decisión, solo la aplica a un layout de chips distinto al Account Chip documentado arriba (dropdown único). No requiere ninguna migración de esquema: el color se deriva de `AccountType`, ya modelado. La columna `Accounts.color` de Drift/PowerSync/Supabase existe desde el baseline pero está sin cablear (sin uso en `Account`/`account_mapper.dart`) — deliberadamente no se usa aquí, no es una deuda técnica de esta decisión.
+
+**Frames:** `bIg7X` (claro) / `rHkkz` (oscuro). Marca de revisión retirada de `bIg7X` — el frame queda aprobado en cuanto a esta corrección puntual de color. `nMKtn` ("Movimientos — Chips de Cuenta (Propuesta)", claro) es una exploración previa y distinta, no tocada en esta ronda.
+
+   - **Control de orden (HU-06, "ordenar por monto") — construido.** `Sort Button` (44x48, `cornerRadius:16`, icono `arrow-up-down` 20px `$text-secondary`, `fill:$surface`/`stroke:$border` en estado inactivo/default — mismo tratamiento que un chip de filtro sin seleccionar), en la Search Row junto a `Filtros Button` (ver punto 3 arriba). Instanciado en las 6 pantallas de Lista con datos reales (los estados vacío/carga/error no lo llevan, no hay filas que ordenar):
 
      | Pantalla | Sort Button |
      |---|---|
      | `B3GGa` (claro) | `ch57V` |
-     | `XlXA8` "N cuentas" (claro) | `LrWHe` |
+     | `XlXA8` "2+ cuentas" (claro) | `LrWHe` |
      | `s8uIq` "Todas" (claro) | `qvCZS` |
      | `xAk6Y` (oscuro) | `hRAt6` |
-     | `idmDe` "N cuentas" (oscuro) | `Kkjrh` |
+     | `idmDe` "2+ cuentas" (oscuro) | `Kkjrh` |
      | `H3bGO` "Todas" (oscuro) | `HS4Yb` |
 
      **Auditado sin hallazgos bloqueantes** (contraste 5.30:1 claro / 5.89:1 oscuro, tap target 44x48, coherente con el `cornerRadius:16`/`height:48` de la `Search Bar` que lo acompaña). Único punto menor: falta `semanticLabel`/tooltip accesible para lectores de pantalla (es un ícono sin texto) — anotado para `flutter-dev`, no bloquea el diseño.
@@ -105,7 +133,11 @@ Presupuestos/Metas/Deudas y todo lo que venía después en el canvas se corrió 
 
      **Estado activo — construido** (`tigaH` claro / `Q8gSaB` oscuro, "Movimientos - Final - Ordenado por Monto"): `Sort Button` en `fill:$primary-soft`/`stroke:$primary`/icono `$primary-on-soft-strong` (mismo patrón que un chip de filtro activo). **Decisión de diseño clave**: al ordenar por monto, la agrupación por `Date Head` ("Hoy"/"Ayer") deja de tener sentido (las filas ya no están en orden cronológico) — la `List` se vuelve **plana, sin headers de sección**, con las mismas instancias de `Transaction Row` una tras otra (`gap:16`) ordenadas por monto absoluto descendente (el ingreso "+$4.200.000" primero, luego los gastos de mayor a menor). Se agregó un label "Ordenado por monto" (`$text-secondary`, 12/600) arriba de la lista para dar contexto de que cambió el criterio, ya que se pierde la referencia temporal de los headers. **Pendiente:** interacción/transición real del toggle fecha↔monto sin definir, solo el estado visual final de cada uno.
 
-   **Resuelto:** se agregó `Scroll Fade` (`ns58k`), un degradado absoluto de transparente a `$background` sobre los últimos 32px del borde derecho de la fila (`x:358-390`, mismo alto que los chips), superpuesto al corte de `Chip Fecha` (`q4uw5N`, ya queda parcialmente visible ahí de forma natural). La combinación chip-cortado + fade comunica que la fila continúa. `Chip Etiqueta` (`uIBNS`) sigue completamente fuera del área visible del mockup estático (no hay espacio físico para asomarlo sin comprimir demasiado los demás chips) — en Flutter esto se implementa como `ListView` horizontal real, así que sigue siendo alcanzable con scroll aunque el mockup no lo muestre.
+   **Resuelto:** se agregó `Scroll Fade` (`ns58k`), un degradado absoluto de transparente a `$background` sobre los últimos 32px del borde derecho de la fila (`x:358-390`, mismo alto que los chips). Con 4+ cuentas la fila puede desbordar el ancho del mockup estático (`Account Chip` de Nequi/Tarjeta Visa/"Limpiar" parcial o totalmente clippeados en algunos ejemplos) — en Flutter esto se implementa como `ListView`/`Row` en `SingleChildScrollView` horizontal real, así que sigue siendo alcanzable con scroll aunque el mockup no lo muestre completo.
+
+   **Cierre 2026-09-11 — frames canónicos actualizados al chrome real:** `pencil-fidelity-reviewer` encontró que `B3GGa`/`xAk6Y` y sus 8 hermanos habían quedado desactualizados desde el cierre del "Bottom sheet unificado de filtros" (2026-09-02) — seguían mostrando la fila vieja de 5 chips pese a que el código en producción ya implementaba el patrón nuevo. Corregido: los 18 frames (9 pantallas × 2 temas) se actualizaron para reflejar exactamente el chrome real (Search Row con Filtros + Chips Row con Todas/cuentas/Limpiar), usando `nMKtn` (la propuesta ya implementada) y `bIg7X`/`rHkkz` (color por tipo) como referencia. De paso se corrigió un hallazgo real de contenido, no de chrome: el `Empty State` de `q8jCfp`/`HljCo` y `RcofQ`/`R0r3h` arrastraba el copy de Cuentas ("Aún no has agregado ninguna cuenta") en vez del propio de Movimientos — corregido en el `.pen` a "Aún no registras movimientos"/"No hay movimientos en julio 2026", el texto que documenta la sección "Estados — construidos" abajo.
+
+**Corrección 2026-09-11 (segunda revisión de PR):** el párrafo anterior decía que el código ya usaba ese mismo copy — **falso, verificado contra el `.arb` real**. `lib/core/l10n/arb/app_es.arb` usa `transactionsEmptyMessage` = "Todavía no hay movimientos registrados." (no "Aún no registras movimientos" — esa frase existe pero bajo `homeEmptyMovements`, de Inicio, no de Transacciones) y `transactionsEmptyPeriodMessage` = "No hay movimientos en este periodo." (genérico, **sin interpolar** el mes/año — nunca dice "en julio 2026"). Esta divergencia **es preexistente, no la introduce el PR #39** (ninguno de sus commits toca esas claves) — queda documentada como gap real de fidelidad copy↔código pendiente de decisión (¿corregir el `.arb` al texto del `.pen`, o el `.pen` al texto ya en producción?), no como algo cerrado.
 4. **List**: agrupada por fecha.
    - **Date Head** (`justifyContent:"space_between"`): label del grupo ("Hoy"/"Ayer"/"12 de julio") en `$text-primary` 14/700 + badge a la derecha en `$text-secondary` 12/500 — normalmente el contador "N movimientos"; **si el filtro de Tipo está acotado a un único tipo (solo Ingresos o solo Gastos), el badge muestra el monto total del grupo con signo** (ej. "+$3.650.000" / "-$57.000") en vez del conteo — decisión 2026-08-04, sin frame propio construido en Pencil, solo `Date Head` como referencia de estilo (mismo tratamiento tipográfico, ninguna estructura nueva). Con Transferencia incluida en el filtro, o con más de un tipo seleccionado, se mantiene el conteo. Golden: `transactions_page_group_total_{expense,income}_{light,dark}.png`. Código: `transactionGroupTotalFor` (`lib/features/transactions/presentation/utils/transaction_group_total.dart`).
    - Filas: instancias de `Transaction Row` (`DKJaf`), gap **16** entre filas dentro de un grupo, gap **24** entre grupos.
@@ -310,13 +342,41 @@ Rediseño posterior al bloque anterior: los filtros de fecha/presupuesto/tipo/ca
 
 > "No puedes filtrar por fecha con un presupuesto activo"
 
-(solo el grupo de controles —Granularity Switch + Stepper Row— queda a `opacity:0.4`, nunca el texto explicativo). El caso inverso (Fecha activo → Presupuesto se limpia) es un espejo exacto, no se construyó como frame aparte. Referencia visual: frame companion `pSqZR` (aprobado).
+(solo el grupo de controles —Granularity Switch, ver adición 2026-09-10 sobre por qué ya no incluye un Stepper Row— queda a `opacity:0.4`, nunca el texto explicativo). El caso inverso (Fecha activo → Presupuesto se limpia) es un espejo exacto, con frame propio construido en la adición 2026-09-10 (`hwYxx`/`c2ZSB`). Referencia visual: frame companion `pSqZR` (aprobado).
 
 **Sección Presupuesto oculta sin presupuestos creados:** si el usuario no tiene ningún presupuesto (`budgets.isEmpty == true`, sin contar archivados), la sección "Presupuesto" **no se muestra** — ni vacía ni deshabilitada, se omite del widget tree junto con el divider que la separa de Fecha (para no dejar un divisor huérfano pegado al header). El sheet arranca directo en Header → Divider → Fecha, y en ese escenario Fecha **nunca** está deshabilitada (sin presupuestos no puede existir el conflicto). Referencia visual: frame `dUzl8` ("Sheet — Filtros Unificados · Sin presupuestos"), copia de `rktqT` sin la sección Presupuesto ni su divider.
 
 **Para flutter-dev:** ambas reglas (exclusión mutua bidireccional + ocultación condicional) se resuelven en el mismo bloc/cubit que gestiona el estado del sheet de filtros.
 
 **No verificado en esta ronda:** el drift real pixel a pixel reportado por el usuario entre los 6 sheets de filtro ya implementados en Flutter (`lib/features/transactions/presentation/widgets/sheets/`) y su spec en el `.pen` — se confirmó que la estructura general (sheets separados, no uno unificado hasta este rediseño) coincidía, y que `account_filter_sheet.dart` es fiel salvo el componente de fila (`AccountSelectRow` vs `Filter Account Row`). Si se quiere el drift exacto documentado, hace falta un `/design-fidelity-check` dedicado.
+
+### Adición 2026-09-10 — Period Nav Bar en la pantalla principal + sheet sin steppers (cierre, ambos temas)
+
+> **Estado:** aprobado por el usuario en tema claro y sincronizado a oscuro en la misma ronda. Cierra el punto abierto que dejaba la navegación de periodo únicamente dentro del sheet unificado.
+
+**Origen:** el usuario reportó que navegar entre periodos (mes/semana/año, o entre ciclos históricos de un presupuesto activo) era tedioso porque obligaba a abrir el sheet cada vez. Decisión: la navegación de periodo se **movió del sheet de filtros a la pantalla principal**, como una **Period Nav Bar condicional** ubicada entre `Chips Row` y `List` (`u6sSAc` en `O2xuVc`, `w9Eszi` en `ufP4y`) — visible **solo** cuando el periodo activo no es el default (mes calendario actual, sin presupuesto). En el caso común (periodo default) esta barra no se renderiza y el costo de espacio es cero.
+
+**Por qué esa ubicación (hallazgo de `ui-ux-reviewer` sobre las exploraciones iniciales):** las primeras variantes ubicaban el stepper Prev/Next fijo justo debajo del Header, permanentemente visible. Eso castigaba todas las visitas (incluida la mayoría que solo quiere ver el periodo actual) con una fila de controles que casi nunca se tocan, y en la variante de Presupuesto (2 líneas: `Budget Context Tag` + `Stepper Row`, ~76-80px) competía en peso visual con el título mismo — rompiendo la regla de "un solo foco por pantalla". Ubicaciones alternativas descartadas: fusionar en la fila del Header (el título 24/700 pierde jerarquía compartiendo línea con 2 botones de 44×44) y fusionar/colapsar la `Search Row` (esconder el buscador condicionalmente rompe la expectativa universal de "buscar siempre disponible" en apps financieras). El punto elegido — entre filtros y contenido, solo cuando aporta valor — no cuesta espacio en el caso común y aparece pegado a lo que está filtrando (principio de proximidad).
+
+**Estructura de `Period Nav Bar`:** card `$surface`/`stroke:$border`/`cornerRadius:16` con `Stepper Row` (`chevron-left`/`chevron-right` 44×44 en `$text-primary`, `Period Label` centrado 17/700 `$text-primary`, ej. "Julio 2026"). La variante Presupuesto agrega encima un `Budget Context Tag` (icono + nombre del presupuesto activo, ej. "Comida del mes"). El botón `Next` va a `opacity:0.4` cuando el periodo mostrado ya es el más reciente (no hay adelante a donde navegar) — mismo patrón visual que el resto de controles deshabilitados del sistema.
+
+**Chip Fecha como reflejo del periodo activo:** en la `Chips Row`, cuando el periodo no es default, `Chip Fecha` (`pofWv` en `O2xuVc`, `vUtHH` en `ufP4y`) pasa al tratamiento de chip activo (`fill:$primary-soft`, `stroke:$primary`, icono+label en `$primary-on-soft-strong`) y **repite el rango activo real** en el label (ej. "Julio 2026" o "25 ago – 25 sep" para un ciclo de presupuesto no calendario) — mismo criterio ya usado por el Account Chip cuando refleja el nombre de la cuenta filtrada (decisión explícita del usuario: mantener la redundancia como señal glanceable incluso con la fila de chips scrolleada, en vez de acortar el texto). En el estado default, el chip vuelve a su tratamiento neutral con label "Este mes", sin cambios.
+
+**Sheet de filtros — steppers retirados (corrección sobre el diseño previo de esta misma sección):** las secciones **Fecha** y **Presupuesto** del sheet unificado (`JcJQq`/`llEl6`/`hwYxx`, y sus predecesores `rktqT`/`pSqZR`/`dUzl8`) ya no llevan controles Prev/Next. Dentro del sheet solo se elige **qué** filtrar (granularidad — Semana/Mes/Año vía `Granularity Switch`, `hFu41` — en Fecha; qué presupuesto activar, vía pills, en Presupuesto); **navegar entre periodos** vive exclusivamente en la `Period Nav Bar` de la pantalla principal. Resuelve la redundancia de tener dos steppers (uno en el sheet, otro en la barra) controlando el mismo estado desde dos lugares distintos. El contrato de exclusión mutua Presupuesto ↔ Fecha documentado arriba no cambia — solo se aplica ahora sobre el `Granularity Switch`/las pills, sin steppers de por medio; verificado en los 3 frames (`JcJQq`/`llEl6`: Presupuesto activo → Fecha con candado; `hwYxx`: Fecha activo → Presupuesto con candado).
+
+**Frames (ambos temas cerrados):**
+
+| Pieza | Claro | Oscuro |
+|---|---|---|
+| Movimientos · Period Nav Bar (Fecha, periodo no-default) | `O2xuVc` | `w1zSgx` |
+| Movimientos · Period Nav Bar (Presupuesto activo) | `ufP4y` | `nQSNu` |
+| Sheet Filtros Unificados · Presupuesto con período navegable | `JcJQq` | `I5ETV` |
+| Sheet Filtros Unificados · Presupuesto con período navegable — Retrocedido | `llEl6` | `cQjrA` |
+| Sheet Filtros Unificados · Bloqueado por Fecha | `hwYxx` | `c2ZSB` |
+
+**Tema oscuro — verificación de contraste (no asumido por recoloreo automático):** `text-secondary` (#9A98B5) sobre `surface` oscuro (#1E1E2E) en candado+caption ≈ 5.88:1; `primary-on-soft-strong` oscuro (#A78BFA) sobre `primary-soft` oscuro (#26243B) en Chip Fecha activo y pills de Presupuesto seleccionadas ≈ 5.52:1 (mismo valor ya validado para este par de tokens en el resto de la feature); `text-primary` sobre `surface` en `Period Label`, contraste alto. Cero hex hardcodeado — recoloreo 100% automático vía variables, mismo patrón que el resto de la feature.
+
+**Pendiente técnico (no bloquea):** igual que el resto del sheet de filtros, la interacción real de tap en `Prev`/`Next` de la `Period Nav Bar` (transición, wrap de mes/año) no está definida — solo el estado visual estático de cada caso.
 
 ## Componentes reutilizables usados
 

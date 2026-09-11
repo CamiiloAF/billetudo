@@ -22,6 +22,7 @@ void main() {
   late MockRestoreTransaction restoreTransaction;
   late MockWatchAccounts watchAccounts;
   late MockWatchBudgetPeriodOptions watchBudgetPeriodOptions;
+  late MockGetBudgetPeriodAt getBudgetPeriodAt;
   late MockAccountFilterPreferenceDatasource accountFilterPreferences;
   late MockGetCategorySubtreeIds getCategorySubtreeIds;
 
@@ -41,6 +42,7 @@ void main() {
     restoreTransaction = MockRestoreTransaction();
     watchAccounts = MockWatchAccounts();
     watchBudgetPeriodOptions = MockWatchBudgetPeriodOptions();
+    getBudgetPeriodAt = MockGetBudgetPeriodAt();
     accountFilterPreferences = MockAccountFilterPreferenceDatasource();
     getCategorySubtreeIds = MockGetCategorySubtreeIds();
     when(() => watchAccounts()).thenAnswer((_) => const Stream.empty());
@@ -68,6 +70,7 @@ void main() {
       restoreTransaction,
       watchAccounts,
       watchBudgetPeriodOptions,
+      getBudgetPeriodAt,
       accountFilterPreferences,
       getCategorySubtreeIds);
 
@@ -645,6 +648,139 @@ void main() {
             ),
           ),
         ).called(1);
+      },
+    );
+  });
+
+  group('stepPeriod (Period Nav Bar, Adición 2026-09-10)', () {
+    blocTest<TransactionsListCubit, TransactionsListState>(
+      'steps a granular Fecha period forward when it is not the current one',
+      setUp: () => when(() => watchTransactions(any()))
+          .thenAnswer((_) => const Stream.empty()),
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await cubit.updateFilter(
+          cubit.state.filter.copyWith(
+            datePeriod: DatePeriodFilter.granular(
+                DateGranularity.month, DateTime(2020)),
+          ),
+        );
+        await cubit.stepPeriod(1);
+      },
+      verify: (cubit) => expect(
+        cubit.state.filter.datePeriod,
+        DatePeriodFilter.granular(DateGranularity.month, DateTime(2020, 2)),
+      ),
+    );
+
+    blocTest<TransactionsListCubit, TransactionsListState>(
+      'ignores stepping a granular Fecha period past "now"',
+      setUp: () => when(() => watchTransactions(any()))
+          .thenAnswer((_) => const Stream.empty()),
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        // The default filter is already "este mes" (contains "now").
+        await cubit.stepPeriod(1);
+      },
+      verify: (cubit) => expect(
+        cubit.state.filter.datePeriod,
+        DatePeriodFilter.thisMonth(),
+      ),
+    );
+
+    blocTest<TransactionsListCubit, TransactionsListState>(
+      'is a no-op on a custom range (nothing to step)',
+      setUp: () => when(() => watchTransactions(any()))
+          .thenAnswer((_) => const Stream.empty()),
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await cubit.updateFilter(
+          cubit.state.filter.copyWith(
+            datePeriod: DatePeriodFilter.custom(
+              start: DateTime(2026, 7, 1),
+              end: DateTime(2026, 7, 10),
+            ),
+          ),
+        );
+        await cubit.stepPeriod(-1);
+        await cubit.stepPeriod(1);
+      },
+      verify: (cubit) =>
+          expect(cubit.state.filter.datePeriod.isCustomRange, isTrue),
+    );
+
+    blocTest<TransactionsListCubit, TransactionsListState>(
+      'steps a Presupuesto filter via GetBudgetPeriodAt, respecting its bounds',
+      setUp: () => when(() => watchTransactions(any()))
+          .thenAnswer((_) => const Stream.empty()),
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await cubit.updateFilter(
+          cubit.state.filter.copyWith(
+            budgetPeriod: DatePeriodFilter.budget(
+              budgetId: 'budget-1',
+              start: DateTime(2026, 7),
+              endExclusive: DateTime(2026, 8),
+              index: 0,
+              hasPrevious: false,
+              hasNext: true,
+            ),
+          ),
+        );
+        when(() => getBudgetPeriodAt(budgetId: 'budget-1', index: 1))
+            .thenAnswer(
+          (_) async => Right(
+            DatePeriodFilter.budget(
+              budgetId: 'budget-1',
+              start: DateTime(2026, 8),
+              endExclusive: DateTime(2026, 9),
+              index: 1,
+              hasPrevious: true,
+              hasNext: false,
+            ),
+          ),
+        );
+        await cubit.stepPeriod(1);
+        // hasNext is now false: a further tap must be ignored, not error.
+        await cubit.stepPeriod(1);
+      },
+      verify: (cubit) {
+        expect(cubit.state.filter.budgetPeriod!.start, DateTime(2026, 8));
+        expect(cubit.state.filter.budgetPeriod!.index, 1);
+        verify(() => getBudgetPeriodAt(budgetId: 'budget-1', index: 1))
+            .called(1);
+      },
+    );
+
+    blocTest<TransactionsListCubit, TransactionsListState>(
+      'ignores stepping a Presupuesto filter before its first window',
+      setUp: () => when(() => watchTransactions(any()))
+          .thenAnswer((_) => const Stream.empty()),
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await cubit.updateFilter(
+          cubit.state.filter.copyWith(
+            budgetPeriod: DatePeriodFilter.budget(
+              budgetId: 'budget-1',
+              start: DateTime(2026, 7),
+              endExclusive: DateTime(2026, 8),
+              index: 0,
+              hasPrevious: false,
+              hasNext: true,
+            ),
+          ),
+        );
+        await cubit.stepPeriod(-1);
+      },
+      verify: (cubit) {
+        expect(cubit.state.filter.budgetPeriod!.index, 0);
+        verifyNever(() => getBudgetPeriodAt(
+            budgetId: any(named: 'budgetId'), index: any(named: 'index')));
       },
     );
   });

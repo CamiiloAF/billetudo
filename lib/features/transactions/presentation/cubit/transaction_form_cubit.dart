@@ -64,6 +64,12 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   /// since it is never rendered — only diffed against the pending draft.
   Transaction? _original;
 
+  /// The state the form was born with, used by [completeFromVoice] to tell
+  /// "still the default the form opened with" from "the user chose this".
+  /// Not in the state either: it describes the editing session, not the
+  /// movement.
+  TransactionFormState? _initialState;
+
   /// Loads the transaction to edit, or prepares an empty form of [type] when
   /// [id] is null.
   Future<void> load(
@@ -95,8 +101,8 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
         initialAccountName = chosen.account.name;
       }
       if (capture != null) {
-        emit(await _prefilledFromCapture(capture, initialAccountId,
-            initialAccountName));
+        emit(await _prefilledFromCapture(
+            capture, initialAccountId, initialAccountName));
         return;
       }
       emit(
@@ -110,6 +116,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
           focusedField: TransactionFormFocusedField.amount,
         ),
       );
+      _initialState = state;
       return;
     }
 
@@ -129,6 +136,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       case Right(value: final entry):
         _original = entry.transaction;
         emit(_formFor(entry));
+        _initialState = state;
     }
   }
 
@@ -169,6 +177,126 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       categoryName: categoryName,
       categoryKind: categoryKind,
       source: TransactionSource.notification,
+    );
+  }
+
+  /// Opens an empty form prefilled with whatever the voice capture managed to
+  /// understand (`17-captura-voz.md`, HU-01/HU-05).
+  ///
+  /// Same shape as `ScheduledPaymentFormCubit.loadFromBridge`: the bridge only
+  /// ever hands this cubit plain values, so Transacciones never depends on
+  /// Captura's domain. It builds on [load] so the account default, the
+  /// currency and every other form rule stay exactly the ones the manual path
+  /// uses — voice adds no invisible rules of its own.
+  ///
+  /// Everything is optional: **partial parsing is the normal case**. A capture
+  /// that only understood the amount still opens the form with the amount, and
+  /// one that understood nothing still opens the form with the transcription
+  /// as the note. Nothing is written until the user presses Guardar.
+  ///
+  /// `source` stays `voice` no matter what the user edits afterwards: the
+  /// capture origin is a historical fact, not a description of the final
+  /// field values (HU-01, paridad con HU-04 de `03-transacciones.md`).
+  Future<void> loadFromVoice({
+    int? amountMinor,
+    bool amountIsUncertain = false,
+    String? amountSpokenText,
+    TransactionType? type,
+    String? accountId,
+    String? categoryId,
+    String? categoryName,
+    CategoryKind? categoryKind,
+    DateTime? date,
+    String? note,
+  }) async {
+    await load(
+      null,
+      type: type ?? TransactionType.expense,
+      accountId: accountId,
+    );
+    if (isClosed || state.status != TransactionFormStatus.ready) {
+      return;
+    }
+    emit(
+      state.copyWith(
+        source: TransactionSource.voice,
+        amountMinor: amountMinor,
+        amountIsUncertain: amountMinor != null && amountIsUncertain,
+        amountSpokenText: amountSpokenText,
+        categoryId: categoryId,
+        categoryName: categoryName,
+        categoryKind: categoryKind,
+        date: date,
+        note: note,
+        // The focus lands on the first thing that still needs the user: the
+        // amount when it is missing or only inferred. Category and account are
+        // pickers, not text fields, so they take no keyboard focus — the form
+        // blocks Guardar on them exactly as it does in the manual flow.
+        focusedField: amountMinor == null || amountIsUncertain
+            ? TransactionFormFocusedField.amount
+            : TransactionFormFocusedField.none,
+      ),
+    );
+  }
+
+  /// Fills in from a voice capture started **from an already open form**
+  /// (`E1vEe7`'s "Dictar" pill), as opposed to [loadFromVoice], which builds
+  /// the form from scratch.
+  ///
+  /// It **completes, it does not overwrite**: only fields the user has not
+  /// touched since the form opened take a dictated value (HU-05). "Touched"
+  /// is measured against the state the form was born with, so the account and
+  /// the date — which always open with a default rather than empty — still
+  /// count as dictatable until the user picks something themselves.
+  ///
+  /// The `source` is *not* flipped to voice: a movement the user started
+  /// typing by hand and then completed by dictating is not a voice capture,
+  /// and the source measures where the record came from, not which controls
+  /// were used along the way.
+  void completeFromVoice({
+    int? amountMinor,
+    bool amountIsUncertain = false,
+    String? amountSpokenText,
+    TransactionType? type,
+    String? accountId,
+    String? categoryId,
+    String? categoryName,
+    CategoryKind? categoryKind,
+    DateTime? date,
+    String? note,
+  }) {
+    if (state.status != TransactionFormStatus.ready) {
+      return;
+    }
+    final baseline = _initialState;
+    final canFillAmount = state.amountMinor == 0;
+    final canFillCategory = state.categoryId == null;
+    final canFillNote = state.note.isEmpty;
+    final canFillAccount =
+        baseline == null || state.accountId == baseline.accountId;
+    final canFillDate = baseline == null || state.date == baseline.date;
+    final fillsAmount = amountMinor != null && canFillAmount;
+
+    emit(
+      state.copyWith(
+        type: type != null && state.amountMinor == 0 ? type : state.type,
+        amountMinor: fillsAmount ? amountMinor : state.amountMinor,
+        amountIsUncertain: fillsAmount && amountIsUncertain,
+        amountSpokenText: fillsAmount ? amountSpokenText : null,
+        entryFractionDigits: fillsAmount ? -1 : state.entryFractionDigits,
+        accountId:
+            canFillAccount && accountId != null ? accountId : state.accountId,
+        categoryId: canFillCategory ? categoryId : state.categoryId,
+        categoryName: canFillCategory ? categoryName : state.categoryName,
+        categoryKind: canFillCategory ? categoryKind : state.categoryKind,
+        date: canFillDate && date != null ? date : state.date,
+        note: canFillNote && note != null ? note : state.note,
+        // Same landing as the voice-opened form: whatever still needs the user
+        // takes the focus, and an inferred amount always does.
+        focusedField: fillsAmount && !amountIsUncertain
+            ? TransactionFormFocusedField.none
+            : TransactionFormFocusedField.amount,
+      ),
     );
   }
 
@@ -323,7 +451,15 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     if (next > _maxAmountMinor) {
       return;
     }
-    emit(base.copyWith(amountMinor: next, entryFractionDigits: nextFraction));
+    // Touching the amount confirms it: a voice-inferred amount stops being
+    // flagged as unverified the moment the user types over it.
+    emit(
+      base.copyWith(
+        amountMinor: next,
+        entryFractionDigits: nextFraction,
+        amountIsUncertain: false,
+      ),
+    );
   }
 
   /// The decimal-point key. Every currency the app handles accepts typed cents
@@ -336,13 +472,14 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     final base = _startFreshOperandIfNeeded(state);
     if (base.entryFractionDigits >= 0) {
       // A second '.' does nothing, but a pending fresh-operand reset still
-      // needs to land.
-      if (!identical(base, state)) {
-        emit(base);
+      // needs to land — as does dropping the "Supusimos…" hint, since
+      // pressing the decimal key is already the user editing the amount.
+      if (!identical(base, state) || state.amountIsUncertain) {
+        emit(base.copyWith(amountIsUncertain: false));
       }
       return;
     }
-    emit(base.copyWith(entryFractionDigits: 0));
+    emit(base.copyWith(entryFractionDigits: 0, amountIsUncertain: false));
   }
 
   /// An operator key (÷ × − +). Evaluates any pending operation first so that
@@ -394,6 +531,12 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
 
   void amountBackspace() {
     var s = state;
+    if (s.amountIsUncertain) {
+      // Same rule as [amountDigitPressed]: any key that edits the amount is
+      // the user taking it over, so the "Supusimos…" hint goes away. Cleared
+      // here, on the base state, because every branch below copies from it.
+      s = s.copyWith(amountIsUncertain: false);
+    }
     if (s.justEvaluated) {
       // Editing a result turns it back into a plain operand.
       s = s.copyWith(justEvaluated: false, clearCalc: true);
@@ -433,6 +576,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   void amountCleared() => emit(
         state.copyWith(
           amountMinor: 0,
+          amountIsUncertain: false,
           entryFractionDigits: -1,
           startNewOperand: false,
           justEvaluated: false,
