@@ -11,6 +11,7 @@ class AppSettingsState extends Equatable {
     this.settings = const AppSettings.defaults(),
     this.activeBudgets = const [],
     this.showHelpOnSectionEntry = true,
+    this.cloudTranscriptionEnabled = false,
     this.isLoaded = true,
   });
 
@@ -29,6 +30,16 @@ class AppSettingsState extends Equatable {
   /// asks for every one of its toggles without needing to know which
   /// repository backs which column.
   final bool showHelpOnSectionEntry;
+
+  /// "Transcribir mi voz en la nube" — the reversal the cloud consent sheet
+  /// (`kJG43`) promises. Lives outside [settings] for the same reason
+  /// [showHelpOnSectionEntry] does, plus a stronger one: it is backed by
+  /// `CloudTranscriptionConsentStore`, which is deliberately **per device and
+  /// never synced**, because the consent names a specific vendor (Google on
+  /// Android, Apple on iOS) and syncing it would hand audio to a company
+  /// nobody agreed to. Only `granted` renders as on: "never asked" and
+  /// "declined" both mean nothing may leave the phone.
+  final bool cloudTranscriptionEnabled;
 
   /// Whether [settings] already reflects the first real value emitted by
   /// `GetAppSettings`'s stream, as opposed to the in-memory default this
@@ -71,6 +82,7 @@ class AppSettingsState extends Equatable {
     AppSettings? settings,
     List<BudgetWithProgress>? activeBudgets,
     bool? showHelpOnSectionEntry,
+    bool? cloudTranscriptionEnabled,
     bool? isLoaded,
   }) =>
       AppSettingsState(
@@ -78,10 +90,17 @@ class AppSettingsState extends Equatable {
         activeBudgets: activeBudgets ?? this.activeBudgets,
         showHelpOnSectionEntry:
             showHelpOnSectionEntry ?? this.showHelpOnSectionEntry,
+        cloudTranscriptionEnabled:
+            cloudTranscriptionEnabled ?? this.cloudTranscriptionEnabled,
         isLoaded: isLoaded ?? this.isLoaded,
       );
 
   @override
-  List<Object?> get props =>
-      [settings, activeBudgets, showHelpOnSectionEntry, isLoaded];
+  List<Object?> get props => [
+        settings,
+        activeBudgets,
+        showHelpOnSectionEntry,
+        cloudTranscriptionEnabled,
+        isLoaded,
+      ];
 }

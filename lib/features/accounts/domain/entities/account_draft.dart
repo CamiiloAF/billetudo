@@ -20,6 +20,7 @@ class AccountDraft extends Equatable {
     this.institution,
     this.numberEdit = const KeepAccountNumber(),
     this.last4,
+    this.cardLast4,
     this.interestRateBps,
     this.creditLimitMinor,
     this.statementDay,
@@ -35,6 +36,7 @@ class AccountDraft extends Equatable {
   static const String fieldInstitution = 'institution';
   static const String fieldFullAccountNumber = 'fullAccountNumber';
   static const String fieldLast4 = 'last4';
+  static const String fieldCardLast4 = 'cardLast4';
   static const String fieldInterestRateBps = 'interestRateBps';
   static const String fieldCreditLimitMinor = 'creditLimitMinor';
   static const String fieldStatementDay = 'statementDay';
@@ -47,6 +49,12 @@ class AccountDraft extends Equatable {
 
   static final RegExp _currencyPattern = RegExp(r'^[A-Z]{3}$');
   static final RegExp _last4Pattern = RegExp(r'^\d{1,4}$');
+
+  /// The card's digits must be exactly four, unlike [last4]'s 1-to-4: this
+  /// value is matched against the 4-digit hint a notification quotes
+  /// (`ParsedCapture.accountHintLength`), so a shorter value could never
+  /// match anything and would only look like a working setting.
+  static final RegExp _cardLast4Pattern = RegExp(r'^\d{4}$');
   static final RegExp _nonDigits = RegExp(r'\D');
 
   /// `null` when creating; the account id when editing.
@@ -64,6 +72,11 @@ class AccountDraft extends Equatable {
   /// Manual last 4 digits. Ignored when [numberEdit] sets a full number, since
   /// it is derived from it.
   final String? last4;
+
+  /// Last 4 digits of the physical card (`Account.cardLast4`). Optional and
+  /// never derived from [numberEdit]: it identifies the plastic, not the
+  /// account number.
+  final String? cardLast4;
 
   final int? interestRateBps;
   final int? creditLimitMinor;
@@ -123,6 +136,12 @@ class AccountDraft extends Equatable {
       );
     }
 
+    final cardLast4Result = _validatedCardLast4();
+    if (cardLast4Result case Left(value: final failure)) {
+      return Left(failure);
+    }
+    final cardLast4 = cardLast4Result.getOrElse((_) => null);
+
     final numberResult = _validatedNumber();
     if (numberResult case Left(value: final failure)) {
       return Left(failure);
@@ -149,6 +168,7 @@ class AccountDraft extends Equatable {
         institution: institution,
         numberEdit: _normalizedNumberEdit(),
         last4: last4,
+        cardLast4: cardLast4,
         interestRateBps: interestRateBps,
         // HU-01/HU-06: card data only exists on cards. Leaving stale values
         // behind after a type change would corrupt the available-credit rule.
@@ -220,6 +240,22 @@ class AccountDraft extends Equatable {
     return Right(last4);
   }
 
+  /// Optional; when present it must be exactly four digits. Blank is not an
+  /// error — the field is opt-in and captures keep working without it, only
+  /// without an account suggestion.
+  Result<String?> _validatedCardLast4() {
+    final cardLast4 = _blankToNull(this.cardLast4);
+    if (cardLast4 != null && !_cardLast4Pattern.hasMatch(cardLast4)) {
+      return const Left(
+        ValidationFailure(
+          'the card last 4 must be exactly 4 digits',
+          field: fieldCardLast4,
+        ),
+      );
+    }
+    return Right(cardLast4);
+  }
+
   Result<Unit> _validatedCardFields() {
     final creditLimitMinor = this.creditLimitMinor;
     if (creditLimitMinor == null) {
@@ -276,6 +312,7 @@ class AccountDraft extends Equatable {
         institution,
         numberEdit,
         last4,
+        cardLast4,
         interestRateBps,
         creditLimitMinor,
         statementDay,

@@ -29,6 +29,9 @@ import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart';
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.dart';
 import 'package:billetudo/features/budgets/domain/usecases/watch_featured_budget_progress.dart';
+import 'package:billetudo/features/capture/domain/usecases/watch_pending_capture_count.dart';
+import 'package:billetudo/features/capture/presentation/cubit/capture_shortcut_cubit.dart';
+import 'package:billetudo/features/capture/presentation/cubit/capture_shortcut_state.dart';
 import 'package:billetudo/features/home/domain/usecases/dismiss_home_insight.dart';
 import 'package:billetudo/features/home/domain/usecases/record_home_insight_shown.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_has_any_budget.dart';
@@ -51,6 +54,9 @@ class MockWatchAccounts extends Mock implements WatchAccounts {}
 
 class MockThemeModeCubit extends MockCubit<ThemeMode>
     implements ThemeModeCubit {}
+
+class MockCaptureShortcutCubit extends MockCubit<CaptureShortcutState>
+    implements CaptureShortcutCubit {}
 
 class MockWatchMonthTransactions extends Mock
     implements WatchMonthTransactions {}
@@ -77,6 +83,9 @@ class MockWatchHomeAiInsight extends Mock implements WatchHomeAiInsight {}
 
 class MockWatchPendingScheduledPaymentCount extends Mock
     implements WatchPendingScheduledPaymentCount {}
+
+class MockWatchPendingCaptureCount extends Mock
+    implements WatchPendingCaptureCount {}
 
 class MockCheckAiAccess extends Mock implements CheckAiAccess {}
 
@@ -147,6 +156,21 @@ void main() {
     return cubit;
   }
 
+  // Igual que el anterior: `BilletudoApp` resuelve el cubit de los atajos del
+  // widget de la pantalla de inicio desde `getIt`, y el real habla por un
+  // canal de plataforma que no existe bajo `flutter test`.
+  CaptureShortcutCubit fakeCaptureShortcutCubit() {
+    final cubit = MockCaptureShortcutCubit();
+    when(() => cubit.state).thenReturn(const CaptureShortcutState());
+    whenListen(
+      cubit,
+      const Stream<CaptureShortcutState>.empty(),
+      initialState: const CaptureShortcutState(),
+    );
+    when(cubit.start).thenAnswer((_) async {});
+    return cubit;
+  }
+
   setUp(() {
     final watchAccounts = MockWatchAccounts();
     final watchMonthTransactions = MockWatchMonthTransactions();
@@ -161,6 +185,7 @@ void main() {
     final watchHomeAiInsight = MockWatchHomeAiInsight();
     final watchPendingScheduledPaymentCount =
         MockWatchPendingScheduledPaymentCount();
+    final watchPendingCaptureCount = MockWatchPendingCaptureCount();
     final checkAiAccess = MockCheckAiAccess();
     final getConversationForInsight = MockGetConversationForInsight();
     final dismissHomeInsight = MockDismissHomeInsight();
@@ -188,6 +213,8 @@ void main() {
         .thenAnswer((_) => const Stream<Result<bool>>.empty());
     when(watchPendingScheduledPaymentCount.call)
         .thenAnswer((_) => const Stream<Result<int>>.empty());
+    when(watchPendingCaptureCount.call)
+        .thenAnswer((_) => const Stream<Result<int>>.empty());
     // Home arranca resolviendo el acceso al asistente. Este test es de HU-06
     // (cerrar sesión), no de IA: `denied` es la respuesta neutra — y el
     // fail-closed por defecto de `AiAccess` — así que la card de IA no se
@@ -213,6 +240,7 @@ void main() {
           watchHasAnyBudget,
           watchHomeAiInsight,
           watchPendingScheduledPaymentCount,
+          watchPendingCaptureCount,
           checkAiAccess,
           getConversationForInsight,
           dismissHomeInsight,
@@ -229,6 +257,7 @@ void main() {
       )
       ..registerFactory<SignOutWithLocalDataChoice>(() => signOutWithChoice)
       ..registerFactory<ThemeModeCubit>(fakeThemeModeCubit)
+      ..registerFactory<CaptureShortcutCubit>(fakeCaptureShortcutCubit)
       // La rama `/inicio` resuelve `AppSettingsCubit` desde `getIt` para el
       // orden del acceso rápido; sin registrarlo, Home no llega a construirse.
       ..registerFactory<AppSettingsCubit>(() {

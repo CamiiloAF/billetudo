@@ -303,8 +303,7 @@ void main() {
       expect(settings.legalAcceptedVersion, 0);
     });
 
-    test('stamps the version alongside the timestamp, in one write',
-        () async {
+    test('stamps the version alongside the timestamp, in one write', () async {
       await repository.markLegalAccepted(version: 3);
 
       final row = await database.select(database.appSettings).getSingle();

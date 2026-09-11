@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../auth/domain/entities/auth_user.dart';
 import '../cubit/home_state.dart';
 import 'account_avatar.dart';
+import 'notice_bell_button.dart';
 
 // `AccountAvatar` moved to its own file (one public widget per file); this
 // re-export keeps `home_header.dart` a valid import for it.
@@ -25,6 +26,7 @@ class HomeHeader extends StatelessWidget {
   const HomeHeader({
     required this.syncStatus,
     required this.onBellTap,
+    this.pendingNoticeCount = 0,
     required this.onAvatarTap,
     required this.onWalletTap,
     this.user,
@@ -33,6 +35,11 @@ class HomeHeader extends StatelessWidget {
 
   final HomeSyncStatus syncStatus;
   final VoidCallback onBellTap;
+
+  /// Everything waiting in the Avisos centre — today only the pending
+  /// captures (HU-04); `feat/local-notifications` adds its own notices to the
+  /// same figure. Zero hides the badge entirely.
+  final int pendingNoticeCount;
 
   /// Opens "Tu cuenta" (`AccountSheet`) — the avatar's only affordance now
   /// that the sync icon moved onto its badge.
@@ -103,15 +110,7 @@ class HomeHeader extends StatelessWidget {
           icon: const Icon(LucideIcons.wallet),
         ),
         const SizedBox(width: 8),
-        IconButton(
-          onPressed: onBellTap,
-          tooltip: l10n.homeNotificationsTooltip,
-          style: IconButton.styleFrom(
-            backgroundColor: colors.surface,
-            foregroundColor: colors.textPrimary,
-          ),
-          icon: const Icon(LucideIcons.bell),
-        ),
+        NoticeBellButton(count: pendingNoticeCount, onPressed: onBellTap),
       ],
     );
   }

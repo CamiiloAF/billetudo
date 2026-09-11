@@ -46,6 +46,19 @@ import '../../features/budgets/presentation/pages/archived_budgets_page.dart';
 import '../../features/budgets/presentation/pages/budget_detail_page.dart';
 import '../../features/budgets/presentation/pages/budget_form_page.dart';
 import '../../features/budgets/presentation/pages/budgets_page.dart';
+import '../../features/capture/domain/usecases/mark_notification_capture_offered.dart';
+import '../../features/capture/domain/usecases/should_offer_notification_capture.dart';
+import '../../features/capture/presentation/cubit/capture_issuers_cubit.dart';
+import '../../features/capture/presentation/cubit/capture_permission_cubit.dart';
+import '../../features/capture/presentation/cubit/capture_status_cubit.dart';
+import '../../features/capture/presentation/cubit/notices_cubit.dart';
+import '../../features/capture/presentation/cubit/pending_captures_cubit.dart';
+import '../../features/capture/presentation/pages/capture_issuers_page.dart';
+import '../../features/capture/presentation/pages/capture_permission_page.dart';
+import '../../features/capture/presentation/pages/notices_page.dart';
+import '../../features/capture/presentation/utils/capture_prefill_mapper.dart';
+import '../../features/capture/presentation/widgets/sheets/capture_offer_flow.dart';
+import '../../features/capture/presentation/widgets/voice_capture_sheet.dart';
 import '../../features/categories/domain/entities/category.dart';
 import '../../features/categories/presentation/cubit/categories_list_cubit.dart';
 import '../../features/categories/presentation/cubit/category_form_cubit.dart';
@@ -118,10 +131,13 @@ import '../../features/scheduled_payments/presentation/pages/scheduled_payment_d
 import '../../features/scheduled_payments/presentation/pages/scheduled_payment_form_page.dart';
 import '../../features/scheduled_payments/presentation/pages/scheduled_payments_page.dart';
 import '../../features/settings/presentation/cubit/app_settings_cubit.dart';
+import '../../features/settings/presentation/cubit/notification_settings_cubit.dart';
+import '../../features/settings/presentation/pages/notification_settings_page.dart';
 import '../../features/settings/presentation/pages/quick_access_order_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transactions/domain/entities/transaction.dart';
 import '../../features/transactions/domain/usecases/has_any_transaction.dart';
+import '../../features/transactions/presentation/cubit/capture_prefill.dart';
 import '../../features/transactions/presentation/cubit/transaction_detail_cubit.dart';
 import '../../features/transactions/presentation/cubit/transaction_form_cubit.dart';
 import '../../features/transactions/presentation/cubit/transactions_list_cubit.dart';
@@ -179,6 +195,7 @@ abstract final class AppRoutes {
       '/mas/ajustes/sincronizacion/cambios';
   static const String mergeConfirmation = '/mas/ajustes/respaldar/fusion';
   static const String quickAccessOrder = '/mas/ajustes/acceso-rapido';
+  static const String notificationSettings = '/mas/ajustes/notificaciones';
   static const String accountDeleted = '/mas/cuenta-eliminada';
   static const String debts = '/deudas';
   static const String newDebt = '/deudas/nueva';
@@ -194,12 +211,68 @@ abstract final class AppRoutes {
   /// it only reads what is already on the device. Takes `conversationId` as
   /// a query parameter, same shape as [ai]'s own `conversationId` param.
   static const String aiConversationRead = '/asistente/conversacion';
+
+  /// The Avisos centre behind Home's bell (`Bk8zW`) — a full screen on its
+  /// own route, not a bottom sheet.
+  static const String notices = '/avisos';
+
+  /// The transaction form opened from a pending capture (HU-05). A child of
+  /// [notices] so popping it returns to the inbox; the `CapturePrefill`
+  /// travels as `extra`.
+  static const String dispatchCapture = '$notices/despachar';
+
+  /// The explainer that must come **before** Android's own permission screen
+  /// (HU-01, `FRtfP`/`ZGtoE`). Reachable from the contextual offer, from
+  /// Ajustes and from the revoked state of [captureIssuers].
+  static const String capturePermission = '$notices/permiso';
+
+  /// The issuer catalog (HU-02, `qrDFE`/`xqdHH`) — the screen that actually
+  /// turns capture on: the system permission alone listens to nothing.
+  static const String captureIssuers = '$notices/apps';
   static const String pendingScheduledPayments =
       '/pagos-programados/por-confirmar';
   static const String importExport = '/mas/importar-exportar';
   static const String exportCsv = '$importExport/exportar';
   static const String importCsv = '$importExport/importar';
   static const String importBatches = '$importExport/importaciones';
+
+  /// Voice capture (`docs/requirements/fase-2/17-captura-voz.md`).
+  ///
+  /// **PENDIENTE DE CABLEAR:** the screen behind this path is being built on
+  /// `feat/capture-voice`; no `GoRoute` declares it here yet, so it is listed
+  /// in [pendingWidgetTargets] and the home-screen widget's "Voz" shortcut
+  /// degrades to the manual form until that branch lands (HU-02: a
+  /// unavailable capture never dead-ends the user). Wiring it up is deleting
+  /// it from that set — nothing on the native side changes.
+  static const String voiceCapture = '/captura/voz';
+
+  /// Bank-notification inbox behind the bell
+  /// (`docs/requirements/fase-2/19-notificaciones-bancarias.md`) — the same
+  /// Avisos centre [notices] already opens from Home's bell. The widget's
+  /// "Pendientes" shortcut (HU-02 of `20-widget-captura-rapida.md`) points
+  /// here directly now that `feat/capture-inbox` landed on `dev`; no
+  /// dedicated route was ever needed, this alias just names the intent at
+  /// the call site.
+  static const String bankInbox = notices;
+
+  /// Destinations the home-screen widget can point at that no `GoRoute`
+  /// serves yet. Anything listed here falls back to the manual movement form
+  /// instead of landing on the router's error page — HU-01 is explicit that a
+  /// widget tap costs a slower launch, never an error.
+  ///
+  /// [bankInbox] is not listed: it now resolves to the real [notices] route.
+  /// [voiceCapture] still is — the voice capture surface is a bottom sheet
+  /// (`VoiceCaptureSheet`), not a page a route can land on directly, so
+  /// wiring it up needs a small bridge page (or a `CaptureShortcutListener`
+  /// callback that can open a sheet), not just removing it from this set.
+  static const Set<String> pendingWidgetTargets = {voiceCapture};
+
+  /// The new-movement form with [type] preselected — the destination of the
+  /// home-screen widget's "Gasto"/"Ingreso" shortcuts (HU-01/HU-02 of
+  /// `docs/requirements/fase-2/20-widget-captura-rapida.md`). Read back by
+  /// `_typeFromQuery`.
+  static String newTransactionOfType(TransactionType type) =>
+      '$newTransaction?type=${type.name}';
 
   /// The new-movement form preselecting [accountId] — used when the movements
   /// list is filtered down to a single account (HU-06a). The form still lets
@@ -360,6 +433,56 @@ abstract final class AppRoutes {
         )
         .join('&');
     return '$newScheduledPayment?$query';
+  }
+
+  /// The new-movement form prefilled from a voice capture
+  /// (`17-captura-voz.md`, HU-01). Same [newTransaction] route, same form: the
+  /// voice never registers anything by itself, it only fills the fields the
+  /// user then confirms.
+  ///
+  /// Every parameter is optional because partial parsing is the normal case
+  /// (HU-05). `source=voice` is what tells the route to take this path, and it
+  /// is also what the saved transaction is stamped with.
+  ///
+  /// The transcription travels as a query parameter and therefore lives in the
+  /// in-memory navigation stack only — it is never written to disk, and the
+  /// form only ever persists it if the user leaves it in the note (HU-06,
+  /// retención cero).
+  static String newTransactionFromVoice({
+    int? amountMinor,
+    bool amountIsUncertain = false,
+    String? amountSpokenText,
+    String? type,
+    String? accountId,
+    String? categoryId,
+    String? categoryKind,
+    String? categoryName,
+    DateTime? date,
+    String? note,
+  }) {
+    final params = <String, String>{
+      'source': 'voice',
+      if (amountMinor != null) 'amountMinor': amountMinor.toString(),
+      if (amountIsUncertain) 'amountIsUncertain': 'true',
+      if (amountIsUncertain &&
+          amountSpokenText != null &&
+          amountSpokenText.isNotEmpty)
+        'amountSpokenText': amountSpokenText,
+      if (type != null) 'type': type,
+      if (accountId != null) 'accountId': accountId,
+      if (categoryId != null) 'categoryId': categoryId,
+      if (categoryKind != null) 'categoryKind': categoryKind,
+      if (categoryName != null) 'categoryName': categoryName,
+      if (date != null) 'date': date.toIso8601String(),
+      if (note != null && note.isNotEmpty) 'note': note,
+    };
+    final query = params.entries
+        .map(
+          (entry) =>
+              '${Uri.encodeQueryComponent(entry.key)}=${Uri.encodeQueryComponent(entry.value)}',
+        )
+        .join('&');
+    return '$newTransaction?$query';
   }
 }
 
@@ -529,6 +652,7 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.home}) {
       _debtLinkModeRoute(),
       _goalLinkModeRoute(),
       _importExportRoute(),
+      _noticesRoute(),
       _reportsRoute(),
       _aiRoute(),
       _aiHistoryRoute(),
@@ -660,10 +784,13 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
                 _started(getIt<TransactionsListCubit>(), (c) => c.start());
             final carouselCubit =
                 _started(getIt<BalanceCarouselCubit>(), (c) => c.load());
+            final capturesCubit =
+                _started(getIt<PendingCapturesCubit>(), (c) async => c.start());
             return MultiBlocProvider(
               providers: [
                 BlocProvider.value(value: listCubit),
                 BlocProvider.value(value: carouselCubit),
+                BlocProvider.value(value: capturesCubit),
               ],
               child: TransactionsPage(
                 onAddTransaction: (accountId) => context.push(
@@ -674,6 +801,10 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
                 onOpenTransaction: (id) =>
                     context.push<String>(AppRoutes.transaction(id)),
                 onOpenAccount: (id) => context.push(AppRoutes.account(id)),
+                onDispatchCapture: (item) => context.push(
+                  AppRoutes.dispatchCapture,
+                  extra: capturePrefillFor(item),
+                ),
                 // Wired unconditionally: `TransactionsPage` only shows this
                 // as the header's leading button while
                 // `TransactionsListState.arrivedFromReports` is true. This
@@ -717,15 +848,9 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
               builder: (context, state) => AccountGatedRoute(
                 surface: AccountGateSurface.movement,
                 builder: (context) => BlocProvider(
-                  create: (context) => _started(
-                    getIt<TransactionFormCubit>(),
-                    (c) => c.load(
-                      null,
-                      type: _typeFromQuery(state.uri),
-                      accountId: state.uri.queryParameters['accountId'],
-                    ),
-                  ),
+                  create: (context) => _startedTransactionForm(state.uri),
                   child: TransactionFormPage(
+                    onDictate: _dictateIntoTransactionForm,
                     // pushReplacement, not push: the transaction form must leave
                     // the stack as the scheduled-payment form opens, so popping
                     // the PP form (after saving it) returns to the movements
@@ -747,6 +872,36 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
                         tagIds: formState.tagIds.toList(),
                       ),
                     ),
+                    // HU-01's contextual offer. Wired **only here**: the edit
+                    // route and the capture-dispatch route leave it null, so
+                    // it can only fire right after a movement was created by
+                    // hand. Restricted to an expense because that is the
+                    // friction this feature removes — no bank notifies you of
+                    // an income you typed in. It shows at most once ever;
+                    // `ShouldOfferNotificationCapture` owns that rule.
+                    onSaved: (formState) {
+                      if (formState.type != TransactionType.expense) {
+                        return;
+                      }
+                      // The root navigator's context, not this route's: by
+                      // the time this runs the form has already popped, and
+                      // its own context is deactivated — `context.mounted`
+                      // would be false and the offer would silently never
+                      // appear.
+                      final rootContext = _rootNavigatorKey.currentContext;
+                      if (rootContext == null) {
+                        return;
+                      }
+                      unawaited(
+                        CaptureOfferFlow.maybeOffer(
+                          rootContext,
+                          shouldOffer: getIt<ShouldOfferNotificationCapture>(),
+                          markOffered: getIt<MarkNotificationCaptureOffered>(),
+                          onSeeHowItWorks: () =>
+                              rootContext.push(AppRoutes.capturePermission),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -1159,6 +1314,10 @@ GoRoute _settingsRoute() => GoRoute(
             create: (context) =>
                 _started(getIt<SyncStatusCubit>(), (c) => c.start()),
           ),
+          BlocProvider(
+            create: (context) =>
+                _started(getIt<CaptureStatusCubit>(), (c) => c.start()),
+          ),
         ],
         child: SettingsPage(
           onOpenLogin: () => context.push(AppRoutes.login),
@@ -1172,10 +1331,34 @@ GoRoute _settingsRoute() => GoRoute(
           onOpenSyncStatus: () => context.push(AppRoutes.syncStatus),
           onOpenQuickAccessOrder: () =>
               context.push(AppRoutes.quickAccessOrder),
+          // HU-09: the permanent way in. Routes by the state the row is
+          // already showing — the catalog when there is something to switch,
+          // the explainer when the permission still has to be granted — so
+          // the tap lands where the user's next decision actually is.
+          onOpenCapture: (status) => context.push(
+            status.permissionGranted
+                ? AppRoutes.captureIssuers
+                : AppRoutes.capturePermission,
+          ),
+          onOpenNotifications: () =>
+              context.push(AppRoutes.notificationSettings),
         ),
       ),
       routes: [
         _syncStatusRoute(),
+        // Stacked on the root navigator like the rest of Ajustes: `Page
+        // Header` and `Tab Bar` are mutually exclusive (MASTER).
+        GoRoute(
+          path: 'notificaciones',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) => _started(
+              getIt<NotificationSettingsCubit>(),
+              (c) => c.start(),
+            ),
+            child: const NotificationSettingsPage(),
+          ),
+        ),
         GoRoute(
           path: 'acceso-rapido',
           parentNavigatorKey: _rootNavigatorKey,
@@ -1337,6 +1520,80 @@ GoRoute _accountsRoute() => GoRoute(
 // Header` (no `Tab Bar`) hosting `ReportsPage`'s own 4-tab shell. One
 // `ReportsShellCubit` plus the 4 per-tab cubits, all provided once for the
 // life of the page so switching tabs never re-fetches (the shared period).
+/// The Avisos centre (`Bk8zW`) and the capture dispatch that hangs off it.
+///
+/// Dispatching reuses `TransactionFormPage` verbatim, pre-filled: a capture
+/// never gets a confirmation surface of its own with rules of its own. The
+/// account gate applies here for the same reason it applies to the ordinary
+/// new-movement route — a form with no account to save into is unusable, and
+/// the bridge offers to create one instead of showing a dead grey button.
+GoRoute _noticesRoute() => GoRoute(
+      path: AppRoutes.notices,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => BlocProvider(
+        create: (context) =>
+            _started(getIt<NoticesCubit>(), (c) async => c.start()),
+        child: NoticesPage(
+          onDispatchCapture: (item) => context.push(
+            AppRoutes.dispatchCapture,
+            extra: capturePrefillFor(item),
+          ),
+          onChooseIssuers: () => context.push(AppRoutes.captureIssuers),
+        ),
+      ),
+      routes: [
+        // HU-01: the app's own explainer, always before Android's screen.
+        GoRoute(
+          path: 'permiso',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) =>
+                _started(getIt<CapturePermissionCubit>(), (c) => c.start()),
+            child: CapturePermissionPage(
+              // Granting the permission is only half of it: with no issuer
+              // switched on nothing is ever captured, so the catalog is the
+              // next step and not an optional detour. `pushReplacement` so
+              // going back from the catalog does not land on an explainer
+              // for a permission the user already granted.
+              onGranted: () => context.pushReplacement(
+                AppRoutes.captureIssuers,
+              ),
+              onDecline: () => context.pop(),
+            ),
+          ),
+        ),
+        // HU-02: which apps are listened to.
+        GoRoute(
+          path: 'apps',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => BlocProvider(
+            create: (context) =>
+                _started(getIt<CaptureIssuersCubit>(), (c) => c.start()),
+            child: CaptureIssuersPage(
+              onOpenPermission: () => context.push(AppRoutes.capturePermission),
+            ),
+          ),
+        ),
+        GoRoute(
+          path: 'despachar',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => AccountGatedRoute(
+            surface: AccountGateSurface.movement,
+            builder: (context) => BlocProvider(
+              create: (context) => _started(
+                getIt<TransactionFormCubit>(),
+                (c) => c.load(
+                  null,
+                  capture: state.extra! as CapturePrefill,
+                ),
+              ),
+              child: const TransactionFormPage(),
+            ),
+          ),
+        ),
+      ],
+    );
+
 GoRoute _reportsRoute() => GoRoute(
       path: AppRoutes.reports,
       parentNavigatorKey: _rootNavigatorKey,
@@ -2285,6 +2542,81 @@ ScheduledPaymentFormCubit _startedScheduledPaymentForm(Uri uri) {
         .toSet(),
   );
   return cubit;
+}
+
+/// Starts the new-movement form, either empty (optionally with a preselected
+/// account) or prefilled from a voice capture when the puente's query params
+/// are present (`AppRoutes.newTransactionFromVoice`).
+///
+/// Parsing the params here — and not in the cubit — is what keeps
+/// Transacciones independent of Captura: the router is the only layer that
+/// knows both sides, same as it already does for the Pagos Programados puente.
+TransactionFormCubit _startedTransactionForm(Uri uri) {
+  final cubit = getIt<TransactionFormCubit>();
+  if (uri.queryParameters['source'] != TransactionSource.voice.name) {
+    unawaited(
+      cubit.load(
+        null,
+        type: _typeFromQuery(uri),
+        accountId: uri.queryParameters['accountId'],
+      ),
+    );
+    return cubit;
+  }
+  final categoryKindRaw = uri.queryParameters['categoryKind'];
+  unawaited(
+    cubit.loadFromVoice(
+      amountMinor: int.tryParse(uri.queryParameters['amountMinor'] ?? ''),
+      amountIsUncertain: uri.queryParameters['amountIsUncertain'] == 'true',
+      amountSpokenText: uri.queryParameters['amountSpokenText'],
+      type:
+          uri.queryParameters.containsKey('type') ? _typeFromQuery(uri) : null,
+      accountId: uri.queryParameters['accountId'],
+      categoryId: uri.queryParameters['categoryId'],
+      categoryName: uri.queryParameters['categoryName'],
+      categoryKind: categoryKindRaw == null
+          ? null
+          : CategoryKind.values.firstWhere(
+              (value) => value.name == categoryKindRaw,
+              orElse: () => CategoryKind.expense,
+            ),
+      date: DateTime.tryParse(uri.queryParameters['date'] ?? ''),
+      note: uri.queryParameters['note'],
+    ),
+  );
+  return cubit;
+}
+
+/// The "Dictar" pill of an already open movement form
+/// (`17-captura-voz.md` HU-02).
+///
+/// Same reason this lives in the router as `_startedTransactionForm` above:
+/// it is the only layer that may know both Transacciones and Captura, so the
+/// form page stays free of any import from the capture feature.
+///
+/// Unlike the Inicio trigger it navigates nowhere — the user is already on the
+/// form. The draft only *completes* the fields they have not touched, and
+/// nothing is written until they press Guardar.
+Future<void> _dictateIntoTransactionForm(
+  BuildContext context,
+  TransactionFormCubit cubit,
+) async {
+  final draft = await VoiceCaptureSheet.show(context);
+  if (draft == null) {
+    return;
+  }
+  cubit.completeFromVoice(
+    amountMinor: draft.amountMinor,
+    amountIsUncertain: draft.amountIsUncertain,
+    amountSpokenText: draft.amountSpokenText,
+    type: draft.type,
+    accountId: draft.accountId,
+    categoryId: draft.categoryId,
+    categoryName: draft.categoryName,
+    categoryKind: draft.categoryKind,
+    date: draft.date,
+    note: draft.note,
+  );
 }
 
 TransactionType _typeFromQuery(Uri uri) {

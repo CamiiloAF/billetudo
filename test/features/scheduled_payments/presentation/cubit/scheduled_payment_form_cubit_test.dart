@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/core/notifications/domain/usecases/ensure_notification_permission.dart';
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_balance.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
@@ -9,12 +10,14 @@ import 'package:billetudo/features/categories/domain/entities/category.dart'
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_detail.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_draft.dart';
+import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_reminder.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_form_cubit.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_form_state.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../core/notifications/notification_test_doubles.dart';
 import '../../scheduled_payment_fixtures.dart';
 import 'usecase_mocks.dart';
 
@@ -47,6 +50,7 @@ void main() {
   late MockSetScheduledPaymentTags setScheduledPaymentTags;
   late MockDeleteScheduledPayment deleteScheduledPayment;
   late MockWatchAccounts watchAccounts;
+  late FakeNotificationScheduler notificationScheduler;
 
   setUpAll(registerScheduledPaymentPresentationFallbacks);
 
@@ -57,6 +61,7 @@ void main() {
     setScheduledPaymentTags = MockSetScheduledPaymentTags();
     deleteScheduledPayment = MockDeleteScheduledPayment();
     watchAccounts = MockWatchAccounts();
+    notificationScheduler = FakeNotificationScheduler();
     // Default: no accounts, so a new form opens with an empty account unless a
     // test stubs otherwise. Individual tests override this to assert the
     // preselection of the first account.
@@ -71,6 +76,7 @@ void main() {
         setScheduledPaymentTags,
         deleteScheduledPayment,
         watchAccounts,
+        EnsureNotificationPermission(notificationScheduler),
       );
 
   group('HU-01: crear plantilla', () {
@@ -669,6 +675,79 @@ void main() {
 
       expect(cubit.state.status, ScheduledPaymentFormStatus.saved);
       verify(() => createScheduledPayment(any())).called(1);
+      await cubit.close();
+    });
+  });
+
+  group('HU-08: recordatorio', () {
+    test('el default es "sin recordatorio"', () async {
+      final cubit = build();
+      await cubit.load(null);
+
+      expect(cubit.state.reminder, isNull);
+      await cubit.close();
+    });
+
+    test('elegir una anticipación pide el permiso en ese momento', () async {
+      final cubit = build();
+      await cubit.load(null);
+
+      await cubit.reminderChanged(ScheduledPaymentReminder.threeDaysBefore);
+
+      expect(cubit.state.reminder, ScheduledPaymentReminder.threeDaysBefore);
+      expect(notificationScheduler.permissionRequested, isFalse,
+          reason: 'ya estaba concedido, no hace falta volver a preguntar');
+      await cubit.close();
+    });
+
+    test('sin permiso concedido lo pide, guarda igual y avisa en la UI',
+        () async {
+      notificationScheduler.permissionGranted = false;
+      final cubit = build();
+      await cubit.load(null);
+
+      await cubit.reminderChanged(ScheduledPaymentReminder.oneDayBefore);
+
+      expect(notificationScheduler.permissionRequested, isTrue);
+      // La preferencia se guarda igual (HU-08): el permiso denegado no
+      // bloquea el resto del formulario.
+      expect(cubit.state.reminder, ScheduledPaymentReminder.oneDayBefore);
+      expect(cubit.state.notificationsAllowed, isFalse);
+      expect(cubit.state.showsPermissionNotice, isTrue);
+      await cubit.close();
+    });
+
+    test('volver a "sin recordatorio" limpia la opción y el aviso', () async {
+      notificationScheduler.permissionGranted = false;
+      final cubit = build();
+      await cubit.load(null);
+      await cubit.reminderChanged(ScheduledPaymentReminder.oneDayBefore);
+
+      await cubit.reminderChanged(null);
+
+      expect(cubit.state.reminder, isNull);
+      expect(cubit.state.showsPermissionNotice, isFalse);
+      await cubit.close();
+    });
+
+    test('el borrador enviado lleva la anticipación elegida', () async {
+      when(() => createScheduledPayment(any()))
+          .thenAnswer((_) async => Right(buildScheduledPayment()));
+      when(() => setScheduledPaymentTags(any(), any()))
+          .thenAnswer((_) async => const Right(unit));
+      final cubit = build();
+      await cubit.load(null);
+      cubit.accountSelected('acc-1', 'Bancolombia');
+      cubit.categorySelected('cat-1', CategoryKind.expense, 'Arriendo');
+      cubit.amountTextChanged('100');
+      await cubit.reminderChanged(ScheduledPaymentReminder.oneWeekBefore);
+
+      await cubit.submit();
+
+      final draft = verify(() => createScheduledPayment(captureAny()))
+          .captured
+          .single as ScheduledPaymentDraft;
+      expect(draft.reminderLeadDays, 7);
       await cubit.close();
     });
   });

@@ -14,15 +14,22 @@
 // full coverage without a real backend at the cubit level
 // (`test/features/auth/presentation/cubit/`) and, for the no-dark-pattern
 // requirement on paso 2 of "Eliminar cuenta", at the widget level
-// (`test/features/auth/presentation/widgets/sheets/local_data_choice_sheet_test.dart`)
-// — that one specifically because paso 2 is only reachable once paso 1's
-// (currently unimplemented) cloud call succeeds.
+// (`test/features/auth/presentation/widgets/sheets/local_data_choice_sheet_test.dart`).
 //
 // What *is* verifiable end-to-end without a network call: HU-01's "never a
 // gate" guarantee (Login opens and closes without ever blocking navigation)
-// and paso 1 of "Eliminar cuenta" up to and including its real failure path
-// (the confirm button really calls the repository, which really throws,
-// which really surfaces the neutral error sheet instead of crashing).
+// and "Eliminar cuenta" for a device that never signed in — paso 1's real
+// `AuthRepositoryImpl.deleteAccount` skips the Edge Function outright when
+// there is no session to attach a JWT to (there is nothing in the cloud to
+// delete), so it genuinely succeeds and advances straight to paso 2, rather
+// than genuinely failing (found 2026-09-11, see
+// `docs/dev-runs/patrol-e2e-findings-2026-09-10.md` § "Resuelto de verdad
+// esta vez": the suite's own last scenario used to assert the *error* sheet
+// here, which is dead code for this path since that short-circuit was
+// added — the real failure path is already covered without a real backend
+// by `test/features/auth/presentation/cubit/delete_account_cubit_test.dart`
+// and its sheet/golden counterparts, `test/features/auth/presentation/
+// widgets/sheets/confirm_delete_account_sheet*.dart`).
 import 'package:billetudo/features/auth/presentation/pages/login_page.dart';
 import 'package:billetudo/features/settings/presentation/pages/settings_page.dart';
 import 'package:flutter/material.dart';
@@ -52,6 +59,21 @@ Future<void> _openSettings(PatrolIntegrationTester $) async {
   );
   await $.tester.pumpAndSettle();
   await $.tester.tap(find.text('Ajustes'));
+  await $.tester.pumpAndSettle();
+}
+
+/// `SettingsPage`'s "Eliminar cuenta" row is the last item in its own
+/// `ListView` (below "Cuenta y respaldo", "Presupuesto", "Preferencias" and
+/// "Asistente de IA") — same cache-extent caveat as `_openSettings` above:
+/// off screen, it is absent from the tree, not just unreachable by hit-test.
+Future<void> _tapDeleteAccountRow(PatrolIntegrationTester $) async {
+  await $.tester.dragUntilVisible(
+    find.text('Eliminar cuenta'),
+    find.byType(Scrollable).first,
+    const Offset(0, -250),
+  );
+  await $.tester.pumpAndSettle();
+  await $.tester.tap(find.text('Eliminar cuenta'));
   await $.tester.pumpAndSettle();
 }
 
@@ -118,8 +140,7 @@ void main() {
       await startApp($);
 
       await _openSettings($);
-      await $.tester.tap(find.text('Eliminar cuenta'));
-      await $.tester.pumpAndSettle();
+      await _tapDeleteAccountRow($);
 
       expect(find.text('Eliminar tu cuenta'), findsOneWidget);
       expect(find.textContaining('irreversible'), findsOneWidget);
@@ -127,21 +148,29 @@ void main() {
       await $.tester.tap(find.text('Cancelar'));
       await $.tester.pumpAndSettle();
 
-      // Sheet closed, Ajustes untouched, no session created.
+      // Sheet closed, Ajustes untouched, no session created. The underlying
+      // `ListView` is still scrolled to the bottom from `_tapDeleteAccountRow`
+      // above — scroll back up before looking for a row near the top,
+      // otherwise it is off screen and absent from the tree.
       expect(find.byType(SettingsPage), findsOneWidget);
+      await $.tester.dragUntilVisible(
+        find.text('Respaldar en la nube'),
+        find.byType(Scrollable).first,
+        const Offset(0, 250),
+      );
+      await $.tester.pumpAndSettle();
       expect(find.text('Respaldar en la nube'), findsOneWidget);
     },
   );
 
   patrolTest(
-    'HU-07 paso 1: confirmar sin backend cableado cae al estado de error, '
-    'nunca crashea la app',
+    'HU-07: confirmar "Eliminar cuenta" sin sesión avanza directo a paso 2 '
+    '(sin llamar al backend), nunca crashea la app',
     ($) async {
       await startApp($);
 
       await _openSettings($);
-      await $.tester.tap(find.text('Eliminar cuenta'));
-      await $.tester.pumpAndSettle();
+      await _tapDeleteAccountRow($);
 
       // "Eliminar cuenta" appears twice on screen at this point: once as
       // Ajustes' destructive row (now behind the sheet) and once as the
@@ -149,13 +178,36 @@ void main() {
       await $.tester.tap(find.text('Eliminar cuenta').last);
       await $.tester.pumpAndSettle();
 
-      expect(find.text('No pudimos eliminar tu cuenta'), findsOneWidget);
-      expect(find.text('Reintentar'), findsOneWidget);
+      // No session on this device (never signed in this run) — paso 1
+      // genuinely skips the Edge Function call and succeeds immediately
+      // (`AuthRepositoryImpl.deleteAccount`'s `!isSignedIn` short-circuit:
+      // nothing in the cloud to delete), advancing straight to paso 2
+      // instead of ever showing the error sheet. Asserting the
+      // never-signed-in copy specifically (not just any paso-2 text) also
+      // confirms `GetDeleteAccountScope` told paso 2 this device never had a
+      // cloud account, rather than mistaking it for one that signed out.
+      expect(
+        find.text('¿Qué hacemos con tus datos en este teléfono?'),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          'Nunca iniciaste sesión en este dispositivo, así que no hay una '
+          'cuenta en la nube. Elige qué pasa con la información guardada '
+          'aquí.',
+        ),
+        findsOneWidget,
+      );
+      // Never falls back to the error sheet.
+      expect(find.text('No pudimos eliminar tu cuenta'), findsNothing);
 
-      await $.tester.tap(find.text('Cancelar'));
-      await $.tester.pumpAndSettle();
-
-      expect(find.byType(SettingsPage), findsOneWidget);
+      // Paso 2 itself (the choice + its no-dark-pattern CTA gating, and the
+      // actual local wipe) is this suite's own scope boundary — already
+      // covered without a real backend at the widget level, see this file's
+      // header comment. This scenario stops here: it only needs to prove
+      // paso 1 → paso 2 really happens end-to-end for this device, which it
+      // just did. Last scenario in the file, so no cleanup is needed for a
+      // scenario after it.
     },
   );
 }

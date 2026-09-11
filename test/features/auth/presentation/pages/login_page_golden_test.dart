@@ -1,3 +1,4 @@
+import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
 import 'package:billetudo/features/auth/presentation/cubit/login_cubit.dart';
 import 'package:billetudo/features/auth/presentation/cubit/login_state.dart';
 import 'package:billetudo/features/auth/presentation/pages/login_page.dart';
@@ -69,7 +70,10 @@ void main() {
     testWidgets('loading, connecting with Google ($suffix)', (tester) async {
       await golden(
         tester,
-        const LoginState(status: LoginStatus.loading),
+        const LoginState(
+          status: LoginStatus.loading,
+          lastProvider: AuthProvider.google,
+        ),
         'loading_$suffix',
         brightness: brightness,
         settle: false,

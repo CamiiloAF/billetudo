@@ -8,6 +8,7 @@ import 'package:billetudo/features/scheduled_payments/presentation/widgets/sched
 import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_finished_chip.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_manual_mode_chip.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_pending_count_chip.dart';
+import 'package:billetudo/features/scheduled_payments/presentation/widgets/scheduled_reminder_chip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -253,6 +254,87 @@ void main() {
       await tester.tapAt(Offset(card.left + 8, card.bottom - 8));
       await tester.pump();
       expect(taps, 1);
+    });
+  });
+
+  group('HU-08: chip "Te avisamos"', () {
+    testWidgets('sin recordatorio no hay chip de aviso', (tester) async {
+      final entry = ScheduledPaymentSummary(
+        scheduledPayment: buildScheduledPayment(note: 'Gym'),
+        accountName: 'Bancolombia',
+      );
+
+      await tester.pumpWidget(
+        appWith(ScheduledCard(entry: entry, onTap: () {})),
+      );
+
+      expect(find.byType(ScheduledReminderChip), findsNothing);
+    });
+
+    testWidgets('con recordatorio el chip nombra la anticipación elegida',
+        (tester) async {
+      final entry = ScheduledPaymentSummary(
+        scheduledPayment: buildScheduledPayment(
+          note: 'Gym',
+          reminderLeadDays: 3,
+        ),
+        accountName: 'Bancolombia',
+      );
+
+      await tester.pumpWidget(
+        appWith(ScheduledCard(entry: entry, onTap: () {})),
+      );
+
+      expect(find.byType(ScheduledReminderChip), findsOneWidget);
+      expect(find.text('Te avisamos 3 días antes'), findsOneWidget);
+    });
+
+    // `tit0W` tiene el chip de aviso en su PROPIA fila (`v5a9Gq`), separada
+    // de la de chips (`a1vmQ`, frecuencia + deuda). No se reemplazan: dicen
+    // cosas distintas — cómo se comporta el pago vs. cuándo avisamos — y el
+    // frame conserva los dos.
+    testWidgets('el chip del recordatorio convive con el de modo manual',
+        (tester) async {
+      final entry = ScheduledPaymentSummary(
+        scheduledPayment: buildScheduledPayment(
+          note: 'Gym',
+          requiresConfirmation: true,
+          reminderLeadDays: 0,
+        ),
+        accountName: 'Bancolombia',
+      );
+
+      await tester.pumpWidget(
+        appWith(ScheduledCard(entry: entry, onTap: () {})),
+      );
+
+      expect(find.byType(ScheduledReminderChip), findsOneWidget);
+      expect(find.byType(ScheduledManualModeChip), findsOneWidget);
+      expect(find.text('Te avisamos el día del pago'), findsOneWidget);
+
+      // Y en filas distintas: el chip de aviso queda por debajo del de modo.
+      final manual = tester.getRect(find.byType(ScheduledManualModeChip));
+      final reminder = tester.getRect(find.byType(ScheduledReminderChip));
+      expect(reminder.top, greaterThanOrEqualTo(manual.bottom));
+    });
+
+    testWidgets('una plantilla terminada no promete avisos', (tester) async {
+      final entry = ScheduledPaymentSummary(
+        scheduledPayment: buildScheduledPayment(
+          note: 'Gym',
+          reminderLeadDays: 7,
+        ),
+        accountName: 'Bancolombia',
+      );
+
+      await tester.pumpWidget(
+        appWith(
+          ScheduledCard(entry: entry, onTap: () {}, isFinished: true),
+        ),
+      );
+
+      expect(find.byType(ScheduledReminderChip), findsNothing);
+      expect(find.byType(ScheduledFinishedChip), findsOneWidget);
     });
   });
 }

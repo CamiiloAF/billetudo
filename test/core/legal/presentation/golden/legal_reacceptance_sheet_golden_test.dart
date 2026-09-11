@@ -83,8 +83,7 @@ void main() {
   }) async {
     when(repository.getManifest)
         .thenAnswer((_) async => Right(manifest(changed: changed)));
-    when(repository.getAcceptedVersion)
-        .thenAnswer((_) async => const Right(1));
+    when(repository.getAcceptedVersion).thenAnswer((_) async => const Right(1));
     when(() => repository.resolveDocument(any())).thenAnswer(
       (invocation) async => Right(
         document(invocation.positionalArguments.first as LegalDocumentKind),
@@ -118,8 +117,7 @@ void main() {
   for (final brightness in Brightness.values) {
     final suffix = brightness == Brightness.light ? 'light' : 'dark';
 
-    testWidgets('paso 1, ambos documentos cambiaron ($suffix)',
-        (tester) async {
+    testWidgets('paso 1, ambos documentos cambiaron ($suffix)', (tester) async {
       await golden(
         tester,
         'step1_both_$suffix',
@@ -131,8 +129,7 @@ void main() {
       );
     });
 
-    testWidgets(
-        'paso 1, solo terminos de uso cambio (copy singular) ($suffix)',
+    testWidgets('paso 1, solo terminos de uso cambio (copy singular) ($suffix)',
         (tester) async {
       await golden(
         tester,

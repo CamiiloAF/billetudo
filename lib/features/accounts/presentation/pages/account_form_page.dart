@@ -130,6 +130,7 @@ class _AccountFormBodyState extends State<AccountFormBody> {
   final FocusNode _fullNumberFocus = FocusNode();
   final FocusNode _last4Focus = FocusNode();
   final FocusNode _interestRateFocus = FocusNode();
+  final FocusNode _cardLast4Focus = FocusNode();
   final FocusNode _creditLimitFocus = FocusNode();
   final FocusNode _cardDebtFocus = FocusNode();
 
@@ -141,6 +142,7 @@ class _AccountFormBodyState extends State<AccountFormBody> {
     _fullNumberFocus.dispose();
     _last4Focus.dispose();
     _interestRateFocus.dispose();
+    _cardLast4Focus.dispose();
     _creditLimitFocus.dispose();
     _cardDebtFocus.dispose();
     super.dispose();
@@ -157,6 +159,7 @@ class _AccountFormBodyState extends State<AccountFormBody> {
         if (state.showFullNumberField) _fullNumberFocus,
         if (state.showLast4Field) _last4Focus,
         if (state.showInterestRateField) _interestRateFocus,
+        _cardLast4Focus,
         if (state.isCard) _creditLimitFocus,
         if (state.isCard && !state.isEditing) _cardDebtFocus,
       ];
@@ -353,6 +356,31 @@ class _AccountFormBodyState extends State<AccountFormBody> {
             ),
           ),
         ],
+        // `HDWva`: the card's last 4 go LAST, grouped with the optional
+        // fields, so the form's backbone (nombre -> institución -> saldo
+        // inicial -> moneda) stays above the fold. Shown for every account
+        // type: a debit card hangs off a savings account just as often as
+        // off a credit one, and it is the plastic — not the account — that a
+        // purchase notification quotes.
+        const SizedBox(height: 16),
+        KeyedSubtree(
+          key: errorScroll.keyFor(AccountDraft.fieldCardLast4),
+          child: AccountFormField.text(
+            label: l10n.captureAccountCardLast4Label,
+            icon: LucideIcons.creditCard,
+            hint: l10n.captureAccountCardLast4Hint,
+            helperText: l10n.captureAccountCardLast4Helper,
+            initialValue: state.cardLast4,
+            errorText: _errorFor(l10n, state, AccountDraft.fieldCardLast4),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            maxLength: 4,
+            onChanged: cubit.cardLast4Changed,
+            focusNode: _cardLast4Focus,
+            textInputAction: _actionFor(_cardLast4Focus, chain),
+            onSubmitted: _submitFor(_cardLast4Focus, chain),
+          ),
+        ),
         if (state.isCard) ...[
           const SizedBox(height: 24),
           CardDetailsSection(
@@ -552,6 +580,7 @@ String? _errorFor(AppLocalizations l10n, AccountFormState state, String field) {
     AccountDraft.fieldInstitution => l10n.accountErrorInstitution,
     AccountDraft.fieldFullAccountNumber => l10n.accountErrorFullNumber,
     AccountDraft.fieldLast4 => l10n.accountErrorLast4,
+    AccountDraft.fieldCardLast4 => l10n.captureAccountCardLast4Error,
     AccountDraft.fieldInterestRateBps => l10n.accountErrorInterestRate,
     AccountDraft.fieldCreditLimitMinor => l10n.accountErrorCreditLimit,
     AccountDraft.fieldStatementDay => l10n.accountErrorStatementDay,

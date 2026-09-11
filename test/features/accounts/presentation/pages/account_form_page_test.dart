@@ -123,7 +123,7 @@ void main() {
       expect(find.text('Día de pago'), findsOneWidget);
       // HU-03: de una tarjeta jamás se pide el PAN, solo los últimos 4.
       expect(find.byType(AccountNumberField), findsNothing);
-      expect(find.text('Últimos 4 dígitos'), findsOneWidget);
+      expect(find.text('Últimos 4 dígitos de la cuenta'), findsOneWidget);
     });
 
     testWidgets('banco: número completo, sin datos de tarjeta', (tester) async {
@@ -156,7 +156,7 @@ void main() {
       );
 
       expect(find.byType(AccountNumberField), findsNothing);
-      expect(find.text('Últimos 4 dígitos'), findsNothing);
+      expect(find.text('Últimos 4 dígitos de la cuenta'), findsNothing);
       expect(find.byType(CardDetailsSection), findsNothing);
     });
 

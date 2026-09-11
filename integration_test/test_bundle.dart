@@ -9,7 +9,8 @@ import 'package:patrol/src/platform/contracts/contracts.dart';
 import 'package:test_api/src/backend/invoker.dart';
 
 // START: GENERATED TEST IMPORTS
-import 'transactions_patrol_test.dart' as transactions_patrol_test;
+import 'onboarding_patrol_test.dart' as onboarding_patrol_test;
+import 'scheduled_payments_patrol_test.dart' as scheduled_payments_patrol_test;
 // END: GENERATED TEST IMPORTS
 
 Future<void> main() async {
@@ -72,7 +73,8 @@ Future<void> main() async {
   });
 
 // START: GENERATED TEST GROUPS
-  group('transactions_patrol_test', transactions_patrol_test.main);
+  group('onboarding_patrol_test', onboarding_patrol_test.main);
+  group('scheduled_payments_patrol_test', scheduled_payments_patrol_test.main);
 // END: GENERATED TEST GROUPS
 
   final dartTestGroup = await testExplorationCompleter.future;

@@ -10,19 +10,26 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_fab.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../../../core/widgets/root_tab_header.dart';
+import '../../../../core/widgets/scroll_aware_fab.dart';
+import '../../../../core/widgets/scroll_aware_fab_visibility.dart';
 import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
 import '../../../accounts/presentation/widgets/account_gate_copy.dart';
+import '../../../capture/presentation/cubit/capture_review_item.dart';
+import '../../../capture/presentation/widgets/pending_captures_list_slot.dart';
 import '../../domain/entities/transaction_filter.dart';
 import '../cubit/transactions_list_cubit.dart';
 import '../cubit/transactions_list_state.dart';
+import '../utils/date_period_label.dart';
+import '../utils/open_unified_filters_sheet.dart';
 import '../utils/transaction_amount_presentation.dart';
 import '../utils/transaction_date_grouping.dart';
 import '../utils/transaction_group_total.dart';
 import '../utils/transaction_sort_label.dart';
 import '../widgets/account_filter_chip_row.dart';
+import '../widgets/filter_chip_pill.dart';
 import '../widgets/filters_button.dart';
 import '../widgets/movements_balance_carousel.dart';
-import '../widgets/sheets/unified_filters_sheet.dart';
+import '../widgets/period_nav_bar.dart';
 import '../widgets/skeleton_row.dart';
 import '../widgets/transaction_group_header.dart';
 import '../widgets/transaction_row.dart';
@@ -34,11 +41,15 @@ import '../widgets/transactions_sort_button.dart';
 /// The transaction list (HU-06/`B3GGa`/`xAk6Y`): search, every combinable
 /// filter, and the delete/"Deshacer" flow (HU-05). A root destination of the
 /// Tab Bar, so its header carries no back button and no trailing action.
-class TransactionsPage extends StatelessWidget {
+/// GitHub issue #26: `StatefulWidget` only to own the scroll-aware FAB state
+/// ([ScrollAwareFabVisibility]) that [TransactionsListView] below feeds via
+/// its own [ScrollController] — same pattern already used by `HomePage`.
+class TransactionsPage extends StatefulWidget {
   const TransactionsPage({
     required this.onAddTransaction,
     required this.onOpenTransaction,
     required this.onOpenAccount,
+    this.onDispatchCapture,
     this.linkMode,
     this.onBackToReports,
     super.key,
@@ -74,6 +85,11 @@ class TransactionsPage extends StatelessWidget {
   /// (the deleted transaction's id, or `null`).
   final Future<String?> Function(String id) onOpenTransaction;
 
+  /// Opens the pre-filled transaction form for a capture pinned at the top of
+  /// the list (HU-04/HU-05). `null` hides the block entirely — link mode is
+  /// there to pick an EXISTING movement, and a capture is not one.
+  final ValueChanged<CaptureReviewItem>? onDispatchCapture;
+
   /// Opens an account's detail page: fired when a balance carousel card is
   /// tapped (Mejora #2).
   final void Function(String accountId) onOpenAccount;
@@ -86,13 +102,20 @@ class TransactionsPage extends StatelessWidget {
   /// null only when no account is shown.
   /// HU-02/HU-03 of `15-gate-cuenta.md`: without any active account the FAB
   /// opens the bridge sheet instead of a form that could not save anyway.
+
+  @override
+  State<TransactionsPage> createState() => _TransactionsPageState();
+}
+
+class _TransactionsPageState extends State<TransactionsPage>
+    with ScrollAwareFabVisibility<TransactionsPage> {
   Future<void> _addTransaction(BuildContext context) async {
     final canProceed = await showAccountGateIfNeeded(
       context,
       AccountGateSurface.movement,
     );
     if (canProceed && context.mounted) {
-      onAddTransaction(_preselectedAccountId(context));
+      widget.onAddTransaction(_preselectedAccountId(context));
     }
   }
 
@@ -114,7 +137,7 @@ class TransactionsPage extends StatelessWidget {
   /// is an ancestor of that provider, so reading from there throws
   /// `ProviderNotFoundError` instead of silently doing nothing.
   Future<void> _openTransaction(BuildContext context, String id) async {
-    final deletedId = await onOpenTransaction(id);
+    final deletedId = await widget.onOpenTransaction(id);
     if (deletedId != null && context.mounted) {
       context.read<TransactionsListCubit>().notifyExternalDelete(deletedId);
     }
@@ -124,7 +147,8 @@ class TransactionsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    final linkMode = this.linkMode;
+    final linkMode = widget.linkMode;
+    final onBackToReports = widget.onBackToReports;
     // Same source of truth as the leading button below: when the user
     // arrived here from Gráficas' drill-down, the system back
     // gesture/button must also return there instead of falling through to
@@ -140,18 +164,22 @@ class TransactionsPage extends StatelessWidget {
       canPop: !interceptSystemBack,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop && interceptSystemBack) {
-          onBackToReports?.call();
+          onBackToReports();
         }
       },
       child: Scaffold(
-        // Link mode hides the FAB: the task there is to pick an existing
-        // movement, not to create one (`g0x859`).
+        // Link mode hides the FAB entirely: the task there is to pick an
+        // existing movement, not to create one (`g0x859`). Otherwise it is
+        // scroll-aware (GH-26), same pattern as `HomePage`'s own FAB.
         floatingActionButton: linkMode != null
             ? null
-            : AppFab(
-                icon: LucideIcons.plus,
-                tooltip: l10n.transactionsAdd,
-                onPressed: () => unawaited(_addTransaction(context)),
+            : ScrollAwareFab(
+                visible: fabVisible,
+                child: AppFab(
+                  icon: LucideIcons.plus,
+                  tooltip: l10n.transactionsAdd,
+                  onPressed: () => unawaited(_addTransaction(context)),
+                ),
               ),
         body: SafeArea(
           child: BlocConsumer<TransactionsListCubit, TransactionsListState>(
@@ -197,6 +225,7 @@ class TransactionsPage extends StatelessWidget {
                   : (String id) => _openTransaction(context, id);
               final showCarousel = linkMode == null;
               return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   RootTabHeader(
                     title: l10n.transactionsTitle,
@@ -224,6 +253,27 @@ class TransactionsPage extends StatelessWidget {
                   TransactionsSearchRow(state: state),
                   const SizedBox(height: 8),
                   TransactionsFilterBar(state: state),
+                  // Period Nav Bar (Adición 2026-09-10, `u6sSAc`/`w9Eszi`):
+                  // only while the active period is not the default "este
+                  // mes sin presupuesto" — the common case renders nothing
+                  // here, at zero space cost.
+                  if (state.filter.hasDateFilter ||
+                      state.filter.hasBudgetPeriodFilter) ...[
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: PeriodNavBar(
+                        filter: state.filter,
+                        budgetOptions: state.budgetOptions,
+                        onPrevious: () => unawaited(
+                          context.read<TransactionsListCubit>().stepPeriod(-1),
+                        ),
+                        onNext: () => unawaited(
+                          context.read<TransactionsListCubit>().stepPeriod(1),
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 8),
                   if (linkMode != null)
                     TransactionsLinkBanner(linkMode: linkMode),
@@ -234,31 +284,75 @@ class TransactionsPage extends StatelessWidget {
                       TransactionsListStatus.failure => TransactionsErrorView(
                           onRetry: context.read<TransactionsListCubit>().start,
                         ),
-                      // Empty period: the carousel is pinned above the message
-                      // (there is nothing to scroll here) so the balances stay
-                      // visible when there are accounts but no movements yet.
+                      // Empty period: the carousel is pinned above the
+                      // message, which centers in whatever space is left in
+                      // the viewport, same as the plain `Expanded` this
+                      // replaced.
+                      //
+                      // A pending capture is not a `Transaction`, so it never
+                      // shows up in `state.items` — this branch fires just as
+                      // easily for someone with zero real movements but one
+                      // bank notification waiting (the ghost block's own
+                      // reason to exist). Without the slot here, that capture
+                      // would be unreachable from Movimientos: this branch
+                      // renders instead of `TransactionsListView`, which is
+                      // the block's only other home.
+                      //
+                      // The slot can now render one or more pending-capture
+                      // cards instead of nothing, so the carousel + slot no
+                      // longer reliably leave enough room for the message.
+                      // `SliverFillRemaining(hasScrollBody: false)` forces its
+                      // child to exactly the leftover viewport space — if that
+                      // space is smaller than the message's natural size
+                      // (icon + text), it overflows anyway; `Center` only
+                      // centers, it does not shrink. `SliverLayoutBuilder` +
+                      // `ConstrainedBox(minHeight:)` instead asks for the
+                      // leftover space as a *minimum* — still centered when
+                      // there's room to spare — but lets the content grow
+                      // past it, so the whole `CustomScrollView` scrolls
+                      // instead of overflowing when there is not.
                       TransactionsListStatus.ready when state.items.isEmpty =>
-                        Column(
-                          children: [
+                        CustomScrollView(
+                          slivers: [
                             if (showCarousel)
-                              MovementsBalanceCarousel(
-                                state: state,
-                                onOpenAccount: onOpenAccount,
+                              SliverToBoxAdapter(
+                                child: MovementsBalanceCarousel(
+                                  state: state,
+                                  onOpenAccount: widget.onOpenAccount,
+                                ),
                               ),
-                            Expanded(
-                              child: TransactionsEmptyState(
-                                message: _isUnfiltered(state.filter)
-                                    ? l10n.transactionsEmptyMessage
-                                    : l10n.transactionsEmptyPeriodMessage,
+                            SliverToBoxAdapter(
+                              child: PendingCapturesListSlot(
+                                filter: state.filter,
+                                onTap: widget.onDispatchCapture,
                               ),
+                            ),
+                            SliverLayoutBuilder(
+                              builder: (context, constraints) {
+                                return SliverToBoxAdapter(
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      minHeight:
+                                          constraints.remainingPaintExtent,
+                                    ),
+                                    child: TransactionsEmptyState(
+                                      message: _isUnfiltered(state.filter)
+                                          ? l10n.transactionsEmptyMessage
+                                          : l10n.transactionsEmptyPeriodMessage,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
                       TransactionsListStatus.ready => TransactionsListView(
                           state: state,
                           onOpenTransaction: onRowTap,
-                          onOpenAccount: onOpenAccount,
+                          onOpenAccount: widget.onOpenAccount,
+                          onDispatchCapture: widget.onDispatchCapture,
                           showCarousel: showCarousel,
+                          scrollController: fabScrollController,
                         ),
                     },
                   ),
@@ -363,12 +457,11 @@ class _TransactionsSearchRowState extends State<TransactionsSearchRow> {
                             },
                           ),
                     hintText: l10n.transactionsSearchHint,
-                    hintStyle:
-                        Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: colors.textSecondary,
-                            ),
+                    hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: colors.textSecondary,
+                        ),
                   ),
                   onChanged: cubit.searchChanged,
                 );
@@ -382,6 +475,13 @@ class _TransactionsSearchRowState extends State<TransactionsSearchRow> {
               widget.state.filter.copyWith(sortOrder: sortOrder),
             ),
           ),
+          const SizedBox(width: 8),
+          FiltersButton(
+            activeCount: widget.state.filter.activeFilterCount,
+            onTap: () => unawaited(
+              openUnifiedFiltersSheet(context, widget.state),
+            ),
+          ),
         ],
       ),
     );
@@ -389,9 +489,18 @@ class _TransactionsSearchRowState extends State<TransactionsSearchRow> {
 }
 
 /// GitHub issue #7's redesign: the account filter is now its own row of
-/// chips (`AccountFilterChipRow`) — no longer part of this bar — plus the
-/// "Filtros" button that opens the single unified sheet for
-/// Presupuesto/Fecha/Tipo/Categoría/Etiqueta (`UnifiedFiltersSheet`).
+/// chips (`AccountFilterChipRow`) — the "Filtros" button that opens the
+/// single unified sheet for Presupuesto/Fecha/Tipo/Categoría/Etiqueta
+/// (`UnifiedFiltersSheet`) moved into `TransactionsSearchRow`, next to the
+/// sort button (`nMKtn`'s `Search Row`).
+///
+/// Adición 2026-09-10: a Chip Fecha (`pofWv`/`vUtHH` in `O2xuVc`/`ufP4y`)
+/// joins the account chips — a **new** chip, not a restoration (the previous
+/// per-dimension Fecha sheet was retired in issue #7's redesign and this row
+/// never had a standalone Fecha chip of its own). It reflects the active
+/// Fecha/Presupuesto period and, tapped, opens the very same
+/// `UnifiedFiltersSheet` as `FiltersButton` — there is no standalone Fecha
+/// sheet left in production to open instead.
 class TransactionsFilterBar extends StatelessWidget {
   const TransactionsFilterBar({required this.state, super.key});
 
@@ -399,8 +508,11 @@ class TransactionsFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final cubit = context.read<TransactionsListCubit>();
     final filter = state.filter;
+    final dateActive = filter.hasDateFilter || filter.hasBudgetPeriodFilter;
+    final activePeriod = filter.budgetPeriod ?? filter.datePeriod;
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -415,29 +527,13 @@ class TransactionsFilterBar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          FiltersButton(
-            activeCount: filter.activeFilterCount,
-            onTap: () async {
-              final result = await UnifiedFiltersSheet.show(
-                context,
-                initialFilter: filter,
-                budgetOptions: state.budgetOptions,
-              );
-              // Null means the sheet was dismissed without "Aplicar"/
-              // "Limpiar" — keep the current filter.
-              if (result != null) {
-                await cubit.updateFilter(
-                  filter.copyWith(
-                    datePeriod: result.datePeriod,
-                    budgetPeriod: result.budgetPeriod,
-                    clearBudgetPeriod: result.budgetPeriod == null,
-                    types: result.types,
-                    categoryIds: result.categoryIds,
-                    tagIds: result.tagIds,
-                  ),
-                );
-              }
-            },
+          FilterChipPill(
+            label: dateActive
+                ? datePeriodLabel(activePeriod)
+                : l10n.transactionsChipDateDefaultLabel,
+            active: dateActive,
+            leadingIcon: LucideIcons.calendar,
+            onTap: () => unawaited(openUnifiedFiltersSheet(context, state)),
           ),
         ],
       ),
@@ -470,7 +566,9 @@ class TransactionsListView extends StatelessWidget {
     required this.state,
     required this.onOpenTransaction,
     required this.onOpenAccount,
+    this.onDispatchCapture,
     this.showCarousel = true,
+    this.scrollController,
     super.key,
   });
 
@@ -481,9 +579,19 @@ class TransactionsListView extends StatelessWidget {
   /// account's detail page (Mejora #2).
   final ValueChanged<String> onOpenAccount;
 
+  /// Opens the pre-filled transaction form for a pending capture pinned at
+  /// the top of the list (HU-04/HU-05). Supplied by the router, the only
+  /// layer allowed to know about both features. `null` hides the block.
+  final ValueChanged<CaptureReviewItem>? onDispatchCapture;
+
   /// The balance carousel is the list's first scrollable item, but link mode
   /// drops it to keep the focus on picking a movement (`g0x859`).
   final bool showCarousel;
+
+  /// GH-26: drives [TransactionsPage]'s scroll-aware FAB — attached to
+  /// whichever of the two lists below actually renders, so scrolling either
+  /// one hides/shows the FAB the same way `HomePage`'s own list does.
+  final ScrollController? scrollController;
 
   @override
   Widget build(BuildContext context) {
@@ -501,6 +609,7 @@ class TransactionsListView extends StatelessWidget {
     // for context since the date headers are gone.
     if (transactionSortIsByAmount(sortOrder)) {
       return ListView(
+        controller: scrollController,
         padding: const EdgeInsets.only(bottom: 28),
         children: [
           if (showCarousel)
@@ -509,6 +618,10 @@ class TransactionsListView extends StatelessWidget {
               onOpenAccount: onOpenAccount,
             ),
           TransactionsPeriodTotalRow(state: state),
+          PendingCapturesListSlot(
+            filter: state.filter,
+            onTap: onDispatchCapture,
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
             child: Align(
@@ -547,9 +660,13 @@ class TransactionsListView extends StatelessWidget {
     // rule as each day's own total (`transactionGroupTotalFor`).
     final periodTotal = transactionPeriodTotalFor(state.filter, state.items);
     final totalSlots = periodTotal == null ? 0 : 1;
-    final leadingSlots = carouselSlots + totalSlots;
+    // The captures block is always a slot, even when it renders nothing: it
+    // watches its own stream, so whether it has content is not knowable here
+    // without duplicating that subscription.
+    final leadingSlots = carouselSlots + totalSlots + 1;
 
     return ListView.builder(
+      controller: scrollController,
       padding: const EdgeInsets.only(bottom: 28),
       itemCount: groups.length + leadingSlots,
       itemBuilder: (context, index) {
@@ -561,6 +678,15 @@ class TransactionsListView extends StatelessWidget {
         }
         if (totalSlots == 1 && index == carouselSlots) {
           return TransactionsPeriodTotalRow(state: state);
+        }
+        // Pending captures go ALL TOGETHER before the first day group, never
+        // interleaved chronologically — and therefore outside every daily
+        // total. They are not money.
+        if (index == carouselSlots + totalSlots) {
+          return PendingCapturesListSlot(
+            filter: state.filter,
+            onTap: onDispatchCapture,
+          );
         }
         final groupIndex = index - leadingSlots;
         final group = groups[groupIndex];

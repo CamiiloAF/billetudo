@@ -58,7 +58,20 @@ Los chips **"Activos · N" / "Terminados · N"** son un par de pills que **filtr
 
 **Componentes reutilizables:**
 - `Scheduled Card/B — Tarjeta` (`tit0W`) — plantilla en la lista principal, **activa o terminada** (ver "Terminados: filtro en sitio" más abajo: misma geometría, solo cambia el eje inferior).
-  - **Se removió el chip de recordatorio "Te avisamos"** (ícono de campana) del componente: el feature todavía no permite configurar cuándo recordar ni tiene notificaciones push, así que el chip prometía algo no cumplible. Se reintroducirá con **HU-08 (Fase 2)** de `docs/requirements/fase-1/09-pagos-programados.md` (config de timing del recordatorio: día del pago / 1 día antes / 3 días antes / una semana antes). **No confundir** con el copy del modo manual "te avisamos antes de afectar tu saldo" (ver "Formulario crear/editar"), que describe un comportamiento in-app real y NO se tocó.
+  - **Chip de recordatorio "Te avisamos" reintroducido (HU-08, 2026-09-10, `feat/local-notifications`).** Vive en su propia fila `Aviso Row` (`v5a9Gq`), debajo de `Chips`/`Due` — no dentro de `Chips` junto a frecuencia/deuda: con el copy real no cabe en los 350px del contenido (ver `context` del nodo). **Apagado por defecto** (`enabled:false` en el componente base `tit0W`): solo se activa por instancia cuando el pago tiene `reminderLeadDays != null`, con el texto reflejando la anticipación elegida ("Te avisamos el día del pago" / "…1 día antes" / "…3 días antes" / "…una semana antes"). Pieza `Aviso Chip` (`f9bkiv`): pill `$primary-soft` + ícono `bell` + texto `$primary-on-soft-strong` 11px/700, `cornerRadius:12`, `padding:[6,10]`. Verificado contra golden `scheduled_payments_page_with_data_no_pending_light.png` (2026-09-10, vía `TakeScreenshot` dentro de `execute` — ver nota de la sección de Node ID abajo): coincide texto, ícono, color y posición. **No confundir** con el copy del modo manual "te avisamos antes de afectar tu saldo" (ver "Formulario crear/editar"), que describe un comportamiento in-app real y no se tocó.
+
+## Recordatorio de vencimiento (HU-08, `feat/local-notifications`, 2026-09-10)
+
+Nota de herramienta: esta sección se verificó con `TakeScreenshot(nodeIds)` **dentro de `execute`**, no con la tool separada `mcp__pencil__get_screenshot` (no existe en el servidor Pencil conectado a este repo — ver `docs/dev-runs/pencil-get-screenshot-workaround.md`). Cualquier agente de solo lectura que necesite render real de un nodo debe usar ese mecanismo.
+
+| Pieza | Node ID (Claro) | Notas |
+|---|---|---|
+| Hoja de selección de recordatorio | `HyuO3` ("Reminder Select Sheet", reusable) | 5 opciones: Sin recordatorio / El día del pago / 1 día antes / 3 días antes / Una semana antes. Verificado contra `sheet_reminder_default_light.png` y `sheet_reminder_selected_light.png` — match exacto (título, subtítulo, íconos, check de selección). |
+| Fila de opción de la hoja | `vWslR` ("Reminder Option Row", reusable) | Ícono campana tachada (sin recordatorio) o campana normal + check `$primary` cuando está seleccionada. |
+| Fila "solo apps que tú eliges" del explicador de permiso | `OVVPQ` ("Permission Fact Row") | Usada dentro de `H6JaA`. |
+| Cuerpo del explicador de permiso de notificaciones | `H6JaA` ("Permission Explainer Body") | 4 `Permission Fact Row` + nota final sobre el permiso de Android. Corresponde al aviso mostrado en `scheduled_payment_form_page_create_reminder_permission_notice_{light,dark}.png`. |
+| Fila del chip de recordatorio en la tarjeta | `v5a9Gq` ("Aviso Row", dentro de `tit0W`) | Ver bullet de `Scheduled Card/B — Tarjeta` arriba. |
+| Chip de recordatorio | `f9bkiv` ("Aviso Chip", dentro de `v5a9Gq`) | Ver bullet de `Scheduled Card/B — Tarjeta` arriba. |
 - `Scheduled Filter Chips` (`qPSvV`) — la fila "Activos · N / Terminados · N". Filtra en sitio; **no navega**.
 - `Scheduled Pending Row/B2 — Compacta` (`QhuIP`) — ocurrencia pendiente. Su `context` lleva la regla de truncado; **léelo antes de tocarla**.
 

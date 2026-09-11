@@ -11,10 +11,13 @@ import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/settings_field.dart';
 import '../../../auth/domain/entities/auth_session.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
+import '../../../capture/presentation/cubit/capture_status_state.dart';
+import '../../../capture/presentation/widgets/capture_settings_field.dart';
 import '../cubit/app_settings_cubit.dart';
 import '../cubit/app_settings_state.dart';
 import '../widgets/ai_settings_section.dart';
 import '../widgets/appearance_field.dart';
+import '../widgets/cloud_transcription_field.dart';
 import '../widgets/envelope_mode_field.dart';
 import '../widgets/settings_section_label.dart';
 import '../widgets/settings_session_card.dart';
@@ -35,6 +38,8 @@ class SettingsPage extends StatelessWidget {
     required this.onOpenComingSoon,
     required this.onOpenSyncStatus,
     required this.onOpenQuickAccessOrder,
+    required this.onOpenCapture,
+    required this.onOpenNotifications,
     super.key,
   });
 
@@ -46,10 +51,23 @@ class SettingsPage extends StatelessWidget {
   /// Home quick-access chips.
   final VoidCallback onOpenQuickAccessOrder;
 
+  /// Opens "Notificaciones" (`NotificationSettingsPage`). A navigation row,
+  /// not a switch: the per-kind granularity lives on the stacked screen
+  /// (`W2383p`), not here.
+  final VoidCallback onOpenNotifications;
+
   /// Opens "Estado de sincronización" (HU-08). Only reachable with a session:
   /// without one there is no cloud to report on, and Ajustes offers
   /// "Respaldar en la nube" instead.
   final VoidCallback onOpenSyncStatus;
+
+  /// Opens notification capture (HU-09). Takes the state the row is already
+  /// showing so the router can send the user to the catalog or to the
+  /// explainer without asking the system a second time.
+  ///
+  /// The row draws nothing on iOS, where the permission does not exist, so
+  /// this is never called there.
+  final ValueChanged<CaptureStatusState> onOpenCapture;
 
   /// Opens the info sheet and honours its "Activar modo sobres" call to action.
   Future<void> _openEnvelopeInfo(
@@ -124,12 +142,37 @@ class SettingsPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       SettingsField(
+                        icon: LucideIcons.bellRing,
+                        label: l10n.settingsNotifications,
+                        sublabel: l10n.settingsNotificationsSubtitle,
+                        onTap: onOpenNotifications,
+                      ),
+                      const SizedBox(height: 12),
+                      SettingsField(
                         icon: LucideIcons.listOrdered,
                         label: l10n.settingsQuickAccessOrder,
                         sublabel: l10n.settingsQuickAccessOrderSubtitle,
                         onTap: onOpenQuickAccessOrder,
                       ),
                       const SizedBox(height: 12),
+                      // Announces the home-screen widget instead of
+                      // navigating (HU-03, `20-widget-captura-rapida.md`):
+                      // there is no in-app screen to open — adding and
+                      // configuring the widget both happen in the OS, not
+                      // in Flutter — so this row is informational only.
+                      SettingsField(
+                        icon: LucideIcons.layoutGrid,
+                        label: l10n.settingsWidgetTitle,
+                        sublabel: l10n.settingsWidgetSubtitle,
+                        showChevron: false,
+                        onTap: () {},
+                      ),
+                      const SizedBox(height: 12),
+                      // HU-09: always visible on Android, and always telling
+                      // the truth — it re-asks the system instead of trusting
+                      // a stored flag, because the permission can be revoked
+                      // from Android without the app being told.
+                      CaptureSettingsField(onTap: onOpenCapture),
                       BlocBuilder<AppSettingsCubit, AppSettingsState>(
                         builder: (context, settings) => ShowHelpOnEntryField(
                           enabled: settings.showHelpOnSectionEntry,
@@ -137,6 +180,21 @@ class SettingsPage extends StatelessWidget {
                             context
                                 .read<AppSettingsCubit>()
                                 .setShowHelpOnSectionEntry(enabled: value),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // Sits in Preferencias rather than in a section of its
+                      // own: it is one device preference, and the sheet that
+                      // promises it says "en Ajustes", not "en Ajustes ›
+                      // Captura por voz".
+                      BlocBuilder<AppSettingsCubit, AppSettingsState>(
+                        builder: (context, settings) => CloudTranscriptionField(
+                          enabled: settings.cloudTranscriptionEnabled,
+                          onChanged: (value) => unawaited(
+                            context
+                                .read<AppSettingsCubit>()
+                                .setCloudTranscriptionEnabled(enabled: value),
                           ),
                         ),
                       ),

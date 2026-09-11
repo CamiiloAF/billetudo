@@ -22,6 +22,9 @@ class NotificationCaptureRepositoryImpl
   final CaptureMethodChannelDatasource _datasource;
 
   @override
+  bool get isSupported => _datasource.isSupported;
+
+  @override
   FutureResult<bool> isPermissionGranted() =>
       _guard(_datasource.isPermissionGranted);
 

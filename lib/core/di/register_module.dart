@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:injectable/injectable.dart';
 import 'package:powersync/powersync.dart';
@@ -81,4 +82,13 @@ abstract class RegisterModule {
     LocalDataOwnershipDatasource datasource,
   ) =>
       datasource;
+
+  /// Bridge with the native home-screen widgets
+  /// (`docs/requirements/fase-2/20-widget-captura-rapida.md`). Named so tests
+  /// can swap it for a channel backed by a fake handler; the name string must
+  /// stay in sync with `QuickCaptureWidgetBridge.kt` and `AppDelegate.swift`.
+  @Named('captureShortcutChannel')
+  @lazySingleton
+  MethodChannel captureShortcutChannel() =>
+      const MethodChannel('com.billetudo.app/capture_shortcuts');
 }

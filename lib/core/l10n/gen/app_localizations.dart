@@ -773,7 +773,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountFormLast4Label.
   ///
   /// In es, this message translates to:
-  /// **'Últimos 4 dígitos'**
+  /// **'Últimos 4 dígitos de la cuenta'**
   String get accountFormLast4Label;
 
   /// No description provided for @accountFormLast4Hint.
@@ -2042,6 +2042,24 @@ abstract class AppLocalizations {
   /// **'Filtros'**
   String get transactionsFiltersButtonLabel;
 
+  /// No description provided for @transactionsChipDateDefaultLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Este mes'**
+  String get transactionsChipDateDefaultLabel;
+
+  /// No description provided for @transactionsPeriodNavPreviousLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Periodo anterior'**
+  String get transactionsPeriodNavPreviousLabel;
+
+  /// No description provided for @transactionsPeriodNavNextLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Periodo siguiente'**
+  String get transactionsPeriodNavNextLabel;
+
   /// No description provided for @transactionsFilterSectionBudget.
   ///
   /// In es, this message translates to:
@@ -2089,24 +2107,6 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Aún no tienes etiquetas'**
   String get transactionsFilterTagEmpty;
-
-  /// No description provided for @transactionsChipDateDefaultLabel.
-  ///
-  /// In es, this message translates to:
-  /// **'Este mes'**
-  String get transactionsChipDateDefaultLabel;
-
-  /// No description provided for @transactionsPeriodNavPreviousLabel.
-  ///
-  /// In es, this message translates to:
-  /// **'Periodo anterior'**
-  String get transactionsPeriodNavPreviousLabel;
-
-  /// No description provided for @transactionsPeriodNavNextLabel.
-  ///
-  /// In es, this message translates to:
-  /// **'Periodo siguiente'**
-  String get transactionsPeriodNavNextLabel;
 
   /// No description provided for @dateFilterWeek.
   ///
@@ -2666,58 +2666,28 @@ abstract class AppLocalizations {
   /// **'{currency} · {count, plural, =1{1 cuenta} other{{count} cuentas}}'**
   String homeBalancesSheetCurrencyCount(String currency, int count);
 
-  /// No description provided for @homeAccountSheetTitle.
+  /// No description provided for @homeAccountSheetSyncedPill.
   ///
   /// In es, this message translates to:
-  /// **'Tu cuenta'**
-  String get homeAccountSheetTitle;
+  /// **'Sincronizado'**
+  String get homeAccountSheetSyncedPill;
 
-  /// No description provided for @homeAccountSheetSyncedTitle.
-  ///
-  /// In es, this message translates to:
-  /// **'Todo está sincronizado'**
-  String get homeAccountSheetSyncedTitle;
-
-  /// No description provided for @homeAccountSheetSyncedKicker.
-  ///
-  /// In es, this message translates to:
-  /// **'Todo bien'**
-  String get homeAccountSheetSyncedKicker;
-
-  /// No description provided for @homeAccountSheetSyncedBody.
-  ///
-  /// In es, this message translates to:
-  /// **'Tus datos están respaldados y al día en la nube.'**
-  String get homeAccountSheetSyncedBody;
-
-  /// No description provided for @homeAccountSheetOfflineTitle.
+  /// No description provided for @homeAccountSheetOfflinePill.
   ///
   /// In es, this message translates to:
   /// **'Sin conexión'**
-  String get homeAccountSheetOfflineTitle;
-
-  /// No description provided for @homeAccountSheetOfflineKicker.
-  ///
-  /// In es, this message translates to:
-  /// **'Algo merece tu atención'**
-  String get homeAccountSheetOfflineKicker;
-
-  /// No description provided for @homeAccountSheetOfflineBody.
-  ///
-  /// In es, this message translates to:
-  /// **'Sincronizaremos solos en cuanto haya conexión.'**
-  String get homeAccountSheetOfflineBody;
+  String get homeAccountSheetOfflinePill;
 
   /// No description provided for @homeAccountSheetNoAccountTitle.
   ///
   /// In es, this message translates to:
-  /// **'Respalda tu información'**
+  /// **'Respalda tus datos'**
   String get homeAccountSheetNoAccountTitle;
 
   /// No description provided for @homeAccountSheetNoAccountBody.
   ///
   /// In es, this message translates to:
-  /// **'Inicia sesión para no perder tus datos si cambias de teléfono.'**
+  /// **'Así no los pierdes si cambias de teléfono'**
   String get homeAccountSheetNoAccountBody;
 
   /// No description provided for @homeAccountSheetActivateBackup.
@@ -3832,6 +3802,12 @@ abstract class AppLocalizations {
   /// **'Conectando con Google…'**
   String get authGoogleLoading;
 
+  /// No description provided for @authAppleLoading.
+  ///
+  /// In es, this message translates to:
+  /// **'Conectando con Apple…'**
+  String get authAppleLoading;
+
   /// No description provided for @authGoogleErrorSnackbar.
   ///
   /// In es, this message translates to:
@@ -4227,6 +4203,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Mantén presionado y arrastra para reordenar'**
   String get settingsQuickAccessOrderHint;
+
+  /// No description provided for @settingsWidgetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Widget de captura rápida'**
+  String get settingsWidgetTitle;
+
+  /// No description provided for @settingsWidgetSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Añádelo a tu pantalla de inicio para registrar un gasto o ingreso en un toque, sin abrir la app. Mantén presionada la pantalla de inicio, toca Widgets y busca Billetudo.'**
+  String get settingsWidgetSubtitle;
 
   /// No description provided for @settingsDeleteAccount.
   ///
@@ -10461,6 +10449,18 @@ abstract class AppLocalizations {
   /// **'Asistente de IA'**
   String get settingsAiSection;
 
+  /// No description provided for @settingsCloudTranscription.
+  ///
+  /// In es, this message translates to:
+  /// **'Transcribir mi voz en la nube'**
+  String get settingsCloudTranscription;
+
+  /// No description provided for @settingsCloudTranscriptionSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando este teléfono no puede convertir la voz en texto por su cuenta, el audio se envía a {vendor} solo para transcribirlo. billetudo no lo guarda ni lo sincroniza.'**
+  String settingsCloudTranscriptionSubtitle(String vendor);
+
   /// No description provided for @settingsAiNotesAccess.
   ///
   /// In es, this message translates to:
@@ -10514,12 +10514,6 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Las reglas de uso de Billetudo'**
   String get settingsTermsOfUseSubtitle;
-
-  /// No description provided for @settingsLegalLinkError.
-  ///
-  /// In es, this message translates to:
-  /// **'No pudimos abrir el enlace. Inténtalo de nuevo.'**
-  String get settingsLegalLinkError;
 
   /// No description provided for @settingsAiConsentWithdraw.
   ///
@@ -10676,6 +10670,1106 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Volver a los términos'**
   String get legalReacceptanceStep2Back;
+
+  /// No description provided for @captureNoticesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Avisos'**
+  String get captureNoticesTitle;
+
+  /// No description provided for @captureSectionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Capturas por confirmar'**
+  String get captureSectionTitle;
+
+  /// No description provided for @captureSectionCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no afectan tu saldo. Se registran solo cuando tú lo confirmas.'**
+  String get captureSectionCaption;
+
+  /// No description provided for @captureSectionCaptionCompact.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no afectan tu saldo hasta que tú confirmes.'**
+  String get captureSectionCaptionCompact;
+
+  /// No description provided for @captureOverflowLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver las otras {count} capturas'**
+  String captureOverflowLabel(int count);
+
+  /// No description provided for @captureEmptyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo al día'**
+  String get captureEmptyTitle;
+
+  /// No description provided for @captureEmptyDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes nada por revisar. Cuando tu banco te avise de una compra, o se acerque un pago, aparecerá aquí.'**
+  String get captureEmptyDescription;
+
+  /// No description provided for @captureNoIssuersTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no escuchamos ninguna app'**
+  String get captureNoIssuersTitle;
+
+  /// No description provided for @captureNoIssuersDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige de qué apps de banco quieres que leamos los avisos de compra. Sin eso, aquí no aparece nada.'**
+  String get captureNoIssuersDescription;
+
+  /// No description provided for @captureNoIssuersCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir apps'**
+  String get captureNoIssuersCta;
+
+  /// No description provided for @captureNotBalancePill.
+  ///
+  /// In es, this message translates to:
+  /// **'No suma a tu saldo'**
+  String get captureNotBalancePill;
+
+  /// No description provided for @captureIssuerLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Aviso de {issuer}'**
+  String captureIssuerLabel(String issuer);
+
+  /// No description provided for @captureConfirmAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar'**
+  String get captureConfirmAction;
+
+  /// No description provided for @captureNoAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin cuenta'**
+  String get captureNoAccount;
+
+  /// No description provided for @captureNoMerchant.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimiento sin descripción'**
+  String get captureNoMerchant;
+
+  /// No description provided for @captureSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{account} · {when}'**
+  String captureSubtitle(String account, String when);
+
+  /// No description provided for @captureDuplicatePill.
+  ///
+  /// In es, this message translates to:
+  /// **'Posible duplicado'**
+  String get captureDuplicatePill;
+
+  /// No description provided for @captureDuplicateSameAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Es la misma'**
+  String get captureDuplicateSameAction;
+
+  /// No description provided for @captureDuplicateOtherAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Es otra compra'**
+  String get captureDuplicateOtherAction;
+
+  /// No description provided for @captureDuplicateExistingSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{category} · {account} · {when}'**
+  String captureDuplicateExistingSubtitle(
+      String category, String account, String when);
+
+  /// No description provided for @captureGhostBlockTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Pendientes de confirmar'**
+  String get captureGhostBlockTitle;
+
+  /// No description provided for @captureGhostBlockCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 propuesta · no suma} other{{count} propuestas · no suman}}'**
+  String captureGhostBlockCount(int count);
+
+  /// No description provided for @captureDiscardedMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Captura descartada'**
+  String get captureDiscardedMessage;
+
+  /// No description provided for @captureBellTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Avisos'**
+  String get captureBellTooltip;
+
+  /// No description provided for @captureAccountCardLast4Label.
+  ///
+  /// In es, this message translates to:
+  /// **'Últimos 4 dígitos de la tarjeta (opcional)'**
+  String get captureAccountCardLast4Label;
+
+  /// No description provided for @captureAccountCardLast4Hint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ej. 4321'**
+  String get captureAccountCardLast4Hint;
+
+  /// No description provided for @captureAccountCardLast4Helper.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando tu banco te avise de una compra, usamos estos 4 dígitos para sugerirte esta cuenta.'**
+  String get captureAccountCardLast4Helper;
+
+  /// No description provided for @captureAccountCardLast4Error.
+  ///
+  /// In es, this message translates to:
+  /// **'Deben ser exactamente 4 dígitos.'**
+  String get captureAccountCardLast4Error;
+
+  /// No description provided for @capturePermissionHeader.
+  ///
+  /// In es, this message translates to:
+  /// **'Avisos de tu banco'**
+  String get capturePermissionHeader;
+
+  /// No description provided for @capturePermissionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Leer los avisos de tu banco'**
+  String get capturePermissionTitle;
+
+  /// No description provided for @capturePermissionBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando tu banco te avise de una compra, la app te la propone con el monto y el comercio ya puestos. Tú confirmas y queda registrada.'**
+  String get capturePermissionBody;
+
+  /// No description provided for @capturePermissionFactAppsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo las apps que elijas'**
+  String get capturePermissionFactAppsTitle;
+
+  /// No description provided for @capturePermissionFactAppsDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Tú decides qué apps de banco se leen. Chats, correos y todo lo demás queda fuera.'**
+  String get capturePermissionFactAppsDescription;
+
+  /// No description provided for @capturePermissionFactDataTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo monto, comercio y fecha'**
+  String get capturePermissionFactDataTitle;
+
+  /// No description provided for @capturePermissionFactDataDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'El texto de la notificación no se guarda en ninguna parte, tampoco en tu teléfono.'**
+  String get capturePermissionFactDataDescription;
+
+  /// No description provided for @capturePermissionFactConfirmTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nada se registra sin ti'**
+  String get capturePermissionFactConfirmTitle;
+
+  /// No description provided for @capturePermissionFactConfirmDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada compra detectada espera tu confirmación antes de tocar tus saldos.'**
+  String get capturePermissionFactConfirmDescription;
+
+  /// No description provided for @capturePermissionFactSyncTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Se respalda como un movimiento más'**
+  String get capturePermissionFactSyncTitle;
+
+  /// No description provided for @capturePermissionFactSyncDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Esos tres datos viajan a tu cuenta igual que un movimiento que escribes a mano.'**
+  String get capturePermissionFactSyncDescription;
+
+  /// No description provided for @capturePermissionSystemWarning.
+  ///
+  /// In es, this message translates to:
+  /// **'Android te va a advertir que la app podrá ver todas tus notificaciones. Es la única forma en que el sistema concede este permiso; la app solo lee las apps que tú actives.'**
+  String get capturePermissionSystemWarning;
+
+  /// No description provided for @capturePermissionOpenSettingsCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Ir a Ajustes de Android'**
+  String get capturePermissionOpenSettingsCta;
+
+  /// No description provided for @capturePermissionDeclineCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahora no, gracias'**
+  String get capturePermissionDeclineCta;
+
+  /// No description provided for @captureSeeHowItWorksCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver cómo funciona'**
+  String get captureSeeHowItWorksCta;
+
+  /// No description provided for @captureDisabledTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'La lectura de avisos está desactivada'**
+  String get captureDisabledTitle;
+
+  /// No description provided for @captureDisabledBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Puedes activarla cuando quieras. Mientras tanto todo sigue igual: registras tus movimientos como siempre y tus saldos no cambian.'**
+  String get captureDisabledBody;
+
+  /// No description provided for @captureDisabledPendingNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Las capturas que ya tenías siguen en tu bandeja. Puedes revisarlas aunque esto esté apagado.'**
+  String get captureDisabledPendingNote;
+
+  /// No description provided for @captureDisabledOpenSettingsCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Activar en Ajustes de Android'**
+  String get captureDisabledOpenSettingsCta;
+
+  /// No description provided for @captureIssuersHeader.
+  ///
+  /// In es, this message translates to:
+  /// **'Apps que se leen'**
+  String get captureIssuersHeader;
+
+  /// No description provided for @captureIssuersScopeNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo se leen los avisos de las apps que enciendas aquí. Las demás no se abren nunca.'**
+  String get captureIssuersScopeNote;
+
+  /// No description provided for @captureIssuersNoneActive.
+  ///
+  /// In es, this message translates to:
+  /// **'Ninguna activa todavía'**
+  String get captureIssuersNoneActive;
+
+  /// No description provided for @captureIssuersTurnOffAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Apagar todas'**
+  String get captureIssuersTurnOffAll;
+
+  /// No description provided for @captureIssuersClosedCatalogNote.
+  ///
+  /// In es, this message translates to:
+  /// **'¿No ves tu banco? Por ahora solo leemos avisos de estas apps. El catálogo irá creciendo.'**
+  String get captureIssuersClosedCatalogNote;
+
+  /// No description provided for @captureIssuersNoAppsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes ninguna de estas apps'**
+  String get captureIssuersNoAppsTitle;
+
+  /// No description provided for @captureIssuersNoAppsDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Por ahora leemos avisos de Nu, Nequi y Google Wallet. Cuando instales alguna, aparecerá aquí para que la enciendas.'**
+  String get captureIssuersNoAppsDescription;
+
+  /// No description provided for @captureIssuersErrorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos cargar tus apps'**
+  String get captureIssuersErrorTitle;
+
+  /// No description provided for @captureIssuerNuDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Compras con tu tarjeta Nu'**
+  String get captureIssuerNuDescription;
+
+  /// No description provided for @captureIssuerNequiDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Compras, envíos y recargas'**
+  String get captureIssuerNequiDescription;
+
+  /// No description provided for @captureIssuerGoogleWalletDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Pagos con el celular (NFC)'**
+  String get captureIssuerGoogleWalletDescription;
+
+  /// No description provided for @captureIssuerGenericDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Avisos de compra de esta app'**
+  String get captureIssuerGenericDescription;
+
+  /// No description provided for @captureOfferMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando tu banco te avise de una compra, te la dejo lista para confirmar: monto, comercio y fecha ya puestos.'**
+  String get captureOfferMessage;
+
+  /// No description provided for @captureOfferScopeNote.
+  ///
+  /// In es, this message translates to:
+  /// **'No alcanza para todo: el efectivo no avisa y hay bancos que aún no están en la lista. Esto se suma a registrar a mano, no lo reemplaza.'**
+  String get captureOfferScopeNote;
+
+  /// No description provided for @captureOfferDismissCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahora no'**
+  String get captureOfferDismissCta;
+
+  /// No description provided for @captureSettingsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Avisos de tu banco'**
+  String get captureSettingsTitle;
+
+  /// No description provided for @captureSettingsSubtitleChecking.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisando el estado…'**
+  String get captureSettingsSubtitleChecking;
+
+  /// No description provided for @captureSettingsSubtitleOff.
+  ///
+  /// In es, this message translates to:
+  /// **'Desactivado · actívalo cuando quieras'**
+  String get captureSettingsSubtitleOff;
+
+  /// No description provided for @captureSettingsSubtitleNoIssuers.
+  ///
+  /// In es, this message translates to:
+  /// **'Activo, pero sin apps elegidas todavía'**
+  String get captureSettingsSubtitleNoIssuers;
+
+  /// No description provided for @captureIssuersActiveCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} de {total} activas'**
+  String captureIssuersActiveCount(int count, int total);
+
+  /// No description provided for @captureSettingsSubtitleListening.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{Escuchando 1 app} other{Escuchando {count} apps}}'**
+  String captureSettingsSubtitleListening(int count);
+
+  /// No description provided for @captureBlockReviewAction.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{Revisar 1 captura} other{Revisar las {count} capturas}}'**
+  String captureBlockReviewAction(int count);
+
+  /// No description provided for @captureDuplicateVerdictSameAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Mismo monto'**
+  String get captureDuplicateVerdictSameAmount;
+
+  /// No description provided for @captureDuplicateVerdictMinutesBefore.
+  ///
+  /// In es, this message translates to:
+  /// **'{minutes, plural, =0{Menos de 1 minuto antes} =1{1 minuto antes} other{{minutes} minutos antes}}'**
+  String captureDuplicateVerdictMinutesBefore(int minutes);
+
+  /// No description provided for @captureDuplicateVerdictMinutesAfter.
+  ///
+  /// In es, this message translates to:
+  /// **'{minutes, plural, =0{Menos de 1 minuto después} =1{1 minuto después} other{{minutes} minutos después}}'**
+  String captureDuplicateVerdictMinutesAfter(int minutes);
+
+  /// No description provided for @captureDuplicateVerdictSameAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'misma cuenta'**
+  String get captureDuplicateVerdictSameAccount;
+
+  /// No description provided for @captureDuplicateExistingKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya registrado'**
+  String get captureDuplicateExistingKicker;
+
+  /// No description provided for @captureDuplicateNoCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin categoría'**
+  String get captureDuplicateNoCategory;
+
+  /// No description provided for @captureDuplicateConsequenceCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'Si descartas, puedes deshacerlo · Revisar no guarda nada'**
+  String get captureDuplicateConsequenceCaption;
+
+  /// No description provided for @captureGroupedSourceLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Un solo pago · {wallet} + {bank}'**
+  String captureGroupedSourceLabel(String wallet, String bank);
+
+  /// No description provided for @captureIssuerUnknown.
+  ///
+  /// In es, this message translates to:
+  /// **'otra app'**
+  String get captureIssuerUnknown;
+
+  /// No description provided for @captureSuggestedCategoryLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Sugerida: {category}'**
+  String captureSuggestedCategoryLabel(String category);
+
+  /// No description provided for @captureVoiceListening.
+  ///
+  /// In es, this message translates to:
+  /// **'Escuchando…'**
+  String get captureVoiceListening;
+
+  /// No description provided for @captureVoicePreparing.
+  ///
+  /// In es, this message translates to:
+  /// **'Preparando el micrófono…'**
+  String get captureVoicePreparing;
+
+  /// No description provided for @captureVoiceHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Di algo como «gasté veinte mil en almuerzo»'**
+  String get captureVoiceHint;
+
+  /// No description provided for @captureVoicePrivacyCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'El audio no se guarda. Solo se usa para llenar el formulario.'**
+  String get captureVoicePrivacyCaption;
+
+  /// No description provided for @captureVoicePartialCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'Al terminar abrimos el formulario con lo que se entendió. Tú confirmas.'**
+  String get captureVoicePartialCaption;
+
+  /// No description provided for @captureVoiceCancel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelar'**
+  String get captureVoiceCancel;
+
+  /// No description provided for @captureVoiceDone.
+  ///
+  /// In es, this message translates to:
+  /// **'Listo'**
+  String get captureVoiceDone;
+
+  /// No description provided for @captureVoiceSoundLevelLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nivel del micrófono'**
+  String get captureVoiceSoundLevelLabel;
+
+  /// No description provided for @captureVoiceNoAmountTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'No alcanzamos a captar el monto'**
+  String get captureVoiceNoAmountTitle;
+
+  /// No description provided for @captureVoiceNoAmountMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo que dijiste no se pierde: se va como nota al formulario.'**
+  String get captureVoiceNoAmountMessage;
+
+  /// No description provided for @captureVoiceRetry.
+  ///
+  /// In es, this message translates to:
+  /// **'Intentar de nuevo'**
+  String get captureVoiceRetry;
+
+  /// No description provided for @captureVoiceWriteByHand.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribir a mano'**
+  String get captureVoiceWriteByHand;
+
+  /// No description provided for @captureVoicePermissionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'El micrófono está desactivado'**
+  String get captureVoicePermissionTitle;
+
+  /// No description provided for @captureVoicePermissionMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo usamos solo mientras dictas, para llenar el formulario por ti. El audio no se guarda.'**
+  String get captureVoicePermissionMessage;
+
+  /// No description provided for @captureVoicePermissionFact1Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo mientras dictas'**
+  String get captureVoicePermissionFact1Title;
+
+  /// No description provided for @captureVoicePermissionFact1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'El micrófono se apaga en cuanto terminas la frase o cancelas.'**
+  String get captureVoicePermissionFact1Body;
+
+  /// No description provided for @captureVoicePermissionFact2Title.
+  ///
+  /// In es, this message translates to:
+  /// **'El audio no se guarda'**
+  String get captureVoicePermissionFact2Title;
+
+  /// No description provided for @captureVoicePermissionFact2Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Se usa para entender la frase y se descarta al terminar. No se respalda ni se sincroniza.'**
+  String get captureVoicePermissionFact2Body;
+
+  /// No description provided for @captureVoicePermissionFact3Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Puedes seguir sin él'**
+  String get captureVoicePermissionFact3Title;
+
+  /// No description provided for @captureVoicePermissionFact3Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribir un movimiento a mano funciona igual que siempre, con o sin micrófono.'**
+  String get captureVoicePermissionFact3Body;
+
+  /// No description provided for @captureVoicePermissionOpenSettings.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir ajustes'**
+  String get captureVoicePermissionOpenSettings;
+
+  /// No description provided for @captureVoicePermissionAllow.
+  ///
+  /// In es, this message translates to:
+  /// **'Activar el micrófono'**
+  String get captureVoicePermissionAllow;
+
+  /// No description provided for @captureVoiceUnavailableTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'El dictado no está disponible aquí'**
+  String get captureVoiceUnavailableTitle;
+
+  /// No description provided for @captureVoiceUnavailableMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu teléfono no puede transcribir en el idioma de la app ahora mismo. Escribir a mano funciona igual que siempre.'**
+  String get captureVoiceUnavailableMessage;
+
+  /// No description provided for @captureVoiceOnDeviceUnavailableMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu teléfono no puede transcribir sin enviar el audio a internet, y no lo hacemos sin preguntarte antes. Escribir a mano funciona igual que siempre.'**
+  String get captureVoiceOnDeviceUnavailableMessage;
+
+  /// No description provided for @captureVoiceNoConnectionMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'El dictado necesita conexión en este teléfono y ahora no la hay. Escribir a mano funciona igual que siempre.'**
+  String get captureVoiceNoConnectionMessage;
+
+  /// No description provided for @captureVoiceBusyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Otra app está usando el micrófono. Cuando la cierres puedes volver a dictar.'**
+  String get captureVoiceBusyMessage;
+
+  /// No description provided for @captureVoiceDictate.
+  ///
+  /// In es, this message translates to:
+  /// **'Dictar'**
+  String get captureVoiceDictate;
+
+  /// No description provided for @captureVoiceDictateTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Dictar el movimiento'**
+  String get captureVoiceDictateTooltip;
+
+  /// No description provided for @captureVoiceFabLongPressHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Mantén presionado para dictar'**
+  String get captureVoiceFabLongPressHint;
+
+  /// Nombre del servicio que transcribe la voz en Android.
+  ///
+  /// In es, this message translates to:
+  /// **'Google'**
+  String get captureVoiceVendorGoogle;
+
+  /// Nombre del servicio que transcribe la voz en iOS.
+  ///
+  /// In es, this message translates to:
+  /// **'Apple'**
+  String get captureVoiceVendorApple;
+
+  /// No description provided for @captureVoiceCloudConsentTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Para dictar, {vendor} transcribe tu voz'**
+  String captureVoiceCloudConsentTitle(String vendor);
+
+  /// No description provided for @captureVoiceCloudConsentMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Este teléfono no puede convertir la voz en texto por su cuenta. Si lo permites, el audio se envía a {vendor} solo para transcribirlo.'**
+  String captureVoiceCloudConsentMessage(String vendor);
+
+  /// No description provided for @captureVoiceCloudConsentFact1Title.
+  ///
+  /// In es, this message translates to:
+  /// **'El audio sale del teléfono'**
+  String get captureVoiceCloudConsentFact1Title;
+
+  /// No description provided for @captureVoiceCloudConsentFact1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'{vendor} recibe lo que dictas y devuelve el texto. Ese es el paso que este teléfono no puede hacer solo.'**
+  String captureVoiceCloudConsentFact1Body(String vendor);
+
+  /// No description provided for @captureVoiceCloudConsentFact2Title.
+  ///
+  /// In es, this message translates to:
+  /// **'billetudo no guarda nada'**
+  String get captureVoiceCloudConsentFact2Title;
+
+  /// No description provided for @captureVoiceCloudConsentFact2Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Ni el audio ni la transcripción se guardan, respaldan o sincronizan.'**
+  String get captureVoiceCloudConsentFact2Body;
+
+  /// No description provided for @captureVoiceCloudConsentFact3Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Tú confirmas antes de guardar'**
+  String get captureVoiceCloudConsentFact3Title;
+
+  /// No description provided for @captureVoiceCloudConsentFact3Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo dictado solo llena el formulario. Nada se registra hasta que lo revises.'**
+  String get captureVoiceCloudConsentFact3Body;
+
+  /// No description provided for @captureVoiceCloudConsentAllow.
+  ///
+  /// In es, this message translates to:
+  /// **'Permitir y dictar'**
+  String get captureVoiceCloudConsentAllow;
+
+  /// No description provided for @captureVoiceCloudConsentReversible.
+  ///
+  /// In es, this message translates to:
+  /// **'Puedes cambiar esta decisión cuando quieras en Ajustes.'**
+  String get captureVoiceCloudConsentReversible;
+
+  /// No description provided for @captureVoiceCloudConsentDeclinedMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegiste que tu voz no se transcriba en la nube, y lo respetamos. Puedes cambiarlo en Ajustes. Escribir a mano funciona igual que siempre.'**
+  String get captureVoiceCloudConsentDeclinedMessage;
+
+  /// Pastilla bajo el monto cuando el parser infirió la magnitud de lo dictado.
+  ///
+  /// In es, this message translates to:
+  /// **'Supusimos {amount} por «{spoken}»'**
+  String captureVoiceAmountAssumption(String amount, String spoken);
+
+  /// No description provided for @tutorialVoiceCaptureTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Dicta un gasto sin teclear'**
+  String get tutorialVoiceCaptureTitle;
+
+  /// No description provided for @tutorialVoiceCapturePoint1Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Mantén presionado el botón +'**
+  String get tutorialVoiceCapturePoint1Heading;
+
+  /// No description provided for @tutorialVoiceCapturePoint1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'En Inicio, deja el dedo un segundo sobre el botón + y empieza a hablar.'**
+  String get tutorialVoiceCapturePoint1Body;
+
+  /// No description provided for @tutorialVoiceCapturePoint2Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Di la frase de corrido'**
+  String get tutorialVoiceCapturePoint2Heading;
+
+  /// No description provided for @tutorialVoiceCapturePoint2Body.
+  ///
+  /// In es, this message translates to:
+  /// **'«Gasté veinte mil en almuerzo con Nequi». De ahí salen el monto, la categoría y la cuenta.'**
+  String get tutorialVoiceCapturePoint2Body;
+
+  /// No description provided for @tutorialVoiceCapturePoint3Heading.
+  ///
+  /// In es, this message translates to:
+  /// **'Tú confirmas siempre'**
+  String get tutorialVoiceCapturePoint3Heading;
+
+  /// No description provided for @tutorialVoiceCapturePoint3Body.
+  ///
+  /// In es, this message translates to:
+  /// **'La app llena el formulario con lo que entendió. Nada queda registrado hasta que tocas guardar.'**
+  String get tutorialVoiceCapturePoint3Body;
+
+  /// No description provided for @tutorialVoiceCaptureCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Probar ahora'**
+  String get tutorialVoiceCaptureCta;
+
+  /// No description provided for @notificationsChannelRemindersName.
+  ///
+  /// In es, this message translates to:
+  /// **'Recordatorios de pagos'**
+  String get notificationsChannelRemindersName;
+
+  /// No description provided for @notificationsChannelRemindersDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Avisos de los pagos programados que tú configuraste.'**
+  String get notificationsChannelRemindersDescription;
+
+  /// No description provided for @notificationsChannelCapturesName.
+  ///
+  /// In es, this message translates to:
+  /// **'Registro de movimientos'**
+  String get notificationsChannelCapturesName;
+
+  /// No description provided for @notificationsChannelCapturesDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Avisos para registrar un movimiento cuando lo pediste.'**
+  String get notificationsChannelCapturesDescription;
+
+  /// No description provided for @notificationsChannelMilestonesName.
+  ///
+  /// In es, this message translates to:
+  /// **'Logros de tus metas'**
+  String get notificationsChannelMilestonesName;
+
+  /// No description provided for @notificationsChannelMilestonesDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Avisos cuando una de tus metas llega a un hito.'**
+  String get notificationsChannelMilestonesDescription;
+
+  /// No description provided for @remindersNotificationBodyToday.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy se paga {amount} desde {account}'**
+  String remindersNotificationBodyToday(String amount, String account);
+
+  /// No description provided for @remindersNotificationBodyTomorrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Mañana se paga {amount} desde {account}'**
+  String remindersNotificationBodyTomorrow(String amount, String account);
+
+  /// No description provided for @remindersNotificationBodyInDays.
+  ///
+  /// In es, this message translates to:
+  /// **'En {days} días se paga {amount} desde {account}'**
+  String remindersNotificationBodyInDays(
+      int days, String amount, String account);
+
+  /// No description provided for @remindersFieldSectionLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Recordatorio'**
+  String get remindersFieldSectionLabel;
+
+  /// No description provided for @remindersOptionNone.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin recordatorio'**
+  String get remindersOptionNone;
+
+  /// No description provided for @remindersSheetCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'Te mandamos una notificación antes de que llegue la fecha.'**
+  String get remindersSheetCaption;
+
+  /// No description provided for @remindersOptionOnDueDate.
+  ///
+  /// In es, this message translates to:
+  /// **'El día del pago'**
+  String get remindersOptionOnDueDate;
+
+  /// No description provided for @remindersOptionOneDayBefore.
+  ///
+  /// In es, this message translates to:
+  /// **'1 día antes'**
+  String get remindersOptionOneDayBefore;
+
+  /// No description provided for @remindersOptionThreeDaysBefore.
+  ///
+  /// In es, this message translates to:
+  /// **'3 días antes'**
+  String get remindersOptionThreeDaysBefore;
+
+  /// No description provided for @remindersOptionOneWeekBefore.
+  ///
+  /// In es, this message translates to:
+  /// **'Una semana antes'**
+  String get remindersOptionOneWeekBefore;
+
+  /// No description provided for @remindersPermissionNotice.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardamos tu preferencia. Para que el aviso llegue, activa las notificaciones de Billetudo en los ajustes de tu teléfono.'**
+  String get remindersPermissionNotice;
+
+  /// No description provided for @remindersChipOnDueDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Te avisamos el día del pago'**
+  String get remindersChipOnDueDate;
+
+  /// No description provided for @remindersChipOneDayBefore.
+  ///
+  /// In es, this message translates to:
+  /// **'Te avisamos 1 día antes'**
+  String get remindersChipOneDayBefore;
+
+  /// No description provided for @remindersChipDaysBefore.
+  ///
+  /// In es, this message translates to:
+  /// **'Te avisamos {days} días antes'**
+  String remindersChipDaysBefore(int days);
+
+  /// No description provided for @remindersChipOneWeekBefore.
+  ///
+  /// In es, this message translates to:
+  /// **'Te avisamos una semana antes'**
+  String get remindersChipOneWeekBefore;
+
+  /// No description provided for @notificationsSettingsPaymentReminders.
+  ///
+  /// In es, this message translates to:
+  /// **'Recordatorios de pago'**
+  String get notificationsSettingsPaymentReminders;
+
+  /// No description provided for @notificationsSettingsPaymentRemindersSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Te avisamos antes de la fecha de un pago programado, con la anticipación que elegiste en cada uno.'**
+  String get notificationsSettingsPaymentRemindersSubtitle;
+
+  /// No description provided for @notificationsSettingsUpcomingCharges.
+  ///
+  /// In es, this message translates to:
+  /// **'Cobros próximos'**
+  String get notificationsSettingsUpcomingCharges;
+
+  /// No description provided for @notificationsSettingsUpcomingChargesSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Un aviso cuando se acerca un pago que ya tienes programado.'**
+  String get notificationsSettingsUpcomingChargesSubtitle;
+
+  /// No description provided for @notificationsSettingsPendingConfirmations.
+  ///
+  /// In es, this message translates to:
+  /// **'Pagos por confirmar'**
+  String get notificationsSettingsPendingConfirmations;
+
+  /// No description provided for @notificationsSettingsPendingConfirmationsSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando un pago manual quedó esperando tu confirmación.'**
+  String get notificationsSettingsPendingConfirmationsSubtitle;
+
+  /// No description provided for @notificationsSettingsGoalMilestones.
+  ///
+  /// In es, this message translates to:
+  /// **'Hitos de metas'**
+  String get notificationsSettingsGoalMilestones;
+
+  /// No description provided for @notificationsSettingsGoalMilestonesSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando llegas a la mitad de una meta y cuando la completas.'**
+  String get notificationsSettingsGoalMilestonesSubtitle;
+
+  /// No description provided for @insightGoalMilestoneTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} va en {percent}%'**
+  String insightGoalMilestoneTitle(String name, int percent);
+
+  /// No description provided for @insightGoalCompletedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Llegaste a tu meta {name}!'**
+  String insightGoalCompletedTitle(String name);
+
+  /// No description provided for @insightGoalMilestoneBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Llevas {amount} de {target}'**
+  String insightGoalMilestoneBody(String amount, String target);
+
+  /// No description provided for @settingsNotifications.
+  ///
+  /// In es, this message translates to:
+  /// **'Notificaciones'**
+  String get settingsNotifications;
+
+  /// No description provided for @settingsNotificationsSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Recordatorios de pago, cobros próximos y metas'**
+  String get settingsNotificationsSubtitle;
+
+  /// No description provided for @notificationsSettingsIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Tú eliges qué te avisamos. Lo que apagues aquí deja de llegar y puedes volver a encenderlo cuando quieras.'**
+  String get notificationsSettingsIntro;
+
+  /// No description provided for @notificationsSettingsDeniedIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando vuelvas a permitir las notificaciones, estos ajustes quedan como los tenías. No se pierde nada.'**
+  String get notificationsSettingsDeniedIntro;
+
+  /// No description provided for @notificationsPermissionDeniedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu teléfono tiene las notificaciones apagadas'**
+  String get notificationsPermissionDeniedTitle;
+
+  /// No description provided for @notificationsPermissionDeniedBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Mientras el permiso esté apagado no te llega ningún aviso, aunque aquí los dejes encendidos. Se activa desde los ajustes del teléfono.'**
+  String get notificationsPermissionDeniedBody;
+
+  /// No description provided for @notificationsPermissionDeniedCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir ajustes del teléfono'**
+  String get notificationsPermissionDeniedCta;
+
+  /// No description provided for @insightUpcomingChargeTitleToday.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} se cobra hoy'**
+  String insightUpcomingChargeTitleToday(Object name);
+
+  /// No description provided for @insightUpcomingChargeTitleTomorrow.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} se cobra mañana'**
+  String insightUpcomingChargeTitleTomorrow(Object name);
+
+  /// No description provided for @insightUpcomingChargeTitleInDays.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} se cobra en {days} días'**
+  String insightUpcomingChargeTitleInDays(Object days, Object name);
+
+  /// No description provided for @insightUpcomingChargeSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{amount} · Pago programado'**
+  String insightUpcomingChargeSubtitle(Object amount);
+
+  /// No description provided for @insightPendingConfirmationTitleToday.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} estaba programado para hoy'**
+  String insightPendingConfirmationTitleToday(Object name);
+
+  /// No description provided for @insightPendingConfirmationTitleYesterday.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} estaba programado para ayer'**
+  String insightPendingConfirmationTitleYesterday(Object name);
+
+  /// No description provided for @insightPendingConfirmationTitleDaysAgo.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} estaba programado hace {days} días'**
+  String insightPendingConfirmationTitleDaysAgo(Object days, Object name);
+
+  /// No description provided for @insightPendingConfirmationSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'{amount} · Espera tu confirmación'**
+  String insightPendingConfirmationSubtitle(Object amount);
+
+  /// No description provided for @insightActionViewPayment.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver pago'**
+  String get insightActionViewPayment;
+
+  /// No description provided for @insightActionRemindLater.
+  ///
+  /// In es, this message translates to:
+  /// **'Recordar después'**
+  String get insightActionRemindLater;
+
+  /// No description provided for @insightActionConfirmPayment.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar pago'**
+  String get insightActionConfirmPayment;
+
+  /// No description provided for @insightActionNotYet.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no'**
+  String get insightActionNotYet;
+
+  /// No description provided for @insightActionViewGoal.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver meta'**
+  String get insightActionViewGoal;
 }
 
 class _AppLocalizationsDelegate

@@ -4,8 +4,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
+import '../../../../../core/widgets/privacy_note_strip.dart';
 import '../../../domain/entities/import_batch.dart';
-import '../privacy_note_strip.dart';
 
 /// HU-08's "Deshacer esta importación" confirmation (`l1twf`/`r59P4P`).
 ///

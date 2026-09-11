@@ -5,11 +5,14 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 
 /// Issue #7: opens the unified filters sheet (Presupuesto → Fecha → Tipo →
-/// Categoría → Etiqueta). [activeCount] is `TransactionFilter.activeFilterCount`
-/// — every dimension with an active filter, cuenta included (its chips live
-/// in `AccountFilterChipRow`, but still count toward this badge per the
-/// acceptance criteria) — a badge only renders while it is `> 0`, same
-/// "no badge for zero" rule as `QuickAccessChipWithBadge`.
+/// Categoría → Etiqueta). Icon-only square button (`WTT9S` in `nMKtn`), same
+/// 44×48/`cornerRadius:16` treatment as `TransactionsSortButton`, living in
+/// the search row rather than a text pill of its own. [activeCount] is
+/// `TransactionFilter.activeFilterCount` — every dimension with an active
+/// filter, cuenta included (its chips live in `AccountFilterChipRow`, but
+/// still count toward this badge per the acceptance criteria) — a small
+/// circular badge pinned to the button's top-right corner only renders while
+/// it is `> 0`, same "no badge for zero" rule as `QuickAccessChipWithBadge`.
 class FiltersButton extends StatelessWidget {
   const FiltersButton({
     required this.activeCount,
@@ -26,55 +29,62 @@ class FiltersButton extends StatelessWidget {
     final colors = context.colors;
     final theme = Theme.of(context);
     final active = activeCount > 0;
-    final foreground = active ? colors.primaryOnSoftStrong : colors.textSecondary;
+    final foreground =
+        active ? colors.primaryOnSoftStrong : colors.textSecondary;
 
-    return Material(
-      color: active ? colors.primarySoft : colors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(22),
-        side: BorderSide(color: active ? colors.primary : colors.border),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 44),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          alignment: Alignment.center,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+    return Tooltip(
+      message: l10n.transactionsFiltersButtonLabel,
+      child: Semantics(
+        label: l10n.transactionsFiltersButtonLabel,
+        button: true,
+        child: SizedBox(
+          width: 44,
+          height: 48,
+          child: Stack(
+            clipBehavior: Clip.none,
             children: [
-              Icon(LucideIcons.slidersHorizontal, size: 14, color: foreground),
-              const SizedBox(width: 6),
-              Text(
-                l10n.transactionsFiltersButtonLabel,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  fontSize: active ? 13 : 12,
-                  fontWeight: FontWeight.w700,
-                  color: foreground,
-                ),
-              ),
-              if (active) ...[
-                const SizedBox(width: 6),
-                Container(
-                  height: 18,
-                  constraints: const BoxConstraints(minWidth: 18),
-                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: colors.primary,
-                    borderRadius: BorderRadius.circular(9),
+              Material(
+                color: active ? colors.primarySoft : colors.surface,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(
+                    color: active ? colors.primary : colors.border,
                   ),
-                  child: Text(
-                    '$activeCount',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: colors.onPrimary,
+                ),
+                child: InkWell(
+                  onTap: onTap,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Center(
+                    child: Icon(
+                      LucideIcons.slidersHorizontal,
+                      size: 20,
+                      color: foreground,
                     ),
                   ),
                 ),
-              ],
+              ),
+              if (active)
+                Positioned(
+                  top: -2,
+                  right: -6,
+                  child: Container(
+                    width: 16,
+                    height: 16,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: colors.primary,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '$activeCount',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: colors.onPrimary,
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

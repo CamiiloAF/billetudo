@@ -144,4 +144,42 @@ void main() {
 
     expect(find.text('#'), findsNWidgets(2));
   });
+
+  testWidgets(
+      'no desborda cuando el teclado de una hoja anidada (Nueva etiqueta) '
+      'reduce el alto disponible', (tester) async {
+    // Reproduces HU-07's "crear una etiqueta nueva al vuelo": `NewTagSheet`
+    // opens on top of this one and its own field autofocuses the system
+    // keyboard, which also grows `BottomSheetBase`'s viewInsets padding for
+    // *this* still-mounted sheet — verified against a real emulator run
+    // (`RenderFlex overflowed by 13 pixels` at this widget's old `Column`).
+    // A short viewport plus a tall `viewInsets.bottom` reproduces that same
+    // squeeze without a real keyboard.
+    await tester.binding.setSurfaceSize(const Size(400, 500));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        locale: const Locale('es'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: MediaQuery(
+          data: const MediaQueryData(viewInsets: EdgeInsets.only(bottom: 400)),
+          child: Scaffold(
+            body: BlocProvider<TagFilterCubit>.value(
+              value: cubit,
+              child: const TagFilterSheetBody(
+                title: 'Etiquetas',
+                confirmLabel: 'Listo',
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+  });
 }
