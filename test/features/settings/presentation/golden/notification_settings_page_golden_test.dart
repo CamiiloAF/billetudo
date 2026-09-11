@@ -1,3 +1,4 @@
+import 'package:billetudo/core/notifications/domain/entities/notification_kind.dart';
 import 'package:billetudo/features/settings/presentation/cubit/notification_settings_cubit.dart';
 import 'package:billetudo/features/settings/presentation/cubit/notification_settings_state.dart';
 import 'package:billetudo/features/settings/presentation/pages/notification_settings_page.dart';
@@ -29,10 +30,12 @@ void main() {
     String name, {
     required Brightness brightness,
     required bool permissionGranted,
+    Map<NotificationKind, bool> enabledByKind = const <NotificationKind, bool>{},
   }) async {
     final state = NotificationSettingsState(
       loaded: true,
       permissionGranted: permissionGranted,
+      enabledByKind: enabledByKind,
     );
     final cubit = MockNotificationSettingsCubit();
     when(() => cubit.state).thenReturn(state);
@@ -92,6 +95,37 @@ void main() {
       'notification_settings_page_denied_dark',
       brightness: Brightness.dark,
       permissionGranted: false,
+    );
+  });
+
+  // Control por tipo (no un maestro): apagar dos de los cuatro debe leerse
+  // como `Toggle Field` en `Switch/Off`, no como una versión atenuada del
+  // encendido — el estado que la sección existe para permitir.
+  testWidgets('permiso concedido, mezcla de tipos apagados (light)',
+      (tester) async {
+    await golden(
+      tester,
+      'notification_settings_page_mixed_light',
+      brightness: Brightness.light,
+      permissionGranted: true,
+      enabledByKind: const {
+        NotificationKind.upcomingCharges: false,
+        NotificationKind.goalMilestones: false,
+      },
+    );
+  });
+
+  testWidgets('permiso concedido, mezcla de tipos apagados (dark)',
+      (tester) async {
+    await golden(
+      tester,
+      'notification_settings_page_mixed_dark',
+      brightness: Brightness.dark,
+      permissionGranted: true,
+      enabledByKind: const {
+        NotificationKind.upcomingCharges: false,
+        NotificationKind.goalMilestones: false,
+      },
     );
   });
 }
