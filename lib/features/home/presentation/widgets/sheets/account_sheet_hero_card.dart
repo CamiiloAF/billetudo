@@ -99,8 +99,8 @@ class AccountSheetHeroCard extends StatelessWidget {
                       const SizedBox(width: 6),
                     ],
                     Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 9, vertical: 3),
                       decoration: BoxDecoration(
                         color: pillColor,
                         borderRadius: BorderRadius.circular(10),

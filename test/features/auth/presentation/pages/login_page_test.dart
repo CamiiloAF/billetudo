@@ -27,8 +27,7 @@ class MockSignInWithApple extends Mock implements SignInWithApple {}
 class MockResolveAccountConflict extends Mock
     implements ResolveAccountConflict {}
 
-class MockCancelAccountConflict extends Mock
-    implements CancelAccountConflict {}
+class MockCancelAccountConflict extends Mock implements CancelAccountConflict {}
 
 void main() {
   late MockSignInWithGoogle signInWithGoogle;

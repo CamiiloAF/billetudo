@@ -100,6 +100,53 @@ posible causa compartida.
 
 Ambos se atienden en esta misma sesión, ver commit siguiente.
 
+## Corrección posterior (misma fecha, sesión de `/pr-review 37`) — el fix de "Metas" no es confiable
+
+La sección "Resueltos en esta sesión" de arriba afirma **4/4 en verde** para
+`home_patrol_test.dart` tras agregar `dismissAutoTutorialIfShown`. Verificando el PR
+#37 antes de aprobarlo, se re-corrió esa suite **dos veces** en un emulador
+dedicado (`emulator-5556`, sin ningún otro proceso Patrol apuntándole, confirmado con
+`ps aux`) — incluida una segunda corrida con las ventanas de espera de
+`_pumpUntilFound`/`dismissAutoTutorialIfShown` 3-5x más largas (100/60 frames en vez
+de 30/20) para descartar que fuera solo timing. **Las dos corridas fallaron
+exactamente igual:**
+
+```
+HU-01: Presupuestos y Metas abren sus features reales — FAILED
+Expected: exactly one matching candidate
+  Actual: _TypeWidgetFinder:<Found 0 widgets with type "GoalsListPage": []>
+```
+
+Alargar la espera no cambió el resultado, así que **no es una carrera de timing** del
+tipo que el fix de arriba asume — hay algo más impidiendo que la rama de Metas
+construya `GoalsListPage` tras el tap, sin ningún error de Flutter/Dart visible en
+consola (se revisó el log completo de ambas corridas, sin "EXCEPTION CAUGHT BY
+WIDGETS LIBRARY" ni ningún stack trace adicional al de la propia aserción fallida).
+
+**No es una regresión de este PR:** `git diff d810d9b5..HEAD` (base real del PR vs.
+su punta) muestra que el PR **no toca** `app_router.dart`, `home_shell_page.dart`,
+`goals/`, `budgets/` ni `tutorials/` — el único archivo tocado en esta área es el
+propio `home_patrol_test.dart` (las 15 líneas que agregaron
+`dismissAutoTutorialIfShown`, el intento de fix de arriba). El escenario ya fallaba
+antes de esas 15 líneas y sigue fallando después, con el mismo síntoma.
+
+**Estado real:** 🟡 sigue roto, no 🟢. Pendiente de una investigación con más
+instrumentación (logcat en vivo durante la corrida, o el reporte HTML de Patrol con
+captura del momento del fallo) en vez de inferir la causa por lectura de código —
+mismo enfoque que ya se recomendó para HU-03/HU-05/Fase B1+B2/Issue #7 de
+`transactions_patrol_test.dart` más abajo, que tampoco se resolvió leyendo código dos
+veces seguidas.
+
+## Verificación adicional del mismo PR (misma sesión) — `transactions_patrol_test.dart` limpio
+
+Corrida completa (12/12 escenarios ejecutados, sin corte de infraestructura) en el
+mismo emulador dedicado: **8/12 en verde**, y los 4 fallos son *exactamente* los
+mismos 4 ya documentados como preexistentes más abajo (HU-03, HU-05, "Fase B1+B2",
+"Issue #7") — mismo síntoma, misma línea. **HU-07 ("crear una etiqueta nueva al vuelo
+desde el formulario de transacción"), el escenario que más directamente ejercita el
+fix de colapso de teclado de este PR, pasó limpio.** Sin regresiones nuevas
+introducidas por este PR en esta suite.
+
 ## Bugs de tooling encontrados en esta sesión (nuevos, no documentados el 25 ago)
 
 - **Agentes concurrentes sobre el mismo emulador se pisan de verdad:** dos

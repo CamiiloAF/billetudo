@@ -381,12 +381,11 @@ class _TransactionsSearchRowState extends State<TransactionsSearchRow> {
                             },
                           ),
                     hintText: l10n.transactionsSearchHint,
-                    hintStyle:
-                        Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: colors.textSecondary,
-                            ),
+                    hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: colors.textSecondary,
+                        ),
                   ),
                   onChanged: cubit.searchChanged,
                 );
