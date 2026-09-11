@@ -32,6 +32,7 @@ class ToggleField extends StatelessWidget {
     required this.hint,
     required this.onChanged,
     this.enabled = true,
+    this.inert = false,
     super.key,
   });
 
@@ -45,21 +46,33 @@ class ToggleField extends StatelessWidget {
   /// `true` so existing call sites keep their current behaviour.
   final bool enabled;
 
+  /// When `true`, the row ignores taps and its switch renders `Switch/Off`
+  /// (`t0gdV`) — but the icon, label and hint keep full contrast.
+  ///
+  /// Different from `enabled: false`, which dims the whole row because the
+  /// app itself gates the setting. Inert means the setting is real and stored
+  /// but cannot take effect right now for an external reason (`VkWqs`: the
+  /// OS notification permission is revoked). Showing those switches ON while
+  /// nothing arrives is the failure mode that destroys the most trust in a
+  /// notice feature; dimming the text would instead suggest the settings were
+  /// lost, and they are not — they are restored the moment permission returns.
+  final bool inert;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
     return Semantics(
-      toggled: value,
+      toggled: value && !inert,
       button: true,
-      enabled: enabled,
+      enabled: enabled && !inert,
       label: label,
       hint: hint,
       child: Material(
         color: colors.surface,
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         child: InkWell(
-          onTap: enabled ? () => onChanged(!value) : null,
+          onTap: enabled && !inert ? () => onChanged(!value) : null,
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           child: Container(
             padding: const EdgeInsets.all(14),
@@ -86,7 +99,7 @@ class ToggleField extends StatelessWidget {
                               style: theme.textTheme.titleSmall?.copyWith(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
-                                color: enabled
+                                color: enabled || inert
                                     ? colors.textPrimary
                                     : colors.textSecondary,
                               ),
@@ -96,7 +109,7 @@ class ToggleField extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    AppSwitch(value: value, enabled: enabled),
+                    AppSwitch(value: value, enabled: enabled, inert: inert),
                   ],
                 ),
                 const SizedBox(height: 8),

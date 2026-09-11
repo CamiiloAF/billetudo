@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/error/result.dart';
 import '../../../categories/domain/entities/category.dart' show CategoryKind;
 import '../../domain/entities/scheduled_payment.dart';
+import '../../domain/entities/scheduled_payment_reminder.dart';
 
 enum ScheduledPaymentFormStatus {
   loading,
@@ -47,6 +48,8 @@ class ScheduledPaymentFormState extends Equatable {
     this.debtIsIOwe = false,
     this.debtCreatedAt,
     this.debtOutstandingMinor,
+    this.reminder,
+    this.notificationsAllowed = true,
     this.failure,
   }) : nextDate = nextDate ?? clock.now();
 
@@ -118,7 +121,22 @@ class ScheduledPaymentFormState extends Equatable {
   final DateTime? debtCreatedAt;
   final int? debtOutstandingMinor;
 
+  /// The reminder option the user picked (HU-08). `null` — the default — is
+  /// "sin recordatorio": the app does not assume everyone wants push.
+  final ScheduledPaymentReminder? reminder;
+
+  /// Whether the OS currently allows notifications. Only ever `false` after
+  /// the user picked a reminder and declined the in-context permission
+  /// prompt; the preference is still saved and the form still submits (HU-08
+  /// — "la preferencia se guarda pero no se dispara"), the UI just says so.
+  final bool notificationsAllowed;
+
   final Failure? failure;
+
+  /// Whether to surface the "turn notifications on in system settings" note:
+  /// only when a reminder is actually configured. With no reminder there is
+  /// nothing the permission would enable, so mentioning it would be noise.
+  bool get showsPermissionNotice => reminder != null && !notificationsAllowed;
 
   bool get isEditing => id != null;
   bool get isTransfer => type == ScheduledPaymentType.transfer;
@@ -168,6 +186,9 @@ class ScheduledPaymentFormState extends Equatable {
     bool? debtIsIOwe,
     DateTime? debtCreatedAt,
     int? debtOutstandingMinor,
+    ScheduledPaymentReminder? reminder,
+    bool clearReminder = false,
+    bool? notificationsAllowed,
     Failure? failure,
   }) =>
       ScheduledPaymentFormState(
@@ -209,6 +230,11 @@ class ScheduledPaymentFormState extends Equatable {
         debtIsIOwe: debtIsIOwe ?? this.debtIsIOwe,
         debtCreatedAt: debtCreatedAt ?? this.debtCreatedAt,
         debtOutstandingMinor: debtOutstandingMinor ?? this.debtOutstandingMinor,
+        // `clearReminder` exists because "sin recordatorio" IS a value the
+        // user can choose, and `reminder ?? this.reminder` could never
+        // express it.
+        reminder: clearReminder ? null : (reminder ?? this.reminder),
+        notificationsAllowed: notificationsAllowed ?? this.notificationsAllowed,
         failure: failure,
       );
 
@@ -240,6 +266,8 @@ class ScheduledPaymentFormState extends Equatable {
         debtIsIOwe,
         debtCreatedAt,
         debtOutstandingMinor,
+        reminder,
+        notificationsAllowed,
         failure,
       ];
 }
