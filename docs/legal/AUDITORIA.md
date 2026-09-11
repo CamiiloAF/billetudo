@@ -1540,7 +1540,7 @@ ramas.
 > **Actualización (2026-09-10):** `dev` absorbió desde entonces el PR #28
 > (`feat/capture-native`), que **sí** trae código de feature real: el servicio
 > nativo Android de escucha de notificaciones bancarias
-> (`android/app/src/main/kotlin/com/billetudo/app/capture/`, 7 archivos, más el
+> (`android/app/src/main/kotlin/com/billetudo/app/capture/`, 8 archivos, más el
 > `<service>` y el `<queries>` correspondientes en `AndroidManifest.xml`) y la
 > capa `data`/`domain` de `lib/features/capture/` (21 archivos, cableada en DI).
 > Ver §13.1/§13.2, corregidos contra `dev` en esta misma fecha. **Lo que
@@ -1573,7 +1573,7 @@ ramas.
 | `speech_to_text: ^7.4.0` | `pubspec.yaml:90` | **Descomentado**, sin uso en `lib/` todavía |
 | `flutter_local_notifications: ^22.3.0` + `timezone: ^0.11.1` | `pubspec.yaml:102-103` | **Descomentados**, sin uso en `lib/` todavía |
 | `permission_handler: ^12.0.1` | `pubspec.yaml:113` | **Descomentado**, sin uso en `lib/` todavía. **Nota (2026-09-10): la versión real es `^12.0.1`, no `^13.0.2`** — el comentario adyacente en `pubspec.yaml:107-112` registra que la 13.x/`permission_handler_android` 14.1.0 rompe el build de Android (`Unresolved reference: compilerOptions`) |
-| Servicio nativo Android de notificaciones bancarias | `android/app/src/main/kotlin/com/billetudo/app/capture/` (7 archivos) + `<service>`/`<queries>` en `AndroidManifest.xml` | **Nuevo desde el 2026-09-10** (PR #28, `feat/capture-native`, ya en `dev`). Ver §13.2 |
+| Servicio nativo Android de notificaciones bancarias | `android/app/src/main/kotlin/com/billetudo/app/capture/` (8 archivos) + `<service>`/`<queries>` en `AndroidManifest.xml` | **Nuevo desde el 2026-09-10** (PR #28, `feat/capture-native`, ya en `dev`). Ver §13.2 |
 | Capa `data`/`domain` de captura en Flutter | `lib/features/capture/` (21 archivos), cableada en `lib/core/di/injection.config.dart` | **Nuevo desde el 2026-09-10.** Sin capa `presentation` — ver §13.2 |
 
 ### 13.2 Qué SÍ y qué NO está en el árbol, corregido contra `dev` (2026-09-10)
@@ -1588,7 +1588,7 @@ servicio real. Quedan así:
 | Código de captura (data/domain) | **Existe** — notificaciones bancarias (Android) | `lib/features/capture/`: 21 archivos (datasources, repos, entidades, 8 casos de uso), sin `.gitkeep` |
 | Código de captura (presentation/UI) | **No existe** | Ninguna página, cubit ni ruta bajo `lib/features/capture/`; `grep -rln "capture" lib/features/ lib/core/router lib/main.dart` (excluyendo coincidencias de "captured"/"screenshot" de otras features) no encuentra ninguna pantalla ni ruta que la exponga |
 | Uso de los plugins de voz/notificaciones locales (`speech_to_text`, `flutter_local_notifications`, `permission_handler`) | **Ninguno** | `grep -rl "speech_to_text\|flutter_local_notifications\|permission_handler" lib/` no devuelve nada — siguen sin usarse, a diferencia del servicio nativo de abajo, que no depende de estos paquetes |
-| Servicio nativo Android (notificaciones bancarias) | **Existe** | `android/app/src/main/kotlin/com/billetudo/app/capture/`: `BilletudoNotificationListenerService.kt`, `CaptureChannelHandler.kt`, `CaptureSettings.kt`, `IssuerFilter.kt`, `IssuerRules.kt`, `NotificationAmountParser.kt`, `NotificationRuleEngine.kt`, `PendingCaptureBuffer.kt` (7 archivos, más `MainActivity.kt` — 8 en total) |
+| Servicio nativo Android (notificaciones bancarias) | **Existe** | `android/app/src/main/kotlin/com/billetudo/app/capture/`: `BilletudoNotificationListenerService.kt`, `CaptureChannelHandler.kt`, `CaptureSettings.kt`, `IssuerFilter.kt`, `IssuerRules.kt`, `NotificationAmountParser.kt`, `NotificationRuleEngine.kt`, `PendingCaptureBuffer.kt` (8 archivos, más `MainActivity.kt` — 9 en total) |
 | Permisos Android (`uses-permission`) | **Ninguno** | `android/app/src/main/AndroidManifest.xml` sigue sin **ningún** `uses-permission`; solo el `<queries>` de `PROCESS_TEXT` (boilerplate del engine) y el nuevo `<queries>` con los 3 paquetes del catálogo de bancos (ver fila siguiente) |
 | `<service>` de `NotificationListenerService` | **Existe** | `AndroidManifest.xml`: `<service android:name=".capture.BilletudoNotificationListenerService" android:exported="false" android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">`. **No es un `uses-permission`**: el acceso se concede como *special app access* en Ajustes del sistema, no en el diálogo de permisos en runtime — por eso la fila anterior sigue en "Ninguno" sin contradecir esta |
 | Visibilidad de paquetes del catálogo de bancos | **Existe, y coincide con el catálogo** | `<queries>` en `AndroidManifest.xml` declara exactamente `com.nequi.MobileApp`, `com.nu.production`, `com.google.android.apps.walletnfcrel` (3 paquetes) — los mismos 3 de `assets/capture/issuer_rules.json`. **No** usa `QUERY_ALL_PACKAGES` |
