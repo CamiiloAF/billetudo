@@ -261,6 +261,11 @@ flutter:
 
   assets:
     - assets/branding/
+    # Reglas de parseo de notificaciones bancarias (Fase 2, HU-03). Es la
+    # FUENTE ÚNICA: la lee el motor Dart y también el servicio Kotlin, desde
+    # flutter_assets/assets/capture/issuer_rules.json. Mover este archivo
+    # obliga a cambiar IssuerRulesLoader.kt.
+    - assets/capture/
 
   # Plus Jakarta Sans se declara como UNA familia con sus 5 pesos, no via
   # `google_fonts`. Motivo: `GoogleFonts.plusJakartaSansTextTheme` fija
