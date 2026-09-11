@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/forms/keyboard.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../transactions/presentation/widgets/transaction_form_field_button.dart';
@@ -68,7 +69,16 @@ class ScheduledPaymentReminderField extends StatelessWidget {
           inlineIcon:
               reminder == null ? LucideIcons.bellOff : LucideIcons.bell,
           onTap: () async {
-            FocusScope.of(context).unfocus();
+            // `dismissSystemKeyboard` (not a bare `unfocus()`): on a real
+            // device the system keyboard's close animation is not
+            // instantaneous, and `ScheduledPaymentReminderSheet` below is a
+            // fixed-height, non-scrollable sheet by design (its own doc
+            // comment) — opening it before the keyboard's inset has actually
+            // settled overflowed its `Column` by the inset still left over.
+            await dismissSystemKeyboard(context);
+            if (!context.mounted) {
+              return;
+            }
             final result = await ScheduledPaymentReminderSheet.show(
               context,
               selected: reminder,
