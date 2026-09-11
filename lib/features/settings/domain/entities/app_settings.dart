@@ -35,6 +35,8 @@ class AppSettings extends Equatable {
     this.aiConsentAcceptedAt,
     this.aiConsentVersion = 0,
     this.aiNotesAccessEnabled = false,
+    this.legalAcceptedAt,
+    this.legalAcceptedVersion = 0,
   });
 
   /// Sensible default before the singleton row has been read.
@@ -47,7 +49,9 @@ class AppSettings extends Equatable {
         quickAccessOrder = QuickAccessItem.defaultOrder,
         aiConsentAcceptedAt = null,
         aiConsentVersion = 0,
-        aiNotesAccessEnabled = false;
+        aiNotesAccessEnabled = false,
+        legalAcceptedAt = null,
+        legalAcceptedVersion = 0;
 
   /// Whether "Modo sobres" (zero-based budgeting) is on (HU-06).
   final bool zeroBasedEnabled;
@@ -99,6 +103,17 @@ class AppSettings extends Equatable {
   /// which is the behavior every version before this opt-in had.
   final bool aiNotesAccessEnabled;
 
+  /// When the person last accepted the legal terms (privacy policy + terms
+  /// of use) — one joint timestamp, alongside [legalAcceptedVersion]'s
+  /// "which version". `null` = not accepted yet on this installation.
+  final DateTime? legalAcceptedAt;
+
+  /// Which joint legal-package version was accepted, alongside
+  /// [legalAcceptedAt]. `0` means "accepted before the column existed, or
+  /// never accepted" — the Drift column is nullable and is read as `0` in
+  /// `data/` rather than backfilled, same convention as [aiConsentVersion].
+  final int legalAcceptedVersion;
+
   /// Consent counts as granted only when it was given AND given against copy
   /// at least as current as this build's ([currentAiConsentVersion]). A lower
   /// stored version re-shows the consent screen even though the timestamp is
@@ -118,6 +133,8 @@ class AppSettings extends Equatable {
     DateTime? aiConsentAcceptedAt,
     int? aiConsentVersion,
     bool? aiNotesAccessEnabled,
+    DateTime? legalAcceptedAt,
+    int? legalAcceptedVersion,
   }) =>
       AppSettings(
         zeroBasedEnabled: zeroBasedEnabled ?? this.zeroBasedEnabled,
@@ -129,6 +146,8 @@ class AppSettings extends Equatable {
         aiConsentAcceptedAt: aiConsentAcceptedAt ?? this.aiConsentAcceptedAt,
         aiConsentVersion: aiConsentVersion ?? this.aiConsentVersion,
         aiNotesAccessEnabled: aiNotesAccessEnabled ?? this.aiNotesAccessEnabled,
+        legalAcceptedAt: legalAcceptedAt ?? this.legalAcceptedAt,
+        legalAcceptedVersion: legalAcceptedVersion ?? this.legalAcceptedVersion,
       );
 
   @override
@@ -142,5 +161,7 @@ class AppSettings extends Equatable {
         aiConsentAcceptedAt,
         aiConsentVersion,
         aiNotesAccessEnabled,
+        legalAcceptedAt,
+        legalAcceptedVersion,
       ];
 }

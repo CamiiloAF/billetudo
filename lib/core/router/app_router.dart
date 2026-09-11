@@ -131,6 +131,8 @@ import '../../features/transactions/presentation/pages/transactions_page.dart';
 import '../di/injection.dart';
 import '../error/result.dart';
 import '../l10n/gen/app_localizations.dart';
+import '../legal/presentation/widgets/legal_reacceptance_gate.dart';
+import '../legal/presentation/widgets/sheets/legal_acceptance_sheet.dart';
 import '../preferences/balance_carousel_cubit.dart';
 import '../sync/presentation/cubit/sync_status_cubit.dart';
 import '../sync/presentation/pages/pending_sync_changes_page.dart';
@@ -457,39 +459,48 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.home}) {
     initialLocation: initialLocation,
     routes: [
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) => HomeShellPage(
-          navigationShell: navigationShell,
-          // Tapping the Movimientos tab directly (not through Gráficas'
-          // categories drill-down) clears a stale "volver a Gráficas" flag
-          // left over from an earlier visit — see `_movimientosBranch` and
-          // `_reportsRoute`'s `onOpenCategoryMovements`.
-          onSelectBranch: (index) {
-            if (index == _movimientosBranchIndex) {
-              getIt<TransactionsListCubit>().clearArrivedFromReports();
-            }
-          },
-          // System back from Movimientos' root, when it was reached through
-          // Gráficas' categories drill-down, must return to Gráficas instead
-          // of falling through to `HomeShellPage`'s default "jump to
-          // Inicio" — see `HomeShellPage.onInterceptBranchBack`'s doc for why
-          // `TransactionsPage`'s own `PopScope` can never catch this itself.
-          // Mirrors `_movimientosBranch`'s `onBackToReports` exactly.
-          onInterceptBranchBack: (index) {
-            if (index != _movimientosBranchIndex) {
-              return null;
-            }
-            final cubit = getIt<TransactionsListCubit>();
-            if (!cubit.state.arrivedFromReports) {
-              return null;
-            }
-            return () {
-              cubit.clearArrivedFromReports();
-              context.go(
-                AppRoutes.reports,
-                extra: ChartViewId.categoryBreakdown,
-              );
-            };
-          },
+        // `LegalReacceptanceGate` wraps every entry into the shell (not just
+        // Inicio): the mandatory re-acceptance check (HU pendiente,
+        // `docs/legal/entrega-de-documentos-legales.md`) runs once per app
+        // launch here — the "punto de entrada post-primer-arranque" the
+        // welcome flow's own gate (`ShouldShowOnboarding`, evaluated in
+        // `bootstrap.dart`) never touches, since someone who has already
+        // completed onboarding lands here directly.
+        builder: (context, state, navigationShell) => LegalReacceptanceGate(
+          child: HomeShellPage(
+            navigationShell: navigationShell,
+            // Tapping the Movimientos tab directly (not through Gráficas'
+            // categories drill-down) clears a stale "volver a Gráficas" flag
+            // left over from an earlier visit — see `_movimientosBranch` and
+            // `_reportsRoute`'s `onOpenCategoryMovements`.
+            onSelectBranch: (index) {
+              if (index == _movimientosBranchIndex) {
+                getIt<TransactionsListCubit>().clearArrivedFromReports();
+              }
+            },
+            // System back from Movimientos' root, when it was reached through
+            // Gráficas' categories drill-down, must return to Gráficas instead
+            // of falling through to `HomeShellPage`'s default "jump to
+            // Inicio" — see `HomeShellPage.onInterceptBranchBack`'s doc for why
+            // `TransactionsPage`'s own `PopScope` can never catch this itself.
+            // Mirrors `_movimientosBranch`'s `onBackToReports` exactly.
+            onInterceptBranchBack: (index) {
+              if (index != _movimientosBranchIndex) {
+                return null;
+              }
+              final cubit = getIt<TransactionsListCubit>();
+              if (!cubit.state.arrivedFromReports) {
+                return null;
+              }
+              return () {
+                cubit.clearArrivedFromReports();
+                context.go(
+                  AppRoutes.reports,
+                  extra: ChartViewId.categoryBreakdown,
+                );
+              };
+            },
+          ),
         ),
         branches: [
           _inicioBranch(),
@@ -1788,6 +1799,19 @@ Future<void> _openImportFlow(BuildContext context) async {
   await cubit.close();
 }
 
+/// Opens the shared legal acceptance sheet (`TxoKJ`) and runs [onAccepted]
+/// only when it resolves `true` — "Comenzar" and "Ya tengo cuenta" share
+/// this exact gate, differing only in what [onAccepted] does.
+Future<void> _openAcceptanceThenPush(
+  BuildContext context,
+  VoidCallback onAccepted,
+) async {
+  final accepted = await LegalAcceptanceSheet.showIfNeeded(context);
+  if (accepted && context.mounted) {
+    onAccepted();
+  }
+}
+
 // The welcome flow (`13-onboarding.md`): four screens under `/bienvenida`,
 // each its own `GoRoute` (not a `PageView` inside one route) so the Android
 // back button gets ordinary stack-pop behavior between steps for free, and
@@ -1807,9 +1831,23 @@ GoRoute _onboardingRoute() => GoRoute(
       builder: (context, state) => BlocProvider.value(
         value: getIt<OnboardingFlowCubit>()..stepped(OnboardingStep.welcome),
         child: WelcomePage(
-          onComenzar: () => context.push(AppRoutes.onboardingAccount),
-          onYaTengoCuenta: () => context.push(
-            AppRoutes.onboardingLoginFrom(closesFlow: true),
+          // Both destinations are behind the SAME acceptance sheet
+          // (`TxoKJ`): only the destination after "Acepto" differs. Neither
+          // navigates when the sheet resolves to `false` (dismissed or
+          // "Ahora no").
+          onComenzar: () => unawaited(
+            _openAcceptanceThenPush(
+              context,
+              () => context.push(AppRoutes.onboardingAccount),
+            ),
+          ),
+          onYaTengoCuenta: () => unawaited(
+            _openAcceptanceThenPush(
+              context,
+              () => context.push(
+                AppRoutes.onboardingLoginFrom(closesFlow: true),
+              ),
+            ),
           ),
         ),
       ),

@@ -2090,6 +2090,24 @@ abstract class AppLocalizations {
   /// **'Aún no tienes etiquetas'**
   String get transactionsFilterTagEmpty;
 
+  /// No description provided for @transactionsChipDateDefaultLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Este mes'**
+  String get transactionsChipDateDefaultLabel;
+
+  /// No description provided for @transactionsPeriodNavPreviousLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Periodo anterior'**
+  String get transactionsPeriodNavPreviousLabel;
+
+  /// No description provided for @transactionsPeriodNavNextLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Periodo siguiente'**
+  String get transactionsPeriodNavNextLabel;
+
   /// No description provided for @dateFilterWeek.
   ///
   /// In es, this message translates to:
@@ -10532,6 +10550,132 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Retirar'**
   String get settingsAiConsentWithdrawSheetConfirm;
+
+  /// No description provided for @legalAcceptanceSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu privacidad nos importa'**
+  String get legalAcceptanceSheetTitle;
+
+  /// No description provided for @legalAcceptanceSheetMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Antes de que guardes nada, mira cómo cuidamos tu información.'**
+  String get legalAcceptanceSheetMessage;
+
+  /// No description provided for @legalAcceptanceSheetDeclaration.
+  ///
+  /// In es, this message translates to:
+  /// **'Al aceptar confirmas que leíste los Términos de uso y la Política de privacidad.'**
+  String get legalAcceptanceSheetDeclaration;
+
+  /// No description provided for @legalAcceptanceSheetAccept.
+  ///
+  /// In es, this message translates to:
+  /// **'Acepto los términos y la política'**
+  String get legalAcceptanceSheetAccept;
+
+  /// No description provided for @legalAcceptanceSheetDecline.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahora no'**
+  String get legalAcceptanceSheetDecline;
+
+  /// No description provided for @legalViewerMeta.
+  ///
+  /// In es, this message translates to:
+  /// **'Versión {version} · Actualizado el {date}'**
+  String legalViewerMeta(int version, String date);
+
+  /// No description provided for @legalReacceptanceBothTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Actualizamos los Términos de uso y la Política de privacidad'**
+  String get legalReacceptanceBothTitle;
+
+  /// No description provided for @legalReacceptanceBothMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiaron desde la última vez que los aceptaste. Échales un vistazo para seguir usando Billetudo.'**
+  String get legalReacceptanceBothMessage;
+
+  /// No description provided for @legalReacceptanceBothAccept.
+  ///
+  /// In es, this message translates to:
+  /// **'Acepto los términos y la política'**
+  String get legalReacceptanceBothAccept;
+
+  /// No description provided for @legalReacceptanceSingleTermsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Actualizamos los Términos de uso'**
+  String get legalReacceptanceSingleTermsTitle;
+
+  /// No description provided for @legalReacceptanceSingleTermsMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiaron desde la última vez que los aceptaste. Échales un vistazo para seguir usando Billetudo.'**
+  String get legalReacceptanceSingleTermsMessage;
+
+  /// No description provided for @legalReacceptanceSingleTermsAccept.
+  ///
+  /// In es, this message translates to:
+  /// **'Acepto los nuevos términos'**
+  String get legalReacceptanceSingleTermsAccept;
+
+  /// No description provided for @legalReacceptanceSinglePrivacyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Actualizamos la Política de privacidad'**
+  String get legalReacceptanceSinglePrivacyTitle;
+
+  /// No description provided for @legalReacceptanceSinglePrivacyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambió desde la última vez que la aceptaste. Échale un vistazo para seguir usando Billetudo.'**
+  String get legalReacceptanceSinglePrivacyMessage;
+
+  /// No description provided for @legalReacceptanceSinglePrivacyAccept.
+  ///
+  /// In es, this message translates to:
+  /// **'Acepto la nueva política'**
+  String get legalReacceptanceSinglePrivacyAccept;
+
+  /// No description provided for @legalReacceptanceDecline.
+  ///
+  /// In es, this message translates to:
+  /// **'No acepto'**
+  String get legalReacceptanceDecline;
+
+  /// No description provided for @legalReacceptanceFootnote.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos siguen guardados en este teléfono. No se borra nada.'**
+  String get legalReacceptanceFootnote;
+
+  /// No description provided for @legalReacceptanceStep2Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin aceptar no podemos continuar'**
+  String get legalReacceptanceStep2Title;
+
+  /// No description provided for @legalReacceptanceStep2Message.
+  ///
+  /// In es, this message translates to:
+  /// **'Tómate el tiempo que necesites. Todo lo que registraste es tuyo y puedes descargarlo cuando quieras.'**
+  String get legalReacceptanceStep2Message;
+
+  /// No description provided for @legalReacceptanceStep2Export.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportar mis datos'**
+  String get legalReacceptanceStep2Export;
+
+  /// No description provided for @legalReacceptanceStep2Back.
+  ///
+  /// In es, this message translates to:
+  /// **'Volver a los términos'**
+  String get legalReacceptanceStep2Back;
 }
 
 class _AppLocalizationsDelegate

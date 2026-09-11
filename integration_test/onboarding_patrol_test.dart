@@ -1,4 +1,6 @@
-// Patrol e2e for Onboarding (feature 13, HU-01/HU-02/HU-04/HU-06/HU-07).
+// Patrol e2e for Onboarding (feature 13, HU-01/HU-02/HU-04/HU-06/HU-07) and
+// the legal acceptance gate in front of it (`aceptacion-terminos-onboarding
+// -pendiente.md`, AC 1-3).
 // Runs the real app — real DI graph, real on-device Drift database, real
 // go_router navigation — against a real emulator/simulator. No datasource or
 // repository is mocked.
@@ -11,23 +13,32 @@
 // instead, reproducing the route a real fresh install's `bootstrap.dart`
 // would have chosen against this same clean database.
 //
-// Two of `13-onboarding.md`'s three e2e paths are covered here:
+// Three of `13-onboarding.md`'s e2e paths are covered here:
 //   (a) first launch, creating the pre-filled account -> registering the
 //       first movement -> Home.
 //   (b) first launch, skipping the account -> Home.
-// The third — "Ya tengo cuenta" -> login -> onboarding cerrado (HU-06) —
-// cannot be automated in this environment: it requires a real Google/Apple
-// OAuth round-trip through the native SDK's interactive consent screen, and
-// no test Google account is configured on this emulator. This is the same
-// constraint `auth_patrol_test.dart`'s own file comment documents for HU-01's
-// login screen (its "Supabase/PowerSync are not wired into this project yet"
-// framing is stale now that both are wired — see `AuthRepositoryImpl` — but
-// the underlying blocker, an interactive native sign-in sheet Patrol cannot
-// drive or fake, still applies). `OnboardingFlowCubit.authenticated()` and
+//   (c) "Ya tengo cuenta" opens the shared legal acceptance gate before
+//       reaching LoginPage (AC 3, `aceptacion-terminos-onboarding-pendiente.md`).
+// What (c) does NOT cover — login itself, "Ya tengo cuenta" -> login ->
+// onboarding cerrado (HU-06) — cannot be automated in this environment: it
+// requires a real Google/Apple OAuth round-trip through the native SDK's
+// interactive consent screen, and no test Google account is configured on
+// this emulator. This is the same constraint `auth_patrol_test.dart`'s own
+// file comment documents for HU-01's login screen (its "Supabase/PowerSync
+// are not wired into this project yet" framing is stale now that both are
+// wired — see `AuthRepositoryImpl` — but the underlying blocker, an
+// interactive native sign-in sheet Patrol cannot drive or fake, still
+// applies). `OnboardingFlowCubit.authenticated()` and
 // `_finishOnboardingAfterLogin`'s `closesFlow` branch already have full
 // coverage without a real backend at the unit level
 // (`test/features/onboarding/presentation/cubit/onboarding_flow_cubit_test.dart`).
+//
+// Both `patrolTest`s below also implicitly cover AC 1: `LegalFooterLinks`
+// renders on `WelcomePage` regardless (see the widget/golden tests for the
+// footer's own behavior) and nothing here depends on it being tapped.
+import 'package:billetudo/core/legal/presentation/widgets/sheets/legal_acceptance_sheet.dart';
 import 'package:billetudo/core/router/app_router.dart';
+import 'package:billetudo/features/auth/presentation/pages/login_page.dart';
 import 'package:billetudo/features/home/presentation/pages/home_page.dart';
 import 'package:billetudo/features/onboarding/presentation/pages/backup_intro_page.dart';
 import 'package:billetudo/features/onboarding/presentation/pages/closing_page.dart';
@@ -86,6 +97,32 @@ void main() {
       await $.tester.tap(find.text('Comenzar'));
       await $.tester.pumpAndSettle();
 
+      // AC 2 (aceptacion-terminos-onboarding): "Comenzar" opens the shared
+      // acceptance sheet before navigating anywhere — a fresh install's
+      // accepted version is always 0, so it always shows here.
+      expect(find.byType(LegalAcceptanceSheet), findsOneWidget);
+      // Scoped to the sheet itself: `WelcomePage`'s `LegalFooterLinks` stays
+      // mounted underneath the modal (only visually covered, not removed
+      // from the tree), and it repeats both document names as tappable
+      // links — an unscoped `find.text` matches that copy too.
+      final sheetFinder = find.byType(LegalAcceptanceSheet);
+      expect(
+        find.descendant(
+          of: sheetFinder,
+          matching: find.text('Términos de uso'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: sheetFinder,
+          matching: find.text('Política de privacidad'),
+        ),
+        findsOneWidget,
+      );
+      await $.tester.tap(find.text('Acepto los términos y la política'));
+      await $.tester.pumpAndSettle();
+
       // HU-02: the pre-filled draft (Ahorros/savings/COP/$0) is valid on its
       // own — no field needs to be touched before "Crear cuenta".
       expect(find.byType(FirstAccountPage), findsOneWidget);
@@ -136,6 +173,12 @@ void main() {
       await $.tester.tap(find.text('Comenzar'));
       await $.tester.pumpAndSettle();
 
+      // Same shared gate as the other scenario — asserted lightly here since
+      // the sheet's own content is already covered above.
+      expect(find.byType(LegalAcceptanceSheet), findsOneWidget);
+      await $.tester.tap(find.text('Acepto los términos y la política'));
+      await $.tester.pumpAndSettle();
+
       expect(find.byType(FirstAccountPage), findsOneWidget);
       expect(find.text('Omitir por ahora'), findsOneWidget);
       await $.tester.tap(find.text('Omitir por ahora'));
@@ -158,6 +201,28 @@ void main() {
 
       expect(find.byType(HomePage), findsOneWidget);
       expect(find.byType(WelcomePage), findsNothing);
+    },
+  );
+
+  patrolTest(
+    'AC 3 (aceptacion-terminos-onboarding): "Ya tengo cuenta" abre la misma '
+    'hoja de aceptacion antes de llegar a LoginPage',
+    ($) async {
+      await startOnboardingApp($);
+
+      expect(find.byType(WelcomePage), findsOneWidget);
+      await $.tester.tap(find.text('Ya tengo cuenta'));
+      await $.tester.pumpAndSettle();
+
+      // Same shared gate `_openAcceptanceThenPush` uses for both CTAs — no
+      // route to LoginPage skips it.
+      expect(find.byType(LegalAcceptanceSheet), findsOneWidget);
+      expect(find.byType(LoginPage), findsNothing);
+      await $.tester.tap(find.text('Acepto los términos y la política'));
+      await $.tester.pumpAndSettle();
+
+      expect(find.byType(LoginPage), findsOneWidget);
+      expect(find.byType(LegalAcceptanceSheet), findsNothing);
     },
   );
 }

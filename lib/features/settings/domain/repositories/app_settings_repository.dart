@@ -64,4 +64,11 @@ abstract class AppSettingsRepository {
   /// ([AppSettings.aiNotesAccessEnabled]). Off by default; nothing reads a
   /// note anywhere until this is explicitly `true`.
   FutureResult<Unit> setAiNotesAccessEnabled({required bool enabled});
+
+  /// Records joint acceptance of the legal terms (privacy policy + terms of
+  /// use) — one row, one timestamp, stamped with [version]: the version of
+  /// the document(s) actually shown, never the remote manifest's declared
+  /// version if that download failed. Idempotent: calling it again just
+  /// moves the timestamp/version forward.
+  FutureResult<Unit> markLegalAccepted({required int version});
 }

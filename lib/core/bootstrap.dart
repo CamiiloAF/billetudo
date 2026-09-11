@@ -17,6 +17,7 @@ import 'crash/sentry_crash_reporter.dart';
 import 'database/database_connection.dart';
 import 'di/injection.dart';
 import 'error/result.dart';
+import 'legal/domain/repositories/legal_documents_repository.dart';
 import 'router/app_router.dart';
 
 /// Shared entry point: mounts [AppBootstrapGate] (which shows the splash
@@ -39,7 +40,8 @@ import 'router/app_router.dart';
 /// wiring up (that now happens asynchronously inside [_initApp], behind the
 /// splash screen), so they resolve [CrashReporter] lazily and tolerate it not
 /// being registered yet — see [_reportBootError].
-Future<void> bootstrap(Widget Function({String initialLocation}) builder) async {
+Future<void> bootstrap(
+    Widget Function({String initialLocation}) builder) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final gate = AppBootstrapGate(init: () => _initApp(builder));
@@ -158,6 +160,17 @@ Future<Widget Function()> _initApp(
   // and let the user in — those aren't the network-availability problem this
   // screen exists for.
   final seedResult = await getIt<SeedDefaultCategories>()();
+
+  // Kicks off the legal manifest/documents background download
+  // (`docs/legal/entrega-de-documentos-legales.md`). Fire-and-forget and
+  // never awaited: a failed download (404, timeout, GitHub Pages down)
+  // must not block this launch — the repository already falls back to the
+  // disk cache or the bundled asset and simply retries on a later launch.
+  // Deliberately placed on the normal (non-offline-gated) path: this is the
+  // common case on every launch, unlike `FirstLaunchOfflineGate`'s retry
+  // path below, which only exists for the rare first-launch-with-no-network
+  // case.
+  unawaited(getIt<LegalDocumentsRepository>().refreshFromRemote());
 
   // `13-onboarding.md`, "El gate se evalúa una sola vez por arranque, tras
   // el bootstrap": decides once, here, whether the welcome flow should be

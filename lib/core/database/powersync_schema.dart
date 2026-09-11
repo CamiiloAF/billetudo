@@ -303,6 +303,19 @@ const powerSyncSchema = Schema([
     // Drift BoolColumn here; non-nullable client-side, so the migration
     // backfills pre-existing rows to 0. See AppSettings.aiNotesAccessEnabled.
     Column.integer('ai_notes_access_enabled'),
+    // Joint acceptance of the legal terms (privacy policy + terms of use),
+    // one row/timestamp for both documents (schemaVersion 35). Epoch SECONDS
+    // like every Drift DateTimeColumn, so `bigint` in Postgres — never
+    // `timestamptz`. Nullable = not accepted yet on this installation; never
+    // backfilled. See AppSettings.legalAcceptedAt.
+    Column.integer('legal_accepted_at'),
+    // Which version of the legal terms was accepted, alongside
+    // `legal_accepted_at` (schemaVersion 35). This is the version of the
+    // document(s) actually shown (cache or bundled fallback), never the
+    // remote manifest's declared version. Nullable; NULL is read as 0
+    // (never backfilled), which is below the current version and therefore
+    // re-asks for acceptance. See AppSettings.legalAcceptedVersion.
+    Column.integer('legal_accepted_version'),
     ..._syncColumns,
   ]),
   // Contextual help minitutorials: one row per tutorial key the user has

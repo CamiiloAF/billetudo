@@ -1165,6 +1165,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionsFilterTagEmpty => 'You don\'t have any tags yet';
 
   @override
+  String get transactionsChipDateDefaultLabel => 'This month';
+
+  @override
+  String get transactionsPeriodNavPreviousLabel => 'Previous period';
+
+  @override
+  String get transactionsPeriodNavNextLabel => 'Next period';
+
+  @override
   String get dateFilterWeek => 'Week';
 
   @override
@@ -6440,4 +6449,79 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAiConsentWithdrawSheetConfirm => 'Withdraw';
+
+  @override
+  String get legalAcceptanceSheetTitle => 'Your privacy matters to us';
+
+  @override
+  String get legalAcceptanceSheetMessage =>
+      'Before you save anything, see how we take care of your information.';
+
+  @override
+  String get legalAcceptanceSheetDeclaration =>
+      'By accepting you confirm you read the Terms of use and the Privacy policy.';
+
+  @override
+  String get legalAcceptanceSheetAccept => 'I accept the terms and the policy';
+
+  @override
+  String get legalAcceptanceSheetDecline => 'Not now';
+
+  @override
+  String legalViewerMeta(int version, String date) {
+    return 'Version $version · Updated on $date';
+  }
+
+  @override
+  String get legalReacceptanceBothTitle =>
+      'We updated the Terms of use and the Privacy policy';
+
+  @override
+  String get legalReacceptanceBothMessage =>
+      'They changed since the last time you accepted them. Take a look to keep using Billetudo.';
+
+  @override
+  String get legalReacceptanceBothAccept => 'I accept the terms and the policy';
+
+  @override
+  String get legalReacceptanceSingleTermsTitle => 'We updated the Terms of use';
+
+  @override
+  String get legalReacceptanceSingleTermsMessage =>
+      'They changed since the last time you accepted them. Take a look to keep using Billetudo.';
+
+  @override
+  String get legalReacceptanceSingleTermsAccept => 'I accept the new terms';
+
+  @override
+  String get legalReacceptanceSinglePrivacyTitle =>
+      'We updated the Privacy policy';
+
+  @override
+  String get legalReacceptanceSinglePrivacyMessage =>
+      'It changed since the last time you accepted it. Take a look to keep using Billetudo.';
+
+  @override
+  String get legalReacceptanceSinglePrivacyAccept => 'I accept the new policy';
+
+  @override
+  String get legalReacceptanceDecline => 'I don\'t accept';
+
+  @override
+  String get legalReacceptanceFootnote =>
+      'Your data stays saved on this phone. Nothing gets deleted.';
+
+  @override
+  String get legalReacceptanceStep2Title =>
+      'Without accepting we can\'t continue';
+
+  @override
+  String get legalReacceptanceStep2Message =>
+      'Take the time you need. Everything you recorded is yours and you can download it whenever you want.';
+
+  @override
+  String get legalReacceptanceStep2Export => 'Export my data';
+
+  @override
+  String get legalReacceptanceStep2Back => 'Back to the terms';
 }

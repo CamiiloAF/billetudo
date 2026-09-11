@@ -94,7 +94,15 @@ bug de producto confirmado detrás:
 
 - Patrol CLI 4.5.1 puede reutilizar `integration_test/test_bundle.dart` obsoleto de una
   suite anterior y correr los tests equivocados sin fallar el build — mitigación:
-  `rm -f integration_test/test_bundle.dart` antes de cada `patrol test`.
+  `rm -f integration_test/test_bundle.dart` antes de cada `patrol test`. **Actualización
+  2026-09-11:** esa mitigación sola resultó insuficiente en una sesión — Gradle seguía
+  cacheando el APK de instrumentación viejo pese al bundle nuevo; hace falta borrar
+  también `build/app/outputs/apk/androidTest` antes de cada corrida. Además, confirmar
+  con `ps aux | grep "patrol test"` que ningún otro agente/worktree está usando el mismo
+  emulador en paralelo — la contención entre sesiones concurrentes produjo dos fallos
+  de "Starting 0 tests" en dos emuladores distintos en la misma sesión (ver
+  `docs/patrol-e2e-tracking.md`, fila Onboarding, y memoria del proyecto
+  `agentes-concurrentes-mismo-worktree-riesgo`).
 - El emulador compartido (`emulator-5554`) puede quedar con la red/reloj corruptos tras
   suspender/reanudar (paquetes ICMP corruptos, `time of day goes back`) — un
   `adb reboot` simple no lo repara; hace falta cold-boot completo

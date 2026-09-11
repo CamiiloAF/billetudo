@@ -3,6 +3,7 @@ import 'package:billetudo/core/bootstrap/first_launch_offline_cubit.dart';
 import 'package:billetudo/core/bootstrap/first_launch_offline_gate.dart';
 import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/core/legal/domain/repositories/legal_documents_repository.dart';
 import 'package:billetudo/features/categories/domain/usecases/seed_default_categories.dart';
 import 'package:billetudo/features/splash/presentation/pages/splash_page.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockSeedDefaultCategories extends Mock implements SeedDefaultCategories {}
+
+class MockLegalDocumentsRepository extends Mock
+    implements LegalDocumentsRepository {}
 
 void main() {
   testWidgets(
@@ -52,8 +56,10 @@ void main() {
       'mismo camino que bootstrap() toma en ese caso', (tester) async {
     final seedDefaultCategories = MockSeedDefaultCategories();
     when(seedDefaultCategories.call).thenAnswer((_) async => const Right(unit));
+    final legalDocuments = MockLegalDocumentsRepository();
+    when(legalDocuments.refreshFromRemote).thenAnswer((_) async {});
     getIt.registerFactory<FirstLaunchOfflineCubit>(
-      () => FirstLaunchOfflineCubit(seedDefaultCategories),
+      () => FirstLaunchOfflineCubit(seedDefaultCategories, legalDocuments),
     );
     addTearDown(getIt.reset);
 

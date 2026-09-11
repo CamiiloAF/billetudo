@@ -1,4 +1,9 @@
-import 'package:billetudo/core/config/legal_urls.dart';
+import 'package:billetudo/core/di/injection.dart';
+import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/core/legal/domain/entities/legal_document.dart';
+import 'package:billetudo/core/legal/domain/entities/legal_document_kind.dart';
+import 'package:billetudo/core/legal/domain/usecases/resolve_legal_document.dart';
+import 'package:billetudo/core/legal/presentation/pages/legal_document_viewer_page.dart';
 import 'package:billetudo/features/ai/domain/entities/ai_consent.dart';
 import 'package:billetudo/features/settings/domain/entities/app_settings.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
@@ -15,16 +20,17 @@ import '../../../auth/presentation/widgets/pump_widget.dart';
 class MockAppSettingsCubit extends MockCubit<AppSettingsState>
     implements AppSettingsCubit {}
 
+class MockResolveLegalDocument extends Mock implements ResolveLegalDocument {}
+
 void main() {
   late MockAppSettingsCubit cubit;
-  late List<Uri> opened;
-  late bool launcherSucceeds;
 
   const settingsOff = AppSettings(
     zeroBasedEnabled: false,
     categoriesSeeded: true,
     onboardingCompleted: true,
   );
+
   /// Consent granted against this build's copy — the only state in which
   /// Ajustes offers the withdrawal, and the only one in which the notes
   /// opt-in itself renders at all (bugfix: it used to stay visible and
@@ -61,25 +67,22 @@ void main() {
     );
   }
 
+  setUpAll(() {
+    registerFallbackValue(LegalDocumentKind.privacyPolicy);
+  });
+
   setUp(() {
     cubit = MockAppSettingsCubit();
-    opened = [];
-    launcherSucceeds = true;
     when(() => cubit.setAiNotesAccessEnabled(enabled: any(named: 'enabled')))
         .thenAnswer((_) async {});
     when(cubit.clearAiConsent).thenAnswer((_) async {});
     seed(settingsOff);
   });
 
-  Future<bool> fakeOpener(Uri url) async {
-    opened.add(url);
-    return launcherSucceeds;
-  }
-
   Future<void> pumpSection(WidgetTester tester) => tester.pumpAuthWidget(
         BlocProvider<AppSettingsCubit>.value(
           value: cubit,
-          child: AiSettingsSection(openUrl: fakeOpener),
+          child: const AiSettingsSection(),
         ),
       );
 
@@ -260,30 +263,41 @@ void main() {
   });
 
   group('enlaces legales', () {
-    testWidgets('abren la política de privacidad y los términos publicados',
+    setUp(() {
+      final resolveLegalDocument = MockResolveLegalDocument();
+      when(() => resolveLegalDocument(kind: any(named: 'kind'))).thenAnswer(
+        (invocation) async => Right(
+          LegalDocument(
+            kind: invocation.namedArguments[#kind] as LegalDocumentKind,
+            content: '# Título\n\nCuerpo.',
+            legalVersion: 1,
+            effectiveDate: DateTime.utc(2026, 1, 1),
+            source: LegalDocumentSource.bundle,
+          ),
+        ),
+      );
+      getIt.registerFactory<ResolveLegalDocument>(() => resolveLegalDocument);
+    });
+
+    tearDown(getIt.reset);
+
+    testWidgets('la política de privacidad abre el visor nativo',
         (tester) async {
       await pumpSection(tester);
 
       await tester.tap(find.text('Política de privacidad'));
       await tester.pumpAndSettle();
+
+      expect(find.byType(LegalDocumentViewerPage), findsOneWidget);
+    });
+
+    testWidgets('los términos de uso abren el visor nativo', (tester) async {
+      await pumpSection(tester);
+
       await tester.tap(find.text('Términos de uso'));
       await tester.pumpAndSettle();
 
-      expect(opened, [LegalUrls.privacyPolicy, LegalUrls.termsOfUse]);
-    });
-
-    testWidgets('si nada puede abrir el enlace, lo dice en vez de callarse',
-        (tester) async {
-      launcherSucceeds = false;
-      await pumpSection(tester);
-
-      await tester.tap(find.text('Política de privacidad'));
-      await tester.pumpAndSettle();
-
-      expect(
-        find.text('No pudimos abrir el enlace. Inténtalo de nuevo.'),
-        findsOneWidget,
-      );
+      expect(find.byType(LegalDocumentViewerPage), findsOneWidget);
     });
   });
 }

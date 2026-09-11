@@ -1166,6 +1166,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get transactionsFilterTagEmpty => 'Aún no tienes etiquetas';
 
   @override
+  String get transactionsChipDateDefaultLabel => 'Este mes';
+
+  @override
+  String get transactionsPeriodNavPreviousLabel => 'Periodo anterior';
+
+  @override
+  String get transactionsPeriodNavNextLabel => 'Periodo siguiente';
+
+  @override
   String get dateFilterWeek => 'Semana';
 
   @override
@@ -6454,4 +6463,79 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsAiConsentWithdrawSheetConfirm => 'Retirar';
+
+  @override
+  String get legalAcceptanceSheetTitle => 'Tu privacidad nos importa';
+
+  @override
+  String get legalAcceptanceSheetMessage =>
+      'Antes de que guardes nada, mira cómo cuidamos tu información.';
+
+  @override
+  String get legalAcceptanceSheetDeclaration =>
+      'Al aceptar confirmas que leíste los Términos de uso y la Política de privacidad.';
+
+  @override
+  String get legalAcceptanceSheetAccept => 'Acepto los términos y la política';
+
+  @override
+  String get legalAcceptanceSheetDecline => 'Ahora no';
+
+  @override
+  String legalViewerMeta(int version, String date) {
+    return 'Versión $version · Actualizado el $date';
+  }
+
+  @override
+  String get legalReacceptanceBothTitle =>
+      'Actualizamos los Términos de uso y la Política de privacidad';
+
+  @override
+  String get legalReacceptanceBothMessage =>
+      'Cambiaron desde la última vez que los aceptaste. Échales un vistazo para seguir usando Billetudo.';
+
+  @override
+  String get legalReacceptanceBothAccept => 'Acepto los términos y la política';
+
+  @override
+  String get legalReacceptanceSingleTermsTitle =>
+      'Actualizamos los Términos de uso';
+
+  @override
+  String get legalReacceptanceSingleTermsMessage =>
+      'Cambiaron desde la última vez que los aceptaste. Échales un vistazo para seguir usando Billetudo.';
+
+  @override
+  String get legalReacceptanceSingleTermsAccept => 'Acepto los nuevos términos';
+
+  @override
+  String get legalReacceptanceSinglePrivacyTitle =>
+      'Actualizamos la Política de privacidad';
+
+  @override
+  String get legalReacceptanceSinglePrivacyMessage =>
+      'Cambió desde la última vez que la aceptaste. Échale un vistazo para seguir usando Billetudo.';
+
+  @override
+  String get legalReacceptanceSinglePrivacyAccept => 'Acepto la nueva política';
+
+  @override
+  String get legalReacceptanceDecline => 'No acepto';
+
+  @override
+  String get legalReacceptanceFootnote =>
+      'Tus datos siguen guardados en este teléfono. No se borra nada.';
+
+  @override
+  String get legalReacceptanceStep2Title => 'Sin aceptar no podemos continuar';
+
+  @override
+  String get legalReacceptanceStep2Message =>
+      'Tómate el tiempo que necesites. Todo lo que registraste es tuyo y puedes descargarlo cuando quieras.';
+
+  @override
+  String get legalReacceptanceStep2Export => 'Exportar mis datos';
+
+  @override
+  String get legalReacceptanceStep2Back => 'Volver a los términos';
 }
