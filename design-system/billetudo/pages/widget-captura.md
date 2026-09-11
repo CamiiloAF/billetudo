@@ -57,11 +57,11 @@ Ningún hex está hardcodeado sin comentario de a qué token corresponde — amb
 | Ingreso | si | si | |
 | Voz | si | si | |
 | Pendientes (bandeja bancaria) | si | no | Correcto: Android-only por diseño (HU-02), la ausencia en iOS no es un bug. |
-| **Foto (OCR)** | **no** | **no** | **No implementado en ninguna plataforma.** El requisito (HU-02) lo lista junto a Voz/Ingreso como atajo esperado. Consistente con el estado del repo: `18-captura-ocr.md` (Fase 2) aún no está implementado (`lib/features/capture/` solo tiene `.gitkeep`), así que no había destino al que enlazar. No es una regresión de diseño — es una entrega parcial de HU-02 pendiente de completarse cuando OCR exista. **Pendiente de decisión del usuario:** si se documenta como "entrega incremental aceptada" o si se considera que el widget no debía entregarse antes de que sus 3 destinos de captura (voz, foto, notificaciones) existieran, tal como advierte el propio requisito en §Entrega ("Requisito previo: que existan los destinos"). |
+| **Foto (OCR)** | **no** | **no** | **No implementado en ninguna plataforma — decisión del usuario (2026-09-11).** El requisito (HU-02) lo lista junto a Voz/Ingreso como atajo esperado, pero `18-captura-ocr.md` (Fase 2) aún no está implementado (`lib/features/capture/` no tiene destino al que enlazar). Se pospone hasta que OCR exista; HU-02 queda entregada parcialmente a propósito, no es una regresión. |
 
 ## Configurabilidad de atajos (HU-03)
 
-**No implementada.** `quick_capture_widget_info.xml` no declara `android:configure` (sin *configuration activity*); iOS no expone parámetros seleccionables por el usuario para el widget. El orden y conjunto de atajos está **hardcodeado** (`SHORTCUT_VIEWS` en `QuickCaptureWidgetProvider.kt`, `QuickCaptureShortcut.allCases` en Swift) — el usuario no puede elegir ni reordenar. **Pendiente de decisión del usuario:** HU-03 es un criterio de aceptación explícito del requisito, no una nota "opcional"; si se acepta el hardcodeo como entrega inicial hace falta decir cuál es el default fijo (ya lo hay, de facto: Gasto/Ingreso/Voz/Pendientes en ese orden) y dejar la configurabilidad como trabajo futuro, o completarla antes de considerar la feature cerrada.
+**Implementada** (commit `82f5b2af`). Android: `QuickCaptureWidgetConfigureActivity` (declarada vía `android:configure` en `quick_capture_widget_info.xml`), configuración persistida por `appWidgetId` en `WidgetConfigStore`; `QuickCaptureWidgetProvider` renderiza desde esa configuración en vez de un conjunto fijo. iOS: `IntentConfiguration` clásica (deployment target 15.0, sin App Intents de iOS 17+) con `QuickCaptureWidget.intentdefinition` y el parámetro `QuickCapturePreset`, editable desde "Edit Widget" del sistema. Default en ambas plataformas: **Gasto + Ingreso** (los dos atajos sin permiso ni disponibilidad de dispositivo de por medio). Entrada nueva en Ajustes que explica el widget, reusando `SettingsField` existente — sin pantalla nueva, sin saltarse el gate de Pencil. Pendiente menor (no bloqueante): el picker de preset de iOS solo tiene etiquetas en español (el `.intentdefinition` clásico no se localizó a inglés); las etiquetas propias del widget sí son bilingües.
 
 ## Tipografía
 
@@ -91,9 +91,11 @@ Ningún hex está hardcodeado sin comentario de a qué token corresponde — amb
 
 **De diseño (sin frame en Pencil):** todo — no existe ninguna variante de este widget en `billetudo.pen`. Si se retoma el flujo correcto, correspondería a `pencil-designer` construir ahí las variantes (Android compacto/mediano, iOS small/medium, claro y luego oscuro) contra este backfill como punto de partida, no desde cero.
 
-**Pendiente de decisión del usuario (hallazgos reales, no de proceso):**
-1. **Atajo "Foto" (OCR) ausente en ambas plataformas** — HU-02 lo pide, no está implementado en ninguna, y el destino (`18-captura-ocr.md`) tampoco existe todavía en `lib/`. Decidir si se documenta como entrega incremental o si se reabre HU-02 al completar OCR.
-2. **HU-03 (configurar el conjunto/orden de atajos) no está implementada** — ni configuration activity en Android ni parámetros equivalentes en iOS. El conjunto actual (Gasto, Ingreso, Voz, Pendientes en ese orden) es un default de facto, no una elección declarada.
-3. **Asimetría menor iOS sin `$border`/`$text-secondary`** — no rompe ningún token, pero es una divergencia de tratamiento visual entre plataformas no documentada como decisión previa.
+**Decidido (2026-09-11):**
+1. **Atajo "Foto" (OCR) ausente en ambas plataformas** — decisión del usuario: se pospone hasta que exista la feature de OCR (`18-captura-ocr.md`), no se bloquea el widget por esto. HU-02 queda entregada parcialmente (Gasto/Ingreso/Voz/Pendientes); se reabre para añadir Foto cuando OCR se construya.
+2. **HU-03 implementada** — ver sección propia arriba.
+
+**Pendiente de decisión del usuario:**
+1. **Asimetría menor iOS sin `$border`/`$text-secondary`** — no rompe ningún token, pero es una divergencia de tratamiento visual entre plataformas no documentada como decisión previa.
 
 **No es un hallazgo:** la discrepancia de `widget_primary` en `values-night/colors.xml` — es una coincidencia exacta con `$primary` oscuro (`#6D4FE0`), ver sección Colores arriba.
