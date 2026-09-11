@@ -307,6 +307,8 @@ import 'package:billetudo/features/budgets/domain/usecases/get_archived_budgets.
     as _i829;
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart'
     as _i871;
+import 'package:billetudo/features/budgets/domain/usecases/get_budget_period_window_at.dart'
+    as _i625;
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.dart'
     as _i559;
 import 'package:billetudo/features/budgets/domain/usecases/get_pending_budget_adjustment.dart'
@@ -809,6 +811,8 @@ import 'package:billetudo/features/transactions/domain/usecases/create_transacti
     as _i990;
 import 'package:billetudo/features/transactions/domain/usecases/delete_transaction.dart'
     as _i612;
+import 'package:billetudo/features/transactions/domain/usecases/get_budget_period_at.dart'
+    as _i788;
 import 'package:billetudo/features/transactions/domain/usecases/get_transaction_edit_impact.dart'
     as _i604;
 import 'package:billetudo/features/transactions/domain/usecases/has_any_transaction.dart'
@@ -1545,6 +1549,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i829.GetArchivedBudgets(gh<_i1023.BudgetRepository>()));
     gh.factory<_i871.GetBudgetById>(
         () => _i871.GetBudgetById(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i625.GetBudgetPeriodWindowAt>(
+        () => _i625.GetBudgetPeriodWindowAt(gh<_i1023.BudgetRepository>()));
     gh.factory<_i641.GetPendingBudgetAdjustment>(
         () => _i641.GetPendingBudgetAdjustment(gh<_i1023.BudgetRepository>()));
     gh.factory<_i458.GetZeroBasedSummary>(
@@ -1906,6 +1912,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i895.WatchHelpEnabled>(),
           gh<_i773.TutorialNavigationGuard>(),
         ));
+    gh.factory<_i788.GetBudgetPeriodAt>(
+        () => _i788.GetBudgetPeriodAt(gh<_i625.GetBudgetPeriodWindowAt>()));
     gh.factory<_i675.SignOutWithLocalDataChoice>(
         () => _i675.SignOutWithLocalDataChoice(
               gh<_i1066.SignOut>(),
@@ -1982,6 +1990,17 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i14.UnarchiveGoal>(),
           gh<_i837.WatchAccounts>(),
         ));
+    gh.lazySingleton<_i536.TransactionsListCubit>(
+        () => _i536.TransactionsListCubit(
+              gh<_i832.WatchTransactions>(),
+              gh<_i612.DeleteTransaction>(),
+              gh<_i177.RestoreTransaction>(),
+              gh<_i837.WatchAccounts>(),
+              gh<_i479.WatchBudgetPeriodOptions>(),
+              gh<_i788.GetBudgetPeriodAt>(),
+              gh<_i248.AccountFilterPreferenceDatasource>(),
+              gh<_i941.GetCategorySubtreeIds>(),
+            ));
     gh.singleton<_i629.AuthCubit>(() => _i629.AuthCubit(
           gh<_i716.WatchAuthSession>(),
           gh<_i1066.SignOut>(),
@@ -2102,16 +2121,6 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i805.ReportsDashboardCubit>(
         () => _i805.ReportsDashboardCubit(gh<_i118.WatchReportsDashboard>()));
-    gh.lazySingleton<_i536.TransactionsListCubit>(
-        () => _i536.TransactionsListCubit(
-              gh<_i832.WatchTransactions>(),
-              gh<_i612.DeleteTransaction>(),
-              gh<_i177.RestoreTransaction>(),
-              gh<_i837.WatchAccounts>(),
-              gh<_i479.WatchBudgetPeriodOptions>(),
-              gh<_i248.AccountFilterPreferenceDatasource>(),
-              gh<_i941.GetCategorySubtreeIds>(),
-            ));
     gh.factory<_i724.TransactionFormCubit>(() => _i724.TransactionFormCubit(
           gh<_i990.CreateTransaction>(),
           gh<_i885.UpdateTransaction>(),

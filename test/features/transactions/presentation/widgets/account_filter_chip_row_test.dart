@@ -2,8 +2,11 @@ import 'package:billetudo/features/accounts/domain/entities/account.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_balance.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/account_filter_chip_row.dart';
+import 'package:billetudo/features/transactions/presentation/widgets/circular_icon_chip.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/filter_chip_pill.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../categories/presentation/widgets/pump_widget.dart';
 
@@ -44,10 +47,16 @@ void main() {
   final savings = account('acc-3', 'Ahorros');
   final accounts = [cash, bank, savings];
 
+  // "Todas" and "Limpiar" are icon-only `CircularIconChip`s (no visible
+  // text), so they're located by their lucide icon rather than by label.
+  Finder circularIconChip(IconData icon) => find.byWidgetPredicate(
+        (widget) => widget is CircularIconChip && widget.icon == icon,
+      );
+
   Future<Set<String>?> pumpAndTap(
     WidgetTester tester, {
     required Set<String> selected,
-    required String chipLabel,
+    required Finder tapTarget,
   }) async {
     Set<String>? result;
     await tester.pumpAppWidget(
@@ -57,7 +66,7 @@ void main() {
         onChanged: (next) => result = next,
       ),
     );
-    await tester.tap(find.text(chipLabel));
+    await tester.tap(tapTarget);
     await tester.pump();
     return result;
   }
@@ -75,9 +84,6 @@ void main() {
 
     final pills = tester.widgetList<FilterChipPill>(find.byType(FilterChipPill));
     for (final pill in pills) {
-      if (pill.label == 'Limpiar') {
-        continue;
-      }
       expect(pill.active, isTrue, reason: '${pill.label} debería estar activo');
     }
   });
@@ -87,7 +93,7 @@ void main() {
     final result = await pumpAndTap(
       tester,
       selected: {cash.account.id},
-      chipLabel: 'Todas',
+      tapTarget: circularIconChip(LucideIcons.checkCheck),
     );
     expect(result, isEmpty);
   });
@@ -97,7 +103,7 @@ void main() {
     final result = await pumpAndTap(
       tester,
       selected: {cash.account.id},
-      chipLabel: 'Limpiar',
+      tapTarget: circularIconChip(LucideIcons.x),
     );
     expect(result, isEmpty);
   });
@@ -108,7 +114,7 @@ void main() {
     final result = await pumpAndTap(
       tester,
       selected: {cash.account.id, bank.account.id},
-      chipLabel: 'Efectivo',
+      tapTarget: find.text('Efectivo'),
     );
     expect(result, {bank.account.id});
   });
@@ -119,7 +125,7 @@ void main() {
     final result = await pumpAndTap(
       tester,
       selected: {cash.account.id},
-      chipLabel: 'Efectivo',
+      tapTarget: find.text('Efectivo'),
     );
     expect(result, {cash.account.id});
   });
@@ -130,7 +136,7 @@ void main() {
     final result = await pumpAndTap(
       tester,
       selected: const {},
-      chipLabel: 'Efectivo',
+      tapTarget: find.text('Efectivo'),
     );
     expect(result, {bank.account.id, savings.account.id});
   });
@@ -159,7 +165,7 @@ void main() {
     final result = await pumpAndTap(
       tester,
       selected: {cash.account.id, bank.account.id},
-      chipLabel: 'Ahorros',
+      tapTarget: find.text('Ahorros'),
     );
     expect(result, isEmpty);
   });

@@ -89,6 +89,7 @@ void main() {
           icon: 'utensils',
           start: DateTime(2026, 7),
           endExclusive: DateTime(2026, 8),
+          hasNext: true,
         ),
       ],
     );

@@ -52,11 +52,12 @@ AccountWithBalance _buildAccountWithBalance({
   String id = 'acc-1',
   String name = 'Efectivo',
   int balanceMinor = 450050,
+  AccountType type = AccountType.cash,
 }) {
   final account = Account(
     id: id,
     name: name,
-    type: AccountType.cash,
+    type: type,
     currency: 'COP',
     initialBalanceMinor: 0,
     archived: false,
@@ -234,10 +235,18 @@ void main() {
   // HU-06a's Account Chip has 3 states (`s8uIq`): a single account's own
   // name, a count for 2+, and "Todas" for no filter. These two accounts back
   // the `accountIds` filter used by the "N cuentas" golden below — matching
-  // the ids `items` already reference (`acc-1`/`acc-2`).
+  // the ids `items` already reference (`acc-1`/`acc-2`). Distinct `type`s
+  // (cash vs. bank, same as `transacciones.md`'s "Cierre 2026-09-10" example)
+  // so these goldens actually exercise the per-`AccountType` icon-wrap tint
+  // (`bIg7X`/`rHkkz`) instead of both chips accidentally rendering identical
+  // because they'd otherwise share the same fixture-default type.
   final accountsForChip = [
     _buildAccountWithBalance(),
-    _buildAccountWithBalance(id: 'acc-2', name: 'Bancolombia'),
+    _buildAccountWithBalance(
+      id: 'acc-2',
+      name: 'Bancolombia',
+      type: AccountType.bank,
+    ),
   ];
 
   // Same 3 transactions as `items`, but pre-sorted by absolute amount

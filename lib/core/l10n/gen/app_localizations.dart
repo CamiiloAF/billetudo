@@ -2042,6 +2042,24 @@ abstract class AppLocalizations {
   /// **'Filtros'**
   String get transactionsFiltersButtonLabel;
 
+  /// No description provided for @transactionsChipDateDefaultLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Este mes'**
+  String get transactionsChipDateDefaultLabel;
+
+  /// No description provided for @transactionsPeriodNavPreviousLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Periodo anterior'**
+  String get transactionsPeriodNavPreviousLabel;
+
+  /// No description provided for @transactionsPeriodNavNextLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Periodo siguiente'**
+  String get transactionsPeriodNavNextLabel;
+
   /// No description provided for @transactionsFilterSectionBudget.
   ///
   /// In es, this message translates to:
