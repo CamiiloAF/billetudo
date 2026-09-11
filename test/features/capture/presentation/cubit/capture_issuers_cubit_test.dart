@@ -166,8 +166,8 @@ void main() {
     'a failed read surfaces as a retryable error, not as an empty catalog',
     setUp: () {
       stubPermission(granted: true);
-      when(capture.getInstalledIssuerApps)
-          .thenAnswer((_) async => const Left(UnexpectedFailure('channel down')));
+      when(capture.getInstalledIssuerApps).thenAnswer(
+          (_) async => const Left(UnexpectedFailure('channel down')));
     },
     build: build,
     act: (CaptureIssuersCubit cubit) => cubit.start(),

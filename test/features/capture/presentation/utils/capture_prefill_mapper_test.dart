@@ -6,8 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../capture_mocks.dart';
 
 void main() {
-  test('carries every field the pre-filled form needs, and the capture id',
-      () {
+  test('carries every field the pre-filled form needs, and the capture id', () {
     final item = CaptureReviewItem(
       capture: buildPendingCapture(
         id: 'capture-9',
