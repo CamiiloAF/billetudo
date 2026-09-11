@@ -40,7 +40,8 @@ void main() {
         .thenAnswer((_) async => const Right(CaptureShortcut.expense)),
     build: build,
     act: (cubit) => cubit.start(),
-    expect: () => const [CaptureShortcutState(pending: CaptureShortcut.expense)],
+    expect: () =>
+        const [CaptureShortcutState(pending: CaptureShortcut.expense)],
   );
 
   blocTest<CaptureShortcutCubit, CaptureShortcutState>(

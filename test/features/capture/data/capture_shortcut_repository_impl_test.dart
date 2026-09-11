@@ -54,8 +54,7 @@ void main() {
   test('shortcuts tapped while running arrive on the stream', () async {
     final received = repository.shortcuts().take(1).first;
 
-    await TestDefaultBinaryMessengerBinding
-        .instance.defaultBinaryMessenger
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .handlePlatformMessage(
       channel.name,
       channel.codec.encodeMethodCall(
