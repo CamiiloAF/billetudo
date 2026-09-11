@@ -1,0 +1,115 @@
+# Corrida de Patrol tras issues #25/#26/#34 — 2026-09-10
+
+Contexto: se resolvieron los issues de GitHub #25 (login con Apple), #26 (FAB de
+movimientos) y #34 (hoja del avatar) en la rama `fix/incidencias-abiertas` (desde
+`dev`). Antes de cerrar la ronda se corrió Patrol sobre `home`, `transactions` y
+`auth` para descartar regresiones. Ninguno de los 3 fixes rompió nada — todos los
+fallos encontrados ya existían en `dev` sin relación con estos cambios (confirmado
+con `git stash` + rerun contra el mismo código sin los fixes). Dos de esos hallazgos
+preexistentes se corrigieron en esta misma sesión; otro se investigó, no se logró
+arreglar y su intento de fix se revirtió.
+
+## Resueltos en esta sesión
+
+### `home_patrol_test.dart` — "Presupuestos y Metas abren sus features reales"
+
+**Causa raíz real, confirmada con logcat:** en una instalación fresca (la que usa
+`startApp` en cada test), la primera visita a Presupuestos o Metas auto-abre un
+`TutorialSheet` (minitutorial, HU legítima). El escenario tapeaba Presupuestos →
+Metas → Inicio en secuencia sin cerrar esos sheets; `WidgetTester.tap()` no lanza
+excepción cuando el offset calculado no impacta el widget (solo imprime un warning),
+así que el tap se perdía contra el sheet y la navegación de branch nunca ocurría.
+
+**Fix:** se agregó `await dismissAutoTutorialIfShown($);` tras cada primera visita,
+reusando el helper que ya existía en `integration_test/support/patrol_app.dart` y que
+otras suites (`debts_patrol_test.dart`) ya usaban para las mismas 4 pantallas, pero
+que `home_patrol_test.dart` nunca llamaba pese a importarlo.
+
+**Verificado:** 4/4 en verde, corrida limpia sin otros procesos Patrol concurrentes.
+
+### `auth_patrol_test.dart` — "HU-07 paso 1: Eliminar cuenta"
+
+**Causa raíz:** bug de test, no de producto. `SettingsPage` es un `ListView` con
+"Eliminar cuenta" como última fila (decisión de diseño intencional, documentada en
+`settings_page.dart:25` — mantener una acción destructiva lejos del flujo casual). El
+helper `_openSettings` no scrolleaba dentro de `SettingsPage` antes de buscar el
+texto; en un `ListView` los elementos fuera del cache extent se descartan del árbol,
+así que el finder fallaba con "Found 0 widgets", no con un miss de hit-test.
+
+**Fix:** `_tapDeleteAccountRow` con `dragUntilVisible`, mismo patrón que ya usan
+`_openSettings` y `_scrollUntilVisible` en otras suites del repo.
+
+**Verificado:** 4/5 en verde (el quinto es un hallazgo nuevo y distinto, ver abajo).
+
+**Alcanzabilidad real evaluada:** revisado `settings_page.dart` completo — "Eliminar
+cuenta" es visualmente distinguible (fondo `expenseSoft`, icono en círculo) y
+alcanzable con un scroll normal. No es un bug de UX/cumplimiento legal, es la
+posición intencional de una acción irreversible.
+
+## Investigado, sin resolver — fix intentado y revertido
+
+### `transactions_patrol_test.dart` — HU-03, HU-05, "Fase B1+B2", "Issue #7"
+
+Estos 4 escenarios **ya estaban documentados como fallando** en
+[`patrol-e2e-findings-2026-08-25.md`](patrol-e2e-findings-2026-08-25.md) (ahí:
+8/12, con la misma causa hipotética — "finders no encontrados" en HU-03/HU-05 y "el
+mismo gate de cuenta nuevo en presupuestos que otras suites ya adaptaron pero este
+helper compartido no" en Fase B1+B2). Casi 3 semanas después, sin cambios de por
+medio, siguen exactamente igual.
+
+**Hipótesis investigada esta sesión:** que `AccountPickerField`
+(`transaction_form_page.dart`) y la ruta `/presupuestos/nuevo`
+(`AccountGatedRoute`) no muestran ningún loading state mientras
+`showAccountGateIfNeeded` resuelve de forma async, así que el `pumpAndSettle()` del
+test se asienta antes de que la hoja/formulario termine de montar.
+
+**Fix intentado:** spinner visible en `AccountPickerField` mientras `beforeOpen` está
+en vuelo + callback `onFirstCount` en `show_account_gate_if_needed.dart` para que
+`AccountGatedRoute` distinga "consultando" de "puente esperando al usuario" +
+`_expectEventually` con más reintentos en el test.
+
+**Resultado real:** `flutter test` completo (1436 tests) pasó en verde con el fix,
+pero la corrida en vivo de Patrol (`emulator-5556`, sin contención de otros procesos)
+mostró **exactamente el mismo fallo** en los 4 escenarios, sin cambio de síntoma ni de
+línea. El fix no tocaba la causa real. **Se revirtió** (`git checkout --` sobre los 5
+archivos tocados) para no dejar código especulativo sin efecto en el árbol.
+
+**Estado:** sigue abierto, causa raíz real sin confirmar. Candidatos a investigar en
+la próxima sesión dedicada: inspeccionar el árbol de widgets real en el momento exacto
+del fallo (screenshot del reporte HTML de Patrol, o un breakpoint manual), en vez de
+inferir la causa por lectura de código — el enfoque de "leer el código y suponer un
+fix" ya se intentó dos veces (25 ago y 10 sep) sin éxito.
+
+## Hallazgos nuevos, fuera del alcance original de esta ronda
+
+### `tag_filter_sheet.dart` — overflow con teclado abierto (HU-07 de transacciones)
+
+Reaparición de un bug ya reportado el
+[2026-07-20](patrol-e2e-findings-2026-07-20.md) en `new_tag_sheet.dart`
+("se desborda con teclado abierto", 16px). Ese componente fue absorbido dentro del
+reusable `tag_filter_sheet.dart` (usado también por Pagos Programados) y el overflow
+persiste en la nueva ubicación, magnitud distinta (20px en `tag_filter_sheet.dart:120`
++ 12px secundario en `transaction_form_page.dart:142`).
+
+### "Note autocomplete" — widget desactivado + overflow en cascada
+
+Hallazgo nuevo, sin documentación previa. `Looking up a deactivated widget's ancestor
+is unsafe` seguido de 3 `RenderFlex overflowed` (10-12px) en
+`transaction_form_page.dart:142` — mismo archivo/línea que el overflow de arriba,
+posible causa compartida.
+
+Ambos se atienden en esta misma sesión, ver commit siguiente.
+
+## Bugs de tooling encontrados en esta sesión (nuevos, no documentados el 25 ago)
+
+- **Agentes concurrentes sobre el mismo emulador se pisan de verdad:** dos
+  invocaciones de `patrol test` corriendo a la vez contra el mismo
+  `emulator-5554`/mismo worktree producen resultados inconsistentes entre sí (un
+  mismo escenario pasa o falla según qué proceso "ganó" la carrera) y sobrescriben
+  `integration_test/test_bundle.dart` entre ellos. Mitigación aplicada: nunca correr
+  dos `patrol test` en paralelo contra el mismo device — usar un segundo emulador si
+  hace falta paralelizar.
+- **Storage del emulador se llena con apps de otros proyectos instaladas ahí antes**
+  (`INSTALL_FAILED_INSUFFICIENT_STORAGE` con solo 2 apps instaladas, 88% de uso en
+  una partición de ~6GB) — mitigación: `adb uninstall` de paquetes de otros proyectos
+  antes de instalar el APK de test.

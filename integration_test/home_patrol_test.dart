@@ -98,6 +98,19 @@ void main() {
       // hydrate, same reason HU-01's empty state needs it above — a bare
       // `pumpAndSettle` can return before that first emission lands, an
       // intermittent false negative on a real device/emulator.
+      //
+      // Bugfix (flaky "found 0 widgets" on the *next* tab's page): both
+      // `BudgetsPage` and `GoalsListPage` wrap themselves in
+      // `TutorialAutoShow` (`16-minitutoriales.md` criterion 1) — on this
+      // scenario's fresh install (`startApp` always wipes the database), the
+      // very first visit to either auto-shows a full-screen modal sheet that
+      // swallows the *next* tab tap instead of it ever reaching
+      // `HomeTabBar` (`WidgetTester.tap`'s hit-test misses silently unless
+      // `warnIfMissed` is inspected — it does not throw), so the branch
+      // switch this scenario asserts next never actually happens. Dismiss it
+      // right after each first-time landing, same as every other suite that
+      // reaches one of these four screens already does
+      // (`dismissAutoTutorialIfShown`, `support/patrol_app.dart`).
       final tabBar = find.byType(HomeTabBar);
       await $.tester.tap(
         find.descendant(of: tabBar, matching: find.text('Presupuestos')),
@@ -105,6 +118,7 @@ void main() {
       await $.tester.pumpAndSettle();
       await _pumpUntilFound($, find.byType(BudgetsPage));
       expect(find.byType(BudgetsPage), findsOneWidget);
+      await dismissAutoTutorialIfShown($);
 
       await $.tester.tap(
         find.descendant(of: tabBar, matching: find.text('Metas')),
@@ -112,6 +126,7 @@ void main() {
       await $.tester.pumpAndSettle();
       await _pumpUntilFound($, find.byType(GoalsListPage));
       expect(find.byType(GoalsListPage), findsOneWidget);
+      await dismissAutoTutorialIfShown($);
 
       // The tab bar stays visible and lets us return to Inicio.
       await $.tester.tap(

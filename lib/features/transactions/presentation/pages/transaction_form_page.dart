@@ -139,34 +139,65 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
               ? const Center(child: CircularProgressIndicator())
               : SafeArea(
                   bottom: false,
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: TransactionFormScrollZone(
-                          state: state,
-                          errorScroll: _errorScroll,
+                  // `TransactionAmountFixedZone` collapses via its own
+                  // `AnimatedSize` (see its doc comment) when the keyboard
+                  // inset check below flips `expanded` to false, but that
+                  // animation runs on this app's own `motionDuration`,
+                  // independently of the OS keyboard's own animation — on a
+                  // real device the keyboard inset can shrink the `Column`
+                  // below's available height faster than the zone finishes
+                  // collapsing, so for a few transient frames it is taller
+                  // than what's left. `ClipRect` is the framework's own
+                  // suggested fix for exactly that kind of overflow: nothing
+                  // is visibly cut in the steady state, only during that
+                  // brief cross-fade — verified against a real emulator run
+                  // (`RenderFlex overflowed` at this file's old line 142).
+                  child: ClipRect(
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: TransactionFormScrollZone(
+                            state: state,
+                            errorScroll: _errorScroll,
+                          ),
                         ),
-                      ),
-                      TransactionAmountFixedZone(
-                        type: state.type,
-                        amountMinor: state.amountMinor,
-                        currency: state.currency,
-                        entryFractionDigits: state.entryFractionDigits,
-                        expanded: state.isKeypadVisible,
-                        onExpand: cubit.amountFocused,
-                        onCollapse: cubit.fieldBlurred,
-                        onDigit: cubit.amountDigitPressed,
-                        onDecimal: cubit.amountDecimalPressed,
-                        onOperator: cubit.amountOperatorPressed,
-                        onEquals: cubit.amountEqualsPressed,
-                        onBackspace: cubit.amountBackspace,
-                        onBackspaceLongPress: cubit.amountCleared,
-                        errorText: state.failedField ==
-                                TransactionDraft.fieldAmountMinor
-                            ? l10n.transactionErrorAmount
-                            : null,
-                      ),
-                    ],
+                        TransactionAmountFixedZone(
+                          type: state.type,
+                          amountMinor: state.amountMinor,
+                          currency: state.currency,
+                          entryFractionDigits: state.entryFractionDigits,
+                          // `isKeypadVisible` only tracks *this page's* own
+                          // Monto/Nota focus split (see its doc comment), so it
+                          // stays true — the anchored keypad's default — while
+                          // a nested sheet is open, even one whose own field
+                          // (e.g. `NewTagSheet`'s "+ Nueva" from Etiquetas,
+                          // HU-07) grabs the real system keyboard. `Scaffold`
+                          // still resizes this body for that keyboard (its
+                          // inset is global, not scoped to the sheet's route),
+                          // so the anchored keypad's full height plus that
+                          // inset no longer fit — verified against a real
+                          // emulator run (`RenderFlex overflowed` at this
+                          // file's old line 142). Any live keyboard inset, not
+                          // just an on-page Nota focus, must collapse the
+                          // keypad to the persistent bar the same way Nota's
+                          // focus already does.
+                          expanded: state.isKeypadVisible &&
+                              MediaQuery.viewInsetsOf(context).bottom == 0,
+                          onExpand: cubit.amountFocused,
+                          onCollapse: cubit.fieldBlurred,
+                          onDigit: cubit.amountDigitPressed,
+                          onDecimal: cubit.amountDecimalPressed,
+                          onOperator: cubit.amountOperatorPressed,
+                          onEquals: cubit.amountEqualsPressed,
+                          onBackspace: cubit.amountBackspace,
+                          onBackspaceLongPress: cubit.amountCleared,
+                          errorText: state.failedField ==
+                                  TransactionDraft.fieldAmountMinor
+                              ? l10n.transactionErrorAmount
+                              : null,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
         );
@@ -251,8 +282,7 @@ class TransactionFormScrollZone extends StatefulWidget {
       _TransactionFormScrollZoneState();
 }
 
-class _TransactionFormScrollZoneState
-    extends State<TransactionFormScrollZone> {
+class _TransactionFormScrollZoneState extends State<TransactionFormScrollZone> {
   late final FocusNode _noteFocusNode;
 
   @override
@@ -528,8 +558,8 @@ class TransferAccountsGroupBody extends StatelessWidget {
                     state.failedField == TransactionDraft.fieldTransferAccountId
                         ? l10n.transactionErrorTransferAccount
                         : null,
-                beforeOpen: () =>
-                    showAccountGateIfNeeded(context, AccountGateSurface.transfer),
+                beforeOpen: () => showAccountGateIfNeeded(
+                    context, AccountGateSurface.transfer),
               ),
             ),
           ],

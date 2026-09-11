@@ -117,124 +117,135 @@ class _TagFilterSheetBodyState extends State<TagFilterSheetBody> {
             : state.tags
                 .where((tag) => tag.name.toLowerCase().contains(query))
                 .toList();
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    heading,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: colors.textPrimary,
+        // `BottomSheetBase` already pads this body by the live keyboard
+        // inset (see its own doc comment), so opening `NewTagSheet` on top
+        // (HU-07's "+" header action) grows that padding while this sheet
+        // stays mounted underneath, pushing this fixed-content `Column` past
+        // its height budget on shorter screens — verified against a real
+        // emulator run (`RenderFlex overflowed` at this file's old line 120).
+        // `SingleChildScrollView` is the same safety net `NewTagSheet`
+        // already carries for the identical reason: it only engages once the
+        // keyboard genuinely leaves less room than the content needs.
+        return SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      heading,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: colors.textPrimary,
+                      ),
                     ),
                   ),
-                ),
-                if (showCreateAction)
-                  SizedBox(
-                    width: 44,
-                    height: 44,
-                    child: IconButton(
-                      onPressed: () async {
-                        final name = await NewTagSheet.show(context);
-                        if (name != null && name.trim().isNotEmpty) {
-                          await cubit.createTag(name);
-                        }
-                      },
-                      icon: const Icon(LucideIcons.plus, size: 18),
-                      color: colors.primaryOnSoft,
-                      tooltip: l10n.transactionFormAddTag,
+                  if (showCreateAction)
+                    SizedBox(
+                      width: 44,
+                      height: 44,
+                      child: IconButton(
+                        onPressed: () async {
+                          final name = await NewTagSheet.show(context);
+                          if (name != null && name.trim().isNotEmpty) {
+                            await cubit.createTag(name);
+                          }
+                        },
+                        icon: const Icon(LucideIcons.plus, size: 18),
+                        color: colors.primaryOnSoft,
+                        tooltip: l10n.transactionFormAddTag,
+                      ),
+                    )
+                  else ...[
+                    CategoryFilterHeaderAction(
+                      label: l10n.accountFilterSelectAll,
+                      onTap: cubit.selectAll,
                     ),
-                  )
-                else ...[
-                  CategoryFilterHeaderAction(
-                    label: l10n.accountFilterSelectAll,
-                    onTap: cubit.selectAll,
-                  ),
-                  Text(
-                    headerActionsSeparator,
-                    style: theme.textTheme.labelLarge
-                        ?.copyWith(color: colors.border),
-                  ),
-                  CategoryFilterHeaderAction(
-                    label: l10n.accountFilterSelectNone,
-                    onTap: cubit.selectNone,
-                  ),
+                    Text(
+                      headerActionsSeparator,
+                      style: theme.textTheme.labelLarge
+                          ?.copyWith(color: colors.border),
+                    ),
+                    CategoryFilterHeaderAction(
+                      label: l10n.accountFilterSelectNone,
+                      onTap: cubit.selectNone,
+                    ),
+                  ],
                 ],
-              ],
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _searchController,
-              onChanged: (value) => setState(() => _query = value),
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: colors.textPrimary,
               ),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: colors.muted,
-                isDense: true,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                prefixIcon: Icon(
-                  LucideIcons.search,
-                  size: 18,
-                  color: colors.textSecondary,
-                ),
-                hintText: l10n.tagFilterSearchHint,
-                hintStyle: theme.textTheme.bodyMedium?.copyWith(
+              const SizedBox(height: 12),
+              TextField(
+                controller: _searchController,
+                onChanged: (value) => setState(() => _query = value),
+                style: theme.textTheme.bodyMedium?.copyWith(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: colors.textSecondary,
+                  color: colors.textPrimary,
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                  borderSide: BorderSide.none,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: colors.muted,
+                  isDense: true,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  prefixIcon: Icon(
+                    LucideIcons.search,
+                    size: 18,
+                    color: colors.textSecondary,
+                  ),
+                  hintText: l10n.tagFilterSearchHint,
+                  hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: colors.textSecondary,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
-            // The list lives in a fixed viewport so typing in the search
-            // field never resizes the sheet; an empty query result shows the
-            // "no matches" state instead of a blank gap.
-            SheetListViewport(
-              height: 360,
-              child: tags.isEmpty
-                  ? const Center(child: TagFilterEmptyState())
-                  : ListView(
-                      children: [
-                        for (final tag in tags)
-                          TagFilterRow(
-                            name: tag.name,
-                            selected: state.selected.contains(tag.id),
-                            onTap: () => cubit.toggle(tag.id),
-                          ),
-                      ],
-                    ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: () => Navigator.of(context).pop(state.selected),
-                icon: const Icon(LucideIcons.check, size: 18),
-                label: Text(confirm),
+              const SizedBox(height: 8),
+              // The list lives in a fixed viewport so typing in the search
+              // field never resizes the sheet; an empty query result shows the
+              // "no matches" state instead of a blank gap.
+              SheetListViewport(
+                height: 360,
+                child: tags.isEmpty
+                    ? const Center(child: TagFilterEmptyState())
+                    : ListView(
+                        children: [
+                          for (final tag in tags)
+                            TagFilterRow(
+                              name: tag.name,
+                              selected: state.selected.contains(tag.id),
+                              onTap: () => cubit.toggle(tag.id),
+                            ),
+                        ],
+                      ),
               ),
-            ),
-          ],
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () => Navigator.of(context).pop(state.selected),
+                  icon: const Icon(LucideIcons.check, size: 18),
+                  label: Text(confirm),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );

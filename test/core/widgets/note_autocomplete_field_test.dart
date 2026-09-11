@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:billetudo/core/notes/domain/repositories/note_suggestions_repository.dart';
 import 'package:billetudo/core/notes/domain/usecases/get_note_suggestions.dart';
 import 'package:billetudo/core/widgets/note_autocomplete_field.dart';
@@ -5,6 +7,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/golden_helpers.dart';
+
+/// Never resolves on its own — the test completes it manually, after the
+/// field that started the lookup has already left the tree, to reproduce
+/// the "Looking up a deactivated widget's ancestor is unsafe" race (a
+/// save-and-pop landing while a suggestions query is still in flight).
+class _HangingNoteSuggestionsRepository implements NoteSuggestionsRepository {
+  final Completer<List<String>> _completer = Completer<List<String>>();
+
+  void resolve(List<String> suggestions) => _completer.complete(suggestions);
+
+  @override
+  Future<List<String>> suggest(String query) => _completer.future;
+}
 
 /// Returns a fixed [suggestions] list regardless of the query, so tests
 /// control the overlay's content deterministically instead of depending on
@@ -136,8 +151,7 @@ void main() {
       expect(dropdownSize.height, lessThanOrEqualTo(200));
     });
 
-    testWidgets(
-        'does not cap the dropdown height with 4 or fewer suggestions',
+    testWidgets('does not cap the dropdown height with 4 or fewer suggestions',
         (tester) async {
       setGoldenViewport(tester);
       await tester.pumpWidget(
@@ -205,6 +219,38 @@ void main() {
       expect(find.byKey(const ValueKey('note-suggestions-dropdown')),
           findsNothing);
       expect(find.text('Uber al trabajo'), findsOneWidget);
+    });
+
+    testWidgets(
+        'a lookup that resolves after the field left the tree (save-and-pop '
+        'race) does not touch a deactivated ancestor', (tester) async {
+      final repository = _HangingNoteSuggestionsRepository();
+      setGoldenViewport(tester);
+      await tester.pumpWidget(
+        wrapForGolden(
+          NoteAutocompleteField(
+            initialValue: '',
+            onChanged: (_) {},
+            getNoteSuggestions: GetNoteSuggestions(repository),
+          ),
+          brightness: Brightness.light,
+        ),
+      );
+
+      // Kicks off `_handleChanged`'s lookup; it stays pending until
+      // `resolve` below runs.
+      await tester.enterText(find.byType(TextField), 'Almu');
+      await tester.pump();
+
+      // The equivalent of a save-and-pop: the field leaves the tree while
+      // its lookup is still in flight.
+      await tester.pumpWidget(const SizedBox.shrink());
+
+      repository.resolve(['Almuerzo oficina']);
+      await tester.pump();
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
     });
   });
 

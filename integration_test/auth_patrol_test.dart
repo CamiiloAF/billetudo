@@ -55,6 +55,21 @@ Future<void> _openSettings(PatrolIntegrationTester $) async {
   await $.tester.pumpAndSettle();
 }
 
+/// `SettingsPage`'s "Eliminar cuenta" row is the last item in its own
+/// `ListView` (below "Cuenta y respaldo", "Presupuesto", "Preferencias" and
+/// "Asistente de IA") — same cache-extent caveat as `_openSettings` above:
+/// off screen, it is absent from the tree, not just unreachable by hit-test.
+Future<void> _tapDeleteAccountRow(PatrolIntegrationTester $) async {
+  await $.tester.dragUntilVisible(
+    find.text('Eliminar cuenta'),
+    find.byType(Scrollable).first,
+    const Offset(0, -250),
+  );
+  await $.tester.pumpAndSettle();
+  await $.tester.tap(find.text('Eliminar cuenta'));
+  await $.tester.pumpAndSettle();
+}
+
 void main() {
   patrolTest(
     'HU-01: Ajustes -> Login -> "Continuar sin cuenta" nunca bloquea la app',
@@ -118,8 +133,7 @@ void main() {
       await startApp($);
 
       await _openSettings($);
-      await $.tester.tap(find.text('Eliminar cuenta'));
-      await $.tester.pumpAndSettle();
+      await _tapDeleteAccountRow($);
 
       expect(find.text('Eliminar tu cuenta'), findsOneWidget);
       expect(find.textContaining('irreversible'), findsOneWidget);
@@ -127,8 +141,17 @@ void main() {
       await $.tester.tap(find.text('Cancelar'));
       await $.tester.pumpAndSettle();
 
-      // Sheet closed, Ajustes untouched, no session created.
+      // Sheet closed, Ajustes untouched, no session created. The underlying
+      // `ListView` is still scrolled to the bottom from `_tapDeleteAccountRow`
+      // above — scroll back up before looking for a row near the top,
+      // otherwise it is off screen and absent from the tree.
       expect(find.byType(SettingsPage), findsOneWidget);
+      await $.tester.dragUntilVisible(
+        find.text('Respaldar en la nube'),
+        find.byType(Scrollable).first,
+        const Offset(0, 250),
+      );
+      await $.tester.pumpAndSettle();
       expect(find.text('Respaldar en la nube'), findsOneWidget);
     },
   );
@@ -140,8 +163,7 @@ void main() {
       await startApp($);
 
       await _openSettings($);
-      await $.tester.tap(find.text('Eliminar cuenta'));
-      await $.tester.pumpAndSettle();
+      await _tapDeleteAccountRow($);
 
       // "Eliminar cuenta" appears twice on screen at this point: once as
       // Ajustes' destructive row (now behind the sheet) and once as the
