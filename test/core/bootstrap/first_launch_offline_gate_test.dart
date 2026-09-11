@@ -2,6 +2,7 @@ import 'package:billetudo/core/bootstrap/first_launch_offline_cubit.dart';
 import 'package:billetudo/core/bootstrap/first_launch_offline_gate.dart';
 import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/core/legal/domain/repositories/legal_documents_repository.dart';
 import 'package:billetudo/features/categories/domain/usecases/seed_default_categories.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,13 +10,19 @@ import 'package:mocktail/mocktail.dart';
 
 class MockSeedDefaultCategories extends Mock implements SeedDefaultCategories {}
 
+class MockLegalDocumentsRepository extends Mock
+    implements LegalDocumentsRepository {}
+
 void main() {
   late MockSeedDefaultCategories seedDefaultCategories;
+  late MockLegalDocumentsRepository legalDocuments;
 
   setUp(() {
     seedDefaultCategories = MockSeedDefaultCategories();
+    legalDocuments = MockLegalDocumentsRepository();
+    when(() => legalDocuments.refreshFromRemote()).thenAnswer((_) async {});
     getIt.registerFactory<FirstLaunchOfflineCubit>(
-      () => FirstLaunchOfflineCubit(seedDefaultCategories),
+      () => FirstLaunchOfflineCubit(seedDefaultCategories, legalDocuments),
     );
   });
 

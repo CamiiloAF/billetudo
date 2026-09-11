@@ -14,6 +14,28 @@ import 'package:billetudo/core/bootstrap/first_launch_offline_cubit.dart'
 import 'package:billetudo/core/crash/crash_reporter.dart' as _i474;
 import 'package:billetudo/core/database/app_database.dart' as _i249;
 import 'package:billetudo/core/di/register_module.dart' as _i77;
+import 'package:billetudo/core/legal/data/datasources/legal_documents_cache_datasource.dart'
+    as _i1055;
+import 'package:billetudo/core/legal/data/datasources/legal_manifest_remote_datasource.dart'
+    as _i53;
+import 'package:billetudo/core/legal/data/repositories/legal_documents_repository_impl.dart'
+    as _i724;
+import 'package:billetudo/core/legal/domain/repositories/legal_documents_repository.dart'
+    as _i1;
+import 'package:billetudo/core/legal/domain/usecases/accept_legal_documents.dart'
+    as _i836;
+import 'package:billetudo/core/legal/domain/usecases/get_changed_legal_documents.dart'
+    as _i1013;
+import 'package:billetudo/core/legal/domain/usecases/get_legal_manifest.dart'
+    as _i888;
+import 'package:billetudo/core/legal/domain/usecases/resolve_legal_document.dart'
+    as _i223;
+import 'package:billetudo/core/legal/domain/usecases/should_show_reacceptance.dart'
+    as _i961;
+import 'package:billetudo/core/legal/presentation/cubit/legal_acceptance_cubit.dart'
+    as _i168;
+import 'package:billetudo/core/legal/presentation/cubit/legal_reacceptance_cubit.dart'
+    as _i706;
 import 'package:billetudo/core/notes/data/repositories/note_suggestions_repository_impl.dart'
     as _i670;
 import 'package:billetudo/core/notes/domain/repositories/note_suggestions_repository.dart'
@@ -1080,6 +1102,12 @@ extension GetItInjectableX on _i174.GetIt {
         () => registerModule.supabaseClient());
     gh.lazySingleton<_i460.SharedPreferencesAsync>(
         () => registerModule.sharedPreferencesAsync());
+    gh.lazySingleton<_i53.LegalManifestRemoteDatasource>(
+        () => _i53.LegalManifestRemoteDatasource());
+    gh.lazySingleton<_i1013.GetChangedLegalDocuments>(
+        () => const _i1013.GetChangedLegalDocuments());
+    gh.lazySingleton<_i961.ShouldShowReacceptance>(
+        () => const _i961.ShouldShowReacceptance());
     gh.lazySingleton<_i486.SecureClipboard>(() => _i486.SecureClipboard());
     gh.lazySingleton<_i1026.AiClientContextProvider>(
         () => _i1026.AiClientContextProvider());
@@ -1153,6 +1181,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i476.MappingTemplatesLocalDatasource>(() =>
         _i476.MappingTemplatesLocalDatasource(
             gh<_i460.SharedPreferencesAsync>()));
+    gh.lazySingleton<_i1055.LegalCacheDirectory>(
+        () => const _i1055.AppDocumentsLegalCacheDirectory());
     gh.lazySingleton<_i925.IssuerRulesRepository>(() =>
         _i330.IssuerRulesRepositoryImpl(
             gh<_i405.IssuerRulesAssetDatasource>()));
@@ -1369,6 +1399,8 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i981.AiHistoryLocalDatasource>(),
               gh<_i474.CrashReporter>(),
             ));
+    gh.lazySingleton<_i1055.LegalDocumentsCacheDatasource>(() =>
+        _i1055.LegalDocumentsCacheDatasource(gh<_i1055.LegalCacheDirectory>()));
     gh.lazySingleton<_i776.ReportsRepository>(() => _i324.ReportsRepositoryImpl(
           gh<_i584.ReportsLocalDatasource>(),
           gh<_i323.ResolveEffectiveDateRange>(),
@@ -1839,6 +1871,12 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i367.UndoImportBatch(gh<_i108.ImportBatchRepository>()));
     gh.factory<_i813.WatchImportBatches>(
         () => _i813.WatchImportBatches(gh<_i108.ImportBatchRepository>()));
+    gh.lazySingleton<_i1.LegalDocumentsRepository>(
+        () => _i724.LegalDocumentsRepositoryImpl(
+              gh<_i53.LegalManifestRemoteDatasource>(),
+              gh<_i1055.LegalDocumentsCacheDatasource>(),
+              gh<_i95.AppSettingsLocalDatasource>(),
+            ));
     gh.factory<_i434.WatchHomeAiInsight>(() => _i434.WatchHomeAiInsight(
           gh<_i654.TransactionRepository>(),
           gh<_i504.HomeInsightEventRepository>(),
@@ -1880,8 +1918,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i680.ScheduledPaymentRepository>(),
           gh<_i647.SyncScheduledPaymentReminders>(),
         ));
-    gh.factory<_i101.FirstLaunchOfflineCubit>(
-        () => _i101.FirstLaunchOfflineCubit(gh<_i693.SeedDefaultCategories>()));
     gh.factory<_i1061.GetLinkableScheduledPayments>(() =>
         _i1061.GetLinkableScheduledPayments(
             gh<_i470.GetLinkableScheduledPayments>()));
@@ -2208,6 +2244,11 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i364.ReportsShellCubit(gh<_i773.WatchSyncStatusDetails>()));
     gh.factory<_i170.DebtUpdateBalanceCubit>(
         () => _i170.DebtUpdateBalanceCubit(gh<_i309.UpdateDebtBalance>()));
+    gh.factory<_i101.FirstLaunchOfflineCubit>(
+        () => _i101.FirstLaunchOfflineCubit(
+              gh<_i693.SeedDefaultCategories>(),
+              gh<_i1.LegalDocumentsRepository>(),
+            ));
     gh.factory<_i271.LoginCubit>(() => _i271.LoginCubit(
           gh<_i1044.SignInWithGoogle>(),
           gh<_i888.SignInWithApple>(),
@@ -2246,6 +2287,12 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i487.AppSettingsRepository>(),
           gh<_i1067.AccountRepository>(),
         ));
+    gh.lazySingleton<_i836.AcceptLegalDocuments>(
+        () => _i836.AcceptLegalDocuments(gh<_i1.LegalDocumentsRepository>()));
+    gh.lazySingleton<_i888.GetLegalManifest>(
+        () => _i888.GetLegalManifest(gh<_i1.LegalDocumentsRepository>()));
+    gh.lazySingleton<_i223.ResolveLegalDocument>(
+        () => _i223.ResolveLegalDocument(gh<_i1.LegalDocumentsRepository>()));
     gh.factory<_i827.BudgetDetailCubit>(() => _i827.BudgetDetailCubit(
           gh<_i871.GetBudgetById>(),
           gh<_i559.GetBudgetProgress>(),
@@ -2326,6 +2373,15 @@ extension GetItInjectableX on _i174.GetIt {
             ));
     gh.lazySingleton<_i9.OnboardingFlowCubit>(
         () => _i9.OnboardingFlowCubit(gh<_i522.CompleteOnboarding>()));
+    gh.lazySingleton<_i706.LegalReacceptanceCubit>(
+        () => _i706.LegalReacceptanceCubit(
+              gh<_i888.GetLegalManifest>(),
+              gh<_i1.LegalDocumentsRepository>(),
+              gh<_i961.ShouldShowReacceptance>(),
+              gh<_i1013.GetChangedLegalDocuments>(),
+              gh<_i223.ResolveLegalDocument>(),
+              gh<_i836.AcceptLegalDocuments>(),
+            ));
     gh.factory<_i829.TutorialGateCubit>(() => _i829.TutorialGateCubit(
           gh<_i781.HasSeenTutorial>(),
           gh<_i895.WatchHelpEnabled>(),
@@ -2478,6 +2534,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i118.WatchReportsDashboard>(() => _i118.WatchReportsDashboard(
           gh<_i674.GetActiveBudgets>(),
           gh<_i529.WatchGoals>(),
+        ));
+    gh.factory<_i168.LegalAcceptanceCubit>(() => _i168.LegalAcceptanceCubit(
+          gh<_i223.ResolveLegalDocument>(),
+          gh<_i836.AcceptLegalDocuments>(),
+          gh<_i888.GetLegalManifest>(),
+          gh<_i1.LegalDocumentsRepository>(),
         ));
     gh.factory<_i641.RestoreCubit>(() => _i641.RestoreCubit(
           gh<_i639.ParseBackupHeader>(),

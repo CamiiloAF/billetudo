@@ -171,6 +171,24 @@ class AppSettingsLocalDatasource {
         ),
       );
 
+  /// Records joint acceptance of the legal terms (privacy policy + terms of
+  /// use) against the [version] of the document(s) actually shown — never
+  /// the remote manifest's declared version if that download failed. Both
+  /// columns move in the SAME write, exactly like [markAiConsentAccepted]: a
+  /// timestamp without its version (or the reverse) is a row nothing can
+  /// date to a disclosure.
+  Future<void> markLegalAccepted({
+    required DateTime now,
+    required int version,
+  }) =>
+      _write(
+        AppSettingsCompanion(
+          legalAcceptedAt: Value(now),
+          legalAcceptedVersion: Value(version),
+          updatedAt: Value(now.millisecondsSinceEpoch),
+        ),
+      );
+
   /// `UPDATE` when the singleton exists, `INSERT` only when it is confirmed
   /// missing — never an upsert: `AppSettings` is physically a PowerSync-managed
   /// view (decision #14, docs/requirements/fase-1/05-auth-sync.md) and SQLite

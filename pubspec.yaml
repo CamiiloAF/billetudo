@@ -268,6 +268,11 @@ flutter:
     # flutter_assets/assets/capture/issuer_rules.json. Mover este archivo
     # obliga a cambiar IssuerRulesLoader.kt.
     - assets/capture/
+    # Fallback empaquetado de política de privacidad y términos de uso, para
+    # cuando la descarga del documento vigente falla con conexión disponible
+    # (ver docs/legal/entrega-de-documentos-legales.md). Debe mantenerse
+    # sincronizado a mano con docs/legal/ en cada release — nunca placeholder.
+    - lib/core/legal/assets/
 
   # Plus Jakarta Sans se declara como UNA familia con sus 5 pesos, no via
   # `google_fonts`. Motivo: `GoogleFonts.plusJakartaSansTextTheme` fija

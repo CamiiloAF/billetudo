@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/legal/presentation/widgets/legal_footer_links.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../widgets/onboarding_scaffold.dart';
 import '../widgets/onboarding_wallet_fan.dart';
@@ -72,6 +73,10 @@ class WelcomePage extends StatelessWidget {
                     height: 1.4,
                   ),
             ),
+            // `E4mWb`: only makes the two documents reachable — no
+            // acceptance happens here. Explicit "Acepto" is the sheet
+            // `onComenzar`/`onYaTengoCuenta` open, above.
+            const LegalFooterLinks(),
           ],
         ),
       ),

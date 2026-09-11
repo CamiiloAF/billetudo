@@ -1,6 +1,8 @@
 import 'package:billetudo/app.dart';
 import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/core/legal/presentation/cubit/legal_reacceptance_cubit.dart';
+import 'package:billetudo/core/legal/presentation/cubit/legal_reacceptance_state.dart';
 import 'package:billetudo/core/sync/domain/entities/sync_state.dart';
 import 'package:billetudo/core/sync/domain/entities/sync_status_snapshot.dart';
 import 'package:billetudo/core/sync/domain/repositories/sync_status_repository.dart';
@@ -97,6 +99,9 @@ class MockRecordHomeInsightShown extends Mock
 
 class MockAppSettingsCubit extends MockCubit<AppSettingsState>
     implements AppSettingsCubit {}
+
+class MockLegalReacceptanceCubit extends MockCubit<LegalReacceptanceState>
+    implements LegalReacceptanceCubit {}
 
 class MockSignOut extends Mock implements SignOut {}
 
@@ -264,6 +269,20 @@ void main() {
           initialState: const AppSettingsState(),
         );
         when(cubit.start).thenAnswer((_) async {});
+        return cubit;
+      })
+      // `LegalReacceptanceGate` wraps the shell and resolves this from
+      // `getIt` on its very first frame — a stub that never finds anything
+      // to show keeps this test about sign-out's own snackbars.
+      ..registerLazySingleton<LegalReacceptanceCubit>(() {
+        final cubit = MockLegalReacceptanceCubit();
+        when(() => cubit.state).thenReturn(const LegalReacceptanceState());
+        whenListen(
+          cubit,
+          const Stream<LegalReacceptanceState>.empty(),
+          initialState: const LegalReacceptanceState(),
+        );
+        when(cubit.checkOnLaunch).thenAnswer((_) async {});
         return cubit;
       });
   });

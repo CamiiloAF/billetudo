@@ -154,6 +154,18 @@ class AppSettingsRepositoryImpl implements AppSettingsRepository {
     }
   }
 
+  @override
+  FutureResult<Unit> markLegalAccepted({required int version}) async {
+    try {
+      await _local.markLegalAccepted(now: DateTime.now(), version: version);
+      return const Right(unit);
+    } catch (e, st) {
+      return Left(
+        DatabaseFailure('failed to update settings', cause: e, stackTrace: st),
+      );
+    }
+  }
+
   AppSettings _toEntity(db.AppSetting? row) => row == null
       ? const AppSettings.defaults()
       : AppSettings(
@@ -170,6 +182,9 @@ class AppSettingsRepositoryImpl implements AppSettingsRepository {
           // older consent" and is asked again.
           aiConsentVersion: row.aiConsentVersion ?? 0,
           aiNotesAccessEnabled: row.aiNotesAccessEnabled,
+          legalAcceptedAt: row.legalAcceptedAt,
+          // Same convention as `aiConsentVersion` above.
+          legalAcceptedVersion: row.legalAcceptedVersion ?? 0,
         );
 
   /// Parses the persisted comma-separated `QuickAccessItem.name` list back

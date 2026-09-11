@@ -292,4 +292,48 @@ void main() {
       expect(settings.hasAcceptedAiConsent, isFalse);
     });
   });
+
+  group('markLegalAccepted', () {
+    Future<AppSettings> read() async =>
+        (await repository.getSettings()).getRight().toNullable()!;
+
+    test('is not accepted by default', () async {
+      final settings = await read();
+      expect(settings.legalAcceptedAt, isNull);
+      expect(settings.legalAcceptedVersion, 0);
+    });
+
+    test('stamps the version alongside the timestamp, in one write', () async {
+      await repository.markLegalAccepted(version: 3);
+
+      final row = await database.select(database.appSettings).getSingle();
+      expect(row.legalAcceptedAt, isNotNull);
+      expect(row.legalAcceptedVersion, 3);
+
+      final settings = await read();
+      expect(settings.legalAcceptedVersion, 3);
+      expect(settings.legalAcceptedAt, isNotNull);
+    });
+
+    test('accepting again moves the timestamp/version forward', () async {
+      await repository.markLegalAccepted(version: 1);
+      await repository.markLegalAccepted(version: 2);
+
+      final settings = await read();
+      expect(settings.legalAcceptedVersion, 2);
+    });
+
+    test(
+        'a NULL version reads as 0, so an installation from before this '
+        'column existed is asked to accept once', () async {
+      await repository.markLegalAccepted(version: 1);
+      await database.customStatement(
+        'UPDATE app_settings SET legal_accepted_version = NULL',
+      );
+
+      final settings = await read();
+
+      expect(settings.legalAcceptedVersion, 0);
+    });
+  });
 }

@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../../../../core/config/legal_urls.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
-import '../../../../core/utils/external_url_opener.dart';
+import '../../../../core/legal/domain/entities/legal_document_kind.dart';
+import '../../../../core/legal/presentation/pages/legal_document_viewer_page.dart';
 import '../cubit/app_settings_cubit.dart';
 import '../cubit/app_settings_state.dart';
 import 'ai_consent_withdraw_field.dart';
@@ -25,12 +25,12 @@ import 'sheets/ai_notes_access_sheet.dart';
 /// the assistant), so it is built out of the section's existing pieces —
 /// `AiNotesAccessField` mirrors "Mostrar ayuda al entrar a una sección",
 /// `LegalLinkField` is `SettingsField` (`R8PlN`) — instead of new shapes.
+///
+/// The two legal links push `LegalDocumentViewerPage` on the root navigator
+/// (same in-app viewer the acceptance/re-acceptance sheets use), never an
+/// external browser.
 class AiSettingsSection extends StatelessWidget {
-  const AiSettingsSection({this.openUrl = openExternalUrl, super.key});
-
-  /// Injected down to [LegalLinkField] so widget tests never reach the
-  /// `url_launcher` platform channel.
-  final ExternalUrlOpener openUrl;
+  const AiSettingsSection({super.key});
 
   /// Applies the requested value of "Dejar que el asistente lea mis notas".
   ///
@@ -109,15 +109,19 @@ class AiSettingsSection extends StatelessWidget {
           icon: LucideIcons.shieldCheck,
           label: l10n.settingsPrivacyPolicy,
           sublabel: l10n.settingsPrivacyPolicySubtitle,
-          url: LegalUrls.privacyPolicy,
-          openUrl: openUrl,
+          onTap: () => LegalDocumentViewerPage.push(
+            context,
+            LegalDocumentKind.privacyPolicy,
+          ),
         ),
         LegalLinkField(
           icon: LucideIcons.fileText,
           label: l10n.settingsTermsOfUse,
           sublabel: l10n.settingsTermsOfUseSubtitle,
-          url: LegalUrls.termsOfUse,
-          openUrl: openUrl,
+          onTap: () => LegalDocumentViewerPage.push(
+            context,
+            LegalDocumentKind.termsOfUse,
+          ),
         ),
       ],
     );

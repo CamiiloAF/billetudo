@@ -4,6 +4,8 @@
 import 'package:billetudo/app.dart';
 import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/core/legal/presentation/cubit/legal_reacceptance_cubit.dart';
+import 'package:billetudo/core/legal/presentation/cubit/legal_reacceptance_state.dart';
 import 'package:billetudo/core/sync/domain/entities/sync_status_snapshot.dart';
 import 'package:billetudo/core/sync/domain/usecases/watch_sync_status_details.dart';
 import 'package:billetudo/core/theme/theme_mode_cubit.dart';
@@ -88,6 +90,9 @@ class _MockRecordHomeInsightShown extends Mock
 
 class _MockAppSettingsCubit extends MockCubit<AppSettingsState>
     implements AppSettingsCubit {}
+
+class _MockLegalReacceptanceCubit extends MockCubit<LegalReacceptanceState>
+    implements LegalReacceptanceCubit {}
 
 void main() {
   setUpAll(() {
@@ -197,6 +202,21 @@ void main() {
           initialState: const AppSettingsState(),
         );
         when(cubit.start).thenAnswer((_) async {});
+        return cubit;
+      })
+      // `LegalReacceptanceGate` wraps the shell and resolves this from
+      // `getIt` on its very first frame — a stub that never finds anything
+      // to show keeps this smoke test about the shell itself, not the legal
+      // re-acceptance gate.
+      ..registerLazySingleton<LegalReacceptanceCubit>(() {
+        final cubit = _MockLegalReacceptanceCubit();
+        when(() => cubit.state).thenReturn(const LegalReacceptanceState());
+        whenListen(
+          cubit,
+          const Stream<LegalReacceptanceState>.empty(),
+          initialState: const LegalReacceptanceState(),
+        );
+        when(cubit.checkOnLaunch).thenAnswer((_) async {});
         return cubit;
       })
       // `BilletudoApp` también resuelve el cubit de los atajos del widget de

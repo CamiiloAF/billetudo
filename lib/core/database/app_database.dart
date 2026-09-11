@@ -934,6 +934,50 @@ class AppSettings extends Table with _SyncColumns {
   /// the write goes through a PowerSync view (same incident that first hit
   /// this table).
   BoolColumn get aiNotesAccessEnabled => boolean().clientDefault(() => false)();
+
+  /// When the person last accepted the legal terms (privacy policy + terms
+  /// of use), alongside [legalAcceptedVersion]'s "which version". Null = not
+  /// accepted yet on this installation.
+  ///
+  /// The acceptance is CONJUNTA (one "Acepto" button, one row, one
+  /// timestamp) — there is no per-document version, see
+  /// `docs/legal/entrega-de-documentos-legales.md`, "Lo que no cambia":
+  /// "La aceptación es conjunta: un solo botón 'Acepto', una sola versión
+  /// guardada. No se versiona por documento."
+  ///
+  /// The version recorded alongside this timestamp is ALWAYS the version of
+  /// the document(s) actually shown to the person (cache or bundled
+  /// fallback), never the version declared by the remote manifest if that
+  /// download failed — see the same doc, "Qué versión se guarda al aceptar".
+  ///
+  /// Same shape as [aiConsentAcceptedAt]: a `DateTimeColumn` stored as unix
+  /// seconds, mirrored in Postgres as `bigint`, never `timestamptz` on a
+  /// synced table (see the header of `powersync_schema.dart`).
+  DateTimeColumn get legalAcceptedAt => dateTime().nullable()();
+
+  /// Which VERSION of the legal terms the person accepted, alongside
+  /// [legalAcceptedAt]'s "when". Same reasoning and same shape as
+  /// [aiConsentVersion]: re-acceptance is triggered when
+  /// `legalAcceptedVersion < currentLegalVersion` (from the remote
+  /// manifest) AND the installed app version satisfies that legal version's
+  /// `minAppVersion` — see
+  /// `docs/legal/entrega-de-documentos-legales.md`, "`minAppVersion`: no lo
+  /// quites".
+  ///
+  /// NULLABLE, and read as `0` (never backfilled) in the mapping layer, for
+  /// the exact same two reasons as [aiConsentVersion]:
+  ///  - A row that predates this column has no `legal_accepted_version` key
+  ///    in its PowerSync JSON blob and reads SQL `NULL`. A non-nullable
+  ///    column would crash Drift's mapper on that row — the
+  ///    `onboardingCompleted` bug (BILLETUDO-9/BILLETUDO-A) all over again.
+  ///  - Backfilling it would upload a fabricated `0` through PowerSync's
+  ///    `merge-duplicates` upsert and could clobber a real version accepted
+  ///    on another device that simply hasn't synced down yet — decision
+  ///    #25, `docs/requirements/fase-1/05-auth-sync.md`. `NULL` reads as `0`
+  ///    at read time only, costs nothing and writes nothing: `0 <
+  ///    currentLegalVersion`, so every installation that predates this
+  ///    column is simply asked to accept once.
+  IntColumn get legalAcceptedVersion => integer().nullable()();
 }
 
 /// One row per tutorial key the current installation's user has already
@@ -1294,7 +1338,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 34;
+  int get schemaVersion => 35;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -2069,6 +2113,28 @@ class AppDatabase extends _$AppDatabase {
           // yet — decision #25, docs/requirements/fase-1/05-auth-sync.md, see
           // the `from < 26` block above.
           if (from < 34) {
+            // Nothing to do here: see the comment above this block.
+          }
+
+          // v34 -> v35: `AppSettings.legalAcceptedAt`/`legalAcceptedVersion`,
+          // the versioned acceptance of the privacy policy + terms of use
+          // (Apple 5.1.2, Google Play Data Safety — see
+          // `docs/aceptacion-terminos-onboarding-pendiente.md` and
+          // `docs/legal/entrega-de-documentos-legales.md`). No
+          // `addColumn`/`ALTER TABLE` — see the note on `from < 12` above:
+          // `appSettings` is a PowerSync-managed view, and `powerSyncSchema`
+          // already declares both columns, so the view is recreated with
+          // them present before this migration runs.
+          //
+          // No backfill, deliberately: both columns are nullable and `NULL`
+          // ("never accepted on this installation") is the correct,
+          // meaningful value — same reasoning as `aiConsentVersion`/
+          // `aiConsentAcceptedAt` (see their doc comments and the `from <
+          // 22` block above). A fabricated default would upload through
+          // PowerSync's merge-duplicates upsert and could clobber a real
+          // acceptance recorded on another device that simply hasn't synced
+          // down yet — decision #25, docs/requirements/fase-1/05-auth-sync.md.
+          if (from < 35) {
             // Nothing to do here: see the comment above this block.
           }
         },
