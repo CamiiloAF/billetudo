@@ -64,6 +64,7 @@ void main() {
     List<String> tagIds = const <String>[],
     String? debtId,
     String? goalId,
+    int? reminderLeadDays,
   }) =>
       ScheduledPaymentDraft(
         id: id,
@@ -80,6 +81,7 @@ void main() {
         tagIds: tagIds,
         debtId: debtId,
         goalId: goalId,
+        reminderLeadDays: reminderLeadDays,
       );
 
   Future<domain.ScheduledPayment> createTemplate(
@@ -188,9 +190,10 @@ void main() {
       // "Vence hoy": el catch-up materializa una ocurrencia pendiente para el
       // 10 de julio y avanza el cursor un mes.
       await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 10));
-      final before = await (database.select(database.scheduledPaymentOccurrences)
-            ..where((o) => o.scheduledPaymentId.equals(template.id)))
-          .get();
+      final before =
+          await (database.select(database.scheduledPaymentOccurrences)
+                ..where((o) => o.scheduledPaymentId.equals(template.id)))
+              .get();
       expect(before, hasLength(1));
 
       // El usuario cambia la fecha al 20 de julio (edición explícita).
@@ -271,8 +274,7 @@ void main() {
       final items = result.getRight().toNullable()!;
       expect(
         items.any(
-          (i) =>
-              i.scheduledPayment.type == domain.ScheduledPaymentType.income,
+          (i) => i.scheduledPayment.type == domain.ScheduledPaymentType.income,
         ),
         isTrue,
       );
@@ -1546,8 +1548,7 @@ void main() {
         monthlyDraft(nextDate: DateTime(2026, 7, 1), goalId: goal.id),
       );
 
-      final result =
-          await repository.watchLinkableScheduledPayments().first;
+      final result = await repository.watchLinkableScheduledPayments().first;
 
       final linkable = result.getRight().toNullable()!;
       expect(linkable.map((s) => s.scheduledPayment.id), [plain.id]);
@@ -1567,8 +1568,7 @@ void main() {
       );
       await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 1));
 
-      final result =
-          await repository.watchLinkableScheduledPayments().first;
+      final result = await repository.watchLinkableScheduledPayments().first;
 
       expect(
         result.getRight().toNullable()!.map((s) => s.scheduledPayment.id),
@@ -1707,8 +1707,7 @@ void main() {
       expect(await database.select(database.transactions).get(), isEmpty);
     });
 
-    test(
-        'confirmar una cuota en la fecha exacta del startDate se acepta',
+    test('confirmar una cuota en la fecha exacta del startDate se acepta',
         () async {
       final debt = await createDebtWithStart(DateTime(2026, 7, 1));
       final template = await createTemplate(
@@ -1745,8 +1744,9 @@ void main() {
       );
       await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 1));
 
-      final items =
-          (await repository.watchPendingOccurrences().first).getRight().toNullable()!;
+      final items = (await repository.watchPendingOccurrences().first)
+          .getRight()
+          .toNullable()!;
       final item = items.firstWhere(
         (i) => i.scheduledPayment.id == template.id,
       );
@@ -1765,8 +1765,9 @@ void main() {
       );
       await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 1));
 
-      final items =
-          (await repository.watchPendingOccurrences().first).getRight().toNullable()!;
+      final items = (await repository.watchPendingOccurrences().first)
+          .getRight()
+          .toNullable()!;
       final item = items.firstWhere(
         (i) => i.scheduledPayment.id == template.id,
       );
@@ -1785,8 +1786,9 @@ void main() {
       );
       await repository.generateDueScheduledPayments(now: DateTime(2026, 7, 1));
 
-      final beforeDelete =
-          (await repository.watchPendingOccurrences().first).getRight().toNullable()!;
+      final beforeDelete = (await repository.watchPendingOccurrences().first)
+          .getRight()
+          .toNullable()!;
       expect(
         beforeDelete.any((i) => i.scheduledPayment.id == template.id),
         isTrue,
@@ -1797,8 +1799,9 @@ void main() {
       );
       expect(deleteResult.isRight(), isTrue);
 
-      final afterDelete =
-          (await repository.watchPendingOccurrences().first).getRight().toNullable()!;
+      final afterDelete = (await repository.watchPendingOccurrences().first)
+          .getRight()
+          .toNullable()!;
       expect(
         afterDelete.any((i) => i.scheduledPayment.id == template.id),
         isFalse,
@@ -1985,7 +1988,8 @@ void main() {
 
       final finished = await finishedIds();
       expect(finished, containsAll([first.id, second.id]));
-      expect(await activeIds(), isNot(anyOf(contains(first.id), contains(second.id))));
+      expect(await activeIds(),
+          isNot(anyOf(contains(first.id), contains(second.id))));
     });
 
     test(
@@ -2046,6 +2050,57 @@ void main() {
 
       expect(items, hasLength(1));
       expect(items.single.lastPaymentDate, isNull);
+    });
+  });
+
+  group('HU-08: reminderLeadDays', () {
+    test('se persiste al crear y se lee de vuelta como opción', () async {
+      final created = await createTemplate(monthlyDraft(reminderLeadDays: 3));
+
+      final reloaded = await repository.getScheduledPayment(created.id);
+
+      final template = reloaded.getRight().toNullable()!;
+      expect(template.reminderLeadDays, 3);
+      expect(template.hasReminder, isTrue);
+    });
+
+    test('sin recordatorio es el default y persiste como null', () async {
+      final created = await createTemplate(monthlyDraft());
+
+      final template = (await repository.getScheduledPayment(created.id))
+          .getRight()
+          .toNullable()!;
+
+      expect(template.reminderLeadDays, isNull);
+      expect(template.hasReminder, isFalse);
+    });
+
+    test('elegir "sin recordatorio" al editar limpia la columna', () async {
+      final created = await createTemplate(monthlyDraft(reminderLeadDays: 7));
+
+      await repository.updateScheduledPayment(
+        monthlyDraft(id: created.id),
+      );
+
+      final template = (await repository.getScheduledPayment(created.id))
+          .getRight()
+          .toNullable()!;
+      // Sin esto, apagar el recordatorio dejaría el aviso vivo en la base y el
+      // reconciliador seguiría programándolo.
+      expect(template.reminderLeadDays, isNull);
+    });
+
+    test('cambiar la anticipación al editar la sobreescribe', () async {
+      final created = await createTemplate(monthlyDraft(reminderLeadDays: 1));
+
+      await repository.updateScheduledPayment(
+        monthlyDraft(id: created.id, reminderLeadDays: 7),
+      );
+
+      final template = (await repository.getScheduledPayment(created.id))
+          .getRight()
+          .toNullable()!;
+      expect(template.reminderLeadDays, 7);
     });
   });
 }

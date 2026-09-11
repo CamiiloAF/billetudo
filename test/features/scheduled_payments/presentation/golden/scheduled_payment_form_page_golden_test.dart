@@ -2,6 +2,7 @@ import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart'
     show CategoryKind;
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment.dart';
+import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment_reminder.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/tag.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_form_cubit.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/cubit/scheduled_payment_form_state.dart';
@@ -197,6 +198,53 @@ void main() {
           nextDate: firstPaymentDate,
         ),
         'create_manual_mode_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    // HU-08: `ScheduledPaymentReminderField` with an actual reminder chosen
+    // — the field's only other visible state besides the "sin recordatorio"
+    // placeholder every other case above renders by default.
+    testWidgets('crear, con recordatorio elegido ($suffix)', (tester) async {
+      await golden(
+        tester,
+        ScheduledPaymentFormState(
+          status: ScheduledPaymentFormStatus.ready,
+          accountId: 'acc-1',
+          accountName: 'Bancolombia',
+          categoryId: 'cat-1',
+          categoryKind: CategoryKind.expense,
+          categoryName: 'Suscripciones',
+          amountText: '10000',
+          nextDate: firstPaymentDate,
+          reminder: ScheduledPaymentReminder.threeDaysBefore,
+        ),
+        'create_with_reminder_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    // HU-08: same reminder, but the OS permission is off — the field grows
+    // the secondary "no llegará" note. Never a blocker (the preference still
+    // saves), so it must read as informational, not as an error.
+    testWidgets(
+        'crear, con recordatorio pero notificaciones del sistema apagadas ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        ScheduledPaymentFormState(
+          status: ScheduledPaymentFormStatus.ready,
+          accountId: 'acc-1',
+          accountName: 'Bancolombia',
+          categoryId: 'cat-1',
+          categoryKind: CategoryKind.expense,
+          categoryName: 'Suscripciones',
+          amountText: '10000',
+          nextDate: firstPaymentDate,
+          reminder: ScheduledPaymentReminder.threeDaysBefore,
+          notificationsAllowed: false,
+        ),
+        'create_reminder_permission_notice_$suffix',
         brightness: brightness,
       );
     });

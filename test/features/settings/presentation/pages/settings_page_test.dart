@@ -11,6 +11,8 @@ import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart'
 import 'package:billetudo/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_state.dart';
+import 'package:billetudo/features/settings/presentation/cubit/notification_settings_cubit.dart';
+import 'package:billetudo/features/settings/presentation/cubit/notification_settings_state.dart';
 import 'package:billetudo/features/settings/presentation/pages/settings_page.dart';
 import 'package:billetudo/features/settings/presentation/widgets/settings_session_card.dart';
 import 'package:billetudo/features/settings/presentation/widgets/show_help_on_entry_field.dart';
@@ -36,12 +38,16 @@ class MockThemeModeCubit extends MockCubit<ThemeMode>
 class MockSyncStatusCubit extends MockCubit<SyncStatusState>
     implements SyncStatusCubit {}
 
+class MockNotificationSettingsCubit extends MockCubit<NotificationSettingsState>
+    implements NotificationSettingsCubit {}
+
 void main() {
   late MockWatchAuthSession watchAuthSession;
   late MockSignOut signOut;
   late MockAppSettingsCubit appSettingsCubit;
   late MockThemeModeCubit themeModeCubit;
   late MockSyncStatusCubit syncStatusCubit;
+  late MockNotificationSettingsCubit notificationSettingsCubit;
 
   const user = AuthUser(
     id: 'google-1',
@@ -71,6 +77,14 @@ void main() {
       initialState: ThemeMode.system,
     );
     when(() => themeModeCubit.setThemeMode(any())).thenAnswer((_) async {});
+    notificationSettingsCubit = MockNotificationSettingsCubit();
+    when(() => notificationSettingsCubit.state)
+        .thenReturn(const NotificationSettingsState(loaded: true));
+    whenListen(
+      notificationSettingsCubit,
+      const Stream<NotificationSettingsState>.empty(),
+      initialState: const NotificationSettingsState(loaded: true),
+    );
     syncStatusCubit = MockSyncStatusCubit();
     when(() => syncStatusCubit.state).thenReturn(const SyncStatusState());
     whenListen(
@@ -99,6 +113,9 @@ void main() {
           BlocProvider<AppSettingsCubit>.value(value: appSettingsCubit),
           BlocProvider<ThemeModeCubit>.value(value: themeModeCubit),
           BlocProvider<SyncStatusCubit>.value(value: syncStatusCubit),
+          BlocProvider<NotificationSettingsCubit>.value(
+            value: notificationSettingsCubit,
+          ),
         ],
         child: SettingsPage(
           onOpenLogin: onOpenLogin ?? () {},
@@ -106,6 +123,7 @@ void main() {
           onOpenComingSoon: onOpenComingSoon ?? (_) {},
           onOpenSyncStatus: onOpenSyncStatus ?? () {},
           onOpenQuickAccessOrder: onOpenQuickAccessOrder ?? () {},
+          onOpenNotifications: () {},
         ),
       ),
       wrapInScaffold: false,

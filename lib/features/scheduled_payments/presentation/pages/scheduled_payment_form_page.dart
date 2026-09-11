@@ -31,6 +31,7 @@ import '../widgets/scheduled_payment_frequency_unit_chips.dart';
 import '../widgets/scheduled_payment_installment_banner.dart';
 import '../widgets/scheduled_payment_interval_stepper.dart';
 import '../widgets/scheduled_payment_mode_radio_card.dart';
+import '../widgets/scheduled_payment_reminder_field.dart';
 import '../widgets/scheduled_payment_tags_field.dart';
 import '../widgets/sheets/delete_scheduled_payment_sheet.dart';
 
@@ -126,11 +127,12 @@ class _ScheduledPaymentFormPageState extends State<ScheduledPaymentFormPage> {
                         state.isEditing
                             ? l10n.scheduledPaymentInstallmentEditTitle
                             : l10n.scheduledPaymentInstallmentTitle,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w700,
-                              color: colors.textPrimary,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                  color: colors.textPrimary,
+                                ),
                       ),
                       if (state.debtName != null)
                         Text(
@@ -140,11 +142,12 @@ class _ScheduledPaymentFormPageState extends State<ScheduledPaymentFormPage> {
                                 ? l10n.debtDirectionIOwe
                                 : l10n.debtDirectionOwedToMe,
                           ),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: colors.textSecondary,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: colors.textSecondary,
+                                  ),
                         ),
                     ],
                   )
@@ -371,10 +374,9 @@ class ScheduledPaymentFormBody extends StatelessWidget {
               placeholder: l10n.scheduledPaymentFormEndDateNone,
               onChanged: cubit.endDateChanged,
               onCleared: () => cubit.endDateChanged(null),
-              errorText:
-                  state.failedField == ScheduledPaymentDraft.fieldEndDate
-                      ? l10n.budgetErrorEndDate
-                      : null,
+              errorText: state.failedField == ScheduledPaymentDraft.fieldEndDate
+                  ? l10n.budgetErrorEndDate
+                  : null,
             ),
           ),
         ],
@@ -413,6 +415,17 @@ class ScheduledPaymentFormBody extends StatelessWidget {
           const SizedBox(height: 16),
           const ScheduledPaymentInstallmentBanner(),
         ],
+        const SizedBox(height: 16),
+        // HU-08: right after "Modo" and before the note — the reminder is a
+        // property of how the payment behaves, not a detail of what it is.
+        ScheduledPaymentReminderField(
+          reminder: state.reminder,
+          showsPermissionNotice: state.showsPermissionNotice,
+          onChanged: (option) {
+            FocusScope.of(context).unfocus();
+            unawaited(cubit.reminderChanged(option));
+          },
+        ),
         const SizedBox(height: 16),
         NoteAutocompleteField(
           label: l10n.transactionFormNoteLabel,
