@@ -243,9 +243,9 @@ class TransactionsPage extends StatelessWidget {
                           onRetry: context.read<TransactionsListCubit>().start,
                         ),
                       // Empty period: the carousel is pinned above the
-                      // message and `SliverFillRemaining` centers it in
-                      // whatever space is left in the viewport, same as the
-                      // plain `Expanded` this replaced.
+                      // message, which centers in whatever space is left in
+                      // the viewport, same as the plain `Expanded` this
+                      // replaced.
                       //
                       // A pending capture is not a `Transaction`, so it never
                       // shows up in `state.items` — this branch fires just as
@@ -258,13 +258,17 @@ class TransactionsPage extends StatelessWidget {
                       //
                       // The slot can now render one or more pending-capture
                       // cards instead of nothing, so the carousel + slot no
-                      // longer reliably leave enough room for the message —
-                      // `SliverFillRemaining(hasScrollBody: false)` fills the
-                      // leftover space when there is any, and — unlike a
-                      // plain `Expanded`, which forced a fixed height and
-                      // overflowed once the slot grew past it — lets the
-                      // whole `CustomScrollView` scroll instead of
-                      // overflowing when there is not.
+                      // longer reliably leave enough room for the message.
+                      // `SliverFillRemaining(hasScrollBody: false)` forces its
+                      // child to exactly the leftover viewport space — if that
+                      // space is smaller than the message's natural size
+                      // (icon + text), it overflows anyway; `Center` only
+                      // centers, it does not shrink. `SliverLayoutBuilder` +
+                      // `ConstrainedBox(minHeight:)` instead asks for the
+                      // leftover space as a *minimum* — still centered when
+                      // there's room to spare — but lets the content grow
+                      // past it, so the whole `CustomScrollView` scrolls
+                      // instead of overflowing when there is not.
                       TransactionsListStatus.ready when state.items.isEmpty =>
                         CustomScrollView(
                           slivers: [
@@ -281,13 +285,22 @@ class TransactionsPage extends StatelessWidget {
                                 onTap: onDispatchCapture,
                               ),
                             ),
-                            SliverFillRemaining(
-                              hasScrollBody: false,
-                              child: TransactionsEmptyState(
-                                message: _isUnfiltered(state.filter)
-                                    ? l10n.transactionsEmptyMessage
-                                    : l10n.transactionsEmptyPeriodMessage,
-                              ),
+                            SliverLayoutBuilder(
+                              builder: (context, constraints) {
+                                return SliverToBoxAdapter(
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      minHeight:
+                                          constraints.remainingPaintExtent,
+                                    ),
+                                    child: TransactionsEmptyState(
+                                      message: _isUnfiltered(state.filter)
+                                          ? l10n.transactionsEmptyMessage
+                                          : l10n.transactionsEmptyPeriodMessage,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
