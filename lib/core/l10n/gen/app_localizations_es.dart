@@ -2425,6 +2425,13 @@ class AppLocalizationsEs extends AppLocalizations {
       'Mantén presionado y arrastra para reordenar';
 
   @override
+  String get settingsWidgetTitle => 'Widget de captura rápida';
+
+  @override
+  String get settingsWidgetSubtitle =>
+      'Añádelo a tu pantalla de inicio para registrar un gasto o ingreso en un toque, sin abrir la app. Mantén presionada la pantalla de inicio, toca Widgets y busca Billetudo.';
+
+  @override
   String get settingsDeleteAccount => 'Eliminar cuenta';
 
   @override

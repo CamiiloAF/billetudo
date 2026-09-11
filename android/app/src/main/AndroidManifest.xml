@@ -39,6 +39,41 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!--
+            Widget de captura rápida
+            (docs/requirements/fase-2/20-widget-captura-rapida.md).
+            `exported="false"`: el único que lo dispara es el sistema de
+            widgets; sus toques abren MainActivity con un intent explícito,
+            no con un deep link público.
+        -->
+        <receiver
+            android:name=".widget.QuickCaptureWidgetProvider"
+            android:label="@string/widget_quick_capture_name"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/quick_capture_widget_info" />
+        </receiver>
+        <!--
+            Configuration activity del widget (HU-03,
+            docs/requirements/fase-2/20-widget-captura-rapida.md): el sistema
+            la abre al añadir el widget (`android:configure` en
+            quick_capture_widget_info.xml) y el usuario puede reabrirla
+            después. `exported="true"` es obligatorio para este tipo de
+            actividad — sin él el launcher no puede lanzarla — pero solo el
+            propio sistema de widgets la invoca en la práctica.
+        -->
+        <activity
+            android:name=".widget.QuickCaptureWidgetConfigureActivity"
+            android:exported="true"
+            android:theme="@style/NormalTheme">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
         <!-- Bank-notification capture (Fase 2, Android only).
              This <service> introduces the FIRST sensitive permission of the
              app and changes the permission list shown in the store: it

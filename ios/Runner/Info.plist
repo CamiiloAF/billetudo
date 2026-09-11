@@ -85,6 +85,22 @@
 				<string>com.googleusercontent.apps.315684773654-gda6lh8sjiqakoaomnrabn8ahpli5fka</string>
 			</array>
 		</dict>
+		<!-- Widget de captura rápida
+		     (docs/requirements/fase-2/20-widget-captura-rapida.md): la
+		     extensión de WidgetKit no puede abrir la app de otra forma que
+		     con una URL. El esquema es el bundle id, no un "billetudo://"
+		     fijo, para que dev y prod instaladas a la vez no se peleen el
+		     mismo esquema; el widget lo deriva del suyo propio. -->
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER).capture-shortcuts</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>

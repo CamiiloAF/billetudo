@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:billetudo/app.dart';
@@ -51,8 +52,21 @@ Future<void> resetLocalDatabase() async {
 /// `bootstrap.dart`): `configureDependencies()` builds `AppDatabase` and
 /// `SupabaseClient` synchronously off of them (see `register_module.dart`),
 /// so both must complete first or the DI graph throws.
-Future<void> startApp(PatrolIntegrationTester $) async {
+/// [beforeFirstFrame], when given, runs after `getIt` is ready (so
+/// `getIt<AppDatabase>()` and friends work) but before the widget tree is
+/// pumped — the only window some scenarios need. `capture_widget_shortcut_
+/// patrol_test.dart` uses it to seed an account so a cold-start shortcut
+/// lands straight on the movement form instead of the account gate bridge
+/// (`docs/requirements/fase-1/15-gate-cuenta.md`), which would otherwise
+/// intercept the very first frame — `CaptureShortcutCubit.start()` (called
+/// from `BilletudoApp`'s `initState`-time field) races that first pump, so
+/// seeding after `startApp` returns is already too late.
+Future<void> startApp(
+  PatrolIntegrationTester $, {
+  FutureOr<void> Function()? beforeFirstFrame,
+}) async {
   await _prepareCleanBoot($);
+  await beforeFirstFrame?.call();
   await $.pumpWidgetAndSettle(const BilletudoApp());
 }
 

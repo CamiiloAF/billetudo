@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Estilos compartidos por los atajos del widget, para no repetir atributos en
+  los cuatro bloques del layout. Sin qualifier de tema: los colores que usan
+  ya se resuelven por `values-night` (HU-10).
+-->
+<resources>
+    <style name="WidgetShortcut">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:gravity">center</item>
+        <!-- Área tocable cómoda incluso en la variante más angosta (HU-06). -->
+        <item name="android:minWidth">64dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:paddingTop">4dp</item>
+        <item name="android:paddingBottom">4dp</item>
+    </style>
+
+    <style name="WidgetShortcutIcon">
+        <item name="android:layout_width">36dp</item>
+        <item name="android:layout_height">36dp</item>
+        <item name="android:background">@drawable/widget_icon_circle</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <!-- La descripción va en el contenedor tocable, no en el ícono. -->
+        <item name="android:importantForAccessibility">no</item>
+    </style>
+
+    <style name="WidgetShortcutLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/widget_text_primary</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans_semibold</item>
+        <!-- Etiquetas cortas, pero "Pendientes" en pantallas angostas o con
+             fuente grande se trunca en vez de romper la fila. -->
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <!--
+      Estilos de la configuration activity del widget (HU-03). Distintos de
+      los de arriba porque corren en una Activity normal, no en un
+      RemoteViews — pueden usar cualquier vista, no solo las que RemoteViews
+      soporta.
+    -->
+    <style name="WidgetConfigureRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:paddingTop">4dp</item>
+        <item name="android:paddingBottom">4dp</item>
+    </style>
+
+    <style name="WidgetConfigureCheckbox">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:buttonTint">@color/widget_primary</item>
+    </style>
+
+    <style name="WidgetConfigureLabel">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/widget_text_primary</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="WidgetConfigureReorderButton">
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:scaleType">fitCenter</item>
+    </style>
+</resources>

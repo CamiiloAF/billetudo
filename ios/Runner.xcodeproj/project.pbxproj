@@ -7,20 +7,31 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B1A0PRIV0002CAFE00000002 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B1A0PRIV0001CAFE00000001 /* PrivacyInfo.xcprivacy */; };
+		0EC4276C86B6845757FB7A62 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7DB0A9B0F7D0EFEB81AD2E18 /* Assets.xcassets */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
+		3B27CA1AE65AE5F0E89EB535 /* QuickCaptureWidget.intentdefinition in Sources */ = {isa = PBXBuildFile; fileRef = E2BB99B91873BA4DC564F989 /* QuickCaptureWidget.intentdefinition */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		4225C58B2098F474D3D1FE0A /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D45E361ABB60A5F9B67C4A85 /* Pods_RunnerTests.framework */; };
 		5EA91C09CBC19AAAE09B6E84 /* RunnerUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 950FBD22F2334BB775C2C81D /* RunnerUITests.m */; };
+		5FA34CE0C40FE554CF3E85DE /* QuickCaptureWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 155792A21881804F7DF82552 /* QuickCaptureWidgetBundle.swift */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		78A318202AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 78A3181F2AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage */; };
+		7A5F81BE47669D2F406ABF8B /* QuickCaptureShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52A6EC96D546E45F966BC419 /* QuickCaptureShortcut.swift */; };
+		7AC9D5399B4ECD59E238D3E3 /* QuickCaptureWidgetSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE668AA77DBA4C45DABE86F7 /* QuickCaptureWidgetSupport.swift */; };
+		8461FE7C00CF7572FF195EFF /* QuickCaptureWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DFFF31FF1607F68E8A0920D3 /* QuickCaptureWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9788D5E2D82B5CD954CDBB92 /* Pods_Runner_RunnerUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5FF4200688B9048E7EA0950 /* Pods_Runner_RunnerUITests.framework */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		9BF93E2ED5A8E01CF00576F7 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CFDC2BE7556D072EBCCD1066 /* Pods_Runner.framework */; };
+		A10008B23E2F395C2567E794 /* QuickCaptureWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A670010A47BFCC9283CE86B /* QuickCaptureWidget.swift */; };
+		B1A0PRIV0002CAFE00000002 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B1A0PRIV0001CAFE00000001 /* PrivacyInfo.xcprivacy */; };
+		C497F445787A53ECF85B1F2C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA5C092A863E933C3C24376B /* Foundation.framework */; };
 		C8C5CC7FF4397D8B0F7739B7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA5C092A863E933C3C24376B /* Foundation.framework */; };
+		E9DAEA7F7B9B2D1EA075232B /* PlusJakartaSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 71545391D04638355293AD5A /* PlusJakartaSans-SemiBold.ttf */; };
+		FCFD92B87D878116C6E59640 /* QuickCaptureWidgetBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9695BCDB34722D6776578FE1 /* QuickCaptureWidgetBridge.swift */; };
+		FDC1A1276C2AD5217C8DB537 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9B027D7E3C94F559C9E8BC79 /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,9 +49,27 @@
 			remoteGlobalIDString = 97C146ED1CF9000F007C117D;
 			remoteInfo = Runner;
 		};
+		609F17943D8E6038CEE5E345 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6BD13C9C56B52247360FD656;
+			remoteInfo = QuickCaptureWidget;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		73E6419E8EE066594132ADD1 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				8461FE7C00CF7572FF195EFF /* QuickCaptureWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9705A1C41CF9048500538489 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -54,13 +83,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		B1A0PRIV0001CAFE00000001 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		04548387A2CC0E3EBE7DEA08 /* Pods-Runner.profile-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile-dev.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile-dev.xcconfig"; sourceTree = "<group>"; };
 		0495C2C422CCB7B3E48A7AD4 /* Pods-RunnerTests.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile.xcconfig"; sourceTree = "<group>"; };
 		1374090B2B610EEECAC8F9F4 /* Pods-RunnerTests.profile-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile-prod.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile-prod.xcconfig"; sourceTree = "<group>"; };
 		13A12819E0CC1092FEE0EA35 /* Pods-RunnerTests.debug-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug-dev.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug-dev.xcconfig"; sourceTree = "<group>"; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
+		155792A21881804F7DF82552 /* QuickCaptureWidgetBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuickCaptureWidgetBundle.swift; sourceTree = "<group>"; };
 		1E23E618CE729C51E434915B /* Pods-Runner-RunnerUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner-RunnerUITests.release.xcconfig"; path = "Target Support Files/Pods-Runner-RunnerUITests/Pods-Runner-RunnerUITests.release.xcconfig"; sourceTree = "<group>"; };
 		214F3C38F7223C5821C2E9D1 /* .xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = .xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		27F4D863CD5FB50173D14A39 /* Pods-Runner.release-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release-dev.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release-dev.xcconfig"; sourceTree = "<group>"; };
@@ -73,15 +102,21 @@
 		3F52A702B82A530C48F7B9DC /* Pods-RunnerTests.release-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release-prod.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release-prod.xcconfig"; sourceTree = "<group>"; };
 		40CA64927F8DF57AD473C422 /* Pods-Runner-RunnerUITests.debug-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner-RunnerUITests.debug-prod.xcconfig"; path = "Target Support Files/Pods-Runner-RunnerUITests/Pods-Runner-RunnerUITests.debug-prod.xcconfig"; sourceTree = "<group>"; };
 		428F7F82EE9CA4E598008E91 /* Pods-Runner-RunnerUITests.profile-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner-RunnerUITests.profile-dev.xcconfig"; path = "Target Support Files/Pods-Runner-RunnerUITests/Pods-Runner-RunnerUITests.profile-dev.xcconfig"; sourceTree = "<group>"; };
+		52A6EC96D546E45F966BC419 /* QuickCaptureShortcut.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuickCaptureShortcut.swift; sourceTree = "<group>"; };
 		579284857E53CD0275061D7F /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
 		65A7E56672DEE36FE5F7B7AC /* Pods-Runner-RunnerUITests.profile-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner-RunnerUITests.profile-prod.xcconfig"; path = "Target Support Files/Pods-Runner-RunnerUITests/Pods-Runner-RunnerUITests.profile-prod.xcconfig"; sourceTree = "<group>"; };
 		675C0285D0662E54AEA2C800 /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
+		6A670010A47BFCC9283CE86B /* QuickCaptureWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuickCaptureWidget.swift; sourceTree = "<group>"; };
+		71545391D04638355293AD5A /* PlusJakartaSans-SemiBold.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "PlusJakartaSans-SemiBold.ttf"; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		78E0A7A72DC9AD7400C4905E /* FlutterGeneratedPluginSwiftPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = FlutterGeneratedPluginSwiftPackage; path = Flutter/ephemeral/Packages/FlutterGeneratedPluginSwiftPackage; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
+		7DB0A9B0F7D0EFEB81AD2E18 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8CAF4B41263AEB47C289D226 /* Pods-Runner.debug-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug-prod.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug-prod.xcconfig"; sourceTree = "<group>"; };
+		949FA8565AA16EFD4ED1E466 /* en */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		950FBD22F2334BB775C2C81D /* RunnerUITests.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RunnerUITests.m; path = RunnerUITests/RunnerUITests.m; sourceTree = "<group>"; };
+		9695BCDB34722D6776578FE1 /* QuickCaptureWidgetBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuickCaptureWidgetBridge.swift; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Flutter/Debug.xcconfig; sourceTree = "<group>"; };
 		9740EEB31CF90195004384FC /* Generated.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Generated.xcconfig; path = Flutter/Generated.xcconfig; sourceTree = "<group>"; };
 		97C146EE1CF9000F007C117D /* Runner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Runner.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -93,7 +128,9 @@
 		A5FF4200688B9048E7EA0950 /* Pods_Runner_RunnerUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner_RunnerUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A6863BA5EA1798CC2D956FF9 /* Pods-RunnerTests.profile-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile-dev.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile-dev.xcconfig"; sourceTree = "<group>"; };
 		A96129CE1166AE339E9B5EAA /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
+		B1A0PRIV0001CAFE00000001 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		B2B3C91199CF9C78A4BF7356 /* Pods-Runner-RunnerUITests.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner-RunnerUITests.profile.xcconfig"; path = "Target Support Files/Pods-Runner-RunnerUITests/Pods-Runner-RunnerUITests.profile.xcconfig"; sourceTree = "<group>"; };
+		C35EBCD16649F3BDD0AF2E3D /* es */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C7AD2F860B2B538153642187 /* Pods-Runner.debug-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug-dev.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug-dev.xcconfig"; sourceTree = "<group>"; };
 		C7FD56EA1774F26C613897F9 /* Pods-Runner-RunnerUITests.release-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner-RunnerUITests.release-dev.xcconfig"; path = "Target Support Files/Pods-Runner-RunnerUITests/Pods-Runner-RunnerUITests.release-dev.xcconfig"; sourceTree = "<group>"; };
 		CB6C0FA688B611F2FB101AE9 /* Pods-Runner.profile-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile-prod.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile-prod.xcconfig"; sourceTree = "<group>"; };
@@ -102,7 +139,10 @@
 		D45E361ABB60A5F9B67C4A85 /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA5C092A863E933C3C24376B /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		DD5316690A5A6332CBF90420 /* Pods-Runner-RunnerUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner-RunnerUITests.debug.xcconfig"; path = "Target Support Files/Pods-Runner-RunnerUITests/Pods-Runner-RunnerUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		DFFF31FF1607F68E8A0920D3 /* QuickCaptureWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QuickCaptureWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		E2BB99B91873BA4DC564F989 /* QuickCaptureWidget.intentdefinition */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file.intentdefinition; path = QuickCaptureWidget.intentdefinition; sourceTree = "<group>"; };
 		E82E89AAA8C13B048589248D /* Pods-Runner-RunnerUITests.release-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner-RunnerUITests.release-prod.xcconfig"; path = "Target Support Files/Pods-Runner-RunnerUITests/Pods-Runner-RunnerUITests.release-prod.xcconfig"; sourceTree = "<group>"; };
+		EE668AA77DBA4C45DABE86F7 /* QuickCaptureWidgetSupport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuickCaptureWidgetSupport.swift; sourceTree = "<group>"; };
 		F0379D68E6F398CF58FFDB24 /* Pods-Runner.release-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release-prod.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release-prod.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -113,6 +153,14 @@
 			files = (
 				C8C5CC7FF4397D8B0F7739B7 /* Foundation.framework in Frameworks */,
 				9788D5E2D82B5CD954CDBB92 /* Pods_Runner_RunnerUITests.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2FEAB40DB8989F649F0EF465 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C497F445787A53ECF85B1F2C /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -162,6 +210,22 @@
 			);
 			name = iOS;
 			sourceTree = "<group>";
+		};
+		6F3FC19C391166706C0F7E73 /* QuickCaptureWidget */ = {
+			isa = PBXGroup;
+			children = (
+				52A6EC96D546E45F966BC419 /* QuickCaptureShortcut.swift */,
+				6A670010A47BFCC9283CE86B /* QuickCaptureWidget.swift */,
+				155792A21881804F7DF82552 /* QuickCaptureWidgetBundle.swift */,
+				EE668AA77DBA4C45DABE86F7 /* QuickCaptureWidgetSupport.swift */,
+				7DB0A9B0F7D0EFEB81AD2E18 /* Assets.xcassets */,
+				71545391D04638355293AD5A /* PlusJakartaSans-SemiBold.ttf */,
+				9B027D7E3C94F559C9E8BC79 /* Localizable.strings */,
+				E2BB99B91873BA4DC564F989 /* QuickCaptureWidget.intentdefinition */,
+			);
+			name = QuickCaptureWidget;
+			path = QuickCaptureWidget;
+			sourceTree = SOURCE_ROOT;
 		};
 		922DBD9BA99EA7B349429B5F /* Pods */ = {
 			isa = PBXGroup;
@@ -220,6 +284,7 @@
 				3F9A513D9C9F14FC69D58AF9 /* Frameworks */,
 				C1B0D6815F05AFBB01F14F47 /* RunnerUITests */,
 				922DBD9BA99EA7B349429B5F /* Pods */,
+				6F3FC19C391166706C0F7E73 /* QuickCaptureWidget */,
 			);
 			sourceTree = "<group>";
 		};
@@ -228,6 +293,7 @@
 			children = (
 				97C146EE1CF9000F007C117D /* Runner.app */,
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
+				DFFF31FF1607F68E8A0920D3 /* QuickCaptureWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -244,6 +310,7 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
+				9695BCDB34722D6776578FE1 /* QuickCaptureWidgetBridge.swift */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -278,6 +345,23 @@
 			productReference = 331C8081294A63A400263BE5 /* RunnerTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		6BD13C9C56B52247360FD656 /* QuickCaptureWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D0B50BC6B1DE5926906B47EB /* Build configuration list for PBXNativeTarget "QuickCaptureWidget" */;
+			buildPhases = (
+				6E389C281C959DF55F4FBACF /* Sources */,
+				2FEAB40DB8989F649F0EF465 /* Frameworks */,
+				B6A30974F2684C9EA77FC069 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = QuickCaptureWidget;
+			productName = QuickCaptureWidget;
+			productReference = DFFF31FF1607F68E8A0920D3 /* QuickCaptureWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		97C146ED1CF9000F007C117D /* Runner */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 97C147051CF9000F007C117D /* Build configuration list for PBXNativeTarget "Runner" */;
@@ -288,6 +372,7 @@
 				97C146EB1CF9000F007C117D /* Frameworks */,
 				97C146EC1CF9000F007C117D /* Resources */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
+				73E6419E8EE066594132ADD1 /* Embed Foundation Extensions */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				BCEB692127CB77BEEFB28D9F /* [CP] Embed Pods Frameworks */,
 				B0F40A73C7494BD0697A15BA /* [CP] Copy Pods Resources */,
@@ -295,6 +380,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				C375C1A3F3D34225D6EA6A70 /* PBXTargetDependency */,
 			);
 			name = Runner;
 			packageProductDependencies = (
@@ -352,6 +438,7 @@
 			knownRegions = (
 				en,
 				Base,
+				es,
 			);
 			mainGroup = 97C146E51CF9000F007C117D;
 			packageReferences = (
@@ -364,6 +451,7 @@
 				97C146ED1CF9000F007C117D /* Runner */,
 				331C8080294A63A400263BE5 /* RunnerTests */,
 				AF494673C9647C0D3F9B0116 /* RunnerUITests */,
+				6BD13C9C56B52247360FD656 /* QuickCaptureWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -392,6 +480,16 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B6A30974F2684C9EA77FC069 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0EC4276C86B6845757FB7A62 /* Assets.xcassets in Resources */,
+				E9DAEA7F7B9B2D1EA075232B /* PlusJakartaSans-SemiBold.ttf in Resources */,
+				FDC1A1276C2AD5217C8DB537 /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -582,12 +680,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		6E389C281C959DF55F4FBACF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7A5F81BE47669D2F406ABF8B /* QuickCaptureShortcut.swift in Sources */,
+				A10008B23E2F395C2567E794 /* QuickCaptureWidget.swift in Sources */,
+				5FA34CE0C40FE554CF3E85DE /* QuickCaptureWidgetBundle.swift in Sources */,
+				7AC9D5399B4ECD59E238D3E3 /* QuickCaptureWidgetSupport.swift in Sources */,
+				3B27CA1AE65AE5F0E89EB535 /* QuickCaptureWidget.intentdefinition in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		97C146EA1CF9000F007C117D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
+				FCFD92B87D878116C6E59640 /* QuickCaptureWidgetBridge.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -604,6 +715,12 @@
 			isa = PBXTargetDependency;
 			target = 97C146ED1CF9000F007C117D /* Runner */;
 			targetProxy = 331C8085294A63A400263BE5 /* PBXContainerItemProxy */;
+		};
+		C375C1A3F3D34225D6EA6A70 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = QuickCaptureWidget;
+			target = 6BD13C9C56B52247360FD656 /* QuickCaptureWidget */;
+			targetProxy = 609F17943D8E6038CEE5E345 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -622,6 +739,15 @@
 				97C147001CF9000F007C117D /* Base */,
 			);
 			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		9B027D7E3C94F559C9E8BC79 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C35EBCD16649F3BDD0AF2E3D /* es */,
+				949FA8565AA16EFD4ED1E466 /* en */,
+			);
+			name = Localizable.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -668,6 +794,30 @@
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = "Release-prod";
+		};
+		1B142800A2E7D994589992E8 /* Debug-dev */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB31CF90195004384FC /* Generated.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 2977ZR336A;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = QuickCaptureWidget/Info.plist;
+				INTENTS_CODEGEN_LANGUAGE = Swift;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo.dev.QuickCaptureWidget;
+				PRODUCT_NAME = QuickCaptureWidget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = "Debug-dev";
 		};
 		249021D3217E4FDB00AE95B9 /* Profile */ = {
 			isa = XCBuildConfiguration;
@@ -1019,6 +1169,31 @@
 			};
 			name = "Profile-prod";
 		};
+		689994647C0F52B789FB2EED /* Profile-prod */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB31CF90195004384FC /* Generated.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 2977ZR336A;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = QuickCaptureWidget/Info.plist;
+				INTENTS_CODEGEN_LANGUAGE = Swift;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo.QuickCaptureWidget;
+				PRODUCT_NAME = QuickCaptureWidget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = "Profile-prod";
+		};
 		78E8743D2D87DA8CBE966D1D /* Debug-prod */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1362,6 +1537,80 @@
 			};
 			name = Release;
 		};
+		9D55B62DC9170E3340C2FB75 /* Release-prod */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB31CF90195004384FC /* Generated.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 2977ZR336A;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = QuickCaptureWidget/Info.plist;
+				INTENTS_CODEGEN_LANGUAGE = Swift;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo.QuickCaptureWidget;
+				PRODUCT_NAME = QuickCaptureWidget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = "Release-prod";
+		};
+		9E71BB79D047F01C3720B429 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB31CF90195004384FC /* Generated.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 2977ZR336A;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = QuickCaptureWidget/Info.plist;
+				INTENTS_CODEGEN_LANGUAGE = Swift;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo.QuickCaptureWidget;
+				PRODUCT_NAME = QuickCaptureWidget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		9F3E582D7BE1D1B9EE60803A /* Profile-dev */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB31CF90195004384FC /* Generated.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 2977ZR336A;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = QuickCaptureWidget/Info.plist;
+				INTENTS_CODEGEN_LANGUAGE = Swift;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo.dev.QuickCaptureWidget;
+				PRODUCT_NAME = QuickCaptureWidget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = "Profile-dev";
+		};
 		A1469ACA7BBE7AD4CFFC41F1 /* Release-prod */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3F52A702B82A530C48F7B9DC /* Pods-RunnerTests.release-prod.xcconfig */;
@@ -1377,6 +1626,55 @@
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner";
 			};
 			name = "Release-prod";
+		};
+		B6E1D11C0C0F638A15989DB9 /* Release-dev */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB31CF90195004384FC /* Generated.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 2977ZR336A;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = QuickCaptureWidget/Info.plist;
+				INTENTS_CODEGEN_LANGUAGE = Swift;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo.dev.QuickCaptureWidget;
+				PRODUCT_NAME = QuickCaptureWidget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = "Release-dev";
+		};
+		B79FDD2B3FFADE34D7442955 /* Debug-prod */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB31CF90195004384FC /* Generated.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 2977ZR336A;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = QuickCaptureWidget/Info.plist;
+				INTENTS_CODEGEN_LANGUAGE = Swift;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo.QuickCaptureWidget;
+				PRODUCT_NAME = QuickCaptureWidget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = "Debug-prod";
 		};
 		C1878CA1711227C1640CCDCC /* Profile-dev */ = {
 			isa = XCBuildConfiguration;
@@ -1445,6 +1743,56 @@
 				VALIDATE_PRODUCT = YES;
 			};
 			name = "Release-dev";
+		};
+		D99D4FDDA3C9DF377957252E /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB31CF90195004384FC /* Generated.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 2977ZR336A;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = QuickCaptureWidget/Info.plist;
+				INTENTS_CODEGEN_LANGUAGE = Swift;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo.QuickCaptureWidget;
+				PRODUCT_NAME = QuickCaptureWidget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		E2800562A9789AFF3150BE27 /* Profile */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9740EEB31CF90195004384FC /* Generated.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 2977ZR336A;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = QuickCaptureWidget/Info.plist;
+				INTENTS_CODEGEN_LANGUAGE = Swift;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo.QuickCaptureWidget;
+				PRODUCT_NAME = QuickCaptureWidget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Profile;
 		};
 		E3ED719C862FFE909F469FAA /* Profile-prod */ = {
 			isa = XCBuildConfiguration;
@@ -1686,6 +2034,22 @@
 				1987A65919FBC443F8DE3172 /* Release-prod */,
 				F5D3FFBB755AA194DE6D5B89 /* Profile-dev */,
 				5DF22DC8E3B8321B87CD6791 /* Profile-prod */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D0B50BC6B1DE5926906B47EB /* Build configuration list for PBXNativeTarget "QuickCaptureWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D99D4FDDA3C9DF377957252E /* Release */,
+				9E71BB79D047F01C3720B429 /* Debug */,
+				E2800562A9789AFF3150BE27 /* Profile */,
+				1B142800A2E7D994589992E8 /* Debug-dev */,
+				B79FDD2B3FFADE34D7442955 /* Debug-prod */,
+				B6E1D11C0C0F638A15989DB9 /* Release-dev */,
+				9D55B62DC9170E3340C2FB75 /* Release-prod */,
+				9F3E582D7BE1D1B9EE60803A /* Profile-dev */,
+				689994647C0F52B789FB2EED /* Profile-prod */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

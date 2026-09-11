@@ -899,6 +899,8 @@
   "settingsQuickAccessOrderSubtitle": "Choose the order of Home's quick-access shortcuts",
   "settingsQuickAccessOrderTitle": "Quick access",
   "settingsQuickAccessOrderHint": "Press and hold to drag and reorder",
+  "settingsWidgetTitle": "Quick-capture widget",
+  "settingsWidgetSubtitle": "Add it to your home screen to log an expense or income in one tap, without opening the app. Press and hold your home screen, tap Widgets and look for Billetudo.",
   "settingsDeleteAccount": "Delete account",
   "budgetsTitle": "Budgets",
   "budgetsAdd": "New budget",

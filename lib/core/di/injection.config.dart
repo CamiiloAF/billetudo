@@ -367,6 +367,8 @@ import 'package:billetudo/features/capture/data/datasources/capture_method_chann
     as _i725;
 import 'package:billetudo/features/capture/data/datasources/capture_offer_preference_datasource.dart'
     as _i287;
+import 'package:billetudo/features/capture/data/datasources/capture_shortcut_channel_datasource.dart'
+    as _i1003;
 import 'package:billetudo/features/capture/data/datasources/issuer_rules_asset_datasource.dart'
     as _i405;
 import 'package:billetudo/features/capture/data/datasources/issuer_settings_preference_datasource.dart'
@@ -379,6 +381,8 @@ import 'package:billetudo/features/capture/data/repositories/capture_learning_re
     as _i184;
 import 'package:billetudo/features/capture/data/repositories/capture_offer_repository_impl.dart'
     as _i152;
+import 'package:billetudo/features/capture/data/repositories/capture_shortcut_repository_impl.dart'
+    as _i983;
 import 'package:billetudo/features/capture/data/repositories/issuer_rules_repository_impl.dart'
     as _i330;
 import 'package:billetudo/features/capture/data/repositories/issuer_settings_repository_impl.dart'
@@ -397,6 +401,8 @@ import 'package:billetudo/features/capture/domain/repositories/capture_learning_
     as _i415;
 import 'package:billetudo/features/capture/domain/repositories/capture_offer_repository.dart'
     as _i872;
+import 'package:billetudo/features/capture/domain/repositories/capture_shortcut_repository.dart'
+    as _i223;
 import 'package:billetudo/features/capture/domain/repositories/cloud_transcription_consent_store.dart'
     as _i149;
 import 'package:billetudo/features/capture/domain/repositories/issuer_rules_repository.dart'
@@ -433,6 +439,8 @@ import 'package:billetudo/features/capture/domain/usecases/get_cloud_transcripti
     as _i553;
 import 'package:billetudo/features/capture/domain/usecases/get_enabled_issuers.dart'
     as _i1036;
+import 'package:billetudo/features/capture/domain/usecases/get_initial_capture_shortcut.dart'
+    as _i461;
 import 'package:billetudo/features/capture/domain/usecases/get_issuer_apps.dart'
     as _i464;
 import 'package:billetudo/features/capture/domain/usecases/get_voice_capture_availability.dart'
@@ -485,6 +493,8 @@ import 'package:billetudo/features/capture/domain/usecases/suggest_category_for_
     as _i1025;
 import 'package:billetudo/features/capture/domain/usecases/turn_off_all_issuer_listening.dart'
     as _i288;
+import 'package:billetudo/features/capture/domain/usecases/watch_capture_shortcuts.dart'
+    as _i871;
 import 'package:billetudo/features/capture/domain/usecases/watch_issuer_catalog.dart'
     as _i739;
 import 'package:billetudo/features/capture/domain/usecases/watch_pending_capture_count.dart'
@@ -497,6 +507,8 @@ import 'package:billetudo/features/capture/presentation/cubit/capture_issuers_cu
     as _i661;
 import 'package:billetudo/features/capture/presentation/cubit/capture_permission_cubit.dart'
     as _i1024;
+import 'package:billetudo/features/capture/presentation/cubit/capture_shortcut_cubit.dart'
+    as _i959;
 import 'package:billetudo/features/capture/presentation/cubit/capture_status_cubit.dart'
     as _i95;
 import 'package:billetudo/features/capture/presentation/cubit/notices_cubit.dart'
@@ -1025,6 +1037,7 @@ import 'package:billetudo/features/tutorials/presentation/cubit/tutorial_gate_cu
     as _i829;
 import 'package:billetudo/features/tutorials/presentation/utils/tutorial_navigation_guard.dart'
     as _i773;
+import 'package:flutter/services.dart' as _i281;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i558;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
@@ -1160,6 +1173,10 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i133.LoadIssuerRules(gh<_i925.IssuerRulesRepository>()));
     gh.lazySingleton<_i312.SpeechRecognizer>(
         () => _i159.SpeechToTextRecognizer());
+    gh.lazySingleton<_i281.MethodChannel>(
+      () => registerModule.captureShortcutChannel(),
+      instanceName: 'captureShortcutChannel',
+    );
     gh.lazySingleton<_i598.NotificationMessages>(
         () => const _i872.LocalizedNotificationMessages());
     gh.lazySingleton<_i867.MappingTemplateRepository>(
@@ -1496,6 +1513,9 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i312.SpeechRecognizer>(),
           gh<_i129.MicrophonePermissionGate>(),
         ));
+    gh.lazySingleton<_i1003.CaptureShortcutChannelDatasource>(() =>
+        _i1003.CaptureShortcutChannelDatasource(
+            gh<_i281.MethodChannel>(instanceName: 'captureShortcutChannel')));
     gh.factory<_i667.CategoryBreakdownCubit>(() =>
         _i667.CategoryBreakdownCubit(gh<_i645.WatchCategoryBreakdownReport>()));
     gh.factory<_i885.CreateCategory>(
@@ -1698,6 +1718,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i769.WatchPendingConfirmationInsights>(() =>
         _i769.WatchPendingConfirmationInsights(
             gh<_i551.GetPendingOccurrences>()));
+    gh.lazySingleton<_i223.CaptureShortcutRepository>(() =>
+        _i983.CaptureShortcutRepositoryImpl(
+            gh<_i1003.CaptureShortcutChannelDatasource>()));
     gh.factory<_i348.ShouldOfferNotificationCapture>(
         () => _i348.ShouldOfferNotificationCapture(
               gh<_i416.NotificationCaptureRepository>(),
@@ -2138,6 +2161,10 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i693.SeedDefaultCategories>(),
               gh<_i474.CrashReporter>(),
             ));
+    gh.factory<_i461.GetInitialCaptureShortcut>(() =>
+        _i461.GetInitialCaptureShortcut(gh<_i223.CaptureShortcutRepository>()));
+    gh.factory<_i871.WatchCaptureShortcuts>(() =>
+        _i871.WatchCaptureShortcuts(gh<_i223.CaptureShortcutRepository>()));
     gh.factory<_i774.TransactionDetailCubit>(() => _i774.TransactionDetailCubit(
           gh<_i276.WatchTransactionDetail>(),
           gh<_i612.DeleteTransaction>(),
@@ -2456,6 +2483,11 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i639.ParseBackupHeader>(),
           gh<_i881.RestoreBackup>(),
         ));
+    gh.lazySingleton<_i959.CaptureShortcutCubit>(
+        () => _i959.CaptureShortcutCubit(
+              gh<_i461.GetInitialCaptureShortcut>(),
+              gh<_i871.WatchCaptureShortcuts>(),
+            ));
     gh.factory<_i5.BuildFinancialSnapshot>(() => _i5.BuildFinancialSnapshot(
           gh<_i837.WatchAccounts>(),
           gh<_i902.WatchAccountsOverview>(),
