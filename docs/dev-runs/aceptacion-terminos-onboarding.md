@@ -39,7 +39,7 @@ Tamaño: **L** · Review: **deep, APROBADO**.
 | Área | Archivo(s) | Qué |
 |---|---|---|
 | Esquema | `lib/core/database/app_database.dart` (+`.g.dart` regenerado) | `schemaVersion` 34→35; columnas `legalAcceptedAt`/`legalAcceptedVersion` en `AppSettings` (mismo patrón que `aiConsentAcceptedAt`/`aiConsentVersion`), sin backfill (NULL = "nunca aceptado") |
-| Esquema | `supabase/migrations/20260910000000_app_settings_legal_acceptance.sql` | `ALTER TABLE` equivalente, mismos nombres de columna |
+| Esquema | `supabase/migrations/20260910000000_app_settings_legal_acceptance.sql` | `ALTER TABLE` equivalente (`bigint`, no `timestamptz` — ver Pendientes), aplicado contra dev y prod el 2026-09-11 |
 | Sync | `lib/core/database/powersync_schema.dart` | Vista PowerSync de `app_settings` expone las 2 columnas nuevas |
 | Domain | `lib/core/legal/domain/{entities,repositories,usecases}/*` | `LegalDocumentKind`, `LegalDocument`, `LegalManifest`; `LegalDocumentsRepository`; casos de uso `GetLegalManifest`, `ResolveLegalDocument`, `ShouldShowReacceptance`, `GetChangedLegalDocuments`, `AcceptLegalDocuments` |
 | Data | `lib/core/legal/data/{datasources,repositories}/*` | `LegalManifestRemoteDatasource`, `LegalDocumentsCacheDatasource`, `LegalDocumentsRepositoryImpl` (fallback cache→bundle, sin bloquear arranque) |
@@ -140,16 +140,23 @@ recomendado crearlo (tarea de `pencil-designer`/`ui-ux-reviewer`).
 
 ## Pendientes y riesgos
 
-- **CRÍTICO, bloqueante para producción:** `supabase/migrations/` no tiene el `ALTER TABLE` para
-  `legal_accepted_at`/`legal_accepted_version` en las bases de dev y prod reales (la migración
-  `.sql` de esta corrida existe en el repo, pero aplicarla contra Supabase queda fuera del alcance
-  de edición de este workflow). Sin eso, en cuanto la app empiece a escribir esas columnas el sync
-  de `AppSettings` queda `quarantined` con `PGRST204` (ver memoria del proyecto
-  `migrar-columna-drift-tambien-en-supabase`).
-- `legal.json` todavía no existe publicado en `web/` (GitHub Pages) — fuera del alcance de este
-  workflow. Hasta que se publique con el shape esperado
-  (`currentVersion`/`minAppVersion`/`documents[{kind,url,changedInVersion,effectiveDate}]`),
-  `refreshFromRemote()` no tiene manifiesto real que adoptar y todo corre contra el bundle fallback.
+- ~~**CRÍTICO, bloqueante para producción:** falta el `ALTER TABLE` en dev/prod reales.~~
+  **Resuelto el 2026-09-11.** Antes de aplicarlo se encontró y corrigió un bug real en la
+  migración: el `.sql` original declaraba `legal_accepted_at timestamptz`, pero el patrón
+  documentado del proyecto para `app_settings` (tabla sincronizada, leída por Drift vía una vista
+  PowerSync que hace `CAST(json_extract(...) AS <tipo>)`) es **bigint en segundos unix, nunca
+  timestamptz** — un timestamptz llega como texto y ese `CAST` trunca el año en silencio (mismo
+  patrón exacto que `ai_consent_accepted_at`, ver `20260825130000_app_settings_ai_consent.sql`, y
+  que `powersync_schema.dart` ya declaraba correctamente como `Column.integer(...)`). Corregido a
+  `bigint`/`bigint` en el `.sql` del repo y aplicado con ese tipo contra **dev y prod** vía MCP de
+  Supabase — verificado con `information_schema.columns` en ambas bases.
+- **PENDIENTE, bloqueante para producción:** `legal.json` todavía no existe publicado en `web/`
+  (GitHub Pages, `web/build_site.py`). Hasta que se publique con el shape esperado
+  (`currentVersion`/`minAppVersion`/`documents[{kind,url,changedInVersion,effectiveDate}]`) descrito
+  en `docs/legal/entrega-de-documentos-legales.md`, `refreshFromRemote()` no tiene manifiesto real
+  que adoptar y todo corre contra el bundle fallback empaquetado en `lib/core/legal/assets/` — la
+  app funciona igual (por diseño), pero la re-aceptación por cambio de versión nunca se dispara
+  hasta que exista un manifiesto remoto real. Fuera del alcance de este PR/sesión.
 - Gap de cobertura AC 10 (ver Tests): falta test de navegación real a `exportCsv` con `GoRouter`
   montado.
 - La suite completa `flutter test` no terminó de correr en esta sesión (máquina con Patrol/emulador
