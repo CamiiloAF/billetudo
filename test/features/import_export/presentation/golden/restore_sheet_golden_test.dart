@@ -41,7 +41,7 @@ void main() {
     rowCountsByTable: const {'transactions': 512, 'accounts': 4, 'categories': 20},
   );
 
-  final doneSummary = const RestoreSummary(
+  const doneSummary = RestoreSummary(
     mode: RestoreMode.merge,
     createdByTable: {'transactions': 480, 'accounts': 1},
     updatedByTable: {'transactions': 30},
@@ -162,7 +162,7 @@ void main() {
     testWidgets('done ($suffix)', (tester) async {
       await golden(
         tester,
-        RestoreState(step: RestoreStep.done, summary: doneSummary),
+        const RestoreState(step: RestoreStep.done, summary: doneSummary),
         'done_$suffix',
         brightness: brightness,
       );
