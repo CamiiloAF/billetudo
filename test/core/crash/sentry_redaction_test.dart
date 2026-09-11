@@ -65,6 +65,63 @@ void main() {
     });
   });
 
+  // HU-08 of `docs/requirements/fase-2/19-notificaciones-bancarias.md`: no
+  // field the app derives from a bank notification may reach a crash report.
+  // The merchant and the last-4 hint are the sensitive ones — they say where
+  // the user shops and with which card.
+  group('bank-notification capture fields', () {
+    const merchant = 'EXITO CALLE 80';
+    const accountHint = '1234';
+
+    test('drops a rejected pending_captures row', () {
+      final redacted = redactSensitiveText(
+        'null value in column "amount_minor" violates not-null constraint\n'
+        'Failing row contains (abc-123, notification, com.nu.production, '
+        '$merchant, $accountHint, pending).',
+      );
+
+      expect(redacted, isNot(contains(merchant)));
+      expect(redacted, isNot(contains(accountHint)));
+    });
+
+    test('drops the bound parameters of a capture insert', () {
+      final redacted = redactSensitiveText(
+        'SqliteException(19): NOT NULL constraint failed\n'
+        '  Causing statement: INSERT INTO pending_captures, '
+        'parameters: abc-123, $merchant, $accountHint',
+      );
+
+      expect(redacted, isNot(contains(merchant)));
+      expect(redacted, isNot(contains(accountHint)));
+    });
+
+    test('drops the merchant key of a learning conflict', () {
+      final redacted = redactSensitiveText(
+        'duplicate key value violates unique constraint '
+        '"merchant_category_learning_merchant_key_key"\n'
+        'DETAIL: Key (merchant_key)=($merchant) already exists.',
+      );
+
+      expect(redacted, isNot(contains(merchant)));
+      // The column and the constraint stay readable: they are schema
+      // identifiers, and losing them would make the report useless.
+      expect(redacted, contains('merchant_key'));
+      expect(
+        redacted,
+        contains('merchant_category_learning_merchant_key_key'),
+      );
+    });
+
+    test('drops a quoted merchant in an enum/type error', () {
+      final redacted = redactSensitiveText(
+        "insert failed for merchant '$merchant' and hint '$accountHint'",
+      );
+
+      expect(redacted, isNot(contains(merchant)));
+      expect(redacted, isNot(contains(accountHint)));
+    });
+  });
+
   group('redactSentryEvent', () {
     test('redacts exception values, message and breadcrumbs', () {
       final event = SentryEvent(

@@ -24,6 +24,9 @@ class DatePeriodFilter extends Equatable {
     this.budgetId,
     this.budgetStart,
     this.budgetEndExclusive,
+    this.budgetIndex,
+    this.budgetHasPrevious,
+    this.budgetHasNext,
   });
 
   factory DatePeriodFilter.granular(
@@ -68,10 +71,22 @@ class DatePeriodFilter extends Equatable {
   /// This is a standalone value carried in `TransactionFilter.budgetPeriod`
   /// (its own field) — never assigned to `TransactionFilter.datePeriod`,
   /// which stays exclusively the Fecha chip's state (HU-06b).
+  ///
+  /// [index]/[hasPrevious]/[hasNext] mirror `BudgetPeriodWindow`'s own fields
+  /// (via `BudgetPeriodOption`, HU-`Adición 2026-09-10`'s Period Nav Bar):
+  /// they let `TransactionsListCubit.stepPeriod` navigate to `index ± 1`
+  /// through `GetBudgetPeriodAt` and respect the budget's navigation bounds,
+  /// without this entity needing to reach into Presupuestos' domain types.
+  /// Default to `0`/`false`/`false` for call sites that only care about the
+  /// window itself (e.g. `TransactionRepository` query bounds), not
+  /// navigation.
   factory DatePeriodFilter.budget({
     required String budgetId,
     required DateTime start,
     required DateTime endExclusive,
+    int index = 0,
+    bool hasPrevious = false,
+    bool hasNext = false,
   }) {
     final normalizedStart = _stripTime(start);
     final normalizedEndExclusive = _stripTime(endExclusive);
@@ -86,6 +101,9 @@ class DatePeriodFilter extends Equatable {
       budgetId: budgetId,
       budgetStart: normalizedStart,
       budgetEndExclusive: normalizedEndExclusive,
+      budgetIndex: index,
+      budgetHasPrevious: hasPrevious,
+      budgetHasNext: hasNext,
     );
   }
 
@@ -105,10 +123,23 @@ class DatePeriodFilter extends Equatable {
   final String? budgetId;
   final DateTime? budgetStart;
   final DateTime? budgetEndExclusive;
+  final int? budgetIndex;
+  final bool? budgetHasPrevious;
+  final bool? budgetHasNext;
 
   bool get isCustomRange => customStart != null;
 
   bool get isBudgetPeriod => budgetId != null;
+
+  /// 0-based position of this window in the budget's cadence. Only
+  /// meaningful when [isBudgetPeriod] — callers step with it via
+  /// `GetBudgetPeriodAt`.
+  int get index => budgetIndex ?? 0;
+
+  /// Whether a previous/next window exists within the budget's bounds. Only
+  /// meaningful when [isBudgetPeriod].
+  bool get hasPrevious => budgetHasPrevious ?? false;
+  bool get hasNext => budgetHasNext ?? false;
 
   /// Inclusive start of the active period, at midnight.
   DateTime get start => isBudgetPeriod
@@ -185,5 +216,8 @@ class DatePeriodFilter extends Equatable {
         budgetId,
         budgetStart,
         budgetEndExclusive,
+        budgetIndex,
+        budgetHasPrevious,
+        budgetHasNext,
       ];
 }

@@ -5,8 +5,8 @@ import '../../domain/entities/tutorial_content.dart';
 import '../../domain/entities/tutorial_key.dart';
 
 /// Resolves a [TutorialKey] to its localized [TutorialContent] — the "content
-/// map" `TutorialContent`'s own class doc refers to. Every one of the 12
-/// tutorials' copy comes only from `AppLocalizations` (never a hardcoded
+/// map" `TutorialContent`'s own class doc refers to. Every tutorial's copy
+/// comes only from `AppLocalizations` (never a hardcoded
 /// literal), per `docs/requirements/fase-1/16-minitutoriales.md`'s "Localizados
 /// (es + en)" rule.
 ///
@@ -17,6 +17,27 @@ abstract final class TutorialContentCatalog {
   static TutorialContent of(BuildContext context, TutorialKey key) {
     final l10n = AppLocalizations.of(context);
     return switch (key) {
+      TutorialKey.voiceCaptureGesture => TutorialContent(
+          key: key,
+          title: l10n.tutorialVoiceCaptureTitle,
+          iconName: 'mic',
+          points: [
+            TutorialPoint(
+              heading: l10n.tutorialVoiceCapturePoint1Heading,
+              body: l10n.tutorialVoiceCapturePoint1Body,
+            ),
+            TutorialPoint(
+              heading: l10n.tutorialVoiceCapturePoint2Heading,
+              body: l10n.tutorialVoiceCapturePoint2Body,
+            ),
+            TutorialPoint(
+              heading: l10n.tutorialVoiceCapturePoint3Heading,
+              body: l10n.tutorialVoiceCapturePoint3Body,
+            ),
+          ],
+          ctaLabel: l10n.tutorialVoiceCaptureCta,
+          ctaIconName: 'mic',
+        ),
       TutorialKey.budgetsScreen => TutorialContent(
           key: key,
           title: l10n.tutorialBudgetsTitle,

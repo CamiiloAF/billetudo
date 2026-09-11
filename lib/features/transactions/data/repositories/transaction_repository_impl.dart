@@ -184,29 +184,25 @@ class TransactionRepositoryImpl implements TransactionRepository {
         return const Right(unit);
       });
 
-  /// The Fecha chip (`filter.datePeriod`) and the Presupuesto chip
-  /// (`filter.budgetPeriod`) are independent, combinable filters (AND, not
-  /// substitution): when both are active, the effective window is their
-  /// intersection, computed here since the datasource only takes a single
-  /// `[periodStart, periodEndExclusive)` pair.
+  /// The Presupuesto chip (`filter.budgetPeriod`), when active, substitutes
+  /// the Fecha chip (`filter.datePeriod`) entirely: the sheet locks Fecha
+  /// while a budget is selected precisely because the budget's real window
+  /// (which may span across calendar months) is the only one that should
+  /// apply. `filter.datePeriod` is ignored in that case, not intersected.
   DateTime _periodStart(TransactionFilter filter) {
     final budgetPeriod = filter.budgetPeriod;
-    if (budgetPeriod == null) {
-      return filter.datePeriod.start;
+    if (budgetPeriod != null) {
+      return budgetPeriod.start;
     }
-    final dateStart = filter.datePeriod.start;
-    final budgetStart = budgetPeriod.start;
-    return dateStart.isAfter(budgetStart) ? dateStart : budgetStart;
+    return filter.datePeriod.start;
   }
 
   DateTime _periodEndExclusive(TransactionFilter filter) {
     final budgetPeriod = filter.budgetPeriod;
-    if (budgetPeriod == null) {
-      return filter.datePeriod.endExclusive;
+    if (budgetPeriod != null) {
+      return budgetPeriod.endExclusive;
     }
-    final dateEnd = filter.datePeriod.endExclusive;
-    final budgetEnd = budgetPeriod.endExclusive;
-    return dateEnd.isBefore(budgetEnd) ? dateEnd : budgetEnd;
+    return filter.datePeriod.endExclusive;
   }
 
   TransactionWithDetails _toWithDetails(TransactionRowWithJoins row) =>

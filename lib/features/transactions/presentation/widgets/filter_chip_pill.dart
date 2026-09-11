@@ -12,6 +12,7 @@ class FilterChipPill extends StatelessWidget {
     required this.active,
     required this.onTap,
     this.leadingIcon,
+    this.leadingWidget,
     this.trailingIcon,
     this.enabled = true,
     super.key,
@@ -22,7 +23,15 @@ class FilterChipPill extends StatelessWidget {
   final VoidCallback onTap;
 
   /// 14px, e.g. the selected account's type icon.
+  ///
+  /// Ignored when [leadingWidget] is set.
   final IconData? leadingIcon;
+
+  /// A fully custom leading slot, e.g. the account chips' tinted icon-wrap
+  /// (`bIg7X`/`rHkkz`), which needs its own background circle and colour
+  /// derived from `AccountType` — something a plain [leadingIcon] can't
+  /// express. Takes precedence over [leadingIcon] when both are set.
+  final Widget? leadingWidget;
 
   /// 14px, e.g. the account chip's `chevron-down`.
   final IconData? trailingIcon;
@@ -58,7 +67,10 @@ class FilterChipPill extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (leadingIcon != null) ...[
+                if (leadingWidget != null) ...[
+                  leadingWidget!,
+                  const SizedBox(width: 6),
+                ] else if (leadingIcon != null) ...[
                   Icon(leadingIcon, size: 14, color: foreground),
                   const SizedBox(width: 6),
                 ],

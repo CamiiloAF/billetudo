@@ -121,6 +121,21 @@ enum CardBalanceView { debt, available }
 /// the chosen budget. Stored as text via textEnum for parity with Postgres.
 enum FeaturedBudgetMode { automatic, manual, none }
 
+/// Lifecycle of a [PendingCaptures] row — a transaction candidate parsed from
+/// a bank notification (Fase 2, captura) that the user has not acted on yet.
+///  - `pending`: parsed and waiting in the review inbox. The only state in
+///    which the row is shown to the user as actionable.
+///  - `confirmed`: the user accepted it and a real `Transactions` row was
+///    created — see `PendingCaptures.transactionId`.
+///  - `discarded`: the user rejected it (or it was detected as a duplicate of
+///    an existing transaction, see
+///    `PendingCaptures.duplicateOfTransactionId`). Kept as a row rather than
+///    deleted so the parser can be audited and the same notification is not
+///    re-proposed.
+///
+/// Stored as text via `textEnum` for readable parity with Postgres.
+enum CaptureStatus { pending, confirmed, discarded }
+
 // ---------------------------------------------------------------------------
 // Mixin with the shared sync columns (UUID id + timestamps + soft delete)
 // ---------------------------------------------------------------------------
@@ -230,6 +245,18 @@ class Accounts extends Table with _SyncColumns {
   /// Which figure to highlight on a card ('debt'/'available', HU-04).
   /// Stored as text via textEnum for parity with Postgres.
   TextColumn get cardBalancePrimary => textEnum<CardBalanceView>().nullable()();
+
+  /// Last 4 digits of the CARD attached to this account, for notification
+  /// capture (Fase 2): a bank notification usually identifies the card, not
+  /// the account, so this is what `PendingCaptures.accountHint` is matched
+  /// against to suggest a `suggestedAccountId`.
+  ///
+  /// Distinct from [last4] on purpose: [last4] identifies the ACCOUNT (the
+  /// user-visible account number fragment shown in the UI), while this one
+  /// identifies the plastic. On a pure card account they usually coincide;
+  /// on a bank account with a debit card they do not. Nullable = unknown /
+  /// no card, which simply means no hint-based match for this account.
+  TextColumn get cardLast4 => text().nullable().withLength(max: 4)();
 
   /// The import batch this account was created by, when it came from a CSV
   /// import (docs/requirements/fase-1/11-import-export.md). Null = created by hand
@@ -548,6 +575,19 @@ class ScheduledPayments extends Table with _SyncColumns {
   /// set it. Exclusive with [debtId] — never both on the same template (see
   /// `ScheduledPaymentDraft.validated()`).
   TextColumn get goalId => text().nullable().references(Goals, #id)();
+
+  /// How many days BEFORE the due date to fire a local reminder notification
+  /// (Fase 2). Expected values: 0 (the day of the payment), 1, 3, 7.
+  ///
+  /// `null` = no reminder at all, and it is a meaningful value, not "not
+  /// configured": every template that predates this column reads `null` and
+  /// must stay silent rather than start notifying by itself. That is also why
+  /// there is no `clientDefault` and no migration backfill — writing a
+  /// fabricated default here would upload through PowerSync's
+  /// merge-duplicates upsert and could clobber a real value from another
+  /// device (decision #25, docs/requirements/fase-1/05-auth-sync.md). The
+  /// "no reminder" reading of `null` lives in the repository/domain layer.
+  IntColumn get reminderLeadDays => integer().nullable()();
 }
 
 /// User-defined "quick contribution" amount chips for a [Goals] row (Metas
@@ -923,6 +963,127 @@ class TutorialViews extends Table with _SyncColumns {
   TextColumn get id => text()();
 }
 
+/// A transaction CANDIDATE parsed from a bank notification (Fase 2, captura
+/// automática), waiting in the review inbox until the user confirms or
+/// discards it. It is not a movement: nothing here affects a balance, a
+/// budget or a report until [status] becomes `confirmed` and a real
+/// [Transactions] row exists ([transactionId]).
+///
+/// **ZERO RETENTION OF NOTIFICATION CONTENT — non-negotiable product
+/// decision.** This table deliberately has NO `rawText` / `title` / `bigText`
+/// column, and none may ever be added: the literal body of a notification can
+/// carry OTPs, names, and anything else the bank chose to put in it, and it
+/// would then be synced to Postgres and kept in backups. Only the STRUCTURED
+/// fields the parser extracted are persisted — amount, currency, entry type,
+/// posting time, and at most the merchant fragment ([merchantRaw]) and the
+/// last-4 hint ([accountHint]). If a parse fails, the row is simply not
+/// created; the notification text is never stored "for debugging".
+/// [sourceRuleId] exists precisely so parsing can be debugged by rule instead
+/// of by keeping the text.
+///
+/// Synced (`_SyncColumns`, NOT local-only): the inbox has to survive a
+/// reinstall and be reviewable from another device, and a capture confirmed
+/// on the phone must not be re-proposed on the tablet.
+class PendingCaptures extends Table with _SyncColumns {
+  /// Which capture channel produced this candidate (`notification` today;
+  /// `voice`/`ocr` reuse the same inbox). Stored as text for parity.
+  TextColumn get source => textEnum<TxSource>()();
+
+  /// Android `packageName` of the app that emitted the notification (e.g.
+  /// `com.bancolombia.app`). Identifies the ISSUER, never its content.
+  TextColumn get sourcePackage => text()();
+
+  /// Id of the parser rule that produced this row, for debugging which rule
+  /// misfired without retaining the notification text. Nullable: the rule set
+  /// may change or the row may come from a non-rule channel.
+  TextColumn get sourceRuleId => text().nullable()();
+
+  /// When the movement was posted according to the notification (falls back
+  /// to when it was received). Not `createdAt`, which is when this row was
+  /// written locally.
+  DateTimeColumn get postedAt => dateTime()();
+
+  /// Amount in cents, ALWAYS positive. The sign is carried by [entryType],
+  /// exactly like `Transactions.amountMinor`. Never a double.
+  IntColumn get amountMinor => integer()();
+
+  TextColumn get currency => text().withLength(min: 3, max: 3)();
+
+  /// income / expense / transfer, same meaning as on `Transactions`.
+  TextColumn get entryType => textEnum<EntryType>()();
+
+  /// ONLY the fragment identified as the merchant (e.g. `EXITO POBLADO`),
+  /// never the notification text. Nullable when the parser found none.
+  /// Normalized into `MerchantCategoryLearning.merchantKey` for the category
+  /// suggestion.
+  TextColumn get merchantRaw => text().nullable()();
+
+  /// Last 4 digits mentioned by the notification, matched against
+  /// `Accounts.cardLast4` to fill [suggestedAccountId]. Nullable.
+  TextColumn get accountHint => text().nullable().withLength(max: 4)();
+
+  /// Account the parser suggests, resolved from [accountHint]. A SUGGESTION:
+  /// the user may change it on confirmation. Nullable = no confident match.
+  TextColumn get suggestedAccountId =>
+      text().nullable().references(Accounts, #id)();
+
+  /// Category the parser suggests, resolved from
+  /// `MerchantCategoryLearning`. A SUGGESTION, same as above.
+  TextColumn get suggestedCategoryId =>
+      text().nullable().references(Categories, #id)();
+
+  /// Lifecycle of the candidate. Defaults to `pending` via `clientDefault`
+  /// (never `.withDefault(...)`: this table is a PowerSync-managed view with
+  /// no SQL column defaults — see `_SyncColumns.createdAt`).
+  TextColumn get status => textEnum<CaptureStatus>().clientDefault(
+        () => CaptureStatus.pending.name,
+      )();
+
+  /// The real transaction created when the user confirmed this capture.
+  /// Null while `pending`/`discarded`.
+  @ReferenceName('pendingCapturesAsTransaction')
+  TextColumn get transactionId =>
+      text().nullable().references(Transactions, #id)();
+
+  /// Set when this candidate was discarded because it duplicates a
+  /// transaction the user had already recorded by hand: the row it duplicates.
+  /// Distinct from [transactionId] (which is the transaction this capture
+  /// CREATED), hence the second `@ReferenceName` — two FKs from the same table
+  /// to `Transactions` need different reference names.
+  @ReferenceName('pendingCapturesAsDuplicate')
+  TextColumn get duplicateOfTransactionId =>
+      text().nullable().references(Transactions, #id)();
+}
+
+/// What category the user actually picks for a given merchant, so the next
+/// capture from that merchant is pre-categorized (Fase 2). One row per
+/// merchant: [hitCount] grows each time the same category is confirmed again,
+/// and the row's [categoryId] is rewritten when the user consistently picks a
+/// different one.
+///
+/// Synced (`_SyncColumns`): the learning is the user's, so it must follow
+/// them across devices. It holds no notification content — only a normalized
+/// merchant name and a category id.
+class MerchantCategoryLearning extends Table with _SyncColumns {
+  /// Normalized merchant name: UPPERCASE, accents stripped, collapsed
+  /// whitespace (do the normalization in `data/`, never store the raw form
+  /// here — the raw fragment lives on `PendingCaptures.merchantRaw`).
+  /// Unique: one learned category per merchant.
+  TextColumn get merchantKey => text()();
+
+  TextColumn get categoryId => text().references(Categories, #id)();
+
+  /// How many times this merchant -> category pairing has been confirmed.
+  /// Starts at 1 (the confirmation that created the row) via `clientDefault`,
+  /// never `.withDefault(...)` — this table is a PowerSync-managed view.
+  IntColumn get hitCount => integer().clientDefault(() => 1)();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+        {merchantKey},
+      ];
+}
+
 /// Chat history with the AI financial assistant (Fase A). One row per message,
 /// user's and assistant's alike.
 ///
@@ -1122,6 +1283,8 @@ class HomeInsightEvents extends Table {
     AppSettings,
     ImportBatches,
     TutorialViews,
+    PendingCaptures,
+    MerchantCategoryLearning,
     AiMessages,
     AiInsightConversations,
     HomeInsightEvents,
@@ -1131,7 +1294,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 33;
+  int get schemaVersion => 34;
 
   /// Inserts the single `AppSettings` row (id 'app'). Idempotent via
   /// `InsertMode.insertOrIgnore`.
@@ -1868,6 +2031,44 @@ class AppDatabase extends _$AppDatabase {
           // creates its backing table and view the next time the app opens,
           // before Drift's migration runs.
           if (from < 33) {
+            // Nothing to do here: see the comment above this block.
+          }
+
+          // v33 -> v34: opens ALL of Fase 2's schema surface in a single
+          // version, on purpose — the parallel feature branches that follow
+          // (captura por notificación, recordatorios) would otherwise each
+          // claim their own `schemaVersion` and collide, producing a database
+          // that believes it is migrated when it is not.
+          //
+          //  1. `PendingCaptures`, the review inbox of transaction candidates
+          //     parsed from bank notifications, and
+          //     `MerchantCategoryLearning`, the merchant -> category memory.
+          //     Both are SYNCED (`_SyncColumns`), not local-only. No
+          //     `m.createTable` here: `powerSyncSchema`
+          //     (`powersync_schema.dart`) declares `pending_captures` and
+          //     `merchant_category_learning`, so PowerSync creates their
+          //     backing tables and views the next time the app opens, before
+          //     Drift's migration runs — same as the `from < 25`/`from < 28`
+          //     blocks above.
+          //  2. `Accounts.cardLast4`: the card's last 4 digits, matched
+          //     against a notification's `account_hint` to suggest an account.
+          //  3. `ScheduledPayments.reminderLeadDays`: days before the due date
+          //     to fire a local reminder.
+          //
+          // No `addColumn`/`ALTER TABLE` for (2) or (3) — see the note on
+          // `from < 12` above: `accounts` and `scheduled_payments` are
+          // PowerSync-managed views, and `powerSyncSchema` already declares
+          // `card_last4` and `reminder_lead_days`, so both views are recreated
+          // with the columns present before this migration runs.
+          //
+          // No backfill for either, deliberately: both columns are nullable in
+          // Dart and `NULL` is the correct, meaningful value ("no card on
+          // file", "no reminder"). Writing a fabricated default here would
+          // upload through PowerSync's merge-duplicates upsert and could
+          // clobber a real value that simply has not come down from the server
+          // yet — decision #25, docs/requirements/fase-1/05-auth-sync.md, see
+          // the `from < 26` block above.
+          if (from < 34) {
             // Nothing to do here: see the comment above this block.
           }
         },

@@ -9,6 +9,7 @@ import 'package:billetudo/features/scheduled_payments/domain/usecases/create_sch
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../core/notifications/notification_test_doubles.dart';
 import '../../../scheduled_payments/domain/usecases/scheduled_payment_repository_mock.dart';
 import '../../../scheduled_payments/scheduled_payment_fixtures.dart';
 import 'goal_repository_mock.dart';
@@ -39,7 +40,10 @@ void main() {
     scheduledPaymentRepository = MockScheduledPaymentRepository();
     usecase = CreateGoalRecurringContribution(
       goalRepository,
-      CreateScheduledPayment(scheduledPaymentRepository),
+      CreateScheduledPayment(
+        scheduledPaymentRepository,
+        noopSyncReminders(),
+      ),
     );
   });
 
@@ -64,7 +68,8 @@ void main() {
   });
 
   test('creates an expense template linked to the goal via goalId', () async {
-    when(() => goalRepository.getGoal('g1')).thenAnswer((_) async => Right(_goal()));
+    when(() => goalRepository.getGoal('g1'))
+        .thenAnswer((_) async => Right(_goal()));
     when(() => scheduledPaymentRepository.createScheduledPayment(any()))
         .thenAnswer(
       (invocation) async => Right(

@@ -16,6 +16,8 @@ abstract final class TutorialIcons {
     'link': LucideIcons.link,
     'hand-coins': LucideIcons.handCoins,
     'arrow-left-right': LucideIcons.arrowLeftRight,
+    'mic': LucideIcons.mic,
+    'plus': LucideIcons.plus,
   };
 
   /// Falls back to a generic `info` glyph for a name this catalog does not

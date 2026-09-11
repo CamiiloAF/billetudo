@@ -27,6 +27,10 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // Required by flutter_local_notifications: it uses java.time to schedule
+        // reminders, which only exists natively from API 26. Without desugaring
+        // the build fails outright at :app:checkDevDebugAarMetadata.
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -95,6 +99,8 @@ android {
 
 dependencies {
     androidTestUtil("androidx.test:orchestrator:1.5.1")
+    // Backport of java.time & friends for minSdk 24; see isCoreLibraryDesugaringEnabled above.
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }
 
 flutter {

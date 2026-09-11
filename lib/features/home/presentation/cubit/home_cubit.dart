@@ -21,6 +21,7 @@ import '../../../budgets/domain/entities/budget_with_progress.dart';
 import '../../../budgets/domain/usecases/get_budget_by_id.dart';
 import '../../../budgets/domain/usecases/get_budget_progress.dart';
 import '../../../budgets/domain/usecases/watch_featured_budget_progress.dart';
+import '../../../capture/domain/usecases/watch_pending_capture_count.dart';
 import '../../../transactions/domain/entities/transaction_with_details.dart';
 import '../../../transactions/domain/usecases/restore_transaction.dart';
 import '../../domain/entities/home_ai_insight.dart';
@@ -64,6 +65,7 @@ class HomeCubit extends Cubit<HomeState> {
     this._watchHasAnyBudget,
     this._watchHomeAiInsight,
     this._watchPendingScheduledPaymentCount,
+    this._watchPendingCaptureCount,
     this._checkAiAccess,
     this._getConversationForInsight,
     this._dismissHomeInsight,
@@ -90,6 +92,7 @@ class HomeCubit extends Cubit<HomeState> {
   final WatchHasAnyBudget _watchHasAnyBudget;
   final WatchHomeAiInsight _watchHomeAiInsight;
   final WatchPendingScheduledPaymentCount _watchPendingScheduledPaymentCount;
+  final WatchPendingCaptureCount _watchPendingCaptureCount;
   final CheckAiAccess _checkAiAccess;
   final GetConversationForInsight _getConversationForInsight;
   final DismissHomeInsight _dismissHomeInsight;
@@ -104,6 +107,7 @@ class HomeCubit extends Cubit<HomeState> {
   StreamSubscription<Result<BudgetDetailData>>? _featuredBudgetDataSub;
   StreamSubscription<Result<bool>>? _hasAnyBudgetSub;
   StreamSubscription<Result<int>>? _pendingScheduledSub;
+  StreamSubscription<Result<int>>? _pendingCaptureSub;
   StreamSubscription<Result<HomeAiInsight?>>? _aiInsightSub;
 
   /// The `(month, hasAnyBudget, featuredBudgetId, spendingTotalMinor,
@@ -157,6 +161,7 @@ class HomeCubit extends Cubit<HomeState> {
     await _featuredBudgetDataSub?.cancel();
     await _hasAnyBudgetSub?.cancel();
     await _pendingScheduledSub?.cancel();
+    await _pendingCaptureSub?.cancel();
     await _aiInsightSub?.cancel();
     _featuredBudgetId = null;
     _periodIndex = null;
@@ -177,6 +182,8 @@ class HomeCubit extends Cubit<HomeState> {
     _hasAnyBudgetSub = _watchHasAnyBudget().listen(_onHasAnyBudget);
     _pendingScheduledSub =
         _watchPendingScheduledPaymentCount().listen(_onPendingScheduledCount);
+    _pendingCaptureSub =
+        _watchPendingCaptureCount().listen(_onPendingCaptureCount);
     unawaited(_resolveBudgetChipAccess(++_startGeneration));
   }
 
@@ -215,6 +222,21 @@ class HomeCubit extends Cubit<HomeState> {
       state.copyWith(hasAnyBudget: hasAnyBudget, failure: state.failure),
     );
     _maybeRefreshAiInsight();
+  }
+
+  /// Passive input feeding the bell's badge (`r1eRC`) — captures waiting in
+  /// the review inbox (HU-04). Same shape as [_onPendingScheduledCount]; a
+  /// count is all the bell needs, and it is the NUMBER that carries the
+  /// meaning, never a bare dot.
+  void _onPendingCaptureCount(Result<int> result) {
+    if (isClosed) {
+      return;
+    }
+    final count = result.getRight().toNullable();
+    if (count == null) {
+      return;
+    }
+    emit(state.copyWith(pendingCaptureCount: count, failure: state.failure));
   }
 
   /// Passive input feeding `QuickAccessRow`'s "Pagos programados" badge.
@@ -634,6 +656,7 @@ class HomeCubit extends Cubit<HomeState> {
     await _featuredBudgetDataSub?.cancel();
     await _hasAnyBudgetSub?.cancel();
     await _pendingScheduledSub?.cancel();
+    await _pendingCaptureSub?.cancel();
     await _aiInsightSub?.cancel();
     return super.close();
   }
