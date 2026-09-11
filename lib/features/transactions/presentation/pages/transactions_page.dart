@@ -15,14 +15,17 @@ import '../../../accounts/presentation/widgets/account_gate_copy.dart';
 import '../../domain/entities/transaction_filter.dart';
 import '../cubit/transactions_list_cubit.dart';
 import '../cubit/transactions_list_state.dart';
+import '../utils/date_period_label.dart';
+import '../utils/open_unified_filters_sheet.dart';
 import '../utils/transaction_amount_presentation.dart';
 import '../utils/transaction_date_grouping.dart';
 import '../utils/transaction_group_total.dart';
 import '../utils/transaction_sort_label.dart';
 import '../widgets/account_filter_chip_row.dart';
+import '../widgets/filter_chip_pill.dart';
 import '../widgets/filters_button.dart';
 import '../widgets/movements_balance_carousel.dart';
-import '../widgets/sheets/unified_filters_sheet.dart';
+import '../widgets/period_nav_bar.dart';
 import '../widgets/skeleton_row.dart';
 import '../widgets/transaction_group_header.dart';
 import '../widgets/transaction_row.dart';
@@ -197,6 +200,7 @@ class TransactionsPage extends StatelessWidget {
                   : (String id) => _openTransaction(context, id);
               final showCarousel = linkMode == null;
               return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   RootTabHeader(
                     title: l10n.transactionsTitle,
@@ -224,6 +228,27 @@ class TransactionsPage extends StatelessWidget {
                   TransactionsSearchRow(state: state),
                   const SizedBox(height: 8),
                   TransactionsFilterBar(state: state),
+                  // Period Nav Bar (Adición 2026-09-10, `u6sSAc`/`w9Eszi`):
+                  // only while the active period is not the default "este
+                  // mes sin presupuesto" — the common case renders nothing
+                  // here, at zero space cost.
+                  if (state.filter.hasDateFilter ||
+                      state.filter.hasBudgetPeriodFilter) ...[
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: PeriodNavBar(
+                        filter: state.filter,
+                        budgetOptions: state.budgetOptions,
+                        onPrevious: () => unawaited(
+                          context.read<TransactionsListCubit>().stepPeriod(-1),
+                        ),
+                        onNext: () => unawaited(
+                          context.read<TransactionsListCubit>().stepPeriod(1),
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 8),
                   if (linkMode != null)
                     TransactionsLinkBanner(linkMode: linkMode),
@@ -363,12 +388,11 @@ class _TransactionsSearchRowState extends State<TransactionsSearchRow> {
                             },
                           ),
                     hintText: l10n.transactionsSearchHint,
-                    hintStyle:
-                        Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: colors.textSecondary,
-                            ),
+                    hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: colors.textSecondary,
+                        ),
                   ),
                   onChanged: cubit.searchChanged,
                 );
@@ -382,6 +406,13 @@ class _TransactionsSearchRowState extends State<TransactionsSearchRow> {
               widget.state.filter.copyWith(sortOrder: sortOrder),
             ),
           ),
+          const SizedBox(width: 8),
+          FiltersButton(
+            activeCount: widget.state.filter.activeFilterCount,
+            onTap: () => unawaited(
+              openUnifiedFiltersSheet(context, widget.state),
+            ),
+          ),
         ],
       ),
     );
@@ -389,9 +420,18 @@ class _TransactionsSearchRowState extends State<TransactionsSearchRow> {
 }
 
 /// GitHub issue #7's redesign: the account filter is now its own row of
-/// chips (`AccountFilterChipRow`) — no longer part of this bar — plus the
-/// "Filtros" button that opens the single unified sheet for
-/// Presupuesto/Fecha/Tipo/Categoría/Etiqueta (`UnifiedFiltersSheet`).
+/// chips (`AccountFilterChipRow`) — the "Filtros" button that opens the
+/// single unified sheet for Presupuesto/Fecha/Tipo/Categoría/Etiqueta
+/// (`UnifiedFiltersSheet`) moved into `TransactionsSearchRow`, next to the
+/// sort button (`nMKtn`'s `Search Row`).
+///
+/// Adición 2026-09-10: a Chip Fecha (`pofWv`/`vUtHH` in `O2xuVc`/`ufP4y`)
+/// joins the account chips — a **new** chip, not a restoration (the previous
+/// per-dimension Fecha sheet was retired in issue #7's redesign and this row
+/// never had a standalone Fecha chip of its own). It reflects the active
+/// Fecha/Presupuesto period and, tapped, opens the very same
+/// `UnifiedFiltersSheet` as `FiltersButton` — there is no standalone Fecha
+/// sheet left in production to open instead.
 class TransactionsFilterBar extends StatelessWidget {
   const TransactionsFilterBar({required this.state, super.key});
 
@@ -399,8 +439,11 @@ class TransactionsFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final cubit = context.read<TransactionsListCubit>();
     final filter = state.filter;
+    final dateActive = filter.hasDateFilter || filter.hasBudgetPeriodFilter;
+    final activePeriod = filter.budgetPeriod ?? filter.datePeriod;
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -415,29 +458,13 @@ class TransactionsFilterBar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          FiltersButton(
-            activeCount: filter.activeFilterCount,
-            onTap: () async {
-              final result = await UnifiedFiltersSheet.show(
-                context,
-                initialFilter: filter,
-                budgetOptions: state.budgetOptions,
-              );
-              // Null means the sheet was dismissed without "Aplicar"/
-              // "Limpiar" — keep the current filter.
-              if (result != null) {
-                await cubit.updateFilter(
-                  filter.copyWith(
-                    datePeriod: result.datePeriod,
-                    budgetPeriod: result.budgetPeriod,
-                    clearBudgetPeriod: result.budgetPeriod == null,
-                    types: result.types,
-                    categoryIds: result.categoryIds,
-                    tagIds: result.tagIds,
-                  ),
-                );
-              }
-            },
+          FilterChipPill(
+            label: dateActive
+                ? datePeriodLabel(activePeriod)
+                : l10n.transactionsChipDateDefaultLabel,
+            active: dateActive,
+            leadingIcon: LucideIcons.calendar,
+            onTap: () => unawaited(openUnifiedFiltersSheet(context, state)),
           ),
         ],
       ),
