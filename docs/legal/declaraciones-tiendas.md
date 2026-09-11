@@ -10,9 +10,16 @@ checklist a futuro y pasa a ser el juego de respuestas del envío de Fase 2.**
 El esquema de Fase 2 **ya está aplicado** (`schemaVersion` 34, tablas
 `PendingCaptures` y `MerchantCategoryLearning`, columnas `Accounts.cardLast4` y
 `ScheduledPayments.reminderLeadDays`) y las dependencias de voz y de
-notificaciones locales **ya están descomentadas en `pubspec.yaml`**. La feature
-en sí —servicio Android, UI, permisos nativos— se está construyendo en otras
-ramas.
+notificaciones locales **ya están descomentadas en `pubspec.yaml`**.
+
+**Corrección (2026-09-10):** para la feature de notificaciones bancarias, el
+servicio nativo Android y la capa `data`/`domain` de Flutter **ya no se están
+construyendo en otras ramas — ya están fusionados en `dev`** (PR #28,
+`feat/capture-native`). Lo que sigue construyéndose en otras ramas es la **UI**
+que lo expone (no hay pantalla, ajuste ni ruta que lo alcance todavía, así que
+no es accesible para el usuario) y **toda** la feature de voz y de
+recordatorios locales, que sigue sin ningún código propio. Detalle línea por
+línea en `AUDITORIA.md` §13.
 
 Consecuencias, y hay que leerlas juntas:
 
@@ -342,18 +349,33 @@ con evidencia:
   respuesta de Data Safety no cambia; el día que se usen, ver §7.
 - **Sin compras:** `purchases_flutter` comentado; sin permiso `BILLING`.
 - **Sin voz / OCR / lectura de notificaciones — afirmación con fecha de
-  caducidad, re-verificada el 2026-09-09.** Sigue siendo **cierta para el
-  binario**: `lib/features/capture/` y `lib/features/improvement/` están vacías
-  (0 archivos), no hay ni una importación de `speech_to_text`,
-  `flutter_local_notifications` o `permission_handler` en todo `lib/`, el único
-  `.kt` del proyecto es `MainActivity.kt`, `AndroidManifest.xml` no declara **ni
-  un** `uses-permission` ni ningún `<service>` de `NotificationListenerService`, y
-  `ios/Runner/Info.plist` no tiene ninguna clave `*UsageDescription`.
-  **Pero el andamiaje ya está puesto y esta viñeta se cae con el siguiente
-  build de captura:** `speech_to_text` (`pubspec.yaml:90`),
-  `flutter_local_notifications` (`:102`), `timezone` (`:103`) y
-  `permission_handler` (`:106`) **ya están descomentados**, y el esquema de Fase 2
-  ya está aplicado (`schemaVersion` 34: `PendingCaptures`,
+  caducidad, corregida el 2026-09-10 tras re-verificar contra `dev`.** Ya
+  **no** es cierto que no exista código: `dev` fusionó el PR #28
+  (`feat/capture-native`) con el servicio nativo Android de lectura de
+  notificaciones bancarias, antes de que esta rama de documentación lo
+  absorbiera. Hoy: `lib/features/capture/` tiene 21 archivos (capa
+  `data`/`domain`, sin `presentation`) y `lib/features/improvement/` sigue
+  vacía (0 archivos); no hay ni una importación de `speech_to_text`,
+  `flutter_local_notifications` o `permission_handler` en todo `lib/` (esos
+  tres siguen sin usarse — el servicio de notificaciones bancarias no depende
+  de ellos); el proyecto tiene 8 archivos `.kt`, no solo `MainActivity.kt`: los
+  otros 7 implementan el servicio de captura
+  (`android/app/src/main/kotlin/com/billetudo/app/capture/`);
+  `AndroidManifest.xml` **sí** declara ya el `<service>` de
+  `NotificationListenerService` y el `<queries>` con el catálogo de bancos —
+  pero sigue sin declarar **ningún** `uses-permission` (el acceso a
+  notificaciones se concede como *special app access* del sistema, no vía
+  permiso en runtime, y hoy no hay ninguna pantalla en la app que lo pida);
+  `ios/Runner/Info.plist` sigue sin ninguna clave `*UsageDescription`.
+  **Por qué la respuesta de Data Safety/App Privacy no cambia todavía a pesar
+  de esto:** nada de esto es alcanzable por el usuario — no hay UI, ruta ni
+  ajuste que llame a los casos de uso de captura, así que el binario no pide
+  el acceso ni puede capturar nada aún. El día que exista esa UI, esta viñeta
+  se cae del todo. **El resto del andamiaje también está puesto:**
+  `speech_to_text` (`pubspec.yaml:90`), `flutter_local_notifications`
+  (`:102`), `timezone` (`:103`) y `permission_handler` (`:113`, versión real
+  `^12.0.1`, no `^13.0.2`) **ya están descomentados** pero sin usar, y el
+  esquema de Fase 2 ya está aplicado (`schemaVersion` 34: `PendingCaptures`,
   `MerchantCategoryLearning`, `Accounts.cardLast4`,
   `ScheduledPayments.reminderLeadDays`). **§7 tiene el juego completo de
   respuestas nuevas.** Lo que **no** cambia es OCR: `google_mlkit_text_recognition`

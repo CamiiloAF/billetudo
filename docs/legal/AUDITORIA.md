@@ -1,9 +1,22 @@
 # Auditoría de tratamiento de datos — billetudo
 
-**Fecha:** 2026-08-07 · **Actualizada:** 2026-09-09 (auditoría de la
+**Fecha:** 2026-08-07 · **Actualizada:** 2026-09-10 (re-auditoría de §13
+contra `dev`: el PR #28, `feat/capture-native`, se fusionó a `dev` **antes**
+de esta rama de documentación absorber ese cambio, así que la pasada del
+2026-09-09 de abajo quedó desactualizada el mismo día que se escribió.
+**Corregido:** el servicio nativo Android de lectura de notificaciones
+bancarias y la capa `data`/`domain` de `lib/features/capture/` **ya existen**
+en `dev` — no son código hipotético en otra rama. Lo que sigue sin existir es
+la capa `presentation`/UI de esa feature, y toda la de voz y recordatorios
+locales. Ver §13 y §10 para el detalle corregido línea por línea; no se
+cambió la versión de `declaraciones-tiendas.md` ni de
+`politica-de-privacidad.md` por esto, solo se corrigió la descripción del
+estado técnico) · 2026-09-09 (auditoría de la
 **superficie de captura de Fase 2**: el esquema ya está aplicado y las
-dependencias de voz y notificaciones locales ya están descomentadas, pero
-**ningún código de feature existe todavía** en `lib/` ni en `android/`. Evidencia
+dependencias de voz y notificaciones locales ya están descomentadas; en esa
+fecha se creía que **ningún código de feature existía todavía** en `lib/` ni
+en `android/`, pero eso ya no era cierto contra `dev` — ver la corrección del
+2026-09-10 arriba. Evidencia
 archivo por archivo, tabla por tabla y columna por columna en la nueva **§13**.
 `politica-de-privacidad.md` sube a **v1.8** —redactada, **no publicada**— y
 `declaraciones-tiendas.md` a **v1.8**, con §7 convertida en el juego de
@@ -877,12 +890,26 @@ Onboarding, 4 pantallas (`lib/features/onboarding/`):
 
 ## 10. Features NO implementadas (no declarar como existentes)
 
+> ⚠️ **Corrección (2026-09-10): el párrafo siguiente ya no es exacto para
+> `lib/features/capture/`.** Desde el PR #28 (`feat/capture-native`, ya en
+> `dev`) esa carpeta tiene 21 archivos (capa `data`/`domain`) y el servicio
+> nativo Android de lectura de notificaciones bancarias existe y está
+> declarado en `AndroidManifest.xml`. Lo que sigue siendo cierto: no hay
+> capa `presentation` ni ruta que lo exponga al usuario, así que no es
+> alcanzable desde la app, y captura por voz, OCR, anuncios, suscripciones,
+> analítica, notificaciones push y el asistente de IA siguen sin ningún
+> código. Detalle completo, corregido línea por línea, en **[§13](#13-fase-2--superficie-de-captura-auditoría-del-2026-09-09)**.
+> `lib/features/improvement/` sigue vacía (0 archivos).
+
 `lib/features/capture/` y `lib/features/improvement/` **están vacías** (0
-archivos). Confirmado también en `docs/marketing/plan-fichas-de-tienda.md:44-45`.
+archivos) — **cierto solo hasta el 2026-09-09, ver la corrección arriba**.
+Confirmado también en `docs/marketing/plan-fichas-de-tienda.md:44-45`
+(re-verificar esa referencia si se cita este párrafo).
 
 No existen hoy en el código: captura por voz, OCR de recibos, lectura de
-notificaciones bancarias, anuncios, suscripciones, analítica, notificaciones
-push **ni el asistente con IA**.
+notificaciones bancarias (**ver corrección arriba: el servicio nativo sí
+existe, sin UI que lo exponga**), anuncios, suscripciones, analítica,
+notificaciones push **ni el asistente con IA**.
 
 **Matiz importante sobre la IA (actualizado el 2026-08-25).** Sigue siendo cierto
 que no hay una línea de IA en `lib/` ni en `supabase/functions/`, pero la
@@ -1506,15 +1533,31 @@ ninguna capacidad de IA (§10.3). Se listan para que no se pierdan.
 ## 13. Fase 2 — superficie de captura (auditoría del 2026-09-09)
 
 **Alcance de esta pasada:** el esquema de Fase 2 y las dependencias, contra el
-worktree `docs/legal-fase2` en el commit `299e7aaa`. **No** se auditó código de
-feature porque no existe: se está construyendo en otras ramas.
+worktree `docs/legal-fase2` en el commit `299e7aaa`. En esa fecha **no** se
+auditó código de feature porque no existía: se estaba construyendo en otras
+ramas.
+
+> **Actualización (2026-09-10):** `dev` absorbió desde entonces el PR #28
+> (`feat/capture-native`), que **sí** trae código de feature real: el servicio
+> nativo Android de escucha de notificaciones bancarias
+> (`android/app/src/main/kotlin/com/billetudo/app/capture/`, 7 archivos, más el
+> `<service>` y el `<queries>` correspondientes en `AndroidManifest.xml`) y la
+> capa `data`/`domain` de `lib/features/capture/` (21 archivos, cableada en DI).
+> Ver §13.1/§13.2, corregidos contra `dev` en esta misma fecha. **Lo que
+> todavía no existe** es la capa `presentation` (ninguna pantalla ni ajuste
+> llama a los casos de uso de captura, ninguna ruta la expone) ni la voz/los
+> recordatorios locales — ver el detalle abajo.
 
 > **La distinción que sostiene todo lo demás:** el **esquema** de Fase 2 está
 > aplicado, y las **dependencias** de voz y notificaciones locales están
-> descomentadas. La **feature** no existe. Se declara el binario, así que las
-> respuestas vigentes de `declaraciones-tiendas.md` §1 y §2 **no cambian
-> todavía**; §7 es lo que entra en vigor con el primer build que traiga la
-> captura.
+> descomentadas. La feature de **notificaciones bancarias** ya tiene servicio
+> nativo y capa de datos/dominio en `dev`, pero **sin UI ni ruta que la
+> exponga al usuario** — no es alcanzable desde la app. La feature de **voz** y
+> la de **recordatorios locales** siguen sin ningún código propio. Se declara
+> el binario, así que las respuestas vigentes de `declaraciones-tiendas.md` §1
+> y §2 **no cambian todavía** (nada de esto es alcanzable por el usuario ni
+> pide un permiso en runtime); §7 es lo que entra en vigor con el primer build
+> que exponga la captura al usuario.
 
 ### 13.1 Qué SÍ está en el árbol (verificado)
 
@@ -1527,22 +1570,32 @@ feature porque no existe: se está construyendo en otras ramas.
 | `Accounts.cardLast4` | `app_database.dart:259` | Distinta de `Accounts.last4`: esta identifica la **tarjeta**, aquélla la **cuenta** |
 | `ScheduledPayments.reminderLeadDays` | `app_database.dart:590` | Nullable = sin recordatorio |
 | Espejo en Postgres, RLS y `delete_account_data` | `supabase/migrations/20260909000000_fase2_capture_schema.sql` | RLS `user_id = auth.uid()` en ambas tablas; borrado en `:153-154` |
-| `speech_to_text: ^7.4.0` | `pubspec.yaml:90` | **Descomentado** |
-| `flutter_local_notifications: ^22.3.0` + `timezone: ^0.11.1` | `pubspec.yaml:102-103` | **Descomentados** |
-| `permission_handler: ^13.0.2` | `pubspec.yaml:106` | **Descomentado** |
+| `speech_to_text: ^7.4.0` | `pubspec.yaml:90` | **Descomentado**, sin uso en `lib/` todavía |
+| `flutter_local_notifications: ^22.3.0` + `timezone: ^0.11.1` | `pubspec.yaml:102-103` | **Descomentados**, sin uso en `lib/` todavía |
+| `permission_handler: ^12.0.1` | `pubspec.yaml:113` | **Descomentado**, sin uso en `lib/` todavía. **Nota (2026-09-10): la versión real es `^12.0.1`, no `^13.0.2`** — el comentario adyacente en `pubspec.yaml:107-112` registra que la 13.x/`permission_handler_android` 14.1.0 rompe el build de Android (`Unresolved reference: compilerOptions`) |
+| Servicio nativo Android de notificaciones bancarias | `android/app/src/main/kotlin/com/billetudo/app/capture/` (7 archivos) + `<service>`/`<queries>` en `AndroidManifest.xml` | **Nuevo desde el 2026-09-10** (PR #28, `feat/capture-native`, ya en `dev`). Ver §13.2 |
+| Capa `data`/`domain` de captura en Flutter | `lib/features/capture/` (21 archivos), cableada en `lib/core/di/injection.config.dart` | **Nuevo desde el 2026-09-10.** Sin capa `presentation` — ver §13.2 |
 
-### 13.2 Qué NO está en el árbol (verificado, uno por uno)
+### 13.2 Qué SÍ y qué NO está en el árbol, corregido contra `dev` (2026-09-10)
 
-| Qué exigiría el envío | Estado real | Evidencia |
+**Corrección sobre la pasada del 2026-09-09:** la fila "servicio nativo
+Android" y la fila "código de captura" de esta tabla estaban desactualizadas
+en cuanto se hizo esta auditoría — `dev` ya llevaba fusionado el PR #28 con el
+servicio real. Quedan así:
+
+| Qué exigiría el envío | Estado real (2026-09-10, contra `dev`) | Evidencia |
 |---|---|---|
-| Código de captura | **No existe** | `lib/features/capture/` y `lib/features/improvement/`: 0 archivos |
-| Uso de los plugins nuevos | **Ninguno** | `grep -rl "speech_to_text\|flutter_local_notifications\|permission_handler" lib/` no devuelve nada |
-| Servicio nativo Android | **No existe** | El único `.kt` del proyecto es `android/app/src/main/kotlin/com/billetudo/app/MainActivity.kt` |
-| Permisos Android | **Ninguno** | `android/app/src/main/AndroidManifest.xml` no tiene **ni un** `uses-permission`; solo el `<queries>` de `PROCESS_TEXT` que es boilerplate del engine (`:39-44`) |
-| Permisos iOS | **Ninguno** | `ios/Runner/Info.plist` no tiene **ninguna** clave `*UsageDescription` |
-| OCR | **Fuera de alcance** | `google_mlkit_text_recognition` comentado, `pubspec.yaml:94` |
-| Widget | **No existe** | Sin `AppWidgetProvider` en `android/`, sin extensión WidgetKit en `ios/` |
-| Preferencia de emisores activos | **Sin lugar donde vivir** | `AppSettings` no tiene ninguna columna de captura (revisada columna por columna) |
+| Código de captura (data/domain) | **Existe** — notificaciones bancarias (Android) | `lib/features/capture/`: 21 archivos (datasources, repos, entidades, 8 casos de uso), sin `.gitkeep` |
+| Código de captura (presentation/UI) | **No existe** | Ninguna página, cubit ni ruta bajo `lib/features/capture/`; `grep -rln "capture" lib/features/ lib/core/router lib/main.dart` (excluyendo coincidencias de "captured"/"screenshot" de otras features) no encuentra ninguna pantalla ni ruta que la exponga |
+| Uso de los plugins de voz/notificaciones locales (`speech_to_text`, `flutter_local_notifications`, `permission_handler`) | **Ninguno** | `grep -rl "speech_to_text\|flutter_local_notifications\|permission_handler" lib/` no devuelve nada — siguen sin usarse, a diferencia del servicio nativo de abajo, que no depende de estos paquetes |
+| Servicio nativo Android (notificaciones bancarias) | **Existe** | `android/app/src/main/kotlin/com/billetudo/app/capture/`: `BilletudoNotificationListenerService.kt`, `CaptureChannelHandler.kt`, `CaptureSettings.kt`, `IssuerFilter.kt`, `IssuerRules.kt`, `NotificationAmountParser.kt`, `NotificationRuleEngine.kt`, `PendingCaptureBuffer.kt` (7 archivos, más `MainActivity.kt` — 8 en total) |
+| Permisos Android (`uses-permission`) | **Ninguno** | `android/app/src/main/AndroidManifest.xml` sigue sin **ningún** `uses-permission`; solo el `<queries>` de `PROCESS_TEXT` (boilerplate del engine) y el nuevo `<queries>` con los 3 paquetes del catálogo de bancos (ver fila siguiente) |
+| `<service>` de `NotificationListenerService` | **Existe** | `AndroidManifest.xml`: `<service android:name=".capture.BilletudoNotificationListenerService" android:exported="false" android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">`. **No es un `uses-permission`**: el acceso se concede como *special app access* en Ajustes del sistema, no en el diálogo de permisos en runtime — por eso la fila anterior sigue en "Ninguno" sin contradecir esta |
+| Visibilidad de paquetes del catálogo de bancos | **Existe, y coincide con el catálogo** | `<queries>` en `AndroidManifest.xml` declara exactamente `com.nequi.MobileApp`, `com.nu.production`, `com.google.android.apps.walletnfcrel` (3 paquetes) — los mismos 3 de `assets/capture/issuer_rules.json`. **No** usa `QUERY_ALL_PACKAGES` |
+| Permisos iOS | **Ninguno** | `ios/Runner/Info.plist` sigue sin **ninguna** clave `*UsageDescription` — esta feature es Android-only |
+| OCR | **Fuera de alcance** | `google_mlkit_text_recognition` sigue comentado, `pubspec.yaml:94` |
+| Widget | **No existe** | Sin `AppWidgetProvider` en `android/`, sin extensión WidgetKit en `ios/`; `lib/features/improvement/` sigue solo con `.gitkeep` |
+| Preferencia de emisores activos | **Vive en `SharedPreferences` nativas, no en `AppSettings`/Drift** | `CaptureSettings.kt` (`android/.../capture/CaptureSettings.kt`) guarda el set de emisores habilitados en `SharedPreferences` propias del proceso del servicio — a propósito, porque el servicio no puede abrir la base Drift/PowerSync-managed. `AppSettings` sigue sin ninguna columna de captura. **No hay UI Flutter que escriba esa preferencia todavía** (no hay capa `presentation`), así que por defecto está vacía y el servicio no captura nada aunque el usuario conceda el acceso a notificaciones |
 
 ### 13.3 La retención cero es demostrable, no es una promesa
 
@@ -1606,10 +1659,16 @@ y en `declaraciones-tiendas.md` §7.3 (*Personal info → Name*).
   HU-08 lo exige como no negociable. No hay código.
 - ⛔ **B11 — no existe la pantalla de transparencia.** Misma HU-08, misma
   situación. La política la describe.
-- ⚠️ **B12 — visibilidad de paquetes.** Ver el punto 27 de §11: la lista de apps
-  de banco instaladas no puede resolverse con `QUERY_ALL_PACKAGES`.
+- ✅ **B12 — RESUELTO (2026-09-10): visibilidad de paquetes.** Ver el punto 27
+  de §11: la lista de apps de banco instaladas **no** se resolvió con
+  `QUERY_ALL_PACKAGES`. `AndroidManifest.xml` declara un `<queries>` explícito
+  con los 3 paquetes exactos del catálogo (`com.nequi.MobileApp`,
+  `com.nu.production`, `com.google.android.apps.walletnfcrel`), que coinciden
+  uno a uno con `assets/capture/issuer_rules.json`. Sigue pendiente que, si se
+  añade un emisor nuevo al catálogo, se añada también su línea en el
+  `<queries>` — no es automático.
 
-Los tres primeros tienen la misma forma: **la política v1.8 describe un
+Los tres primeros (B9-B11) tienen la misma forma: **la política v1.8 describe un
 comportamiento que el código todavía no tiene**. Eso es correcto mientras la
 política **no se publique** —se redacta antes justamente para poder publicarla
 antes de que la función llegue al usuario— y se vuelve una declaración falsa en

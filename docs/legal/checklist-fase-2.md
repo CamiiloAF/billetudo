@@ -66,10 +66,10 @@ tienda cambia por primera vez.
 | # | Permiso | Estado | Quién |
 |---|---|---|---|
 | 1 | `RECORD_AUDIO` | ⛔ falta declarar | `[impl]` |
-| 2 | `<service>` con `BIND_NOTIFICATION_LISTENER_SERVICE` + intent-filter | ⛔ falta declarar | `[impl]` |
+| 2 | `<service>` con `BIND_NOTIFICATION_LISTENER_SERVICE` + intent-filter | ✅ hecho (verificado 2026-09-10 contra `dev`, PR #28): `AndroidManifest.xml` declara `<service android:name=".capture.BilletudoNotificationListenerService" android:exported="false" android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">` con el `intent-filter` de `NotificationListenerService` | `[impl]` |
 | 3 | `POST_NOTIFICATIONS` | ⛔ falta declarar | `[impl]` |
 | 4 | `RECEIVE_BOOT_COMPLETED` | ⛔ falta declarar | `[impl]` |
-| 5 | `<queries>` **explícito** con los 4 `packageName` del catálogo | ⛔ falta, y **no puede ser `QUERY_ALL_PACKAGES`** (activa formulario de declaración en Play) | `[impl]` |
+| 5 | `<queries>` **explícito** con los `packageName` del catálogo | ✅ hecho (verificado 2026-09-10 contra `dev`): `AndroidManifest.xml` declara `<queries>` con los 3 paquetes exactos del catálogo actual (`com.nequi.MobileApp`, `com.nu.production`, `com.google.android.apps.walletnfcrel`, que coinciden con `assets/capture/issuer_rules.json`) — **no** `QUERY_ALL_PACKAGES`. El catálogo tiene hoy 3 emisores, no 4; si crece, cada emisor nuevo necesita su propia línea aquí, no es automático | `[impl]` |
 | 6 | **Ningún permiso de más.** Sin `READ_SMS`, `READ_CALL_LOG`, `BIND_ACCESSIBILITY_SERVICE`, `CAMERA`, `READ_MEDIA_IMAGES` — ni en el manifiesto propio ni en el fusionado | ⛔ verificar sobre el APK/AAB fusionado, no sobre el fuente | `[envío]` |
 | 7 | Modo de programación de recordatorios **sin alarma exacta** si se puede | ⚠️ decidir; la alarma exacta trae su propio formulario en Play | `[impl]` / `[prod]` |
 
