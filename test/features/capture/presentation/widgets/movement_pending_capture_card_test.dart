@@ -46,7 +46,10 @@ void main() {
     expect(find.byType(CaptureStatusPill), findsOneWidget);
     expect(find.byIcon(LucideIcons.bellRing), findsOneWidget);
     expect(find.text('No suma a tu saldo'), findsOneWidget);
-    expect(find.text('Confirmar'), findsNothing);
+    // `w5AfEL`: "Confirmar ›" is a visual label, not a second tap target —
+    // the whole card still carries the single `onTap` (see the test below).
+    expect(find.text('Confirmar'), findsOneWidget);
+    expect(find.byIcon(LucideIcons.chevronRight), findsOneWidget);
   });
 
   testWidgets('shows the suggested-category chip when there is one',

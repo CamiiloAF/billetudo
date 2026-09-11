@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -154,6 +155,23 @@ class MovementPendingCaptureCard extends StatelessWidget {
                         color: colors.textSecondary,
                       ),
                     ),
+                  ),
+                  // `w5AfEL`: the whole card is already the tap target (same
+                  // `onTap`), but Pencil still spells out "Confirmar ›" here
+                  // so the row never reads as a dead-end status line.
+                  Text(
+                    l10n.captureConfirmAction,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: colors.primaryOnSoftStrong,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  Icon(
+                    LucideIcons.chevronRight,
+                    size: 14,
+                    color: colors.primaryOnSoftStrong,
                   ),
                 ],
               ),

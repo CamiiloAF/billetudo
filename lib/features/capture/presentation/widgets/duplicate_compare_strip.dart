@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../transactions/presentation/utils/transaction_amount_presentation.dart';
 import '../cubit/capture_review_item.dart';
 import '../utils/capture_presentation.dart';
 
@@ -107,7 +106,11 @@ class DuplicateCompareStrip extends StatelessWidget {
                     // (`LBnuX`, 15/600): the two must read as coincident,
                     // which is the entire point of the mark. Only the token
                     // differs, and only because this one sits on `$muted`.
-                    signedAmountLabel(
+                    // Unsigned on purpose, like the capture's own amount
+                    // (`captureAmountLabel`, not `signedAmountLabel`): a
+                    // leading `-` here would break the "these two read as
+                    // the same number" signal the strip exists to give.
+                    captureAmountLabel(
                       amountMinor: duplicate.amountMinor,
                       currencyCode: duplicate.currency,
                       type: duplicate.type,
