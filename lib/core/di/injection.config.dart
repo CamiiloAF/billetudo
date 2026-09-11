@@ -361,6 +361,34 @@ import 'package:billetudo/features/budgets/presentation/cubit/budgets_list_cubit
     as _i244;
 import 'package:billetudo/features/budgets/presentation/cubit/zero_based_summary_cubit.dart'
     as _i843;
+import 'package:billetudo/features/capture/data/datasources/capture_method_channel_datasource.dart'
+    as _i725;
+import 'package:billetudo/features/capture/data/datasources/issuer_rules_asset_datasource.dart'
+    as _i405;
+import 'package:billetudo/features/capture/data/repositories/issuer_rules_repository_impl.dart'
+    as _i330;
+import 'package:billetudo/features/capture/data/repositories/notification_capture_repository_impl.dart'
+    as _i674;
+import 'package:billetudo/features/capture/domain/repositories/issuer_rules_repository.dart'
+    as _i925;
+import 'package:billetudo/features/capture/domain/repositories/notification_capture_repository.dart'
+    as _i416;
+import 'package:billetudo/features/capture/domain/usecases/drain_native_captures.dart'
+    as _i117;
+import 'package:billetudo/features/capture/domain/usecases/get_enabled_issuers.dart'
+    as _i1036;
+import 'package:billetudo/features/capture/domain/usecases/get_issuer_apps.dart'
+    as _i464;
+import 'package:billetudo/features/capture/domain/usecases/is_notification_access_granted.dart'
+    as _i364;
+import 'package:billetudo/features/capture/domain/usecases/load_issuer_rules.dart'
+    as _i133;
+import 'package:billetudo/features/capture/domain/usecases/open_notification_access_settings.dart'
+    as _i547;
+import 'package:billetudo/features/capture/domain/usecases/parse_bank_notification.dart'
+    as _i186;
+import 'package:billetudo/features/capture/domain/usecases/set_enabled_issuers.dart'
+    as _i194;
 import 'package:billetudo/features/categories/data/datasources/categories_local_datasource.dart'
     as _i151;
 import 'package:billetudo/features/categories/data/datasources/category_seeds_remote_datasource.dart'
@@ -898,6 +926,8 @@ extension GetItInjectableX on _i174.GetIt {
       environmentFilter,
     );
     final registerModule = _$RegisterModule();
+    gh.factory<_i186.ParseBankNotification>(
+        () => const _i186.ParseBankNotification());
     gh.factory<_i505.AutodetectColumnMapping>(
         () => const _i505.AutodetectColumnMapping());
     gh.factory<_i394.ResolveDefaultCurrencyForLocale>(
@@ -931,6 +961,10 @@ extension GetItInjectableX on _i174.GetIt {
         () => const _i685.BudgetProgressCalculator());
     gh.lazySingleton<_i529.ZeroBasedSummaryCalculator>(
         () => const _i529.ZeroBasedSummaryCalculator());
+    gh.lazySingleton<_i725.CaptureMethodChannelDatasource>(
+        () => const _i725.CaptureMethodChannelDatasource());
+    gh.lazySingleton<_i405.IssuerRulesAssetDatasource>(
+        () => const _i405.IssuerRulesAssetDatasource());
     gh.lazySingleton<_i1013.DebtBalanceCalculator>(
         () => const _i1013.DebtBalanceCalculator());
     gh.lazySingleton<_i255.DebtInterestCalculator>(
@@ -980,6 +1014,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i476.MappingTemplatesLocalDatasource>(() =>
         _i476.MappingTemplatesLocalDatasource(
             gh<_i460.SharedPreferencesAsync>()));
+    gh.lazySingleton<_i925.IssuerRulesRepository>(() =>
+        _i330.IssuerRulesRepositoryImpl(
+            gh<_i405.IssuerRulesAssetDatasource>()));
     gh.lazySingleton<_i200.BackupIdCollisionDatasource>(
         () => _i200.BackupIdCollisionDatasource(gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i636.AiRemoteDatasource>(
@@ -991,6 +1028,8 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i180.CategorySeedsRemoteDatasource>(
         () => _i180.CategorySeedsRemoteDatasource(gh<_i454.SupabaseClient>()));
+    gh.factory<_i133.LoadIssuerRules>(
+        () => _i133.LoadIssuerRules(gh<_i925.IssuerRulesRepository>()));
     gh.lazySingleton<_i598.NotificationMessages>(
         () => const _i872.LocalizedNotificationMessages());
     gh.lazySingleton<_i867.MappingTemplateRepository>(
@@ -1118,6 +1157,9 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i177.ExportSyncLog(gh<_i666.SyncLogRepository>()));
     gh.factory<_i77.WatchSyncLog>(
         () => _i77.WatchSyncLog(gh<_i666.SyncLogRepository>()));
+    gh.lazySingleton<_i416.NotificationCaptureRepository>(() =>
+        _i674.NotificationCaptureRepositoryImpl(
+            gh<_i725.CaptureMethodChannelDatasource>()));
     gh.lazySingleton<_i38.BalanceCarouselCubit>(() => _i38.BalanceCarouselCubit(
         gh<_i345.BalanceCarouselPreferenceDatasource>()));
     gh.lazySingleton<_i239.NotificationScheduler>(() =>
@@ -1347,6 +1389,20 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i936.MarkBackupSaved(gh<_i24.BackupStatusRepository>()));
     gh.lazySingleton<_i487.AppSettingsRepository>(() =>
         _i733.AppSettingsRepositoryImpl(gh<_i95.AppSettingsLocalDatasource>()));
+    gh.factory<_i117.DrainNativeCaptures>(() =>
+        _i117.DrainNativeCaptures(gh<_i416.NotificationCaptureRepository>()));
+    gh.factory<_i1036.GetEnabledIssuers>(() =>
+        _i1036.GetEnabledIssuers(gh<_i416.NotificationCaptureRepository>()));
+    gh.factory<_i464.GetIssuerApps>(
+        () => _i464.GetIssuerApps(gh<_i416.NotificationCaptureRepository>()));
+    gh.factory<_i364.IsNotificationAccessGranted>(() =>
+        _i364.IsNotificationAccessGranted(
+            gh<_i416.NotificationCaptureRepository>()));
+    gh.factory<_i547.OpenNotificationAccessSettings>(() =>
+        _i547.OpenNotificationAccessSettings(
+            gh<_i416.NotificationCaptureRepository>()));
+    gh.factory<_i194.SetEnabledIssuers>(() =>
+        _i194.SetEnabledIssuers(gh<_i416.NotificationCaptureRepository>()));
     gh.factory<_i601.ConfirmImport>(
         () => _i601.ConfirmImport(gh<_i447.ImportRepository>()));
     gh.factory<_i788.GetExistingAccountsForImport>(
