@@ -25,6 +25,25 @@ const String redactionPlaceholder = '<redacted>';
 ///    and `invalid input value for enum x: "..."`, the two common cases where
 ///    a double-quoted token is a value and not an identifier.
 ///
+/// ## Bank-notification capture (Fase 2, `features/capture/`)
+///
+/// That feature's rows carry the only fields the app derives from a
+/// notification — `merchant_raw`, `account_hint`, `source_package`,
+/// `source_rule_id`, `amount_minor` — and HU-08 requires that none of them can
+/// reach a crash report. Two things make that hold, and both must stay true:
+///
+///  * The rows have **no column with the notification's text** (zero
+///    retention, HU-03), so the worst a driver error can quote is those
+///    structured fields, never the message the bank sent.
+///  * Every path that can quote them is one of the marker cases above:
+///    Postgres puts the rejected row in `Failing row contains (...)` or in
+///    `Key (col)=(value)`, and `sqlite3` puts the bound values after
+///    `, parameters:`. All three are dropped whole.
+///
+/// The failure messages this feature's repositories raise are constants
+/// (`'capture inbox query failed'` and friends) with the offending values
+/// only in `Failure.cause`, which `recordFailure` does not forward.
+///
 /// ## What it does NOT cover (deliberately stated: a filter sold as airtight
 /// but leaky would be worse than none)
 ///  * Values interpolated into prose with no quoting and no known marker

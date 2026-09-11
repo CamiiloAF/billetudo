@@ -46,6 +46,7 @@ import '../widgets/transaction_type_segmented_control.dart';
 class TransactionFormPage extends StatefulWidget {
   const TransactionFormPage({
     this.onConvertToScheduledPayment,
+    this.onSaved,
     this.onDictate,
     super.key,
   });
@@ -59,6 +60,18 @@ class TransactionFormPage extends StatefulWidget {
   /// from it. `null` (e.g. in tests) simply disables the puente: Guardar
   /// always behaves like today.
   final ValueChanged<TransactionFormState>? onConvertToScheduledPayment;
+
+  /// Called right after the movement is saved and this page has popped, with
+  /// the state it was saved from.
+  ///
+  /// Same arrangement as [onConvertToScheduledPayment], and for the same
+  /// reason: the router is the only layer allowed to know about two features
+  /// at once. It exists so Fase 2 can make its contextual offer of the
+  /// notification permission at the one moment it makes sense — just after
+  /// the user typed an expense by hand and felt the friction it removes —
+  /// without this page importing anything from `capture`. `null` (tests, the
+  /// edit route, the capture-dispatch route) simply disables it.
+  final ValueChanged<TransactionFormState>? onSaved;
 
   /// The secondary voice trigger (`17-captura-voz.md` HU-02): the "Dictar"
   /// pill of the amount `Zona Fija`.
@@ -91,6 +104,10 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
       listener: (context, state) async {
         if (state.status == TransactionFormStatus.saved) {
           Navigator.of(context).pop();
+          // After the pop, never before: whatever the router opens here must
+          // land on the screen the user came back to, not on top of a form
+          // that is already leaving.
+          widget.onSaved?.call(state);
           return;
         }
         _errorScroll.scrollToField(state.failedField);

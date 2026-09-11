@@ -9,6 +9,8 @@ import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
 import 'package:billetudo/features/auth/domain/usecases/sign_out.dart';
 import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
 import 'package:billetudo/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:billetudo/features/capture/presentation/cubit/capture_status_cubit.dart';
+import 'package:billetudo/features/capture/presentation/cubit/capture_status_state.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_state.dart';
 import 'package:billetudo/features/settings/presentation/cubit/notification_settings_cubit.dart';
@@ -39,6 +41,12 @@ class MockThemeModeCubit extends MockCubit<ThemeMode>
 class MockSyncStatusCubit extends MockCubit<SyncStatusState>
     implements SyncStatusCubit {}
 
+/// Seeded `isSupported: false` (the default): Ajustes' capture row draws
+/// nothing off Android, which is what these tests and goldens already
+/// assert about the Preferencias section.
+class MockCaptureStatusCubit extends MockCubit<CaptureStatusState>
+    implements CaptureStatusCubit {}
+
 class MockNotificationSettingsCubit extends MockCubit<NotificationSettingsState>
     implements NotificationSettingsCubit {}
 
@@ -48,6 +56,7 @@ void main() {
   late MockAppSettingsCubit appSettingsCubit;
   late MockThemeModeCubit themeModeCubit;
   late MockSyncStatusCubit syncStatusCubit;
+  late MockCaptureStatusCubit captureStatusCubit;
   late MockNotificationSettingsCubit notificationSettingsCubit;
 
   const user = AuthUser(
@@ -93,6 +102,15 @@ void main() {
       const Stream<SyncStatusState>.empty(),
       initialState: const SyncStatusState(),
     );
+
+    captureStatusCubit = MockCaptureStatusCubit();
+    when(() => captureStatusCubit.state)
+        .thenReturn(const CaptureStatusState(isLoading: false));
+    whenListen(
+      captureStatusCubit,
+      const Stream<CaptureStatusState>.empty(),
+      initialState: const CaptureStatusState(isLoading: false),
+    );
   });
 
   Future<void> pumpSettings(
@@ -114,6 +132,7 @@ void main() {
           BlocProvider<AppSettingsCubit>.value(value: appSettingsCubit),
           BlocProvider<ThemeModeCubit>.value(value: themeModeCubit),
           BlocProvider<SyncStatusCubit>.value(value: syncStatusCubit),
+          BlocProvider<CaptureStatusCubit>.value(value: captureStatusCubit),
           BlocProvider<NotificationSettingsCubit>.value(
             value: notificationSettingsCubit,
           ),
@@ -124,6 +143,7 @@ void main() {
           onOpenComingSoon: onOpenComingSoon ?? (_) {},
           onOpenSyncStatus: onOpenSyncStatus ?? () {},
           onOpenQuickAccessOrder: onOpenQuickAccessOrder ?? () {},
+          onOpenCapture: (_) {},
           onOpenNotifications: () {},
         ),
       ),

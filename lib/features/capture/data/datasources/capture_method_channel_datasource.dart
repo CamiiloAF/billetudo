@@ -24,7 +24,11 @@ class CaptureMethodChannelDatasource {
 
   final MethodChannel _channel;
 
-  bool get _isSupported => defaultTargetPlatform == TargetPlatform.android;
+  /// The one piece of platform truth that is not a channel call, so it stays
+  /// correct even in a build with no native side at all.
+  bool get isSupported => defaultTargetPlatform == TargetPlatform.android;
+
+  bool get _isSupported => isSupported;
 
   Future<bool> isPermissionGranted() async {
     if (!_isSupported) {

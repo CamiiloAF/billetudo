@@ -12,6 +12,8 @@ import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../../../core/widgets/root_tab_header.dart';
 import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
 import '../../../accounts/presentation/widgets/account_gate_copy.dart';
+import '../../../capture/presentation/cubit/capture_review_item.dart';
+import '../../../capture/presentation/widgets/pending_captures_list_slot.dart';
 import '../../domain/entities/transaction_filter.dart';
 import '../cubit/transactions_list_cubit.dart';
 import '../cubit/transactions_list_state.dart';
@@ -42,6 +44,7 @@ class TransactionsPage extends StatelessWidget {
     required this.onAddTransaction,
     required this.onOpenTransaction,
     required this.onOpenAccount,
+    this.onDispatchCapture,
     this.linkMode,
     this.onBackToReports,
     super.key,
@@ -76,6 +79,11 @@ class TransactionsPage extends StatelessWidget {
   /// Navigates to the detail page and resolves with whatever it popped with
   /// (the deleted transaction's id, or `null`).
   final Future<String?> Function(String id) onOpenTransaction;
+
+  /// Opens the pre-filled transaction form for a capture pinned at the top of
+  /// the list (HU-04/HU-05). `null` hides the block entirely — link mode is
+  /// there to pick an EXISTING movement, and a capture is not one.
+  final ValueChanged<CaptureReviewItem>? onDispatchCapture;
 
   /// Opens an account's detail page: fired when a balance carousel card is
   /// tapped (Mejora #2).
@@ -259,23 +267,65 @@ class TransactionsPage extends StatelessWidget {
                       TransactionsListStatus.failure => TransactionsErrorView(
                           onRetry: context.read<TransactionsListCubit>().start,
                         ),
-                      // Empty period: the carousel is pinned above the message
-                      // (there is nothing to scroll here) so the balances stay
-                      // visible when there are accounts but no movements yet.
+                      // Empty period: the carousel is pinned above the
+                      // message, which centers in whatever space is left in
+                      // the viewport, same as the plain `Expanded` this
+                      // replaced.
+                      //
+                      // A pending capture is not a `Transaction`, so it never
+                      // shows up in `state.items` — this branch fires just as
+                      // easily for someone with zero real movements but one
+                      // bank notification waiting (the ghost block's own
+                      // reason to exist). Without the slot here, that capture
+                      // would be unreachable from Movimientos: this branch
+                      // renders instead of `TransactionsListView`, which is
+                      // the block's only other home.
+                      //
+                      // The slot can now render one or more pending-capture
+                      // cards instead of nothing, so the carousel + slot no
+                      // longer reliably leave enough room for the message.
+                      // `SliverFillRemaining(hasScrollBody: false)` forces its
+                      // child to exactly the leftover viewport space — if that
+                      // space is smaller than the message's natural size
+                      // (icon + text), it overflows anyway; `Center` only
+                      // centers, it does not shrink. `SliverLayoutBuilder` +
+                      // `ConstrainedBox(minHeight:)` instead asks for the
+                      // leftover space as a *minimum* — still centered when
+                      // there's room to spare — but lets the content grow
+                      // past it, so the whole `CustomScrollView` scrolls
+                      // instead of overflowing when there is not.
                       TransactionsListStatus.ready when state.items.isEmpty =>
-                        Column(
-                          children: [
+                        CustomScrollView(
+                          slivers: [
                             if (showCarousel)
-                              MovementsBalanceCarousel(
-                                state: state,
-                                onOpenAccount: onOpenAccount,
+                              SliverToBoxAdapter(
+                                child: MovementsBalanceCarousel(
+                                  state: state,
+                                  onOpenAccount: onOpenAccount,
+                                ),
                               ),
-                            Expanded(
-                              child: TransactionsEmptyState(
-                                message: _isUnfiltered(state.filter)
-                                    ? l10n.transactionsEmptyMessage
-                                    : l10n.transactionsEmptyPeriodMessage,
+                            SliverToBoxAdapter(
+                              child: PendingCapturesListSlot(
+                                filter: state.filter,
+                                onTap: onDispatchCapture,
                               ),
+                            ),
+                            SliverLayoutBuilder(
+                              builder: (context, constraints) {
+                                return SliverToBoxAdapter(
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      minHeight:
+                                          constraints.remainingPaintExtent,
+                                    ),
+                                    child: TransactionsEmptyState(
+                                      message: _isUnfiltered(state.filter)
+                                          ? l10n.transactionsEmptyMessage
+                                          : l10n.transactionsEmptyPeriodMessage,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
@@ -283,6 +333,7 @@ class TransactionsPage extends StatelessWidget {
                           state: state,
                           onOpenTransaction: onRowTap,
                           onOpenAccount: onOpenAccount,
+                          onDispatchCapture: onDispatchCapture,
                           showCarousel: showCarousel,
                         ),
                     },
@@ -497,6 +548,7 @@ class TransactionsListView extends StatelessWidget {
     required this.state,
     required this.onOpenTransaction,
     required this.onOpenAccount,
+    this.onDispatchCapture,
     this.showCarousel = true,
     super.key,
   });
@@ -507,6 +559,11 @@ class TransactionsListView extends StatelessWidget {
   /// Forwarded to the balance carousel header: tapping a card opens that
   /// account's detail page (Mejora #2).
   final ValueChanged<String> onOpenAccount;
+
+  /// Opens the pre-filled transaction form for a pending capture pinned at
+  /// the top of the list (HU-04/HU-05). Supplied by the router, the only
+  /// layer allowed to know about both features. `null` hides the block.
+  final ValueChanged<CaptureReviewItem>? onDispatchCapture;
 
   /// The balance carousel is the list's first scrollable item, but link mode
   /// drops it to keep the focus on picking a movement (`g0x859`).
@@ -536,6 +593,10 @@ class TransactionsListView extends StatelessWidget {
               onOpenAccount: onOpenAccount,
             ),
           TransactionsPeriodTotalRow(state: state),
+          PendingCapturesListSlot(
+            filter: state.filter,
+            onTap: onDispatchCapture,
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
             child: Align(
@@ -574,7 +635,10 @@ class TransactionsListView extends StatelessWidget {
     // rule as each day's own total (`transactionGroupTotalFor`).
     final periodTotal = transactionPeriodTotalFor(state.filter, state.items);
     final totalSlots = periodTotal == null ? 0 : 1;
-    final leadingSlots = carouselSlots + totalSlots;
+    // The captures block is always a slot, even when it renders nothing: it
+    // watches its own stream, so whether it has content is not knowable here
+    // without duplicating that subscription.
+    final leadingSlots = carouselSlots + totalSlots + 1;
 
     return ListView.builder(
       padding: const EdgeInsets.only(bottom: 28),
@@ -588,6 +652,15 @@ class TransactionsListView extends StatelessWidget {
         }
         if (totalSlots == 1 && index == carouselSlots) {
           return TransactionsPeriodTotalRow(state: state);
+        }
+        // Pending captures go ALL TOGETHER before the first day group, never
+        // interleaved chronologically — and therefore outside every daily
+        // total. They are not money.
+        if (index == carouselSlots + totalSlots) {
+          return PendingCapturesListSlot(
+            filter: state.filter,
+            onTap: onDispatchCapture,
+          );
         }
         final groupIndex = index - leadingSlots;
         final group = groups[groupIndex];

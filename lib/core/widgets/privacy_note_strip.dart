@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../theme/app_colors.dart';
 
 /// The `Privacy Note Strip` component (`YAUFx`): a `$muted` pill carrying a
 /// `lock` icon and the HU-03 privacy disclaimer — the copy goes unencrypted

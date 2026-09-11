@@ -44,6 +44,7 @@ class HomeState extends Equatable {
     this.hasAnyBudget = true,
     this.aiInsight,
     this.pendingScheduledCount = 0,
+    this.pendingCaptureCount = 0,
     this.budgetChipIsDirectNav = true,
   });
 
@@ -95,6 +96,11 @@ class HomeState extends Equatable {
   /// Scheduled-payment occurrences pending confirmation
   /// (`WatchPendingScheduledPaymentCount`) — feeds `QuickAccessRow`'s badge.
   final int pendingScheduledCount;
+
+  /// Captures waiting in the review inbox (`WatchPendingCaptureCount`) —
+  /// feeds the bell's badge (`r1eRC`). A count, never a promotion: none of
+  /// these has touched a balance.
+  final int pendingCaptureCount;
 
   /// Which arrow the "Ayúdame a presupuestar" chip shows: `true` for the
   /// straight arrow (direct nav to the new-budget form), `false` for the
@@ -152,6 +158,7 @@ class HomeState extends Equatable {
     HomeAiInsight? aiInsight,
     bool clearAiInsight = false,
     int? pendingScheduledCount,
+    int? pendingCaptureCount,
     bool? budgetChipIsDirectNav,
   }) =>
       HomeState(
@@ -169,6 +176,7 @@ class HomeState extends Equatable {
         aiInsight: clearAiInsight ? null : (aiInsight ?? this.aiInsight),
         pendingScheduledCount:
             pendingScheduledCount ?? this.pendingScheduledCount,
+        pendingCaptureCount: pendingCaptureCount ?? this.pendingCaptureCount,
         budgetChipIsDirectNav:
             budgetChipIsDirectNav ?? this.budgetChipIsDirectNav,
       );
@@ -185,6 +193,7 @@ class HomeState extends Equatable {
         hasAnyBudget,
         aiInsight,
         pendingScheduledCount,
+        pendingCaptureCount,
         budgetChipIsDirectNav,
       ];
 }

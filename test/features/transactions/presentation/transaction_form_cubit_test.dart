@@ -46,6 +46,8 @@ void main() {
   late MockGetTransactionEditImpact getTransactionEditImpact;
   late MockSetTransactionTags setTransactionTags;
   late MockWatchAccounts watchAccounts;
+  late MockConfirmPendingCapture confirmPendingCapture;
+  late MockGetCategory getCategory;
 
   setUpAll(registerPresentationFallbacks);
 
@@ -56,6 +58,8 @@ void main() {
     getTransactionEditImpact = MockGetTransactionEditImpact();
     setTransactionTags = MockSetTransactionTags();
     watchAccounts = MockWatchAccounts();
+    confirmPendingCapture = MockConfirmPendingCapture();
+    getCategory = MockGetCategory();
     // No accounts by default, so `load(null)` never auto-preselects one and
     // the existing "no account picked" scenarios stay meaningful — tests
     // that care about the preselection stub their own account list.
@@ -70,6 +74,8 @@ void main() {
         getTransactionEditImpact,
         setTransactionTags,
         watchAccounts,
+        confirmPendingCapture,
+        getCategory,
       );
 
   group('teclado numérico anclado (criterio 11)', () {

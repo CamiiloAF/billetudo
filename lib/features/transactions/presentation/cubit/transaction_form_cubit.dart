@@ -5,7 +5,9 @@ import '../../../../core/error/result.dart';
 import '../../../../core/utils/money_formatter.dart';
 import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../accounts/domain/usecases/watch_accounts.dart';
+import '../../../capture/domain/usecases/confirm_pending_capture.dart';
 import '../../../categories/domain/entities/category.dart' show CategoryKind;
+import '../../../categories/domain/usecases/get_category.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/entities/transaction_draft.dart';
 import '../../domain/entities/transaction_with_details.dart';
@@ -14,6 +16,7 @@ import '../../domain/usecases/get_transaction_edit_impact.dart';
 import '../../domain/usecases/set_transaction_tags.dart';
 import '../../domain/usecases/update_transaction.dart';
 import '../../domain/usecases/watch_transaction_detail.dart';
+import 'capture_prefill.dart';
 import 'transaction_form_state.dart';
 
 /// Drives the single add/edit form for the 3 transaction types
@@ -32,6 +35,8 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     this._getTransactionEditImpact,
     this._setTransactionTags,
     this._watchAccounts,
+    this._confirmPendingCapture,
+    this._getCategory,
   ) : super(TransactionFormState());
 
   final CreateTransaction _createTransaction;
@@ -40,6 +45,20 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   final GetTransactionEditImpact _getTransactionEditImpact;
   final SetTransactionTags _setTransactionTags;
   final WatchAccounts _watchAccounts;
+
+  /// HU-05: used instead of [_createTransaction] when the form was opened
+  /// from a pending capture, so the movement is created, the capture is
+  /// closed and the merchant learning is fed in one business action.
+  final ConfirmPendingCapture _confirmPendingCapture;
+
+  /// Resolves the capture's suggested category so the picker opens showing
+  /// its name and kind, not a bare id.
+  final GetCategory _getCategory;
+
+  /// The capture being dispatched (HU-05), or `null` for an ordinary
+  /// new/edit. Not part of the (Equatable) state: it is never rendered, it
+  /// only decides which use case [submit] calls.
+  CapturePrefill? _capture;
 
   /// Kept for HU-04's edit-impact check; not part of the (Equatable) state,
   /// since it is never rendered — only diffed against the pending draft.
@@ -57,7 +76,9 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     String? id, {
     TransactionType type = TransactionType.expense,
     String? accountId,
+    CapturePrefill? capture,
   }) async {
+    _capture = capture;
     if (id == null) {
       _original = null;
       // Resolve against the live account list so the preselected account
@@ -78,6 +99,11 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
         final chosen = preferred ?? accounts.first;
         initialAccountId = chosen.account.id;
         initialAccountName = chosen.account.name;
+      }
+      if (capture != null) {
+        emit(await _prefilledFromCapture(
+            capture, initialAccountId, initialAccountName));
+        return;
       }
       emit(
         TransactionFormState(
@@ -112,6 +138,46 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
         emit(_formFor(entry));
         _initialState = state;
     }
+  }
+
+  /// The form as a capture hands it over: amount, type, date, note and the
+  /// suggested account/category already filled in.
+  ///
+  /// The focus deliberately does **not** go to the amount as it does for a
+  /// blank form: the amount arrived from the issuer and is the field least
+  /// likely to need editing, so opening the keypad over the form would hide
+  /// the category — the one field the user actually has to check.
+  Future<TransactionFormState> _prefilledFromCapture(
+    CapturePrefill capture,
+    String? fallbackAccountId,
+    String? fallbackAccountName,
+  ) async {
+    String? categoryId;
+    String? categoryName;
+    CategoryKind? categoryKind;
+    final suggestedCategoryId = capture.categoryId;
+    if (suggestedCategoryId != null) {
+      final result = await _getCategory(suggestedCategoryId);
+      if (result case Right(value: final category)) {
+        categoryId = category.id;
+        categoryName = category.name;
+        categoryKind = category.kind;
+      }
+    }
+    return TransactionFormState(
+      status: TransactionFormStatus.ready,
+      type: capture.type,
+      accountId: capture.accountId ?? fallbackAccountId,
+      accountName: capture.accountId == null ? fallbackAccountName : null,
+      amountMinor: capture.amountMinor,
+      currency: capture.currency,
+      date: capture.postedAt,
+      note: capture.note ?? '',
+      categoryId: categoryId,
+      categoryName: categoryName,
+      categoryKind: categoryKind,
+      source: TransactionSource.notification,
+    );
   }
 
   /// Opens an empty form prefilled with whatever the voice capture managed to
@@ -621,9 +687,17 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
 
     emit(state.copyWith(
         status: TransactionFormStatus.saving, clearEditImpact: true));
-    final result = state.isEditing
-        ? await _updateTransaction(draft)
-        : await _createTransaction(draft);
+    final capture = _capture;
+    final result = switch ((state.isEditing, capture)) {
+      // Dispatching a capture always CREATES; it can never edit, and the
+      // origin is a historical fact the user cannot rewrite afterwards.
+      (_, final CapturePrefill capture) => await _confirmPendingCapture(
+          captureId: capture.captureId,
+          draft: draft,
+        ),
+      (true, _) => await _updateTransaction(draft),
+      (false, _) => await _createTransaction(draft),
+    };
     if (isClosed) {
       return;
     }

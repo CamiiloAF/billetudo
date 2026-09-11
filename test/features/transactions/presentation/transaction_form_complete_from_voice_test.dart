@@ -44,6 +44,8 @@ void main() {
   late MockGetTransactionEditImpact getTransactionEditImpact;
   late MockSetTransactionTags setTransactionTags;
   late MockWatchAccounts watchAccounts;
+  late MockConfirmPendingCapture confirmPendingCapture;
+  late MockGetCategory getCategory;
 
   setUpAll(registerPresentationFallbacks);
 
@@ -54,6 +56,8 @@ void main() {
     getTransactionEditImpact = MockGetTransactionEditImpact();
     setTransactionTags = MockSetTransactionTags();
     watchAccounts = MockWatchAccounts();
+    confirmPendingCapture = MockConfirmPendingCapture();
+    getCategory = MockGetCategory();
     when(() => watchAccounts()).thenAnswer(
       (_) => Stream.value(
         Right(<AccountWithBalance>[
@@ -71,6 +75,8 @@ void main() {
         getTransactionEditImpact,
         setTransactionTags,
         watchAccounts,
+        confirmPendingCapture,
+        getCategory,
       );
 
   Future<TransactionFormCubit> loaded() async {

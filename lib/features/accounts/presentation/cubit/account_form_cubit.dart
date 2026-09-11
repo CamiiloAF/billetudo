@@ -109,6 +109,7 @@ class AccountFormCubit extends Cubit<AccountFormState> {
       fullAccountNumber: number.getOrElse((_) => null),
       numberReadFailed: number.isLeft(),
       last4: account.last4 ?? '',
+      cardLast4: account.cardLast4 ?? '',
     );
   }
 
@@ -164,6 +165,9 @@ class AccountFormCubit extends Cubit<AccountFormState> {
       );
 
   void last4Changed(String value) => emit(state.copyWith(last4: value));
+
+  void cardLast4Changed(String value) =>
+      emit(state.copyWith(cardLast4: value));
 
   void toggleNumberVisibility() =>
       emit(state.copyWith(numberVisible: !state.numberVisible));
@@ -297,6 +301,7 @@ class AccountFormCubit extends Cubit<AccountFormState> {
         institution: state.institution,
         numberEdit: _numberEdit(type),
         last4: state.last4,
+        cardLast4: state.cardLast4,
         interestRateBps: interestRateBps,
         creditLimitMinor: creditLimitMinor,
         statementDay: state.statementDay,

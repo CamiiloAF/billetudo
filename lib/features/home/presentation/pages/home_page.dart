@@ -4,13 +4,14 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_fab.dart';
-import '../../../../core/widgets/coming_soon_sheet.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
 import '../../../accounts/presentation/widgets/account_gate_copy.dart';
@@ -180,15 +181,6 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     _scrollController.dispose();
     super.dispose();
-  }
-
-  Future<void> _openBellSheet(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return ComingSoonSheet.show(
-      context,
-      icon: LucideIcons.bell,
-      message: l10n.homeNotificationsSheetMessage,
-    );
   }
 
   /// HU-04: opens the fallback hero's month picker (no budget featured).
@@ -432,7 +424,10 @@ class _HomePageState extends State<HomePage> {
                       child: HomeHeader(
                         syncStatus: state.syncStatus,
                         user: state.user,
-                        onBellTap: () => _openBellSheet(context),
+                        pendingNoticeCount: state.pendingCaptureCount,
+                        // The bell opens the Avisos centre (`Bk8zW`): a full
+                        // screen on its own route, not a sheet.
+                        onBellTap: () => context.push(AppRoutes.notices),
                         onAvatarTap: () =>
                             unawaited(_openAccountSheet(context)),
                         onWalletTap: () =>

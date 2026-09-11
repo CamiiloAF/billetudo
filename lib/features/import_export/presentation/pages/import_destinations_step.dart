@@ -4,13 +4,13 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/neutral_button.dart';
+import '../../../../core/widgets/privacy_note_strip.dart';
 import '../../domain/entities/import_destination.dart';
 import '../../domain/entities/import_entry_type.dart';
 import '../../domain/entities/import_preview.dart';
 import '../../domain/entities/import_preview_row.dart';
 import '../../domain/entities/named_entity.dart';
 import '../../domain/utils/text_normalizer.dart';
-import '../widgets/privacy_note_strip.dart';
 import '../widgets/unresolved_destination_row.dart';
 
 /// One unresolved name found in the CSV (HU-06 "resolución de destinos").
