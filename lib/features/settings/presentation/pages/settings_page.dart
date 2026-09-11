@@ -15,6 +15,7 @@ import '../cubit/app_settings_cubit.dart';
 import '../cubit/app_settings_state.dart';
 import '../widgets/ai_settings_section.dart';
 import '../widgets/appearance_field.dart';
+import '../widgets/cloud_transcription_field.dart';
 import '../widgets/envelope_mode_field.dart';
 import '../widgets/settings_section_label.dart';
 import '../widgets/settings_session_card.dart';
@@ -150,6 +151,21 @@ class SettingsPage extends StatelessWidget {
                             context
                                 .read<AppSettingsCubit>()
                                 .setShowHelpOnSectionEntry(enabled: value),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // Sits in Preferencias rather than in a section of its
+                      // own: it is one device preference, and the sheet that
+                      // promises it says "en Ajustes", not "en Ajustes ›
+                      // Captura por voz".
+                      BlocBuilder<AppSettingsCubit, AppSettingsState>(
+                        builder: (context, settings) => CloudTranscriptionField(
+                          enabled: settings.cloudTranscriptionEnabled,
+                          onChanged: (value) => unawaited(
+                            context
+                                .read<AppSettingsCubit>()
+                                .setCloudTranscriptionEnabled(enabled: value),
                           ),
                         ),
                       ),

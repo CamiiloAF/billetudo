@@ -5178,6 +5178,16 @@
   "@aiReportErrorGeneric": {},
   "settingsAiSection": "Asistente de IA",
   "@settingsAiSection": {},
+  "settingsCloudTranscription": "Transcribir mi voz en la nube",
+  "@settingsCloudTranscription": {},
+  "settingsCloudTranscriptionSubtitle": "Cuando este teléfono no puede convertir la voz en texto por su cuenta, el audio se envía a {vendor} solo para transcribirlo. billetudo no lo guarda ni lo sincroniza.",
+  "@settingsCloudTranscriptionSubtitle": {
+    "placeholders": {
+      "vendor": {
+        "type": "String"
+      }
+    }
+  },
   "settingsAiNotesAccess": "Dejar que el asistente lea mis notas",
   "@settingsAiNotesAccess": {},
   "settingsAiNotesAccessSubtitle": "Aunque esté apagado, el asistente sigue buscando en tus movimientos: la búsqueda ocurre en tu dispositivo y solo viajan datos ya organizados, nunca el texto de tus notas.",
@@ -5208,6 +5218,143 @@
   "@settingsAiConsentWithdrawSheetMessage": {},
   "settingsAiConsentWithdrawSheetConfirm": "Retirar",
   "@settingsAiConsentWithdrawSheetConfirm": {},
+
+  "captureVoiceListening": "Escuchando…",
+  "@captureVoiceListening": {},
+  "captureVoicePreparing": "Preparando el micrófono…",
+  "@captureVoicePreparing": {},
+  "captureVoiceHint": "Di algo como «gasté veinte mil en almuerzo»",
+  "@captureVoiceHint": {},
+  "captureVoicePrivacyCaption": "El audio no se guarda. Solo se usa para llenar el formulario.",
+  "@captureVoicePrivacyCaption": {},
+  "captureVoicePartialCaption": "Al terminar abrimos el formulario con lo que se entendió. Tú confirmas.",
+  "@captureVoicePartialCaption": {},
+  "captureVoiceCancel": "Cancelar",
+  "@captureVoiceCancel": {},
+  "captureVoiceDone": "Listo",
+  "@captureVoiceDone": {},
+  "captureVoiceSoundLevelLabel": "Nivel del micrófono",
+  "@captureVoiceSoundLevelLabel": {},
+  "captureVoiceNoAmountTitle": "No alcanzamos a captar el monto",
+  "@captureVoiceNoAmountTitle": {},
+  "captureVoiceNoAmountMessage": "Lo que dijiste no se pierde: se va como nota al formulario.",
+  "@captureVoiceNoAmountMessage": {},
+  "captureVoiceRetry": "Intentar de nuevo",
+  "@captureVoiceRetry": {},
+  "captureVoiceWriteByHand": "Escribir a mano",
+  "@captureVoiceWriteByHand": {},
+  "captureVoicePermissionTitle": "El micrófono está desactivado",
+  "@captureVoicePermissionTitle": {},
+  "captureVoicePermissionMessage": "Lo usamos solo mientras dictas, para llenar el formulario por ti. El audio no se guarda.",
+  "@captureVoicePermissionMessage": {},
+  "captureVoicePermissionFact1Title": "Solo mientras dictas",
+  "@captureVoicePermissionFact1Title": {},
+  "captureVoicePermissionFact1Body": "El micrófono se apaga en cuanto terminas la frase o cancelas.",
+  "@captureVoicePermissionFact1Body": {},
+  "captureVoicePermissionFact2Title": "El audio no se guarda",
+  "@captureVoicePermissionFact2Title": {},
+  "captureVoicePermissionFact2Body": "Se usa para entender la frase y se descarta al terminar. No se respalda ni se sincroniza.",
+  "@captureVoicePermissionFact2Body": {},
+  "captureVoicePermissionFact3Title": "Puedes seguir sin él",
+  "@captureVoicePermissionFact3Title": {},
+  "captureVoicePermissionFact3Body": "Escribir un movimiento a mano funciona igual que siempre, con o sin micrófono.",
+  "@captureVoicePermissionFact3Body": {},
+  "captureVoicePermissionOpenSettings": "Abrir ajustes",
+  "@captureVoicePermissionOpenSettings": {},
+  "captureVoicePermissionAllow": "Activar el micrófono",
+  "@captureVoicePermissionAllow": {},
+  "captureVoiceUnavailableTitle": "El dictado no está disponible aquí",
+  "@captureVoiceUnavailableTitle": {},
+  "captureVoiceUnavailableMessage": "Tu teléfono no puede transcribir en el idioma de la app ahora mismo. Escribir a mano funciona igual que siempre.",
+  "@captureVoiceUnavailableMessage": {},
+  "captureVoiceOnDeviceUnavailableMessage": "Tu teléfono no puede transcribir sin enviar el audio a internet, y no lo hacemos sin preguntarte antes. Escribir a mano funciona igual que siempre.",
+  "@captureVoiceOnDeviceUnavailableMessage": {},
+  "captureVoiceNoConnectionMessage": "El dictado necesita conexión en este teléfono y ahora no la hay. Escribir a mano funciona igual que siempre.",
+  "@captureVoiceNoConnectionMessage": {},
+  "captureVoiceBusyMessage": "Otra app está usando el micrófono. Cuando la cierres puedes volver a dictar.",
+  "@captureVoiceBusyMessage": {},
+  "captureVoiceDictate": "Dictar",
+  "@captureVoiceDictate": {},
+  "captureVoiceDictateTooltip": "Dictar el movimiento",
+  "@captureVoiceDictateTooltip": {},
+  "captureVoiceFabLongPressHint": "Mantén presionado para dictar",
+  "@captureVoiceFabLongPressHint": {},
+  "captureVoiceVendorGoogle": "Google",
+  "@captureVoiceVendorGoogle": {
+    "description": "Nombre del servicio que transcribe la voz en Android."
+  },
+  "captureVoiceVendorApple": "Apple",
+  "@captureVoiceVendorApple": {
+    "description": "Nombre del servicio que transcribe la voz en iOS."
+  },
+  "captureVoiceCloudConsentTitle": "Para dictar, {vendor} transcribe tu voz",
+  "@captureVoiceCloudConsentTitle": {
+    "placeholders": {
+      "vendor": {
+        "type": "String"
+      }
+    }
+  },
+  "captureVoiceCloudConsentMessage": "Este teléfono no puede convertir la voz en texto por su cuenta. Si lo permites, el audio se envía a {vendor} solo para transcribirlo.",
+  "@captureVoiceCloudConsentMessage": {
+    "placeholders": {
+      "vendor": {
+        "type": "String"
+      }
+    }
+  },
+  "captureVoiceCloudConsentFact1Title": "El audio sale del teléfono",
+  "@captureVoiceCloudConsentFact1Title": {},
+  "captureVoiceCloudConsentFact1Body": "{vendor} recibe lo que dictas y devuelve el texto. Ese es el paso que este teléfono no puede hacer solo.",
+  "@captureVoiceCloudConsentFact1Body": {
+    "placeholders": {
+      "vendor": {
+        "type": "String"
+      }
+    }
+  },
+  "captureVoiceCloudConsentFact2Title": "billetudo no guarda nada",
+  "@captureVoiceCloudConsentFact2Title": {},
+  "captureVoiceCloudConsentFact2Body": "Ni el audio ni la transcripción se guardan, respaldan o sincronizan.",
+  "@captureVoiceCloudConsentFact2Body": {},
+  "captureVoiceCloudConsentFact3Title": "Tú confirmas antes de guardar",
+  "@captureVoiceCloudConsentFact3Title": {},
+  "captureVoiceCloudConsentFact3Body": "Lo dictado solo llena el formulario. Nada se registra hasta que lo revises.",
+  "@captureVoiceCloudConsentFact3Body": {},
+  "captureVoiceCloudConsentAllow": "Permitir y dictar",
+  "@captureVoiceCloudConsentAllow": {},
+  "captureVoiceCloudConsentReversible": "Puedes cambiar esta decisión cuando quieras en Ajustes.",
+  "@captureVoiceCloudConsentReversible": {},
+  "captureVoiceCloudConsentDeclinedMessage": "Elegiste que tu voz no se transcriba en la nube, y lo respetamos. Puedes cambiarlo en Ajustes. Escribir a mano funciona igual que siempre.",
+  "@captureVoiceCloudConsentDeclinedMessage": {},
+  "captureVoiceAmountAssumption": "Supusimos {amount} por «{spoken}»",
+  "@captureVoiceAmountAssumption": {
+    "description": "Pastilla bajo el monto cuando el parser infirió la magnitud de lo dictado.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "spoken": {
+        "type": "String"
+      }
+    }
+  },
+  "tutorialVoiceCaptureTitle": "Dicta un gasto sin teclear",
+  "@tutorialVoiceCaptureTitle": {},
+  "tutorialVoiceCapturePoint1Heading": "Mantén presionado el botón +",
+  "@tutorialVoiceCapturePoint1Heading": {},
+  "tutorialVoiceCapturePoint1Body": "En Inicio, deja el dedo un segundo sobre el botón + y empieza a hablar.",
+  "@tutorialVoiceCapturePoint1Body": {},
+  "tutorialVoiceCapturePoint2Heading": "Di la frase de corrido",
+  "@tutorialVoiceCapturePoint2Heading": {},
+  "tutorialVoiceCapturePoint2Body": "«Gasté veinte mil en almuerzo con Nequi». De ahí salen el monto, la categoría y la cuenta.",
+  "@tutorialVoiceCapturePoint2Body": {},
+  "tutorialVoiceCapturePoint3Heading": "Tú confirmas siempre",
+  "@tutorialVoiceCapturePoint3Heading": {},
+  "tutorialVoiceCapturePoint3Body": "La app llena el formulario con lo que entendió. Nada queda registrado hasta que tocas guardar.",
+  "@tutorialVoiceCapturePoint3Body": {},
+  "tutorialVoiceCaptureCta": "Probar ahora",
+  "@tutorialVoiceCaptureCta": {},
   "notificationsChannelRemindersName": "Recordatorios de pagos",
   "@notificationsChannelRemindersName": {},
   "notificationsChannelRemindersDescription": "Avisos de los pagos programados que tú configuraste.",

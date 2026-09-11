@@ -14,12 +14,25 @@ class AppFab extends StatelessWidget {
     required this.icon,
     required this.tooltip,
     required this.onPressed,
+    this.onLongPress,
+    this.longPressHint,
     super.key,
   });
 
   final IconData icon;
   final String tooltip;
   final VoidCallback onPressed;
+
+  /// The secondary gesture (`17-captura-voz.md` HU-02: press and hold to
+  /// dictate). `null` on every FAB that has none, which is all of them but
+  /// Inicio's.
+  final VoidCallback? onLongPress;
+
+  /// Already localized description of [onLongPress], exposed as a semantics
+  /// long-press hint. A hidden gesture that a screen reader cannot announce
+  /// is not discoverable at all — the minitutorial teaches it visually, this
+  /// is its accessible counterpart.
+  final String? longPressHint;
 
   static const double _size = 56;
 
@@ -45,12 +58,14 @@ class AppFab extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onPressed,
+          onLongPress: onLongPress,
           customBorder: const CircleBorder(),
           child: Tooltip(
             message: tooltip,
             child: Semantics(
               button: true,
               label: tooltip,
+              onLongPressHint: longPressHint,
               child: Icon(icon, size: 24, color: colors.onPrimary),
             ),
           ),

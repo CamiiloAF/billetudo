@@ -2,9 +2,9 @@ import 'package:billetudo/features/tutorials/domain/entities/tutorial_key.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('there are exactly 12 tutorials: 4 screen + 8 sub-flow', () {
-    expect(TutorialKey.values, hasLength(12));
-    expect(TutorialKey.screenTutorials, hasLength(4));
+  test('there are exactly 13 tutorials: 5 screen + 8 sub-flow', () {
+    expect(TutorialKey.values, hasLength(13));
+    expect(TutorialKey.screenTutorials, hasLength(5));
     expect(TutorialKey.subFlowTutorials, hasLength(8));
   });
 
