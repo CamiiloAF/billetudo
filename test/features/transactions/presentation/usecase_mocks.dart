@@ -10,6 +10,7 @@ import 'package:billetudo/features/transactions/domain/entities/transaction_filt
 import 'package:billetudo/features/transactions/domain/usecases/create_tag.dart';
 import 'package:billetudo/features/transactions/domain/usecases/create_transaction.dart';
 import 'package:billetudo/features/transactions/domain/usecases/delete_transaction.dart';
+import 'package:billetudo/features/transactions/domain/usecases/get_budget_period_at.dart';
 import 'package:billetudo/features/transactions/domain/usecases/get_transaction_edit_impact.dart';
 import 'package:billetudo/features/transactions/domain/usecases/restore_transaction.dart';
 import 'package:billetudo/features/transactions/domain/usecases/set_transaction_tags.dart';
@@ -49,10 +50,11 @@ class MockWatchAccounts extends Mock implements WatchAccounts {}
 class MockWatchBudgetPeriodOptions extends Mock
     implements WatchBudgetPeriodOptions {}
 
+class MockGetBudgetPeriodAt extends Mock implements GetBudgetPeriodAt {}
+
 class MockWatchCategories extends Mock implements WatchCategories {}
 
-class MockGetCategorySubtreeIds extends Mock
-    implements GetCategorySubtreeIds {}
+class MockGetCategorySubtreeIds extends Mock implements GetCategorySubtreeIds {}
 
 class MockAccountFilterPreferenceDatasource extends Mock
     implements AccountFilterPreferenceDatasource {}

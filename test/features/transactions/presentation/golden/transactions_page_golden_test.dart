@@ -52,11 +52,12 @@ AccountWithBalance _buildAccountWithBalance({
   String id = 'acc-1',
   String name = 'Efectivo',
   int balanceMinor = 450050,
+  AccountType type = AccountType.cash,
 }) {
   final account = Account(
     id: id,
     name: name,
-    type: AccountType.cash,
+    type: type,
     currency: 'COP',
     initialBalanceMinor: 0,
     archived: false,
@@ -67,7 +68,9 @@ AccountWithBalance _buildAccountWithBalance({
   return AccountWithBalance(
     account: account,
     balance: AccountBalance.fromBalance(
-        account: account, balanceMinor: balanceMinor),
+      account: account,
+      balanceMinor: balanceMinor,
+    ),
   );
 }
 
@@ -234,10 +237,18 @@ void main() {
   // HU-06a's Account Chip has 3 states (`s8uIq`): a single account's own
   // name, a count for 2+, and "Todas" for no filter. These two accounts back
   // the `accountIds` filter used by the "N cuentas" golden below — matching
-  // the ids `items` already reference (`acc-1`/`acc-2`).
+  // the ids `items` already reference (`acc-1`/`acc-2`). Distinct `type`s
+  // (cash vs. bank, same as `transacciones.md`'s "Cierre 2026-09-10" example)
+  // so these goldens actually exercise the per-`AccountType` icon-wrap tint
+  // (`bIg7X`/`rHkkz`) instead of both chips accidentally rendering identical
+  // because they'd otherwise share the same fixture-default type.
   final accountsForChip = [
     _buildAccountWithBalance(),
-    _buildAccountWithBalance(id: 'acc-2', name: 'Bancolombia'),
+    _buildAccountWithBalance(
+      id: 'acc-2',
+      name: 'Bancolombia',
+      type: AccountType.bank,
+    ),
   ];
 
   // Same 3 transactions as `items`, but pre-sorted by absolute amount
@@ -279,8 +290,9 @@ void main() {
       );
     });
 
-    testWidgets('with data: income, expense and transfer grouped ($suffix)',
-        (tester) async {
+    testWidgets('with data: income, expense and transfer grouped ($suffix)', (
+      tester,
+    ) async {
       await golden(
         tester,
         TransactionsListState(
@@ -293,8 +305,7 @@ void main() {
       );
     });
 
-    testWidgets(
-        'with data: long category name wraps to 2 lines, not overflow '
+    testWidgets('with data: long category name wraps to 2 lines, not overflow '
         '($suffix)', (tester) async {
       await golden(
         tester,
@@ -370,8 +381,9 @@ void main() {
     // Same chip, active state: `primary-soft`/`primary` pill showing the
     // chosen budget's own name, resolved from `state.budgetOptions` the same
     // way the Cuenta chip resolves a single selected account's name.
-    testWidgets('budget chip: budget selected, active ($suffix)',
-        (tester) async {
+    testWidgets('budget chip: budget selected, active ($suffix)', (
+      tester,
+    ) async {
       final budgetOption = BudgetPeriodOption(
         budgetId: 'budget-1',
         name: 'Comida',
@@ -399,6 +411,94 @@ void main() {
       );
     });
 
+    // `PeriodNavBar` (Fecha variant): a granular period other than the
+    // default "this month" (`hasDateFilter == true`) enables both chevrons —
+    // there is no lower bound on the past and this is a past month, so
+    // `datePeriodHasNext` is also true — and shows no `Budget Context Tag`.
+    testWidgets('period nav bar: date period, both arrows enabled ($suffix)', (
+      tester,
+    ) async {
+      await golden(
+        tester,
+        TransactionsListState(
+          status: TransactionsListStatus.ready,
+          items: items,
+          accounts: accounts,
+          filter: TransactionFilter(
+            datePeriod: DatePeriodFilter.granular(
+              DateGranularity.month,
+              DateTime(2026, 5),
+            ),
+          ),
+        ),
+        'period_nav_date_enabled_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    // `PeriodNavBar` (Fecha variant): a custom range (`DatePeriodFilter
+    // .custom`) has no granularity to step, so both chevrons render inert at
+    // `opacity:0.4` (`datePeriodHasPrevious`/`datePeriodHasNext` both false).
+    testWidgets(
+      'period nav bar: custom range, both arrows disabled ($suffix)',
+      (tester) async {
+        await golden(
+          tester,
+          TransactionsListState(
+            status: TransactionsListStatus.ready,
+            items: items,
+            accounts: accounts,
+            filter: TransactionFilter(
+              datePeriod: DatePeriodFilter.custom(
+                start: DateTime(2026, 7, 3),
+                end: DateTime(2026, 7, 9),
+              ),
+            ),
+          ),
+          'period_nav_custom_disabled_$suffix',
+          brightness: brightness,
+        );
+      },
+    );
+
+    // `PeriodNavBar` (Presupuesto variant), complement of "budget chip:
+    // budget selected, active" above: same `Budget Context Tag`, but with
+    // `DatePeriodFilter.budget`'s `hasPrevious`/`hasNext` both true so this
+    // covers the enabled chevrons — the existing golden only covers the
+    // disabled (both-bounds) look.
+    testWidgets(
+      'period nav bar: budget period, both arrows enabled ($suffix)',
+      (tester) async {
+        final budgetOption = BudgetPeriodOption(
+          budgetId: 'budget-1',
+          name: 'Comida',
+          icon: 'utensils',
+          start: DateTime(2026, 7),
+          endExclusive: DateTime(2026, 8),
+        );
+        await golden(
+          tester,
+          TransactionsListState(
+            status: TransactionsListStatus.ready,
+            items: items,
+            accounts: accounts,
+            budgetOptions: [budgetOption],
+            filter: TransactionFilter(
+              budgetPeriod: DatePeriodFilter.budget(
+                budgetId: 'budget-1',
+                start: DateTime(2026, 7),
+                endExclusive: DateTime(2026, 8),
+                hasPrevious: true,
+                hasNext: true,
+              ),
+            ),
+          ),
+          'period_nav_budget_enabled_$suffix',
+          brightness: brightness,
+        );
+      },
+    );
+
     // HU-06 sort by amount (`tigaH`/`Q8gSaB` in Pencil): once
     // `TransactionFilter.sortOrder` is an amount order, `TransactionsListView`
     // drops the date-grouped headers for a flat run of `Transaction Row`s
@@ -414,9 +514,7 @@ void main() {
           status: TransactionsListStatus.ready,
           items: itemsSortedByAmount,
           accounts: accounts,
-          filter: TransactionFilter(
-            sortOrder: TransactionSortOrder.amountDesc,
-          ),
+          filter: TransactionFilter(sortOrder: TransactionSortOrder.amountDesc),
         ),
         'sorted_by_amount_$suffix',
         brightness: brightness,
@@ -425,17 +523,16 @@ void main() {
 
     // Bugfix #11: exclusively-`expense` type filter -> the date group badge
     // shows the signed total ("-$57.000") instead of "2 movimientos".
-    testWidgets('group total shown: expense-only filter ($suffix)',
-        (tester) async {
+    testWidgets('group total shown: expense-only filter ($suffix)', (
+      tester,
+    ) async {
       await golden(
         tester,
         TransactionsListState(
           status: TransactionsListStatus.ready,
           items: expenseOnlyItems,
           accounts: accounts,
-          filter: TransactionFilter(
-            types: const {TransactionType.expense},
-          ),
+          filter: TransactionFilter(types: const {TransactionType.expense}),
         ),
         'group_total_expense_$suffix',
         brightness: brightness,
@@ -444,17 +541,16 @@ void main() {
 
     // Bugfix #11: exclusively-`income` type filter -> the date group badge
     // shows the signed total ("+$3.650.000") instead of "2 movimientos".
-    testWidgets('group total shown: income-only filter ($suffix)',
-        (tester) async {
+    testWidgets('group total shown: income-only filter ($suffix)', (
+      tester,
+    ) async {
       await golden(
         tester,
         TransactionsListState(
           status: TransactionsListStatus.ready,
           items: incomeOnlyItems,
           accounts: accounts,
-          filter: TransactionFilter(
-            types: const {TransactionType.income},
-          ),
+          filter: TransactionFilter(types: const {TransactionType.income}),
         ),
         'group_total_income_$suffix',
         brightness: brightness,
@@ -493,7 +589,8 @@ void main() {
       await expectLater(
         find.byType(TransactionsPage),
         matchesGoldenFile(
-            'goldens/transactions_page_undo_snackbar_$suffix.png'),
+          'goldens/transactions_page_undo_snackbar_$suffix.png',
+        ),
       );
     });
   }

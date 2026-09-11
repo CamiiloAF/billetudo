@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import 'scheduled_payment_reminder.dart';
+
 /// The nature of a scheduled payment. Mirrors `EntryType`, but is declared in
 /// this feature's own domain (not imported from Transactions) because a
 /// template is a standalone concept: it exists, can be edited and shows up
@@ -39,6 +41,7 @@ class ScheduledPayment extends Equatable {
     this.tombstonedAt,
     this.debtId,
     this.goalId,
+    this.reminderLeadDays,
   });
 
   /// UUID as text.
@@ -121,6 +124,18 @@ class ScheduledPayment extends Equatable {
   /// `ScheduledPaymentDraft.validated()`).
   final String? goalId;
 
+  /// Days before [nextDate] the user asked to be reminded (HU-08). `null`
+  /// means no reminder, which is the default — never "not configured yet".
+  /// Read it through [reminder] for the UI-facing option.
+  final int? reminderLeadDays;
+
+  /// The reminder option this template carries, or `null` when it has none.
+  ScheduledPaymentReminder? get reminder =>
+      ScheduledPaymentReminder.fromLeadDays(reminderLeadDays);
+
+  /// Whether this template should produce a local reminder notification.
+  bool get hasReminder => reminder != null;
+
   bool get isTransfer => type == ScheduledPaymentType.transfer;
   bool get isDeleted => tombstonedAt != null;
   bool get isDebtInstallment => debtId != null;
@@ -170,5 +185,6 @@ class ScheduledPayment extends Equatable {
         tombstonedAt,
         debtId,
         goalId,
+        reminderLeadDays,
       ];
 }

@@ -158,7 +158,7 @@ class UnifiedFiltersResult extends Equatable {
 ///  - **Exclusión mutua bidireccional Presupuesto ↔ Fecha**: selecting one
 ///    clears the other's active filter immediately (not just disables it),
 ///    in the very same method call that applies the new selection — see
-///    [selectBudget]/[granularitySelected]/[step]/[applyCustomDateRange].
+///    [selectBudget]/[granularitySelected]/[applyCustomDateRange].
 ///  - **Ocultación condicional de Presupuesto**: [UnifiedFiltersState.hasBudgets]
 ///    tells the widget tree whether to render that section at all.
 @injectable
@@ -267,14 +267,6 @@ class UnifiedFiltersCubit extends Cubit<UnifiedFiltersState> {
         ),
       );
 
-  /// Criterion #8: stepping the period clears any active Presupuesto filter.
-  void step(int direction) => emit(
-        state.copyWith(
-          datePeriod: state.datePeriod.stepped(direction),
-          clearSelectedBudget: true,
-        ),
-      );
-
   /// Criterion #8: choosing a custom range clears any active Presupuesto
   /// filter.
   void applyCustomDateRange({
@@ -352,6 +344,9 @@ class UnifiedFiltersCubit extends Cubit<UnifiedFiltersState> {
             budgetId: option.budgetId,
             start: option.start,
             endExclusive: option.endExclusive,
+            index: option.index,
+            hasPrevious: option.hasPrevious,
+            hasNext: option.hasNext,
           );
           break;
         }

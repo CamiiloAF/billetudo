@@ -31,6 +31,9 @@ class WatchBudgetPeriodOptions {
                   icon: entry.budget.icon,
                   start: entry.window.start,
                   endExclusive: entry.window.endExclusive,
+                  index: entry.window.index,
+                  hasPrevious: entry.window.hasPrevious,
+                  hasNext: entry.window.hasNext,
                 ),
               )
               .toList(),

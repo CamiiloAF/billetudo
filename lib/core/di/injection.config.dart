@@ -20,6 +20,30 @@ import 'package:billetudo/core/notes/domain/repositories/note_suggestions_reposi
     as _i509;
 import 'package:billetudo/core/notes/domain/usecases/get_note_suggestions.dart'
     as _i1061;
+import 'package:billetudo/core/notifications/data/local_notification_scheduler.dart'
+    as _i996;
+import 'package:billetudo/core/notifications/data/localized_notification_messages.dart'
+    as _i872;
+import 'package:billetudo/core/notifications/data/shared_preferences_notification_preferences.dart'
+    as _i275;
+import 'package:billetudo/core/notifications/domain/repositories/notification_messages.dart'
+    as _i598;
+import 'package:billetudo/core/notifications/domain/repositories/notification_preferences.dart'
+    as _i173;
+import 'package:billetudo/core/notifications/domain/repositories/notification_scheduler.dart'
+    as _i239;
+import 'package:billetudo/core/notifications/domain/usecases/ensure_notification_permission.dart'
+    as _i175;
+import 'package:billetudo/core/notifications/domain/usecases/initialize_notifications.dart'
+    as _i105;
+import 'package:billetudo/core/notifications/domain/usecases/open_notification_system_settings.dart'
+    as _i1052;
+import 'package:billetudo/core/notifications/domain/usecases/read_notification_permission.dart'
+    as _i442;
+import 'package:billetudo/core/notifications/domain/usecases/read_notification_preferences.dart'
+    as _i308;
+import 'package:billetudo/core/notifications/domain/usecases/set_notification_kind_enabled.dart'
+    as _i860;
 import 'package:billetudo/core/preferences/account_filter_preference_datasource.dart'
     as _i248;
 import 'package:billetudo/core/preferences/balance_carousel_cubit.dart' as _i38;
@@ -307,6 +331,8 @@ import 'package:billetudo/features/budgets/domain/usecases/get_archived_budgets.
     as _i829;
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart'
     as _i871;
+import 'package:billetudo/features/budgets/domain/usecases/get_budget_period_window_at.dart'
+    as _i625;
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.dart'
     as _i559;
 import 'package:billetudo/features/budgets/domain/usecases/get_pending_budget_adjustment.dart'
@@ -695,6 +721,16 @@ import 'package:billetudo/features/import_export/presentation/cubit/restore_cubi
     as _i641;
 import 'package:billetudo/features/import_export/presentation/cubit/save_copy_cubit.dart'
     as _i401;
+import 'package:billetudo/features/improvement/domain/usecases/watch_goal_milestone_insights.dart'
+    as _i1051;
+import 'package:billetudo/features/improvement/domain/usecases/watch_insights.dart'
+    as _i493;
+import 'package:billetudo/features/improvement/domain/usecases/watch_pending_confirmation_insights.dart'
+    as _i769;
+import 'package:billetudo/features/improvement/domain/usecases/watch_upcoming_charge_insights.dart'
+    as _i957;
+import 'package:billetudo/features/improvement/presentation/cubit/insights_cubit.dart'
+    as _i563;
 import 'package:billetudo/features/onboarding/domain/usecases/complete_onboarding.dart'
     as _i522;
 import 'package:billetudo/features/onboarding/domain/usecases/resolve_default_currency_for_locale.dart'
@@ -743,6 +779,8 @@ import 'package:billetudo/features/scheduled_payments/domain/repositories/schedu
     as _i680;
 import 'package:billetudo/features/scheduled_payments/domain/usecases/advance_scheduled_occurrence.dart'
     as _i325;
+import 'package:billetudo/features/scheduled_payments/domain/usecases/cancel_scheduled_payment_reminder.dart'
+    as _i288;
 import 'package:billetudo/features/scheduled_payments/domain/usecases/confirm_scheduled_occurrence.dart'
     as _i1034;
 import 'package:billetudo/features/scheduled_payments/domain/usecases/create_scheduled_payment.dart'
@@ -777,6 +815,8 @@ import 'package:billetudo/features/scheduled_payments/domain/usecases/skip_sched
     as _i97;
 import 'package:billetudo/features/scheduled_payments/domain/usecases/snooze_scheduled_occurrence.dart'
     as _i1009;
+import 'package:billetudo/features/scheduled_payments/domain/usecases/sync_scheduled_payment_reminders.dart'
+    as _i647;
 import 'package:billetudo/features/scheduled_payments/domain/usecases/undo_skip_scheduled_occurrence.dart'
     as _i964;
 import 'package:billetudo/features/scheduled_payments/domain/usecases/undo_snooze_scheduled_occurrence.dart'
@@ -825,6 +865,8 @@ import 'package:billetudo/features/settings/domain/usecases/set_zero_based_enabl
     as _i636;
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart'
     as _i270;
+import 'package:billetudo/features/settings/presentation/cubit/notification_settings_cubit.dart'
+    as _i733;
 import 'package:billetudo/features/transactions/data/datasources/tags_local_datasource.dart'
     as _i1008;
 import 'package:billetudo/features/transactions/data/datasources/transactions_local_datasource.dart'
@@ -843,6 +885,8 @@ import 'package:billetudo/features/transactions/domain/usecases/create_transacti
     as _i990;
 import 'package:billetudo/features/transactions/domain/usecases/delete_transaction.dart'
     as _i612;
+import 'package:billetudo/features/transactions/domain/usecases/get_budget_period_at.dart'
+    as _i788;
 import 'package:billetudo/features/transactions/domain/usecases/get_transaction_edit_impact.dart'
     as _i604;
 import 'package:billetudo/features/transactions/domain/usecases/has_any_transaction.dart'
@@ -1030,11 +1074,16 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i133.LoadIssuerRules(gh<_i925.IssuerRulesRepository>()));
     gh.lazySingleton<_i312.SpeechRecognizer>(
         () => _i159.SpeechToTextRecognizer());
+    gh.lazySingleton<_i598.NotificationMessages>(
+        () => const _i872.LocalizedNotificationMessages());
     gh.lazySingleton<_i867.MappingTemplateRepository>(
         () => _i1025.MappingTemplateRepositoryImpl(
               gh<_i476.MappingTemplatesLocalDatasource>(),
               gh<_i474.CrashReporter>(),
             ));
+    gh.lazySingleton<_i173.NotificationPreferences>(() =>
+        _i275.SharedPreferencesNotificationPreferences(
+            gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i190.SyncOperationUploader>(
         () => _i257.SupabaseOperationUploader(gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i718.LocalDataOwnershipDatasource>(
@@ -1063,6 +1112,10 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i334.StopVoiceCapture(gh<_i312.SpeechRecognizer>()));
     gh.factory<_i853.WatchVoiceCaptureUpdates>(
         () => _i853.WatchVoiceCaptureUpdates(gh<_i312.SpeechRecognizer>()));
+    gh.factory<_i308.ReadNotificationPreferences>(() =>
+        _i308.ReadNotificationPreferences(gh<_i173.NotificationPreferences>()));
+    gh.factory<_i860.SetNotificationKindEnabled>(() =>
+        _i860.SetNotificationKindEnabled(gh<_i173.NotificationPreferences>()));
     gh.lazySingleton<_i967.DataOwnershipClaimer>(() => registerModule
         .dataOwnershipClaimer(gh<_i718.LocalDataOwnershipDatasource>()));
     gh.lazySingleton<_i765.BackupIdCollisionResolver>(() => registerModule
@@ -1162,6 +1215,8 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i725.CaptureMethodChannelDatasource>()));
     gh.lazySingleton<_i38.BalanceCarouselCubit>(() => _i38.BalanceCarouselCubit(
         gh<_i345.BalanceCarouselPreferenceDatasource>()));
+    gh.lazySingleton<_i239.NotificationScheduler>(() =>
+        _i996.LocalNotificationScheduler(gh<_i598.NotificationMessages>()));
     gh.lazySingleton<_i395.AiInsightConversationRepository>(
         () => _i109.AiInsightConversationRepositoryImpl(
               gh<_i493.AiInsightConversationLocalDatasource>(),
@@ -1216,20 +1271,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i325.AdvanceScheduledOccurrence>(() =>
         _i325.AdvanceScheduledOccurrence(
             gh<_i680.ScheduledPaymentRepository>()));
-    gh.factory<_i1034.ConfirmScheduledOccurrence>(() =>
-        _i1034.ConfirmScheduledOccurrence(
-            gh<_i680.ScheduledPaymentRepository>()));
-    gh.factory<_i242.CreateScheduledPayment>(() =>
-        _i242.CreateScheduledPayment(gh<_i680.ScheduledPaymentRepository>()));
     gh.factory<_i877.CreateTag>(
         () => _i877.CreateTag(gh<_i680.ScheduledPaymentRepository>()));
-    gh.factory<_i636.DeleteScheduledPayment>(() =>
-        _i636.DeleteScheduledPayment(gh<_i680.ScheduledPaymentRepository>()));
     gh.factory<_i898.DiscardUnconfirmedAdvanceOccurrence>(() =>
         _i898.DiscardUnconfirmedAdvanceOccurrence(
-            gh<_i680.ScheduledPaymentRepository>()));
-    gh.factory<_i747.GenerateDueScheduledPayments>(() =>
-        _i747.GenerateDueScheduledPayments(
             gh<_i680.ScheduledPaymentRepository>()));
     gh.factory<_i274.GetFinishedScheduledPayments>(() =>
         _i274.GetFinishedScheduledPayments(
@@ -1251,19 +1296,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i889.GetTags(gh<_i680.ScheduledPaymentRepository>()));
     gh.factory<_i452.SetScheduledPaymentTags>(() =>
         _i452.SetScheduledPaymentTags(gh<_i680.ScheduledPaymentRepository>()));
-    gh.factory<_i97.SkipScheduledOccurrence>(() =>
-        _i97.SkipScheduledOccurrence(gh<_i680.ScheduledPaymentRepository>()));
-    gh.factory<_i1009.SnoozeScheduledOccurrence>(() =>
-        _i1009.SnoozeScheduledOccurrence(
-            gh<_i680.ScheduledPaymentRepository>()));
-    gh.factory<_i964.UndoSkipScheduledOccurrence>(() =>
-        _i964.UndoSkipScheduledOccurrence(
-            gh<_i680.ScheduledPaymentRepository>()));
-    gh.factory<_i319.UndoSnoozeScheduledOccurrence>(() =>
-        _i319.UndoSnoozeScheduledOccurrence(
-            gh<_i680.ScheduledPaymentRepository>()));
-    gh.factory<_i843.UpdateScheduledPayment>(() =>
-        _i843.UpdateScheduledPayment(gh<_i680.ScheduledPaymentRepository>()));
     gh.factory<_i897.SyncLogCubit>(() => _i897.SyncLogCubit(
           gh<_i77.WatchSyncLog>(),
           gh<_i177.ExportSyncLog>(),
@@ -1277,8 +1309,6 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i454.SupabaseClient>(),
               gh<_i413.ResolveBackupIdConflicts>(),
             ));
-    gh.factory<_i504.SnoozeSheetCubit>(
-        () => _i504.SnoozeSheetCubit(gh<_i1009.SnoozeScheduledOccurrence>()));
     gh.lazySingleton<_i108.ImportBatchRepository>(
         () => _i27.ImportBatchRepositoryImpl(
               gh<_i545.ImportBatchesLocalDatasource>(),
@@ -1325,11 +1355,10 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i49.CsvWriterDatasource>(),
           gh<_i672.ZipPackagerDatasource>(),
         ));
-    gh.factory<_i793.PendingOccurrencesCubit>(
-        () => _i793.PendingOccurrencesCubit(
-              gh<_i551.GetPendingOccurrences>(),
-              gh<_i964.UndoSkipScheduledOccurrence>(),
-              gh<_i319.UndoSnoozeScheduledOccurrence>(),
+    gh.factory<_i957.WatchUpcomingChargeInsights>(
+        () => _i957.WatchUpcomingChargeInsights(
+              gh<_i265.GetScheduledPayments>(),
+              gh<_i450.ProjectUpcomingOccurrences>(),
             ));
     gh.factory<_i184.GetVoiceCaptureAvailability>(
         () => _i184.GetVoiceCaptureAvailability(
@@ -1415,6 +1444,13 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i666.SyncLogRepository>(),
               gh<_i474.CrashReporter>(),
             ));
+    gh.factory<_i647.SyncScheduledPaymentReminders>(
+        () => _i647.SyncScheduledPaymentReminders(
+              gh<_i680.ScheduledPaymentRepository>(),
+              gh<_i239.NotificationScheduler>(),
+              gh<_i173.NotificationPreferences>(),
+              gh<_i598.NotificationMessages>(),
+            ));
     gh.lazySingleton<_i691.SyncStatusRepository>(
         () => _i975.SyncStatusRepositoryImpl(
               gh<_i130.SyncStatusSource>(),
@@ -1493,6 +1529,21 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i795.BudgetCategoryScopeResolver>(),
           gh<_i474.CrashReporter>(),
         ));
+    gh.factory<_i769.WatchPendingConfirmationInsights>(() =>
+        _i769.WatchPendingConfirmationInsights(
+            gh<_i551.GetPendingOccurrences>()));
+    gh.factory<_i175.EnsureNotificationPermission>(() =>
+        _i175.EnsureNotificationPermission(gh<_i239.NotificationScheduler>()));
+    gh.factory<_i105.InitializeNotifications>(
+        () => _i105.InitializeNotifications(gh<_i239.NotificationScheduler>()));
+    gh.factory<_i1052.OpenNotificationSystemSettings>(() =>
+        _i1052.OpenNotificationSystemSettings(
+            gh<_i239.NotificationScheduler>()));
+    gh.factory<_i442.ReadNotificationPermission>(() =>
+        _i442.ReadNotificationPermission(gh<_i239.NotificationScheduler>()));
+    gh.factory<_i288.CancelScheduledPaymentReminder>(() =>
+        _i288.CancelScheduledPaymentReminder(
+            gh<_i239.NotificationScheduler>()));
     gh.lazySingleton<_i696.GoalRepository>(() => _i1066.GoalRepositoryImpl(
           gh<_i822.GoalsLocalDatasource>(),
           gh<_i903.GoalProgressCalculator>(),
@@ -1542,6 +1593,11 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i723.NetWorthCubit>(
         () => _i723.NetWorthCubit(gh<_i1003.WatchNetWorthReport>()));
+    gh.factory<_i636.DeleteScheduledPayment>(() => _i636.DeleteScheduledPayment(
+          gh<_i680.ScheduledPaymentRepository>(),
+          gh<_i288.CancelScheduledPaymentReminder>(),
+          gh<_i647.SyncScheduledPaymentReminders>(),
+        ));
     gh.factory<_i99.CategoryFormCubit>(() => _i99.CategoryFormCubit(
           gh<_i885.CreateCategory>(),
           gh<_i275.UpdateCategory>(),
@@ -1552,12 +1608,6 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.lazySingleton<_i418.BackupRepository>(
         () => _i393.BackupRepositoryImpl(gh<_i716.BackupJsonDatasource>()));
-    gh.factory<_i458.ScheduledPaymentsListCubit>(
-        () => _i458.ScheduledPaymentsListCubit(
-              gh<_i265.GetScheduledPayments>(),
-              gh<_i747.GenerateDueScheduledPayments>(),
-              gh<_i274.GetFinishedScheduledPayments>(),
-            ));
     gh.lazySingleton<_i913.AuthRepository>(() => _i13.AuthRepositoryImpl(
           gh<_i235.GoogleAuthDatasource>(),
           gh<_i22.AppleAuthDatasource>(),
@@ -1589,6 +1639,43 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i654.TransactionRepository>(),
           gh<_i504.HomeInsightEventRepository>(),
         ));
+    gh.factory<_i1034.ConfirmScheduledOccurrence>(
+        () => _i1034.ConfirmScheduledOccurrence(
+              gh<_i680.ScheduledPaymentRepository>(),
+              gh<_i647.SyncScheduledPaymentReminders>(),
+            ));
+    gh.factory<_i242.CreateScheduledPayment>(() => _i242.CreateScheduledPayment(
+          gh<_i680.ScheduledPaymentRepository>(),
+          gh<_i647.SyncScheduledPaymentReminders>(),
+        ));
+    gh.factory<_i747.GenerateDueScheduledPayments>(
+        () => _i747.GenerateDueScheduledPayments(
+              gh<_i680.ScheduledPaymentRepository>(),
+              gh<_i647.SyncScheduledPaymentReminders>(),
+            ));
+    gh.factory<_i97.SkipScheduledOccurrence>(() => _i97.SkipScheduledOccurrence(
+          gh<_i680.ScheduledPaymentRepository>(),
+          gh<_i647.SyncScheduledPaymentReminders>(),
+        ));
+    gh.factory<_i1009.SnoozeScheduledOccurrence>(
+        () => _i1009.SnoozeScheduledOccurrence(
+              gh<_i680.ScheduledPaymentRepository>(),
+              gh<_i647.SyncScheduledPaymentReminders>(),
+            ));
+    gh.factory<_i964.UndoSkipScheduledOccurrence>(
+        () => _i964.UndoSkipScheduledOccurrence(
+              gh<_i680.ScheduledPaymentRepository>(),
+              gh<_i647.SyncScheduledPaymentReminders>(),
+            ));
+    gh.factory<_i319.UndoSnoozeScheduledOccurrence>(
+        () => _i319.UndoSnoozeScheduledOccurrence(
+              gh<_i680.ScheduledPaymentRepository>(),
+              gh<_i647.SyncScheduledPaymentReminders>(),
+            ));
+    gh.factory<_i843.UpdateScheduledPayment>(() => _i843.UpdateScheduledPayment(
+          gh<_i680.ScheduledPaymentRepository>(),
+          gh<_i647.SyncScheduledPaymentReminders>(),
+        ));
     gh.factory<_i101.FirstLaunchOfflineCubit>(
         () => _i101.FirstLaunchOfflineCubit(gh<_i693.SeedDefaultCategories>()));
     gh.factory<_i1061.GetLinkableScheduledPayments>(() =>
@@ -1614,6 +1701,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i829.GetArchivedBudgets(gh<_i1023.BudgetRepository>()));
     gh.factory<_i871.GetBudgetById>(
         () => _i871.GetBudgetById(gh<_i1023.BudgetRepository>()));
+    gh.factory<_i625.GetBudgetPeriodWindowAt>(
+        () => _i625.GetBudgetPeriodWindowAt(gh<_i1023.BudgetRepository>()));
     gh.factory<_i641.GetPendingBudgetAdjustment>(
         () => _i641.GetPendingBudgetAdjustment(gh<_i1023.BudgetRepository>()));
     gh.factory<_i458.GetZeroBasedSummary>(
@@ -1692,6 +1781,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i783.ExportAccountsCategoriesCsv>(),
           gh<_i480.ZipExportFiles>(),
         ));
+    gh.factory<_i504.SnoozeSheetCubit>(
+        () => _i504.SnoozeSheetCubit(gh<_i1009.SnoozeScheduledOccurrence>()));
     gh.factory<_i154.CancelAccountConflict>(
         () => _i154.CancelAccountConflict(gh<_i913.AuthRepository>()));
     gh.factory<_i498.DeleteAccount>(
@@ -1748,6 +1839,12 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i276.WatchTransactionDetail(gh<_i654.TransactionRepository>()));
     gh.factory<_i832.WatchTransactions>(
         () => _i832.WatchTransactions(gh<_i654.TransactionRepository>()));
+    gh.factory<_i793.PendingOccurrencesCubit>(
+        () => _i793.PendingOccurrencesCubit(
+              gh<_i551.GetPendingOccurrences>(),
+              gh<_i964.UndoSkipScheduledOccurrence>(),
+              gh<_i319.UndoSnoozeScheduledOccurrence>(),
+            ));
     gh.factory<_i136.AiReportCubit>(() => _i136.AiReportCubit(
           gh<_i494.ReportAiMessage>(),
           gh<_i1026.AiClientContextProvider>(),
@@ -1858,6 +1955,14 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i1023.BudgetRepository>(),
               gh<_i487.AppSettingsRepository>(),
             ));
+    gh.factory<_i733.NotificationSettingsCubit>(
+        () => _i733.NotificationSettingsCubit(
+              gh<_i308.ReadNotificationPreferences>(),
+              gh<_i860.SetNotificationKindEnabled>(),
+              gh<_i647.SyncScheduledPaymentReminders>(),
+              gh<_i442.ReadNotificationPermission>(),
+              gh<_i1052.OpenNotificationSystemSettings>(),
+            ));
     gh.factory<_i489.MergeCubit>(
         () => _i489.MergeCubit(gh<_i916.MergeLocalData>()));
     gh.factory<_i97.CreateGoal>(() => _i97.CreateGoal(
@@ -1897,6 +2002,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i598.SendAiTurn(gh<_i526.AiRepository>()));
     gh.factory<_i29.GoalsListCubit>(
         () => _i29.GoalsListCubit(gh<_i529.WatchGoals>()));
+    gh.factory<_i1051.WatchGoalMilestoneInsights>(
+        () => _i1051.WatchGoalMilestoneInsights(gh<_i529.WatchGoals>()));
     gh.factory<_i428.DebtDetailCubit>(() => _i428.DebtDetailCubit(
           gh<_i1003.WatchDebtDetail>(),
           gh<_i255.DebtInterestCalculator>(),
@@ -1989,6 +2096,14 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i895.WatchHelpEnabled>(),
           gh<_i773.TutorialNavigationGuard>(),
         ));
+    gh.factory<_i788.GetBudgetPeriodAt>(
+        () => _i788.GetBudgetPeriodAt(gh<_i625.GetBudgetPeriodWindowAt>()));
+    gh.factory<_i458.ScheduledPaymentsListCubit>(
+        () => _i458.ScheduledPaymentsListCubit(
+              gh<_i265.GetScheduledPayments>(),
+              gh<_i747.GenerateDueScheduledPayments>(),
+              gh<_i274.GetFinishedScheduledPayments>(),
+            ));
     gh.factory<_i675.SignOutWithLocalDataChoice>(
         () => _i675.SignOutWithLocalDataChoice(
               gh<_i1066.SignOut>(),
@@ -2079,6 +2194,17 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i14.UnarchiveGoal>(),
           gh<_i837.WatchAccounts>(),
         ));
+    gh.lazySingleton<_i536.TransactionsListCubit>(
+        () => _i536.TransactionsListCubit(
+              gh<_i832.WatchTransactions>(),
+              gh<_i612.DeleteTransaction>(),
+              gh<_i177.RestoreTransaction>(),
+              gh<_i837.WatchAccounts>(),
+              gh<_i479.WatchBudgetPeriodOptions>(),
+              gh<_i788.GetBudgetPeriodAt>(),
+              gh<_i248.AccountFilterPreferenceDatasource>(),
+              gh<_i941.GetCategorySubtreeIds>(),
+            ));
     gh.singleton<_i629.AuthCubit>(() => _i629.AuthCubit(
           gh<_i716.WatchAuthSession>(),
           gh<_i1066.SignOut>(),
@@ -2135,15 +2261,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i237.CreateFullBackup>(),
           gh<_i936.MarkBackupSaved>(),
         ));
-    gh.factory<_i117.ScheduledPaymentFormCubit>(
-        () => _i117.ScheduledPaymentFormCubit(
-              gh<_i242.CreateScheduledPayment>(),
-              gh<_i843.UpdateScheduledPayment>(),
-              gh<_i470.GetScheduledPaymentDetail>(),
-              gh<_i452.SetScheduledPaymentTags>(),
-              gh<_i636.DeleteScheduledPayment>(),
-              gh<_i837.WatchAccounts>(),
-            ));
     gh.factory<_i1057.ResolveAiToolCall>(() => _i1057.ResolveAiToolCall(
           gh<_i832.WatchTransactions>(),
           gh<_i645.WatchCategoryBreakdownReport>(),
@@ -2187,16 +2304,12 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i805.ReportsDashboardCubit>(
         () => _i805.ReportsDashboardCubit(gh<_i118.WatchReportsDashboard>()));
-    gh.lazySingleton<_i536.TransactionsListCubit>(
-        () => _i536.TransactionsListCubit(
-              gh<_i832.WatchTransactions>(),
-              gh<_i612.DeleteTransaction>(),
-              gh<_i177.RestoreTransaction>(),
-              gh<_i837.WatchAccounts>(),
-              gh<_i479.WatchBudgetPeriodOptions>(),
-              gh<_i248.AccountFilterPreferenceDatasource>(),
-              gh<_i941.GetCategorySubtreeIds>(),
-            ));
+    gh.factory<_i493.WatchInsights>(() => _i493.WatchInsights(
+          gh<_i957.WatchUpcomingChargeInsights>(),
+          gh<_i769.WatchPendingConfirmationInsights>(),
+          gh<_i1051.WatchGoalMilestoneInsights>(),
+          gh<_i173.NotificationPreferences>(),
+        ));
     gh.factory<_i724.TransactionFormCubit>(() => _i724.TransactionFormCubit(
           gh<_i990.CreateTransaction>(),
           gh<_i885.UpdateTransaction>(),
@@ -2212,11 +2325,23 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i554.DebtPaymentTogglePreferenceDatasource>(),
           gh<_i382.GetCategory>(),
         ));
+    gh.factory<_i117.ScheduledPaymentFormCubit>(
+        () => _i117.ScheduledPaymentFormCubit(
+              gh<_i242.CreateScheduledPayment>(),
+              gh<_i843.UpdateScheduledPayment>(),
+              gh<_i470.GetScheduledPaymentDetail>(),
+              gh<_i452.SetScheduledPaymentTags>(),
+              gh<_i636.DeleteScheduledPayment>(),
+              gh<_i837.WatchAccounts>(),
+              gh<_i175.EnsureNotificationPermission>(),
+            ));
     gh.factory<_i531.AccountsListCubit>(() => _i531.AccountsListCubit(
           gh<_i837.WatchAccounts>(),
           gh<_i902.WatchAccountsOverview>(),
           gh<_i787.ReorderAccounts>(),
         ));
+    gh.factory<_i563.InsightsCubit>(
+        () => _i563.InsightsCubit(gh<_i493.WatchInsights>()));
     gh.factory<_i433.AiChatCubit>(() => _i433.AiChatCubit(
           gh<_i61.ResumeOrCreateAiConversation>(),
           gh<_i196.StartNewAiConversation>(),

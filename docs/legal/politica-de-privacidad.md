@@ -1,11 +1,58 @@
+<!--
+  ================================================================
+  BORRADOR v1.8 — REDACTADO, NO PUBLICADO.
+  No ejecutar `web/build_site.py` con esta versión ni desplegar el
+  sitio hasta que la captura por voz y la lectura de avisos del banco
+  estén en el build que llega al usuario (TestFlight / Internal
+  Testing cuenta como "llega al usuario").
+  Una política que describe funciones que el binario no tiene es una
+  declaración falsa, igual que una que omite las que sí tiene.
+  Detalle y responsables: docs/legal/checklist-fase-2.md §9.
+  ================================================================
+-->
+
 # Política de privacidad de billetudo
 
-**Versión 1.7** · **Última actualización: 1 de septiembre de 2026** · **En vigor desde: 3 de septiembre de 2026**
+**Versión 1.8** · **Última actualización: 9 de septiembre de 2026** · **En vigor desde: `[VERIFICAR: fecha de publicación — se fija cuando el build con captura por voz y lectura de avisos bancarios salga a TestFlight / Internal Testing, y la política se publica ANTES de ese envío]`**
 
 Esta política explica qué datos maneja billetudo, dónde viven, quién más los
 toca y qué puedes hacer al respecto. Está escrita para que se entienda leyéndola
 una vez. Si algo no queda claro, escríbenos a
 camiiloagudelo92@gmail.com.
+
+### Qué cambió en la versión 1.8
+
+Llegan las dos primeras funciones de billetudo que necesitan un **permiso del
+sistema**. Hasta ahora la app no pedía ninguno; esta versión existe justamente
+para contarlo antes de que ocurra.
+
+- **Puedes dictar un gasto** en vez de teclearlo. Está explicado entero en la
+  [sección 18.1](#181-dictar-un-gasto), incluida la parte incómoda: si tu
+  teléfono no puede convertir voz en texto por su cuenta, ese trabajo lo hace un
+  servidor de Apple o de Google.
+- **En Android, y solo si tú lo activas, la app puede leer los avisos de compra
+  de las apps de banco que elijas de una lista.** Es el permiso más invasivo que
+  existe en un teléfono y le dedicamos la
+  [sección 18.2](#182-leer-los-avisos-de-tu-banco-solo-android) completa: qué se
+  lee, qué se guarda, qué **no** se guarda nunca y cómo apagarlo.
+- **Aparece un dato de otras personas que antes no existía.** Cuando alguien te
+  transfiere dinero, algunos bancos escriben su nombre completo en el aviso. Ese
+  nombre se guarda como el "comercio" del movimiento y **sincroniza con tu
+  cuenta**. Lo decimos con todas las letras en las secciones 4.6 y 12.
+- **Recordatorios de pagos programados**, que **tu propio teléfono** programa. No
+  hay servidor, no hay Firebase y no hay tokens de notificación push
+  (sección 18.3).
+- **Sección 14 reescrita entera.** Antes decía que la app no pide ningún permiso
+  sensible. Eso deja de ser cierto y ahora hay una lista completa, permiso por
+  permiso, con qué pasa si lo niegas.
+- **Nueva base legal:** tu **consentimiento explícito y revocable** para dictar y
+  para leer avisos bancarios (sección 6). No van bajo "ejecución del contrato":
+  son tratamientos separables que tú enciendes a propósito.
+- **Sigue sin haber OCR de recibos.** No leemos fotos, no pedimos cámara y no
+  pedimos galería (sección 19).
+
+Si tu versión de la app todavía no muestra estas funciones, nada de la sección
+18 está ocurriendo en tu teléfono.
 
 ### Qué cambió en la versión 1.7
 
@@ -108,6 +155,11 @@ está ocurriendo en tu teléfono.
 - **Tus notas no van al asistente, salvo que tú enciendas un interruptor.**
   Viene apagado de fábrica, está en Ajustes y lo puedes apagar cuando quieras
   (sección 17.7).
+- **Puedes dictar un gasto y, en Android, dejar que la app lea los avisos de tu
+  banco.** Las dos funciones son opcionales, las activas tú, y **nada se
+  registra sin que lo confirmes**. Del audio y del texto del aviso **no
+  guardamos nada**: solo los datos que la app entendió (monto, comercio, fecha).
+  Sección 18.
 
 ---
 
@@ -130,9 +182,10 @@ está ocurriendo en tu teléfono.
 15. [Seguridad](#15-seguridad)
 16. [Menores de edad](#16-menores-de-edad)
 17. [El asistente con inteligencia artificial](#17-el-asistente-con-inteligencia-artificial)
-18. [Lo que billetudo hoy no hace](#18-lo-que-billetudo-hoy-no-hace)
-19. [Cambios a esta política](#19-cambios-a-esta-política)
-20. [Contacto](#20-contacto)
+18. [Cómo billetudo captura tus gastos](#18-cómo-billetudo-captura-tus-gastos)
+19. [Lo que billetudo hoy no hace](#19-lo-que-billetudo-hoy-no-hace)
+20. [Cambios a esta política](#20-cambios-a-esta-política)
+21. [Contacto](#21-contacto)
 
 ---
 
@@ -202,6 +255,10 @@ sesión.
 | **Deudas** | Nombre, si te deben o debes, monto, tasa, **nombre de la contraparte** (la persona o entidad), fecha de vencimiento, movimientos del historial y sus **notas** |
 | **Pagos programados** | Cuenta, categoría, monto, frecuencia, fechas y **notas** |
 | **Importaciones** | El **nombre del archivo** que importaste y cuántas filas entraron |
+| **Últimos 4 dígitos de tu tarjeta** | Si los registras en una cuenta, se usan para adivinar a qué cuenta pertenece un aviso del banco (sección 18.2) |
+| **Recordatorios** | Cuántos días antes de un pago programado quieres que el teléfono te avise |
+| **Capturas pendientes** | Lo que la app entendió de un aviso de tu banco y todavía no has confirmado. Detalle completo en la [sección 4.6](#46-lo-que-la-app-extrae-de-los-avisos-de-tu-banco-solo-android) |
+| **Lo que la app aprende de ti** | Que a un comercio ("EXITO") tú le asignas siempre una categoría ("Mercado"), para pre-llenarla la próxima vez. Es una lista de pares comercio → categoría, y nada más |
 | **Preferencias** | Tema claro/oscuro, moneda, modo de presupuesto, el orden en que ordenaste los accesos rápidos de Inicio, qué tutoriales ya viste |
 
 Ten presente que las **notas** son campos de texto libre: ahí cabe lo que tú
@@ -279,6 +336,55 @@ asistente porque te pareció ofensivo o equivocado, ese mensaje —solo ese— s
 guarda en nuestro servidor para que podamos revisarlo. La app te lo advierte
 antes de enviarlo. Los detalles están en la
 [sección 17.5](#175-qué-se-guarda-y-dónde).
+
+### 4.6 Lo que la app extrae de los avisos de tu banco (solo Android)
+
+Esto aplica **únicamente** si activaste la lectura de avisos bancarios
+(sección 18.2). Si no la activaste, nada de esta sección existe en tu teléfono.
+
+Cuando la app reconoce que un aviso es un movimiento de dinero, guarda una
+**captura pendiente**. Una captura pendiente contiene esto, y **nada más que
+esto**:
+
+| Qué se guarda | Ejemplo |
+|---|---|
+| Monto y moneda | `45.900` · `COP` |
+| Si parece gasto o ingreso | gasto |
+| Fecha y hora del movimiento | 3 de septiembre, 14:12 |
+| **Comercio o contraparte**, tal como venía escrito en el aviso | `EXITO CALLE 80` |
+| Los **últimos 4 dígitos** que mencionó el aviso | `1234` |
+| Qué app envió el aviso | `com.nu.production` |
+| Qué regla de lectura lo interpretó | `nu-compra-tarjeta` |
+| Si ya la confirmaste o descartaste, y a qué movimiento dio lugar | — |
+
+**El texto del aviso no está en esa lista, y no es un olvido.** En la base de
+datos de billetudo **no existe ninguna casilla donde quepa** el mensaje que te
+mandó tu banco: ni completa, ni recortada, ni por un rato. La app lee el aviso,
+saca esos campos y descarta el texto en el acto. Puedes comprobarlo tú: es una
+decisión de cómo está construida la base de datos, no una promesa nuestra.
+
+Esa decisión tiene una consecuencia que preferimos decirte: **si la app entendió
+mal, no tienes el mensaje original contra el cual comparar.** Lo aceptamos a
+propósito. El texto de tus avisos bancarios sería el dato más sensible de toda
+la app —ahí caben códigos de seguridad, nombres y saldos— y preferimos no
+tenerlo.
+
+#### El nombre de otras personas
+
+Cuando alguien te transfiere dinero, **algunos bancos escriben su nombre
+completo** en el aviso: *"Te llegó dinero de DANIELA TORO VALENCIA"*. Ese nombre
+es justo lo que la app extrae como "comercio", así que **se guarda como parte de
+la captura y, si iniciaste sesión, se sincroniza a tu cuenta en la nube**,
+exactamente igual que si tú lo hubieras escrito a mano.
+
+- Otros bancos lo enmascaran, y entonces no hay ningún nombre que guardar.
+- No podemos evitarlo desde la app: el nombre viene dentro del aviso.
+- **Puedes editarlo o descartar la captura** antes de confirmarla, y puedes
+  borrar todas las capturas de una vez (sección 18.4).
+
+Es información de una persona que probablemente no usa billetudo, así que
+preferimos que lo sepas antes y no después. Ver también la
+[sección 12](#12-datos-de-otras-personas-que-tú-registras).
 
 ---
 
@@ -367,6 +473,7 @@ de frente porque preferimos eso a esconderlo en un párrafo.
 | **PowerSync** | Los mismos datos, en tránsito, para sincronizarlos | Solo con sesión iniciada |
 | **Sentry** | Diagnósticos técnicos de fallos | Siempre que ocurra un error |
 | **Google / Apple** | Los datos de tu inicio de sesión, según sus propias políticas | Solo si inicias sesión |
+| **Apple o Google (reconocimiento de voz del sistema)** | Solo si dictas un gasto **y** tu teléfono no puede convertir voz en texto por su cuenta: en ese caso el audio se procesa en sus servidores. Ni el audio ni la transcripción se guardan en ninguna parte (sección 18.1) | Solo al dictar, en los teléfonos donde no hay reconocimiento local |
 | **Google (API de Gemini)** | El texto que escribes en el chat y un resumen de tus finanzas, con los nombres que tú les pusiste a tus cuentas, categorías, presupuestos, metas y deudas. **Tus notas solo si enciendes el interruptor de la sección 17.7**, que viene apagado | Solo si usas el asistente, después de aceptarlo (sección 17) |
 
 ---
@@ -381,6 +488,9 @@ de frente porque preferimos eso a esconderlo en un párrafo.
 | Responder tus preguntas con el asistente de IA | El texto que escribes y el resumen financiero de la sección 17, con los nombres que tú les diste a tus cuentas, categorías, presupuestos, metas y deudas | **Consentimiento** explícito, que puedes retirar (art. 6.1.a) |
 | Responder con más precisión leyendo tus notas | El texto libre de tus notas (sección 17.7) | **Consentimiento** explícito y **separado** del anterior: es un interruptor aparte, apagado por defecto, que puedes apagar cuando quieras (art. 6.1.a) |
 | Revisar un mensaje del asistente que tú reportaste y corregir la función | El mensaje reportado, el motivo y tu comentario (sección 17.5) | **Interés legítimo** en moderar el contenido que genera la app, a partir de un envío tuyo; además es un requisito de Google Play para las apps con IA generativa (art. 6.1.f) |
+| Convertir en texto lo que dictas para llenar el formulario | El audio de ese dictado y su transcripción, mientras el formulario está abierto (sección 18.1) | **Consentimiento** explícito, que das al conceder el micrófono y puedes retirar desde Ajustes del sistema (art. 6.1.a) |
+| Leer los avisos de las apps de banco que elijas y proponerte el movimiento | Monto, comercio o contraparte, fecha, últimos 4 dígitos y app emisora (sección 4.6) | **Consentimiento** explícito, **separable y revocable**: lo activas tú en Ajustes del sistema, eliges app por app y lo apagas cuando quieras (art. 6.1.a). No va bajo "ejecución del contrato": la app funciona entera sin esto |
+| Recordarte un pago programado | La fecha del pago y cuántos días antes pediste el aviso | **Ejecución del contrato**, a petición tuya al activar el recordatorio (art. 6.1.b) |
 | Detectar y corregir fallos de la app | Diagnósticos técnicos (sección 5.3) | **Interés legítimo** en mantener la app estable y segura (art. 6.1.f) |
 | Cumplir obligaciones legales y responder a autoridades | Los estrictamente exigidos | **Obligación legal** (art. 6.1.c) |
 
@@ -408,9 +518,20 @@ del tratamiento), bajo contrato y solo para las finalidades de arriba:
 | **Google LLC (API de Gemini)** | Generar las respuestas del asistente de IA | El texto que escribes en el chat y el resumen financiero de la sección 17, incluidos los **nombres** que tú les pusiste a tus cuentas, categorías, presupuestos, metas y deudas. **Tus notas solo si enciendes el interruptor de la sección 17.7**; viene apagado. **No** recibe tu correo, tu nombre, el nombre de tu banco ni los últimos 4 dígitos de tus tarjetas |
 
 Además, **Google LLC** y **Apple Inc.** actúan como **responsables
-independientes** cuando inicias sesión con ellos: no les enviamos tus datos
-financieros, pero ellos saben que iniciaste sesión en billetudo y aplican sus
-propias políticas.
+independientes** en dos momentos, y en ninguno de los dos actúan por cuenta
+nuestra:
+
+- **Cuando inicias sesión con ellos:** no les enviamos tus datos financieros,
+  pero ellos saben que iniciaste sesión en billetudo y aplican sus propias
+  políticas.
+- **Cuando dictas un gasto en un teléfono sin reconocimiento de voz local:** el
+  audio lo procesa el servicio de reconocimiento del propio sistema operativo,
+  que es de Apple o de Google según tu teléfono. Nosotros no elegimos ese
+  destino ni recibimos el audio: la app le pide al sistema que transcriba y
+  recibe el texto de vuelta. Lo que hagan con ese audio se rige por **sus**
+  políticas de privacidad, no por esta. En iPhone el propio sistema te lo
+  advierte con un aviso que dice que los datos de voz se enviarán a Apple. Está
+  explicado en la [sección 18.1](#181-dictar-un-gasto).
 
 También podríamos revelar información si una autoridad competente nos lo exige
 legalmente, o si es necesario para defender derechos ante un fraude o un abuso.
@@ -446,6 +567,7 @@ Google, también fuera de tu país.
 | Supabase | **Estados Unidos** |
 | PowerSync | **Estados Unidos** |
 | Google (API de Gemini, solo si usas el asistente) | **Estados Unidos** y, según la disponibilidad del servicio, otros países donde Google opera |
+| Apple o Google (reconocimiento de voz, solo al dictar y solo en teléfonos sin reconocimiento local) | En la infraestructura de cada uno, **fuera de tu país**. `[VERIFICAR: Apple y Google no publican la región concreta de proceso de sus reconocedores de voz para apps de terceros; no se afirma un país concreto porque no se pudo confirmar]` |
 
 **Por qué es así:** son los proveedores que hacen posible la sincronización sin
 pérdida de datos y sin que tengamos que operar servidores propios. No hay hoy un
@@ -474,6 +596,11 @@ consuelo.
 | Cuenta de usuario (correo, nombre) | Mientras la cuenta exista |
 | Reportes de error | **30 días** en Sentry, según el plazo de conservación del plan que usamos. Vencido ese plazo se eliminan solos |
 | Copias de seguridad del proveedor de base de datos | **No hay.** El plan que usamos en Supabase no incluye copias de seguridad automáticas |
+| El audio que dictas y su transcripción | **No se conservan.** Existen en la memoria del teléfono mientras el formulario está abierto y se descartan al cerrarlo. Lo único que sobrevive es lo que tú dejaste guardado en un campo del formulario |
+| El texto de un aviso de tu banco | **No se conserva, en ninguna parte y en ningún momento.** No hay dónde guardarlo (sección 4.6) |
+| Capturas pendientes que no has confirmado | En tu teléfono —y en tu cuenta, si iniciaste sesión— hasta que las confirmes, las descartes o las borres. `[VERIFICAR: si se decide que caduquen solas a los 30 o 90 días, esta fila cambia y hay que decir el plazo exacto]` |
+| Capturas que descartaste | Se eliminan definitivamente pasada la ventana para deshacer la acción. No quedan marcadas como borradas: se van |
+| Lo que la app aprendió (comercio → categoría) | Mientras exista tu cuenta o hasta que uses "borrar lo capturado" (sección 18.4) |
 | Tus conversaciones con el asistente | Solo en tu teléfono, hasta que las borres tú, borres los datos de la app o la desinstales. **No se respaldan**: si cambias de teléfono, no viajan |
 | Registro técnico de uso del asistente (sin contenido) | Mientras tu cuenta exista. Se elimina al borrar la cuenta |
 | Mensajes del asistente que **tú** reportaste | En nuestro servidor mientras tu cuenta exista. **No se purgan solos** cuando terminamos de revisarlos: quedan como registro de la revisión. Se eliminan al borrar la cuenta |
@@ -512,7 +639,8 @@ Puedes hacerlo tú, desde la app, sin escribirnos ni llamar a nadie.
 
 - **Se eliminan tus datos del servidor**, de forma inmediata: cuentas,
   movimientos, categorías, presupuestos, metas, deudas, pagos programados,
-  etiquetas y preferencias.
+  etiquetas y preferencias, **más las capturas pendientes de avisos bancarios y
+  lo que la app aprendió sobre tus comercios**.
 - **Se elimina tu usuario** del sistema de autenticación, con tu correo y tu
   nombre.
 - **Se elimina tu habilitación, el registro técnico de uso del asistente y los
@@ -560,6 +688,8 @@ Buena parte de eso lo puedes hacer sin pedirnos permiso, dentro de la app:
 | **Portabilidad** | **Más → Importar y exportar**: obtienes tus datos en CSV estándar o en una copia completa. Sin límites, sin costo y sin necesidad de cuenta |
 | **Revocar la autorización de la nube** | Cierra sesión: la sincronización se detiene de inmediato |
 | **Revocar el permiso del asistente de IA** | Ajustes: retira el permiso y borra tu historial de conversación. Deja de enviarse cualquier cosa a Google |
+| **Revocar el consentimiento de dictado** | Quita el permiso de micrófono en Ajustes del sistema |
+| **Revocar el consentimiento de lectura de avisos bancarios** | Un interruptor en la app, o Ajustes del sistema de Android. Además puedes borrar de una vez todas las capturas y lo aprendido (sección 18.4) |
 
 ### Lo único que no puedes deshacer desde la app: un reporte ya enviado
 
@@ -643,10 +773,29 @@ por eso te pedimos dos cosas:
 - Si vas a anotar datos de otra persona, asegúrate de que sea razonable hacerlo
   en tu contexto.
 
-### Dos casos en los que esos datos sí salen del teléfono
+### Un caso nuevo: el nombre que viene dentro de un aviso del banco
+
+Con la lectura de avisos bancarios activada (sección 18.2) aparece un dato de
+otra persona que **tú no escribiste**: cuando alguien te transfiere dinero,
+algunos bancos ponen su nombre completo en el aviso, y ese nombre se guarda como
+el comercio del movimiento y **se sincroniza con tu cuenta**.
+
+Es la única información de terceros que entra a billetudo sin que tú la teclees.
+Tres cosas al respecto:
+
+- **La ves siempre antes de confirmar.** Una captura no es un movimiento hasta
+  que tú la apruebas, y en ese momento puedes editar o borrar ese nombre.
+- **No la usamos para nada más.** No la cruzamos, no la agregamos, no
+  identificamos a nadie con ella.
+- **Puedes borrar todas las capturas de una vez** desde la app (sección 18.4).
+
+### Tres casos en los que esos datos sí salen del teléfono
 
 Preferimos que lo sepas antes y no después:
 
+- **Si iniciaste sesión**, el nombre de la contraparte de una transferencia que
+  la app extrajo de un aviso bancario sube a tu cuenta, como cualquier otro
+  campo de un movimiento.
 - **Si usas el asistente**, el nombre que le pusiste a una deuda viaja a Google
   como parte del resumen. Si ese nombre es el de una persona ("Préstamo a
   Camila"), ese nombre viaja. Pasa desde la primera versión del asistente y no
@@ -692,20 +841,45 @@ exactamente:
 
 ## 14. Permisos que la app pide
 
-billetudo **no pide ningún permiso sensible**. Ni cámara, ni micrófono, ni
-ubicación, ni contactos, ni fotos, ni acceso a tus notificaciones, ni acceso al
-almacenamiento compartido.
+Hasta la versión 1.7 de esta política, billetudo **no pedía ni un solo permiso**.
+Eso cambia con las funciones de la sección 18, y cambia también la ficha de
+permisos que ves en la tienda antes de instalar. Esta es la lista completa.
 
-Lo único que la app necesita es **acceso a internet**, y en Android los permisos
-que el sistema asocia al llavero seguro (autenticación biométrica) y al inicio
-de sesión con Google. Nada de eso implica leer datos tuyos fuera de la app.
+Tres reglas valen para todos:
 
-Si alguna función futura necesitara un permiso —por ejemplo el micrófono para
-dictar un gasto o la cámara para fotografiar un recibo—, te lo pediríamos **en
-el momento de usar esa función**, nunca al abrir la app, y con la explicación de
-para qué sirve. Negarlo no te dejaría sin registrar tus gastos: el registro
-manual seguiría igual. Y actualizaríamos esta política **antes** de que esa
-función llegue a tu teléfono (ver la sección 18).
+- **Se piden en el momento de usar la función**, nunca al abrir la app ni en el
+  onboarding, y siempre con una explicación previa de para qué sirven.
+- **Negarlos no te deja sin app.** Registrar movimientos a mano, presupuestos,
+  metas, deudas, gráficas e importar/exportar funcionan igual sin conceder
+  ninguno.
+- **Los puedes revocar cuando quieras** desde Ajustes del sistema, sin avisarnos.
+
+### 14.1 Android
+
+| Permiso | Para qué | Cuándo se pide | Si lo niegas o lo quitas |
+|---|---|---|---|
+| **Micrófono** (`RECORD_AUDIO`) | Dictar un gasto en vez de teclearlo | La primera vez que tocas el botón de dictar | Se abre el formulario para escribir, con un aviso breve. Nada más cambia |
+| **Acceso a las notificaciones** (`BIND_NOTIFICATION_LISTENER_SERVICE`) | Leer los avisos de compra de las apps de banco que **tú** elijas (sección 18.2) | **Nunca automáticamente.** Se concede en Ajustes del sistema, en una pantalla que la app solo puede abrir, y Android te advierte ahí que la app podría ver todas tus notificaciones | La app deja de capturar. Las capturas que ya tenías siguen ahí para que las revises |
+| **Mostrar notificaciones** (`POST_NOTIFICATIONS`) | Recordarte un pago programado | Cuando activas un recordatorio | No recibes recordatorios. Los pagos programados siguen funcionando igual |
+| **Volver a arrancar tras reiniciar** (`RECEIVE_BOOT_COMPLETED`) | Reprogramar tus recordatorios después de que apagues y prendas el teléfono | No se pide: Android lo concede al instalar | — |
+
+### 14.2 iOS
+
+| Clave del sistema | Para qué |
+|---|---|
+| **Micrófono** (`NSMicrophoneUsageDescription`) | Grabar lo que dictas, mientras dictas |
+| **Reconocimiento de voz** (`NSSpeechRecognitionUsageDescription`) | Convertir ese audio en texto. iOS te muestra su propio aviso, que dice que los datos de voz pueden enviarse a Apple. No es un texto nuestro y no podemos cambiarlo — ver la [sección 18.1](#181-dictar-un-gasto) |
+| **Notificaciones** | Recordatorios de pagos programados |
+
+**La lectura de avisos bancarios no existe en iPhone y no va a existir.** iOS no
+permite que una app lea las notificaciones de otra, y no hay forma de sortearlo.
+Si usas billetudo en iPhone, la sección 18.2 no te aplica.
+
+### 14.3 Lo que seguimos sin pedir
+
+Cámara, fotos y galería, ubicación, contactos, calendario, SMS, registro de
+llamadas, sensores corporales, almacenamiento compartido y servicios de
+accesibilidad. **Ninguno de esos.**
 
 Tampoco mostramos el aviso de seguimiento de iOS, porque **no hacemos
 seguimiento entre aplicaciones**.
@@ -851,8 +1025,11 @@ configuración. No es una intención, es cómo está construido el resumen:
 - **El número completo de tus cuentas**, que además nunca sale del teléfono para
   nada (sección 4.2).
 - **Tu nombre y tu correo.** Google no recibe quién eres desde acá.
-- **Archivos, fotos, audio, contactos** o el contenido de tus notificaciones. La
-  app ni siquiera pide esos permisos.
+- **Archivos, fotos, audio y contactos**, y el **texto de las notificaciones de
+  tu banco**. Del audio y del texto de un aviso no hay nada que enviar, porque no
+  se guardan en ninguna parte (sección 18). Los movimientos que salieron de una
+  captura llegan al asistente igual que cualquier otro: como monto, fecha,
+  categoría y cuenta.
 
 Y ahora lo que **sí sale** y quizá no dabas por hecho, porque prometer de menos
 también sería mentirte:
@@ -1005,7 +1182,170 @@ queremos que lo sepas antes y no después.
 
 ---
 
-## 18. Lo que billetudo hoy no hace
+## 18. Cómo billetudo captura tus gastos
+
+Registrar un gasto a mano toma entre quince y treinta segundos, y esa fricción
+es la razón número uno por la que la gente abandona una app de finanzas. Estas
+funciones existen para bajarla.
+
+Tres cosas valen para todas y no tienen excepción:
+
+1. **Son opcionales y las activas tú.** Sin activarlas, la app se comporta
+   exactamente como antes.
+2. **Nada se registra sin que tú lo confirmes.** No existe, y no va a existir, un
+   modo "apunta solo lo que detectes". Un saldo con movimientos que tú no
+   aprobaste no sirve para nada.
+3. **No guardamos el material en bruto.** Ni el audio, ni la transcripción, ni el
+   texto del aviso del banco. Solo los campos que la app entendió.
+
+### 18.1 Dictar un gasto
+
+Tocas el micrófono, dices *"gasté veinte mil en almuerzo"* y la app abre el
+formulario de gasto ya lleno. Tú revisas y guardas.
+
+**Qué pasa con tu voz, paso a paso:**
+
+1. El micrófono se enciende mientras hablas y se apaga cuando terminas, cuando
+   cancelas o cuando pasa el tope de duración. No hay ningún camino en el que
+   quede abierto.
+2. El audio se convierte en texto con el **reconocedor de voz de tu teléfono**
+   (el mismo que usa el dictado del teclado). billetudo no tiene un motor propio
+   ni manda el audio a un servidor nuestro.
+3. La app lee ese texto con reglas locales para sacar el monto, la fecha, la
+   categoría y la cuenta, y llena el formulario.
+4. **Al cerrar el formulario, el audio y la transcripción desaparecen.** Lo único
+   que queda es el movimiento que tú guardaste, igual que si lo hubieras
+   tecleado. Si cancelas, no queda nada.
+
+**La parte incómoda, que decimos de frente:** *convertir voz en texto* no siempre
+ocurre dentro de tu teléfono. Cuando tu dispositivo y tu idioma lo soportan, se
+hace ahí mismo y el audio no sale. **Cuando no lo soportan, el sistema operativo
+envía el audio a los servidores de Apple o de Google para transcribirlo**, según
+la marca de tu teléfono.
+
+- Nosotros no elegimos eso ni recibimos ese audio: la app le pide al sistema que
+  transcriba y recibe el texto de vuelta.
+- Apple y Google, en ese caso, son responsables independientes de ese audio, y
+  aplica **su** política de privacidad, no esta (sección 7).
+- En iPhone, el propio sistema te lo advierte la primera vez con un aviso suyo:
+  dice que los datos de voz de esta app se enviarán a Apple. Ese texto lo escribe
+  Apple y no podemos cambiarlo.
+- **No guardar no es lo mismo que no transmitir**, y nos parecía deshonesto
+  escribir "todo pasa en tu teléfono" a secas. Si prefieres que tu voz no salga
+  nunca, no uses el dictado: escribir a mano funciona igual de bien y es la ruta
+  principal de la app.
+
+**Lo que no hacemos con tu voz:** no la usamos para identificarte. No guardamos
+una huella de voz, no reconocemos quién habla y no hay ningún dato biométrico en
+esto. El micrófono es una forma de escribir, nada más.
+
+### 18.2 Leer los avisos de tu banco (solo Android)
+
+Cuando tu banco te avisa *"Compra por $45.900 en EXITO CALLE 80"*, la app puede
+tomar ese dato y dejarte el movimiento listo para confirmar. Es la función más
+sensible de billetudo y por eso está explicada con este detalle.
+
+**Solo en Android.** iPhone no permite que una app lea las notificaciones de
+otra.
+
+#### Cómo se activa
+
+Android **no** deja que una app lea notificaciones con un permiso normal: tienes
+que ir a **Ajustes del sistema → Acceso a notificaciones** y activarlo ahí. La
+app solo puede abrirte esa pantalla.
+
+- Antes de mandarte allá, billetudo te explica en su propia pantalla qué va a
+  leer, qué va a guardar y qué va a sincronizar.
+- También te anticipa que **Android te va a advertir que la app podría ver todas
+  tus notificaciones**. Esa advertencia es real y es la única forma en que el
+  sistema concede este permiso: no hay una versión "solo mi banco".
+- Puedes decir que no y seguir usando la app completa.
+
+#### Qué lee de verdad
+
+El sistema le entrega a la app todas las notificaciones. **billetudo descarta las
+que no vienen de un banco que tú encendiste, antes de mirar su título, su texto o
+su contenido.** El filtro es por la app que la envió, no por lo que dice.
+
+- Hay un **catálogo cerrado** de apps de banco y billeteras. No puedes añadir
+  cualquier app: si no está en la lista, no se lee.
+- **Todos los interruptores vienen apagados.** Activar el permiso sin encender
+  ningún banco no captura absolutamente nada.
+- Los mensajes de WhatsApp, los correos, los códigos de un solo uso y las
+  notificaciones de cualquier otra app **no se leen, no se guardan, no se cuentan
+  y no se envían a ningún lado**.
+
+#### Qué se guarda y qué no
+
+Se guarda lo que está en la [sección 4.6](#46-lo-que-la-app-extrae-de-los-avisos-de-tu-banco-solo-android):
+monto, moneda, si es gasto o ingreso, fecha, comercio o contraparte, los últimos
+4 dígitos, qué app lo envió y qué regla lo interpretó.
+
+**No se guarda el texto del aviso.** No hay dónde: la base de datos de la app no
+tiene una casilla para eso, ni completa ni recortada. Si un aviso no es un
+movimiento de dinero —una promoción, un código de seguridad, "tu extracto está
+listo"— **no se crea nada y no queda rastro**.
+
+#### Qué sale de tu teléfono
+
+Aquí conviene una precisión, porque es fácil prometer de más:
+
+> **El contenido de los avisos de tu banco no se envía a ningún servidor, porque
+> no se guarda en ninguna parte.** Lo que sí sincroniza a tu cuenta, si iniciaste
+> sesión, son los **datos financieros ya estructurados** —monto, comercio, fecha,
+> app emisora y cuenta sugerida—, exactamente el mismo tipo de dato que un
+> movimiento que escribes a mano.
+
+Las dos mitades de esa frase van juntas: la primera solo se sostiene porque el
+texto no se guarda. Si algún día se guardara, sincronizarlo sería subir a un
+servidor el contenido literal de las notificaciones de tu teléfono, y ninguna
+redacción haría eso aceptable.
+
+Si nunca inicias sesión, las capturas se quedan en tu teléfono, como todo lo
+demás.
+
+#### Lo que esta función no promete
+
+- **No captura todo, y no puede.** No hay aviso para un pago en efectivo, hay
+  bancos fuera del catálogo, y Android puede apagar el servicio para ahorrar
+  batería. Si algo no apareció, lo registras a mano.
+- **Ninguna cifra de la app depende de esto.** Tus saldos, presupuestos y
+  gráficas cuentan solo los movimientos que tú confirmaste. Una captura pendiente
+  no suma a nada.
+
+### 18.3 Recordatorios de pagos
+
+Puedes pedirle a la app que te avise unos días antes de un pago programado.
+
+- **Los programa tu propio teléfono.** No hay un servidor mandándote mensajes.
+- **No hay notificaciones push.** No usamos Firebase ni ningún servicio de
+  mensajería, no existe un token de notificación tuyo y **no tenemos forma de
+  enviarte un mensaje remoto** aunque quisiéramos.
+- El contenido del recordatorio se arma en el teléfono con tus propios datos y no
+  sale de ahí.
+- Los apagas desde Ajustes de la app o revocando el permiso de notificaciones del
+  sistema.
+
+### 18.4 Cómo apagar todo esto y borrar lo capturado
+
+- **Apagar el dictado:** quita el permiso de micrófono en Ajustes del sistema. El
+  botón sigue ahí y te abre el formulario para escribir.
+- **Apagar la lectura de avisos:** desde la propia app, con un interruptor, o
+  desde Ajustes del sistema de Android. Cualquiera de los dos la detiene de
+  inmediato. También puedes apagar un banco concreto y dejar los demás.
+- **Ver qué está pasando:** dentro de Ajustes hay una pantalla que te muestra qué
+  apps se están escuchando, cuántas capturas se han creado y qué campos se
+  guardan y cuáles no.
+- **Borrar lo capturado:** hay una acción que borra **todas** las capturas
+  pendientes y todo lo que la app aprendió, y deja la función como recién
+  instalada. **No toca los movimientos que ya confirmaste**: esos ya son tuyos y
+  se borran como cualquier otro movimiento.
+- **Borrar tu cuenta** (sección 10) se lleva las capturas y el aprendizaje del
+  servidor, junto con todo lo demás.
+
+---
+
+## 19. Lo que billetudo hoy no hace
 
 Esta sección existe para que no tengas que deducirlo. Todo lo de abajo es
 verificable en la versión publicada de la app:
@@ -1016,20 +1356,27 @@ verificable en la versión publicada de la app:
   Amplitude, Mixpanel ni equivalentes. No sabemos qué pantallas visitas ni
   cuánto tiempo pasas en cada una.
 - **No hay compras dentro de la app** ni suscripciones.
-- **No hay notificaciones push.**
+- **No hay notificaciones push.** Los recordatorios que ves los programa tu
+  propio teléfono (sección 18.3). No hay Firebase, no hay tokens de notificación
+  y no existe forma de que te enviemos un mensaje remoto.
 - **La inteligencia artificial se limita al asistente** de la sección 17: es
   opcional, requiere sesión y requiere tu permiso. Fuera de él, ningún dato tuyo
   se envía a un modelo de lenguaje. No categorizamos tus gastos con IA, no
   analizamos tus finanzas en segundo plano y no generamos informes automáticos.
-- **No hay captura por voz ni por foto.** No leemos recibos, no transcribimos
-  audio y no accedemos a las notificaciones de tu banco.
+- **No leemos recibos con la cámara.** No hay reconocimiento de texto en
+  imágenes, y la app **no pide permiso de cámara ni de galería**.
+- **No identificamos a nadie por su voz.** El micrófono es una forma de escribir
+  (sección 18.1); no guardamos huellas de voz ni hacemos reconocimiento del
+  hablante, así que no hay ningún dato biométrico en la app.
+- **No leemos las notificaciones de tus otras apps.** Solo las de las apps de
+  banco que tú enciendes de una lista cerrada, y solo en Android (sección 18.2).
+- **No hay un widget** de pantalla de inicio.
 - **No vendemos ni cedemos datos personales a terceros.**
 
 ### Sobre el futuro
 
-Estamos diseñando funciones para que registrar un gasto cueste segundos:
-**dictarlo por voz**, **fotografiar el recibo** para que la app lea el monto,
-**leer las notificaciones de tu banco** en Android, y un **widget** de acceso
+Seguimos diseñando funciones para que registrar un gasto cueste segundos:
+**fotografiar el recibo** para que la app lea el monto y un **widget** de acceso
 rápido. Más adelante, gráficas avanzadas y una versión de pago que podría
 apoyarse en anuncios **con recompensa y de participación voluntaria** o en una
 suscripción. El asistente de la sección 17, hoy en beta y gratuito, será parte
@@ -1058,7 +1405,7 @@ la razón de diseñarlas así:
 
 ---
 
-## 19. Cambios a esta política
+## 20. Cambios a esta política
 
 Si cambia lo que hacemos con tus datos, cambiamos esta política. Publicaremos la
 versión nueva en esta misma dirección, con su número de versión y su fecha.
@@ -1072,7 +1419,7 @@ El historial de versiones se conserva para que puedas comparar.
 
 ---
 
-## 20. Contacto
+## 21. Contacto
 
 Para cualquier asunto relacionado con tus datos personales, incluido el
 ejercicio de tus derechos:
@@ -1089,4 +1436,4 @@ app. Si en 30 días no tuviste respuesta, insiste: algo falló.
 
 ---
 
-*billetudo — Política de privacidad, versión 1.7, 1 de septiembre de 2026.*
+*billetudo — Política de privacidad, versión 1.8, 9 de septiembre de 2026.*

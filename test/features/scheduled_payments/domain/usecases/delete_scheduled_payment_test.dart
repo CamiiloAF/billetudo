@@ -1,8 +1,10 @@
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/features/scheduled_payments/domain/usecases/cancel_scheduled_payment_reminder.dart';
 import 'package:billetudo/features/scheduled_payments/domain/usecases/delete_scheduled_payment.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../core/notifications/notification_test_doubles.dart';
 import 'scheduled_payment_repository_mock.dart';
 
 void main() {
@@ -15,7 +17,11 @@ void main() {
   test('HU-05: delega el borrado (tombstonedAt) al repositorio', () async {
     when(() => repository.deleteScheduledPayment('sp-1'))
         .thenAnswer((_) async => const Right(unit));
-    final deleteScheduledPayment = DeleteScheduledPayment(repository);
+    final deleteScheduledPayment = DeleteScheduledPayment(
+      repository,
+      CancelScheduledPaymentReminder(FakeNotificationScheduler()),
+      noopSyncReminders(),
+    );
 
     final result = await deleteScheduledPayment('sp-1');
 
@@ -27,7 +33,11 @@ void main() {
     when(() => repository.deleteScheduledPayment('sp-1')).thenAnswer(
       (_) async => const Left(NotFoundFailure('no existe')),
     );
-    final deleteScheduledPayment = DeleteScheduledPayment(repository);
+    final deleteScheduledPayment = DeleteScheduledPayment(
+      repository,
+      CancelScheduledPaymentReminder(FakeNotificationScheduler()),
+      noopSyncReminders(),
+    );
 
     final result = await deleteScheduledPayment('sp-1');
 
