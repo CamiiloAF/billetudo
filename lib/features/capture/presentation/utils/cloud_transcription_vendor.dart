@@ -15,7 +15,9 @@ abstract final class CloudTranscriptionVendor {
   /// one place and translators see the sentence it lands in).
   static String nameFor(AppLocalizations l10n, TargetPlatform platform) =>
       switch (platform) {
-        TargetPlatform.iOS || TargetPlatform.macOS => l10n.captureVoiceVendorApple,
+        TargetPlatform.iOS ||
+        TargetPlatform.macOS =>
+          l10n.captureVoiceVendorApple,
         // Android is the case the design was drawn for, and it is also the
         // honest default for the desktop/web targets the app does not ship
         // to: naming Google is the wider claim of the two.

@@ -29,7 +29,8 @@ class SpokenTokens {
   /// kept: `20.000` must survive as one token.
   static String _normalizeToken(String word) {
     final normalized = normalizeForSearch(word);
-    return normalized.replaceAll(RegExp(r'''^[¿¡"'(\[]+|[,.;:!?"')\]]+$'''), '')
+    return normalized
+        .replaceAll(RegExp(r'''^[¿¡"'(\[]+|[,.;:!?"')\]]+$'''), '')
         // A number like `20.000,` loses its trailing comma above; anything
         // still left that is not a letter, digit or inner separator is noise.
         .replaceAll(RegExp(r'[¿¡!?;:]'), '');

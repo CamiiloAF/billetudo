@@ -6,7 +6,8 @@ import 'package:billetudo/features/categories/domain/entities/category.dart';
 List<Category> testCategories() => <Category>[
       _category(id: 'cat-food', name: 'Alimentación'),
       _category(id: 'cat-market', name: 'Mercado', parentId: 'cat-food'),
-      _category(id: 'cat-restaurants', name: 'Restaurantes', parentId: 'cat-food'),
+      _category(
+          id: 'cat-restaurants', name: 'Restaurantes', parentId: 'cat-food'),
       _category(id: 'cat-transport', name: 'Transporte'),
       _category(id: 'cat-fuel', name: 'Gasolina', parentId: 'cat-transport'),
       _category(id: 'cat-home', name: 'Hogar'),

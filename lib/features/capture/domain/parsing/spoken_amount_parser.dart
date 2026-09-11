@@ -86,7 +86,8 @@ class SpokenAmountParser {
     required String currency,
   }) {
     for (var start = 0; start < tokens.length; start++) {
-      if (!tokens.isFree(start) || !_canStartRun(tokens.normalized[start], lexicon)) {
+      if (!tokens.isFree(start) ||
+          !_canStartRun(tokens.normalized[start], lexicon)) {
         continue;
       }
       final match = _parseRun(tokens, start, lexicon, currency);
@@ -155,7 +156,8 @@ class SpokenAmountParser {
       }
 
       if (lexicon.andWords.contains(word)) {
-        final next = index + 1 < tokens.length ? tokens.normalized[index + 1] : '';
+        final next =
+            index + 1 < tokens.length ? tokens.normalized[index + 1] : '';
         final continuesNumber = lexicon.numberWords.containsKey(next) ||
             lexicon.halfWords.contains(next);
         if (!sawValue || !continuesNumber || !tokens.isFree(index + 1)) {
@@ -289,7 +291,8 @@ class SpokenAmountParser {
 }
 
 class _DigitAmount {
-  const _DigitAmount(this.minor, {this.isDecimal = false, this.isGrouped = false});
+  const _DigitAmount(this.minor,
+      {this.isDecimal = false, this.isGrouped = false});
 
   final int minor;
   final bool isDecimal;

@@ -279,8 +279,8 @@ void main() {
   blocTest<AppSettingsCubit, AppSettingsState>(
     'clearAiConsent delegates to the use case (RGPD art. 7.3) instead of '
     'emitting directly: the settings stream is the source of truth',
-    setUp: () => when(clearAiConsent.call)
-        .thenAnswer((_) async => const Right(unit)),
+    setUp: () =>
+        when(clearAiConsent.call).thenAnswer((_) async => const Right(unit)),
     build: build,
     act: (cubit) => cubit.clearAiConsent(),
     expect: () => <AppSettingsState>[],

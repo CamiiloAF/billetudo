@@ -293,11 +293,14 @@ class SpeechToTextRecognizer implements SpeechRecognizer {
       return SpeechRecognitionErrorKind.onDeviceUnavailable;
     }
     return switch (error.errorMsg) {
-      'error_no_match' || 'error_speech_timeout' =>
+      'error_no_match' ||
+      'error_speech_timeout' =>
         SpeechRecognitionErrorKind.noSpeech,
-      'error_network' || 'error_network_timeout' =>
+      'error_network' ||
+      'error_network_timeout' =>
         SpeechRecognitionErrorKind.network,
-      'error_permission' || 'error_insufficient_permissions' =>
+      'error_permission' ||
+      'error_insufficient_permissions' =>
         SpeechRecognitionErrorKind.permission,
       'error_busy' || 'error_client' => SpeechRecognitionErrorKind.busy,
       'error_language_not_supported' ||

@@ -119,8 +119,7 @@ class _VoiceCaptureSheetState extends State<VoiceCaptureSheet> {
               onOpenSettings: () => unawaited(_cubit.openSystemSettings()),
               onWriteByHand: () => _close(_cubit.draftForManualEntry()),
             ),
-          VoiceCaptureStatus.cloudConsentNeeded =>
-            VoiceCaptureCloudConsentBody(
+          VoiceCaptureStatus.cloudConsentNeeded => VoiceCaptureCloudConsentBody(
               onAllow: () => unawaited(_cubit.allowCloudTranscription()),
               // The refusal is persisted before the sheet closes, so the next
               // "Dictar" honours it instead of asking again.

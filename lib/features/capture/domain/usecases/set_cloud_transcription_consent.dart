@@ -15,8 +15,7 @@ class SetCloudTranscriptionConsent {
 
   final CloudTranscriptionConsentStore _store;
 
-  Future<void> call(CloudTranscriptionConsent consent) =>
-      _store.write(consent);
+  Future<void> call(CloudTranscriptionConsent consent) => _store.write(consent);
 
   /// Convenience for the Ajustes switch, which only ever moves between the two
   /// explicit answers — it can never put the decision back to "not asked".

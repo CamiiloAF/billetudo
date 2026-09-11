@@ -218,10 +218,12 @@ Future<void> _finishListening(PatrolIntegrationTester $) async {
 /// the page actually on screen is what `transactions_patrol_test.dart`'s
 /// sibling suite gets "for free" because it never has another route's
 /// `Scrollable` still mounted at the point it calls its own `_enterNote`.
-Finder get _formScrollable => find.descendant(
+Finder get _formScrollable => find
+    .descendant(
       of: find.byType(TransactionFormPage),
       matching: find.byType(Scrollable),
-    ).first;
+    )
+    .first;
 
 /// Scrolls the form's Nota field into view (see `transactions_patrol_test
 /// .dart`'s own `_enterNote` for why: the anchored amount keypad, expanded by
@@ -272,8 +274,10 @@ void main() {
       await $.tester.pumpAndSettle();
 
       // `f8OP8a`/`Z6imP`: the listening surface, with nothing recognized yet.
-      expect(find.text('El audio no se guarda. Solo se usa para llenar el '
-          'formulario.'), findsOneWidget);
+      expect(
+          find.text('El audio no se guarda. Solo se usa para llenar el '
+              'formulario.'),
+          findsOneWidget);
 
       await _finishListening($);
 

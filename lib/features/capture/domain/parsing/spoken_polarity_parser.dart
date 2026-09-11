@@ -18,7 +18,8 @@ import 'spoken_tokens.dart';
 class SpokenPolarityParser {
   const SpokenPolarityParser();
 
-  TransactionType? parse(SpokenTokens tokens, {required CaptureLexicon lexicon}) {
+  TransactionType? parse(SpokenTokens tokens,
+      {required CaptureLexicon lexicon}) {
     for (final phrase in lexicon.incomeVerbs) {
       final index = tokens.indexOfSequence(phrase);
       if (index >= 0) {
