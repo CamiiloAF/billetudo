@@ -145,7 +145,11 @@ void main() {
   );
 
   patrolTest(
-    'HU-01/HU-02: a shortcut tapped while the app is already running '
+    // No literal "/" in this name: AndroidTestOrchestrator uses the test's
+    // display name to build an output filename, and a "/" is read as a path
+    // separator — it crashes the orchestrator process outright (not just
+    // this test), taking every scenario after it down with it.
+    'HU-01 and HU-02: a shortcut tapped while the app is already running '
     '(onNewIntent, singleTop) pushes the right capture form on top of Home',
     ($) async {
       // A normal launch: nothing pending at cold start.
