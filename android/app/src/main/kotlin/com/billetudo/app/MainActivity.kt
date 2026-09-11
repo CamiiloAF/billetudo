@@ -1,11 +1,11 @@
 package com.billetudo.app
 
 import android.content.Intent
+import com.billetudo.app.capture.CaptureChannelHandler
+import com.billetudo.app.widget.QuickCaptureWidgetBridge
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-
-import com.billetudo.app.widget.QuickCaptureWidgetBridge
 
 class MainActivity : FlutterActivity() {
 
@@ -25,6 +25,11 @@ class MainActivity : FlutterActivity() {
         QuickCaptureWidgetBridge.holdForColdStart(
             QuickCaptureWidgetBridge.shortcutIdFrom(intent),
         )
+        // Bank-notification capture (Android only, Fase 2). The channel is the
+        // only door to the listener service; the service itself runs without
+        // this engine.
+        CaptureChannelHandler(applicationContext)
+            .register(flutterEngine.dartExecutor.binaryMessenger)
     }
 
     /** A widget tap while the app was already alive (`singleTop`). */

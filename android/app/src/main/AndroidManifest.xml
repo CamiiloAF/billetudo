@@ -43,6 +43,27 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/quick_capture_widget_info" />
         </receiver>
+        <!-- Bank-notification capture (Fase 2, Android only).
+             This <service> introduces the FIRST sensitive permission of the
+             app and changes the permission list shown in the store: it
+             requires a use declaration and an updated Data Safety form before
+             publishing (docs/requirements/fase-2/19-notificaciones-bancarias.md,
+             HU-08).
+
+             exported="false" plus the system signature permission: only
+             Android itself can bind this service.
+             The service receives EVERY notification on the device; filtering
+             by packageName happens in IssuerFilter, BEFORE any content is
+             read. -->
+        <service
+            android:name=".capture.BilletudoNotificationListenerService"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
 
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
@@ -60,5 +81,30 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+
+        <!-- CLOSED issuer catalog (HU-02). Since Android 11 an app cannot see
+             which other packages are installed unless it declares them here;
+             without this list getInstalledIssuerApps reports them as "not
+             installed" with no visible error.
+
+             DO NOT replace this with QUERY_ALL_PACKAGES. That permission is
+             sensitive, forces a declaration form in Google Play and is one of
+             the most rejected ones. Listing exactly the catalogued
+             packages needs no declaration at all AND matches what the feature
+             promises the user ("we only look at banks"): the system literally
+             does not let this app see anything else. Adding an issuer means
+             adding one line here, never widening the query.
+
+             These three packages were confirmed on a real device and must
+             match issuer_rules.json EXACTLY (mind Nequi's capitals and
+             "walletnfcrel", not "wallet").
+
+             Bancolombia is deliberately absent: it does not send push
+             notifications, only SMS, and an SMS arrives as a notification of
+             the MESSAGING app. Listening to it would mean reading the sender
+             of every message the user gets. See issuer_rules.json. -->
+        <package android:name="com.nequi.MobileApp" />
+        <package android:name="com.nu.production" />
+        <package android:name="com.google.android.apps.walletnfcrel" />
     </queries>
 </manifest>

@@ -1,0 +1,234 @@
+{
+  "schemaVersion": 1,
+  "locale": "es-CO",
+  "_comment": [
+    "SINGLE SOURCE OF TRUTH for bank-notification parsing (HU-03 of",
+    "docs/requirements/fase-2/19-notificaciones-bancarias.md).",
+    "Read by BOTH engines: the Kotlin one that runs in production inside",
+    "NotificationListenerService, and the Dart mirror used by flutter test.",
+    "The ENGINE is duplicated, the RULES never are: a rule that exists on only",
+    "one side is a bug.",
+    "'validated': true means the rule was written against a REAL notification",
+    "captured from the issuer's app and is covered by a literal test case.",
+    "'validated': false means the format was INFERRED and nobody has seen it.",
+    "Today NO rule here is a guess: the three catalogued issuers are all",
+    "validated against real captured text.",
+    "'packageNameValidated' is a DIFFERENT claim and is tracked separately: it",
+    "says the package string was confirmed on a real device (adb shell pm list",
+    "packages).",
+    "BANCOLOMBIA IS NOT IN THIS CATALOG, and reintroducing it needs a fresh",
+    "decision, not just a rule. Bancolombia does not send push notifications,",
+    "only SMS. An SMS reaches NotificationListenerService as a notification of",
+    "the MESSAGING app, not of the bank, so capturing it would mean enabling",
+    "the listener over the messaging app and reading the TITLE (the sender) of",
+    "every message the user receives — one-time codes and personal",
+    "conversations included — just to decide which ones to process. That turns",
+    "the filter from 'by packageName, before reading anything' into 'by",
+    "sender, which requires reading first', breaking the non-negotiable rule",
+    "of HU-08 and inviting a Google Play rejection.",
+    "The package string is compared EXACTLY (Nequi capitalizes 'MobileApp',",
+    "Wallet is 'walletnfcrel' not 'wallet'): a typo here captures nothing and",
+    "raises no error, by design.",
+    "See assets/capture/README.md.",
+    "'target' declares WHICH part of the notification the regex runs against:",
+    "'title', 'text' (the body from EXTRA_TEXT/EXTRA_BIG_TEXT) or 'combined'",
+    "(title + '\\n' + text). Nu splits amount (title) from counterparty (body),",
+    "Nequi puts the amount inside the body sentence and never in the title."
+  ],
+  "globalIgnoreRules": [
+    {
+      "ruleId": "global.ignore.otp",
+      "priority": 1000,
+      "action": "ignore",
+      "target": "combined",
+      "match": "\\b(?:c[oó]digo|clave dinámica|clave temporal|token|otp)\\b[^0-9]{0,40}\\b[0-9]{4,8}\\b",
+      "validated": false,
+      "note": "One-time passwords. Never parsed, never persisted, never shown."
+    },
+    {
+      "ruleId": "global.ignore.otp_keyword",
+      "priority": 1000,
+      "action": "ignore",
+      "target": "combined",
+      "match": "\\b(?:otp|c[oó]digo de verificaci[oó]n|c[oó]digo de seguridad)\\b",
+      "validated": false
+    },
+    {
+      "ruleId": "global.ignore.security",
+      "priority": 990,
+      "action": "ignore",
+      "target": "combined",
+      "match": "(?:nunca (?:te )?(?:pediremos|pedimos)|no compartas tu clave|no compartas tus datos|alerta de seguridad|intento de (?:acceso|ingreso)|inicio de sesi[oó]n)",
+      "validated": false
+    },
+    {
+      "ruleId": "global.ignore.statement",
+      "priority": 980,
+      "action": "ignore",
+      "target": "combined",
+      "match": "(?:extracto|estado de cuenta|factura)[^.;]{0,40}(?:est[aá] (?:listo|lista|disponible)|ya est[aá])",
+      "validated": false
+    },
+    {
+      "ruleId": "global.ignore.payment_reminder",
+      "priority": 980,
+      "action": "ignore",
+      "target": "combined",
+      "match": "(?:recuerda (?:pagar|tu pago)|no olvides (?:pagar|tu pago|registrar)|pr[oó]xim[ao] a vencer|vence (?:hoy|ma[ñn]ana|el)|fecha l[ií]mite de pago)",
+      "validated": true,
+      "note": "The 'no olvides registrar' branch is validated by the real Google Wallet reminder: '¡No olvides registrar tus gastos!'."
+    },
+    {
+      "ruleId": "global.ignore.promo",
+      "priority": 970,
+      "action": "ignore",
+      "target": "combined",
+      "match": "(?:aprovecha|promoci[oó]n|felicitaciones|te preaprobamos|cr[eé]dito preaprobado|cupo preaprobado|descuento del|invita a tus amigos|gana con)",
+      "validated": false
+    }
+  ],
+  "issuers": [
+    {
+      "issuerId": "nu",
+      "displayName": "Nu",
+      "packageName": "com.nu.production",
+      "additionalPackageNames": [],
+      "packageNameValidated": true,
+      "defaultCurrency": "COP",
+      "rules": [
+        {
+          "ruleId": "nu.income.with_counterparty",
+          "priority": 620,
+          "action": "capture",
+          "entryType": "income",
+          "target": "combined",
+          "match": "recibiste\\s+\\$?\\s?(?<amount>[0-9][0-9.,]*)\\s+en\\s+tu\\s+cuenta[\\s\\S]*?te\\s+lleg[oó]\\s+dinero\\s+de\\s+(?<merchant>[^\\n.…]+?)(?=\\s+(?:con|en)\\s+(?:tu|su)\\b|[.…]|\\n|$)",
+          "captures": {"amount": "amount", "merchant": "merchant"},
+          "validated": true,
+          "note": "Real: 'Recibiste 128.920,00 en tu cuenta' / 'Te llegó dinero de DANIELA TORO VALENCIA'. Amount has NO '$' here. merchant is a PERSON's name (third-party PII, see ParsedNotification docs)."
+        },
+        {
+          "ruleId": "nu.income",
+          "priority": 610,
+          "action": "capture",
+          "entryType": "income",
+          "target": "title",
+          "match": "recibiste\\s+\\$?\\s?(?<amount>[0-9][0-9.,]*)\\s+en\\s+tu\\s+cuenta",
+          "captures": {"amount": "amount"},
+          "validated": true,
+          "note": "Fallback when the body is missing or does not name the sender."
+        },
+        {
+          "ruleId": "nu.purchase.with_merchant",
+          "priority": 600,
+          "action": "capture",
+          "entryType": "expense",
+          "target": "combined",
+          "match": "compra\\s+aprobada\\s+por\\s+\\$?\\s?(?<amount>[0-9][0-9.,]*)[\\s\\S]*?tu\\s+compra\\s+en\\s+(?<merchant>[^\\n.…]+?)(?=[.…]|\\n|$)",
+          "captures": {"amount": "amount", "merchant": "merchant"},
+          "validated": true,
+          "note": "Real: 'Compra aprobada por $58.470,00' / 'Tu compra en TIENDA D1 SANTA ROSA H…'. Nu sends NO card last4."
+        },
+        {
+          "ruleId": "nu.purchase",
+          "priority": 590,
+          "action": "capture",
+          "entryType": "expense",
+          "target": "title",
+          "match": "compra\\s+aprobada\\s+por\\s+\\$?\\s?(?<amount>[0-9][0-9.,]*)",
+          "captures": {"amount": "amount"},
+          "validated": true
+        },
+        {
+          "ruleId": "nu.sent.with_counterparty",
+          "priority": 580,
+          "action": "capture",
+          "entryType": "expense",
+          "target": "combined",
+          "match": "enviaste\\s+\\$?\\s?(?<amount>[0-9][0-9.,]*)[\\s\\S]*?le\\s+enviaste\\s+a\\s+(?<merchant>[^\\n.…]+?)(?=\\s+en\\s+su\\s+cuenta|[.…]|\\n|$)",
+          "captures": {"amount": "amount", "merchant": "merchant"},
+          "validated": true,
+          "note": "Real: 'Enviaste $5.500,00' / 'Le enviaste a Aur*** Cri******* Sep*******…'. The counterparty arrives MASKED by Nu; it is stored exactly as received, never completed."
+        },
+        {
+          "ruleId": "nu.sent",
+          "priority": 570,
+          "action": "capture",
+          "entryType": "expense",
+          "target": "title",
+          "match": "^enviaste\\s+\\$?\\s?(?<amount>[0-9][0-9.,]*)",
+          "captures": {"amount": "amount"},
+          "validated": true
+        }
+      ]
+    },
+    {
+      "issuerId": "nequi",
+      "displayName": "Nequi",
+      "packageName": "com.nequi.MobileApp",
+      "additionalPackageNames": [],
+      "packageNameValidated": true,
+      "defaultCurrency": "COP",
+      "rules": [
+        {
+          "ruleId": "nequi.income",
+          "priority": 600,
+          "action": "capture",
+          "entryType": "income",
+          "target": "text",
+          "match": "te\\s+enviaron\\s+\\$?\\s?(?<amount>[0-9][0-9.,]*)(?=[^0-9]|$)",
+          "captures": {"amount": "amount"},
+          "validated": true,
+          "note": "Real: title 'Te enviaron plata por Bre-B' (NO amount) / body 'Te enviaron $1. Entra a tu app y revisa tu saldo.'. target=text on purpose: the title repeats the verb without a figure. Nequi sends neither counterparty nor last4."
+        },
+        {
+          "ruleId": "nequi.sent",
+          "priority": 590,
+          "action": "capture",
+          "entryType": "expense",
+          "target": "text",
+          "match": "env[ií]o\\s+de\\s+plata\\s+por\\s+\\$?\\s?(?<amount>[0-9][0-9.,]*)\\s+fue\\s+exitoso",
+          "captures": {"amount": "amount"},
+          "validated": true,
+          "note": "Real: title 'Envío de plata exitoso' / body 'Te contamos que el envío de plata por $1 fue exitoso...'. The amount sits MID-SENTENCE inside the body."
+        }
+      ]
+    },
+    {
+      "issuerId": "google_wallet",
+      "displayName": "Google Wallet",
+      "packageName": "com.google.android.apps.walletnfcrel",
+      "additionalPackageNames": [],
+      "packageNameValidated": true,
+      "defaultCurrency": "COP",
+      "rules": [
+        {
+          "ruleId": "google_wallet.ignore.reminder",
+          "priority": 900,
+          "action": "ignore",
+          "target": "combined",
+          "match": "(?:recordatorio de wallet|no olvides registrar)",
+          "validated": true,
+          "note": "Real: 'Recordatorio de Wallet' / '¡No olvides registrar tus gastos!'. Wallet nags about bookkeeping; it is not a movement."
+        },
+        {
+          "ruleId": "google_wallet.tap_payment",
+          "priority": 500,
+          "action": "capture",
+          "entryType": "expense",
+          "target": "combined",
+          "match": "^(?<merchant>[^\\n]+)\\n\\s*\\$?\\s?(?<amount>[0-9][0-9.,]*)\\s+(?<currency>[A-Za-z]{3})\\b(?:\\s+con\\s+(?<cardNetwork>[A-Za-z]+))?(?:\\s*(?:[•*·]{1,4}|[xX]|\\.{2,})\\s*(?<last4>[0-9]{4}))?",
+          "captures": {
+            "amount": "amount",
+            "merchant": "merchant",
+            "currency": "currency",
+            "cardNetwork": "cardNetwork",
+            "last4": "last4"
+          },
+          "validated": true,
+          "note": "Real: title 'DROGUERIA LAS 24' / body '38.000,00 COP con Visa ••5615'. Wallet INVERTS Nu's layout: the TITLE is the merchant and the BODY carries amount + explicit currency + card network + last4. The body match is MANDATORY: without it the title of a reminder ('Recordatorio de Wallet') would become a merchant with no amount."
+        }
+      ]
+    }
+  ]
+}
