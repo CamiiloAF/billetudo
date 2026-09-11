@@ -34,6 +34,7 @@ import 'package:billetudo/features/accounts/presentation/widgets/info_row.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart'
     show CategoryKind;
 import 'package:billetudo/features/transactions/presentation/pages/transaction_form_page.dart';
+import 'package:billetudo/features/transactions/presentation/widgets/circular_icon_chip.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/filter_chip_pill.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/filters_button.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/new_tag_sheet.dart';
@@ -925,8 +926,18 @@ void main() {
       // Issue #7: cuenta filtering moved out of a sheet into its own row of
       // multi-selection chips (`AccountFilterChipRow`) directly on the
       // Movimientos filter bar — "Todas" is one of those chips, not a
-      // trigger that opens a separate sheet anymore.
-      expect(find.text('Todas'), findsOneWidget);
+      // trigger that opens a separate sheet anymore. It's now an icon-only
+      // `CircularIconChip` (`check-check`, no visible `Text`), so it's
+      // located by its icon rather than by label — same reasoning as the
+      // widget test (`account_filter_chip_row_test.dart`).
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is CircularIconChip &&
+              widget.icon == LucideIcons.checkCheck,
+        ),
+        findsOneWidget,
+      );
 
       // Deselecting "Cuenta B" from the default all-selected state leaves
       // only "Cuenta A" active — `find.text('Cuenta B')` is ambiguous here
