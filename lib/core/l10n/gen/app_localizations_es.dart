@@ -1514,34 +1514,17 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get homeAccountSheetTitle => 'Tu cuenta';
+  String get homeAccountSheetSyncedPill => 'Sincronizado';
 
   @override
-  String get homeAccountSheetSyncedTitle => 'Todo está sincronizado';
+  String get homeAccountSheetOfflinePill => 'Sin conexión';
 
   @override
-  String get homeAccountSheetSyncedKicker => 'Todo bien';
-
-  @override
-  String get homeAccountSheetSyncedBody =>
-      'Tus datos están respaldados y al día en la nube.';
-
-  @override
-  String get homeAccountSheetOfflineTitle => 'Sin conexión';
-
-  @override
-  String get homeAccountSheetOfflineKicker => 'Algo merece tu atención';
-
-  @override
-  String get homeAccountSheetOfflineBody =>
-      'Sincronizaremos solos en cuanto haya conexión.';
-
-  @override
-  String get homeAccountSheetNoAccountTitle => 'Respalda tu información';
+  String get homeAccountSheetNoAccountTitle => 'Respalda tus datos';
 
   @override
   String get homeAccountSheetNoAccountBody =>
-      'Inicia sesión para no perder tus datos si cambias de teléfono.';
+      'Así no los pierdes si cambias de teléfono';
 
   @override
   String get homeAccountSheetActivateBackup => 'Activar respaldo';
@@ -2184,6 +2167,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get authGoogleLoading => 'Conectando con Google…';
+
+  @override
+  String get authAppleLoading => 'Conectando con Apple…';
 
   @override
   String get authGoogleErrorSnackbar => 'No pudimos iniciar sesión con Google';

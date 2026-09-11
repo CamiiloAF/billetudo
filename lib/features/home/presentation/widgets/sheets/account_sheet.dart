@@ -1,24 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
+import '../../../../../core/widgets/sheet_menu_row.dart';
 import '../../cubit/home_cubit.dart';
 import '../../cubit/home_state.dart';
-import 'account_sync_block.dart';
-import 'identity_row.dart';
-import 'no_account_invite.dart';
-import 'settings_row.dart';
+import 'account_sheet_backup_card.dart';
+import 'account_sheet_hero_card.dart';
+import 'account_sheet_list_card.dart';
 import 'sign_out_row.dart';
 
 /// "Tu cuenta" (`design-system/billetudo/pages/inicio.md` § "Hoja de
-/// cuenta"), opened by tapping the header's avatar: Identity Row + a compact
-/// sync block (reusing `SyncHero`, never a parallel component) + "Ajustes" +
-/// "Cerrar sesión" — the last two absent for the "sin cuenta" variant, which
-/// shows an "Activar respaldo" invite instead.
+/// cuenta", issue #34: Propuesta B "hero + lista", nodeId `svGeu`/`mwnHe`
+/// base, `AkTan`/`Z95Se7` sincronizado, `e0c5v8`/`aRNMx` sin cuenta):
+///
+/// - **Hero Card**: signed-in shows the avatar (its own status badge
+///   switched off), name and a status pill; "sin cuenta" shows a backup
+///   invite (icon + copy + CTA) instead.
+/// - **List Card**: "Estado de sincronización" + "Ajustes" rows, separated
+///   by a divider — only "Ajustes" survives without a session.
+/// - **"Cerrar sesión"**: a bare link below the List Card, signed-in only.
 ///
 /// Reactive like `SyncStatusSheet`: a [BlocBuilder] over the shared
-/// [HomeCubit] keeps the sync block current while the sheet stays open.
+/// [HomeCubit] keeps the pill/rows current while the sheet stays open.
 class AccountSheet extends StatelessWidget {
   const AccountSheet({
     required this.onOpenSettings,
@@ -58,54 +64,55 @@ class AccountSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
 
     return BlocBuilder<HomeCubit, HomeState>(
       buildWhen: (previous, current) =>
           previous.user != current.user ||
-          previous.syncStatus != current.syncStatus ||
-          previous.syncSnapshot != current.syncSnapshot,
+          previous.syncStatus != current.syncStatus,
       builder: (context, state) {
         final user = state.user;
 
         return Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              l10n.homeAccountSheetTitle,
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 20),
             if (user == null)
-              NoAccountInvite(
+              AccountSheetBackupCard(
                 onActivateBackup: () {
                   Navigator.of(context).pop();
                   onActivateBackup();
                 },
               )
-            else ...[
-              IdentityRow(user: user),
-              const SizedBox(height: 16),
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).pop();
-                  onOpenSyncStatus();
-                },
-                child: AccountSyncBlock(state: state),
+            else
+              AccountSheetHeroCard(
+                user: user,
+                synced: state.syncStatus != HomeSyncStatus.attention,
               ),
+            const SizedBox(height: 16),
+            AccountSheetListCard(
+              rows: [
+                if (user != null)
+                  SheetMenuRow(
+                    icon: LucideIcons.refreshCw,
+                    label: l10n.settingsSyncStatus,
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      onOpenSyncStatus();
+                    },
+                  ),
+                SheetMenuRow(
+                  icon: LucideIcons.settings,
+                  label: l10n.moreSettings,
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    onOpenSettings();
+                  },
+                ),
+              ],
+            ),
+            if (user != null) ...[
               const SizedBox(height: 16),
-              SettingsRow(
-                onTap: () {
-                  Navigator.of(context).pop();
-                  onOpenSettings();
-                },
-              ),
-              const SizedBox(height: 8),
-              const Divider(height: 1),
-              const SizedBox(height: 8),
               SignOutRow(
                 onTap: () {
                   Navigator.of(context).pop();

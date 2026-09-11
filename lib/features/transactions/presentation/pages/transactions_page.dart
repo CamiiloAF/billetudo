@@ -10,6 +10,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_fab.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
 import '../../../../core/widgets/root_tab_header.dart';
+import '../../../../core/widgets/scroll_aware_fab.dart';
+import '../../../../core/widgets/scroll_aware_fab_visibility.dart';
 import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
 import '../../../accounts/presentation/widgets/account_gate_copy.dart';
 import '../../../capture/presentation/cubit/capture_review_item.dart';
@@ -39,7 +41,10 @@ import '../widgets/transactions_sort_button.dart';
 /// The transaction list (HU-06/`B3GGa`/`xAk6Y`): search, every combinable
 /// filter, and the delete/"Deshacer" flow (HU-05). A root destination of the
 /// Tab Bar, so its header carries no back button and no trailing action.
-class TransactionsPage extends StatelessWidget {
+/// GitHub issue #26: `StatefulWidget` only to own the scroll-aware FAB state
+/// ([ScrollAwareFabVisibility]) that [TransactionsListView] below feeds via
+/// its own [ScrollController] — same pattern already used by `HomePage`.
+class TransactionsPage extends StatefulWidget {
   const TransactionsPage({
     required this.onAddTransaction,
     required this.onOpenTransaction,
@@ -97,13 +102,20 @@ class TransactionsPage extends StatelessWidget {
   /// null only when no account is shown.
   /// HU-02/HU-03 of `15-gate-cuenta.md`: without any active account the FAB
   /// opens the bridge sheet instead of a form that could not save anyway.
+
+  @override
+  State<TransactionsPage> createState() => _TransactionsPageState();
+}
+
+class _TransactionsPageState extends State<TransactionsPage>
+    with ScrollAwareFabVisibility<TransactionsPage> {
   Future<void> _addTransaction(BuildContext context) async {
     final canProceed = await showAccountGateIfNeeded(
       context,
       AccountGateSurface.movement,
     );
     if (canProceed && context.mounted) {
-      onAddTransaction(_preselectedAccountId(context));
+      widget.onAddTransaction(_preselectedAccountId(context));
     }
   }
 
@@ -125,7 +137,7 @@ class TransactionsPage extends StatelessWidget {
   /// is an ancestor of that provider, so reading from there throws
   /// `ProviderNotFoundError` instead of silently doing nothing.
   Future<void> _openTransaction(BuildContext context, String id) async {
-    final deletedId = await onOpenTransaction(id);
+    final deletedId = await widget.onOpenTransaction(id);
     if (deletedId != null && context.mounted) {
       context.read<TransactionsListCubit>().notifyExternalDelete(deletedId);
     }
@@ -135,7 +147,8 @@ class TransactionsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    final linkMode = this.linkMode;
+    final linkMode = widget.linkMode;
+    final onBackToReports = widget.onBackToReports;
     // Same source of truth as the leading button below: when the user
     // arrived here from Gráficas' drill-down, the system back
     // gesture/button must also return there instead of falling through to
@@ -151,18 +164,22 @@ class TransactionsPage extends StatelessWidget {
       canPop: !interceptSystemBack,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop && interceptSystemBack) {
-          onBackToReports?.call();
+          onBackToReports();
         }
       },
       child: Scaffold(
-        // Link mode hides the FAB: the task there is to pick an existing
-        // movement, not to create one (`g0x859`).
+        // Link mode hides the FAB entirely: the task there is to pick an
+        // existing movement, not to create one (`g0x859`). Otherwise it is
+        // scroll-aware (GH-26), same pattern as `HomePage`'s own FAB.
         floatingActionButton: linkMode != null
             ? null
-            : AppFab(
-                icon: LucideIcons.plus,
-                tooltip: l10n.transactionsAdd,
-                onPressed: () => unawaited(_addTransaction(context)),
+            : ScrollAwareFab(
+                visible: fabVisible,
+                child: AppFab(
+                  icon: LucideIcons.plus,
+                  tooltip: l10n.transactionsAdd,
+                  onPressed: () => unawaited(_addTransaction(context)),
+                ),
               ),
         body: SafeArea(
           child: BlocConsumer<TransactionsListCubit, TransactionsListState>(
@@ -301,13 +318,13 @@ class TransactionsPage extends StatelessWidget {
                               SliverToBoxAdapter(
                                 child: MovementsBalanceCarousel(
                                   state: state,
-                                  onOpenAccount: onOpenAccount,
+                                  onOpenAccount: widget.onOpenAccount,
                                 ),
                               ),
                             SliverToBoxAdapter(
                               child: PendingCapturesListSlot(
                                 filter: state.filter,
-                                onTap: onDispatchCapture,
+                                onTap: widget.onDispatchCapture,
                               ),
                             ),
                             SliverLayoutBuilder(
@@ -332,9 +349,10 @@ class TransactionsPage extends StatelessWidget {
                       TransactionsListStatus.ready => TransactionsListView(
                           state: state,
                           onOpenTransaction: onRowTap,
-                          onOpenAccount: onOpenAccount,
-                          onDispatchCapture: onDispatchCapture,
+                          onOpenAccount: widget.onOpenAccount,
+                          onDispatchCapture: widget.onDispatchCapture,
                           showCarousel: showCarousel,
+                          scrollController: fabScrollController,
                         ),
                     },
                   ),
@@ -550,6 +568,7 @@ class TransactionsListView extends StatelessWidget {
     required this.onOpenAccount,
     this.onDispatchCapture,
     this.showCarousel = true,
+    this.scrollController,
     super.key,
   });
 
@@ -569,6 +588,11 @@ class TransactionsListView extends StatelessWidget {
   /// drops it to keep the focus on picking a movement (`g0x859`).
   final bool showCarousel;
 
+  /// GH-26: drives [TransactionsPage]'s scroll-aware FAB — attached to
+  /// whichever of the two lists below actually renders, so scrolling either
+  /// one hides/shows the FAB the same way `HomePage`'s own list does.
+  final ScrollController? scrollController;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -585,6 +609,7 @@ class TransactionsListView extends StatelessWidget {
     // for context since the date headers are gone.
     if (transactionSortIsByAmount(sortOrder)) {
       return ListView(
+        controller: scrollController,
         padding: const EdgeInsets.only(bottom: 28),
         children: [
           if (showCarousel)
@@ -641,6 +666,7 @@ class TransactionsListView extends StatelessWidget {
     final leadingSlots = carouselSlots + totalSlots + 1;
 
     return ListView.builder(
+      controller: scrollController,
       padding: const EdgeInsets.only(bottom: 28),
       itemCount: groups.length + leadingSlots,
       itemBuilder: (context, index) {

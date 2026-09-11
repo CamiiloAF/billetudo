@@ -446,8 +446,7 @@ void main() {
   });
 
   group('B-3: transferencia presupuestable (toggle countsInBudget)', () {
-    testWidgets(
-        'gasto nunca muestra el toggle "¿Incluir en tu presupuesto?"',
+    testWidgets('gasto nunca muestra el toggle "¿Incluir en tu presupuesto?"',
         (tester) async {
       await pumpForm(
         tester,
@@ -705,6 +704,37 @@ void main() {
 
       verify(() => cubit.amountCleared()).called(1);
       verifyNever(() => cubit.amountBackspace());
+    });
+
+    testWidgets(
+        'con Monto enfocado pero el teclado del sistema abierto (hoja '
+        'anidada, ej. "+ Nueva" de Etiquetas), el teclado anclado se colapsa',
+        (tester) async {
+      await pumpForm(
+        tester,
+        TransactionFormState(
+          status: TransactionFormStatus.ready,
+          focusedField: TransactionFormFocusedField.amount,
+        ),
+      );
+
+      // Baseline: sin ningún inset, el teclado anclado se muestra expandido.
+      expect(find.byType(NumericKeypad), findsOneWidget);
+
+      // A real system keyboard opened by a nested sheet (e.g. NewTagSheet's
+      // "+ Nueva" field) resizes this route's body too — `viewInsets` is
+      // global, not scoped to the sheet. `isKeypadVisible` alone does not
+      // change (this page's own Monto/Nota focus split is untouched), so the
+      // fix must react to the inset itself.
+      tester.view.viewInsets = const FakeViewPadding(bottom: 900);
+      addTearDown(tester.view.resetViewInsets);
+      // The collapse is an `AnimatedSwitcher` cross-fade (`AppTheme.
+      // motionDuration`), not an instant swap — let it settle before
+      // asserting which child is actually present.
+      await tester.pumpAndSettle();
+
+      expect(find.byType(NumericKeypad), findsNothing);
+      expect(find.byType(TransactionAmountCollapsedBar), findsOneWidget);
     });
   });
 

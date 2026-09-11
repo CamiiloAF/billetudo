@@ -81,6 +81,19 @@ class _NoteAutocompleteFieldState extends State<NoteAutocompleteField> {
   List<String> _suggestions = const [];
   int _requestId = 0;
 
+  /// Tracks whether this `State` is currently attached to an *active*
+  /// element, unlike `mounted` (which stays true for the whole window
+  /// between `deactivate()` and `dispose()` — e.g. while a route pop's
+  /// transition is still animating out the old page). A note lookup awaits
+  /// a real Drift query, so a save-and-pop (its `TextField`'s `onChanged`
+  /// fires on `enterText`, and the very next action can be the Guardar tap)
+  /// can land its callback in that window: `mounted` alone would let it
+  /// through and call `_overlayController.show()`/`setState()` on a
+  /// deactivated ancestor, throwing "Looking up a deactivated widget's
+  /// ancestor is unsafe" — verified against a real emulator run of the
+  /// "Note autocomplete" Patrol scenario.
+  bool _isActive = true;
+
   bool get _ownsFocusNode => widget.focusNode == null;
 
   @override
@@ -89,7 +102,33 @@ class _NoteAutocompleteFieldState extends State<NoteAutocompleteField> {
     _controller = TextEditingController(text: widget.initialValue);
     _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(_handleFocusChange);
-    _getNoteSuggestions = widget.getNoteSuggestions ?? getIt<GetNoteSuggestions>();
+    _getNoteSuggestions =
+        widget.getNoteSuggestions ?? getIt<GetNoteSuggestions>();
+  }
+
+  @override
+  void activate() {
+    super.activate();
+    _isActive = true;
+  }
+
+  @override
+  void deactivate() {
+    // Only flip flags here — never call `_overlayController.hide()` (or
+    // anything else that reaches into the framework, e.g. `setState` on
+    // another `State`) from `deactivate()`: it can run mid-teardown, while
+    // `SchedulerBinding`'s phase is still `persistentCallbacks`, and
+    // `OverlayPortalController.hide()` asserts against exactly that. Tripping
+    // that assert here aborted the rest of this element's own unmount in a
+    // real run (`flutter test test/core/widgets/note_autocomplete_field_test
+    // .dart`), leaking a descendant `EditableText` still registered as a
+    // `WidgetsBindingObserver` into the next test. `OverlayPortal` already
+    // tears its own overlay child down when its own element deactivates
+    // (`_OverlayEntryLocation._deactivate` in the framework) — nothing here
+    // needs to force that.
+    _isActive = false;
+    _requestId++;
+    super.deactivate();
   }
 
   @override
@@ -112,6 +151,13 @@ class _NoteAutocompleteFieldState extends State<NoteAutocompleteField> {
   }
 
   void _handleFocusChange() {
+    // A pop can unfocus this field as part of tearing the route down, which
+    // fires this listener while the element is deactivated (removeListener
+    // in `dispose()` runs too late to prevent that one call) — same window
+    // `_isActive` guards in `_handleChanged`/`deactivate()`.
+    if (!_isActive) {
+      return;
+    }
     if (!_focusNode.hasFocus) {
       _hideOverlay();
     }
@@ -123,7 +169,11 @@ class _NoteAutocompleteFieldState extends State<NoteAutocompleteField> {
     widget.onChanged(value);
     final requestId = ++_requestId;
     final suggestions = await _getNoteSuggestions(value);
-    if (!mounted || requestId != _requestId) {
+    // `_isActive` catches the deactivated-but-not-yet-disposed window
+    // `mounted` alone would miss (see its doc comment) — `deactivate()`
+    // also bumps `_requestId`, so the id check below is a second line of
+    // defence, not a duplicate of the same guard.
+    if (!mounted || !_isActive || requestId != _requestId) {
       return;
     }
     setState(() => _suggestions = suggestions);

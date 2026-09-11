@@ -1511,34 +1511,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get homeAccountSheetTitle => 'Your account';
+  String get homeAccountSheetSyncedPill => 'Synced';
 
   @override
-  String get homeAccountSheetSyncedTitle => 'Everything is synced';
-
-  @override
-  String get homeAccountSheetSyncedKicker => 'All good';
-
-  @override
-  String get homeAccountSheetSyncedBody =>
-      'Your data is backed up and up to date in the cloud.';
-
-  @override
-  String get homeAccountSheetOfflineTitle => 'No connection';
-
-  @override
-  String get homeAccountSheetOfflineKicker => 'Something needs your attention';
-
-  @override
-  String get homeAccountSheetOfflineBody =>
-      'We\'ll sync automatically once you\'re back online.';
+  String get homeAccountSheetOfflinePill => 'No connection';
 
   @override
   String get homeAccountSheetNoAccountTitle => 'Back up your data';
 
   @override
   String get homeAccountSheetNoAccountBody =>
-      'Sign in so you don\'t lose your data if you switch phones.';
+      'That way you won\'t lose them if you switch phones';
 
   @override
   String get homeAccountSheetActivateBackup => 'Activate backup';
@@ -2179,6 +2162,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authGoogleLoading => 'Connecting to Google…';
+
+  @override
+  String get authAppleLoading => 'Connecting to Apple…';
 
   @override
   String get authGoogleErrorSnackbar => 'We couldn\'t sign you in with Google';

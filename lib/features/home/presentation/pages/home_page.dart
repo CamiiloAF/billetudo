@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -13,6 +12,8 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_fab.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/scroll_aware_fab.dart';
+import '../../../../core/widgets/scroll_aware_fab_visibility.dart';
 import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
 import '../../../accounts/presentation/widgets/account_gate_copy.dart';
 import '../../../capture/presentation/utils/start_voice_capture_flow.dart';
@@ -143,12 +144,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  final ScrollController _scrollController = ScrollController();
-
-  /// HU-02: the FAB hides on scroll down and comes back on scroll up.
-  bool _fabVisible = true;
-
+class _HomePageState extends State<HomePage>
+    with ScrollAwareFabVisibility<HomePage> {
   /// Guards every AI-card tap handler below (`_onAskQuestion`,
   /// `_onCreateBudgetOrAskAi`, `_onStartInsightConversation`,
   /// `_onContinueInsightConversation`) against opening the chat more than
@@ -161,27 +158,6 @@ class _HomePageState extends State<HomePage> {
   /// while another is still resolving must be blocked too, not just repeats
   /// of the exact same one.
   bool _openingAi = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  void _onScroll() {
-    final direction = _scrollController.position.userScrollDirection;
-    if (direction == ScrollDirection.reverse && _fabVisible) {
-      setState(() => _fabVisible = false);
-    } else if (direction == ScrollDirection.forward && !_fabVisible) {
-      setState(() => _fabVisible = true);
-    }
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
 
   /// HU-04: opens the fallback hero's month picker (no budget featured).
   /// [visibleMonth] seeds the sheet's initial year/selection; picking a
@@ -376,22 +352,17 @@ class _HomePageState extends State<HomePage> {
       tutorialKey: TutorialKey.voiceCaptureGesture,
       onCta: startVoiceCaptureFlow,
       child: Scaffold(
-        floatingActionButton: AnimatedSlide(
-          duration: const Duration(milliseconds: 200),
-          offset: _fabVisible ? Offset.zero : const Offset(0, 2),
-          child: AnimatedOpacity(
-            duration: const Duration(milliseconds: 200),
-            opacity: _fabVisible ? 1 : 0,
-            child: AppFab(
-              icon: LucideIcons.plus,
-              tooltip: l10n.transactionsAdd,
-              onPressed: () => unawaited(_addTransaction(context)),
-              // The primary voice trigger. Tap and hold are two different
-              // actions on the same button, both of which end on the same
-              // form — the hold only fills it in first.
-              onLongPress: () => unawaited(startVoiceCaptureFlow(context)),
-              longPressHint: l10n.captureVoiceFabLongPressHint,
-            ),
+        floatingActionButton: ScrollAwareFab(
+          visible: fabVisible,
+          child: AppFab(
+            icon: LucideIcons.plus,
+            tooltip: l10n.transactionsAdd,
+            onPressed: () => unawaited(_addTransaction(context)),
+            // The primary voice trigger. Tap and hold are two different
+            // actions on the same button, both of which end on the same
+            // form — the hold only fills it in first.
+            onLongPress: () => unawaited(startVoiceCaptureFlow(context)),
+            longPressHint: l10n.captureVoiceFabLongPressHint,
           ),
         ),
         body: SafeArea(
@@ -416,7 +387,7 @@ class _HomePageState extends State<HomePage> {
             },
             builder: (context, state) {
               return CustomScrollView(
-                controller: _scrollController,
+                controller: fabScrollController,
                 slivers: [
                   SliverToBoxAdapter(
                     child: Padding(
