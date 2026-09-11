@@ -245,17 +245,25 @@ abstract final class AppRoutes {
   static const String voiceCapture = '/captura/voz';
 
   /// Bank-notification inbox behind the bell
-  /// (`docs/requirements/fase-2/19-notificaciones-bancarias.md`).
-  ///
-  /// **PENDIENTE DE CABLEAR:** its base route lives on
-  /// `feat/fase2-fundamentos`. Same deal as [voiceCapture].
-  static const String bankInbox = '/movimientos/por-confirmar';
+  /// (`docs/requirements/fase-2/19-notificaciones-bancarias.md`) — the same
+  /// Avisos centre [notices] already opens from Home's bell. The widget's
+  /// "Pendientes" shortcut (HU-02 of `20-widget-captura-rapida.md`) points
+  /// here directly now that `feat/capture-inbox` landed on `dev`; no
+  /// dedicated route was ever needed, this alias just names the intent at
+  /// the call site.
+  static const String bankInbox = notices;
 
   /// Destinations the home-screen widget can point at that no `GoRoute`
   /// serves yet. Anything listed here falls back to the manual movement form
   /// instead of landing on the router's error page — HU-01 is explicit that a
   /// widget tap costs a slower launch, never an error.
-  static const Set<String> pendingWidgetTargets = {voiceCapture, bankInbox};
+  ///
+  /// [bankInbox] is not listed: it now resolves to the real [notices] route.
+  /// [voiceCapture] still is — the voice capture surface is a bottom sheet
+  /// (`VoiceCaptureSheet`), not a page a route can land on directly, so
+  /// wiring it up needs a small bridge page (or a `CaptureShortcutListener`
+  /// callback that can open a sheet), not just removing it from this set.
+  static const Set<String> pendingWidgetTargets = {voiceCapture};
 
   /// The new-movement form with [type] preselected — the destination of the
   /// home-screen widget's "Gasto"/"Ingreso" shortcuts (HU-01/HU-02 of

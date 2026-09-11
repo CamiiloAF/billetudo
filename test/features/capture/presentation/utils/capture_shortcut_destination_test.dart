@@ -19,20 +19,23 @@ void main() {
       );
     });
 
+    test('bankInbox opens the Avisos centre now that it is wired', () {
+      expect(
+        CaptureShortcutDestination.routeFor(CaptureShortcut.bankInbox),
+        AppRoutes.notices,
+      );
+    });
+
     test('a destination not wired yet degrades to the manual form', () {
-      // Voice (`feat/capture-voice`) and the bank inbox
-      // (`feat/fase2-fundamentos`) have no `GoRoute` here yet: the shortcut
-      // must land on a usable form, never on the router's error page.
-      for (final shortcut in [
-        CaptureShortcut.voice,
-        CaptureShortcut.bankInbox,
-      ]) {
-        expect(
-          CaptureShortcutDestination.routeFor(shortcut),
-          '/movimientos/nuevo?type=expense',
-          reason: 'pending destination ${shortcut.id} must have a fallback',
-        );
-      }
+      // Voice (`feat/capture-voice`) has no `GoRoute` here yet — its surface
+      // is a bottom sheet (`VoiceCaptureSheet`), not a page a route can land
+      // on directly — so the shortcut must land on a usable form, never on
+      // the router's error page.
+      expect(
+        CaptureShortcutDestination.routeFor(CaptureShortcut.voice),
+        '/movimientos/nuevo?type=expense',
+        reason: 'pending destination voice must have a fallback',
+      );
     });
   });
 
