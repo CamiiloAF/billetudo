@@ -4210,6 +4210,18 @@ abstract class AppLocalizations {
   /// **'Mantén presionado y arrastra para reordenar'**
   String get settingsQuickAccessOrderHint;
 
+  /// No description provided for @settingsWidgetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Widget de captura rápida'**
+  String get settingsWidgetTitle;
+
+  /// No description provided for @settingsWidgetSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Añádelo a tu pantalla de inicio para registrar un gasto o ingreso en un toque, sin abrir la app. Mantén presionada la pantalla de inicio, toca Widgets y busca Billetudo.'**
+  String get settingsWidgetSubtitle;
+
   /// No description provided for @settingsDeleteAccount.
   ///
   /// In es, this message translates to:

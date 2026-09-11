@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>INEnums</key>
+	<array>
+		<dict>
+			<key>INEnumGeneratesHeader</key>
+			<true/>
+			<key>INEnumName</key>
+			<string>QuickCapturePreset</string>
+			<key>INEnumType</key>
+			<string>Int</string>
+			<key>INEnumValues</key>
+			<array>
+				<dict>
+					<key>INEnumValueDisplayName</key>
+					<string>Unknown</string>
+					<key>INEnumValueIndex</key>
+					<integer>0</integer>
+					<key>INEnumValueName</key>
+					<string>unknown</string>
+				</dict>
+				<dict>
+					<key>INEnumValueDisplayName</key>
+					<string>Gasto e ingreso</string>
+					<key>INEnumValueIndex</key>
+					<integer>1</integer>
+					<key>INEnumValueName</key>
+					<string>expenseIncome</string>
+				</dict>
+				<dict>
+					<key>INEnumValueDisplayName</key>
+					<string>Gasto y voz</string>
+					<key>INEnumValueIndex</key>
+					<integer>2</integer>
+					<key>INEnumValueName</key>
+					<string>expenseVoice</string>
+				</dict>
+				<dict>
+					<key>INEnumValueDisplayName</key>
+					<string>Solo gasto</string>
+					<key>INEnumValueIndex</key>
+					<integer>3</integer>
+					<key>INEnumValueName</key>
+					<string>expenseOnly</string>
+				</dict>
+				<dict>
+					<key>INEnumValueDisplayName</key>
+					<string>Solo ingreso</string>
+					<key>INEnumValueIndex</key>
+					<integer>4</integer>
+					<key>INEnumValueName</key>
+					<string>incomeOnly</string>
+				</dict>
+				<dict>
+					<key>INEnumValueDisplayName</key>
+					<string>Solo voz</string>
+					<key>INEnumValueIndex</key>
+					<integer>5</integer>
+					<key>INEnumValueName</key>
+					<string>voiceOnly</string>
+				</dict>
+				<dict>
+					<key>INEnumValueDisplayName</key>
+					<string>Gasto, ingreso y voz</string>
+					<key>INEnumValueIndex</key>
+					<integer>6</integer>
+					<key>INEnumValueName</key>
+					<string>allThree</string>
+				</dict>
+			</array>
+		</dict>
+	</array>
+	<key>INIntents</key>
+	<array>
+		<dict>
+			<key>INIntentCategory</key>
+			<string>generic</string>
+			<key>INIntentConfigurable</key>
+			<true/>
+			<key>INIntentDescription</key>
+			<string>Elige qué atajos de captura mostrar en el widget.</string>
+			<key>INIntentEligibleForSiriShortcutsApp</key>
+			<false/>
+			<key>INIntentEligibleForVoiceShortcut</key>
+			<false/>
+			<key>INIntentEligibleForWidgets</key>
+			<true/>
+			<key>INIntentName</key>
+			<string>SelectQuickCaptureShortcuts</string>
+			<key>INIntentParameters</key>
+			<array>
+				<dict>
+					<key>INIntentParameterConfigurable</key>
+					<true/>
+					<key>INIntentParameterDisplayName</key>
+					<string>Atajos</string>
+					<key>INIntentParameterDisplayPriority</key>
+					<integer>1</integer>
+					<key>INIntentParameterEnumType</key>
+					<string>QuickCapturePreset</string>
+					<key>INIntentParameterName</key>
+					<string>preset</string>
+					<key>INIntentParameterType</key>
+					<string>Enum</string>
+				</dict>
+			</array>
+			<key>INIntentResponse</key>
+			<dict>
+				<key>INIntentResponseCodeSuccess</key>
+				<string>success</string>
+			</dict>
+			<key>INIntentTitle</key>
+			<string>Configurar atajos</string>
+			<key>INIntentType</key>
+			<string>Custom</string>
+			<key>INIntentVerb</key>
+			<string>Do</string>
+		</dict>
+	</array>
+</dict>
+</plist>

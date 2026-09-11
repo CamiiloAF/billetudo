@@ -10,6 +10,7 @@
 		0EC4276C86B6845757FB7A62 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7DB0A9B0F7D0EFEB81AD2E18 /* Assets.xcassets */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
+		3B27CA1AE65AE5F0E89EB535 /* QuickCaptureWidget.intentdefinition in Sources */ = {isa = PBXBuildFile; fileRef = E2BB99B91873BA4DC564F989 /* QuickCaptureWidget.intentdefinition */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		4225C58B2098F474D3D1FE0A /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D45E361ABB60A5F9B67C4A85 /* Pods_RunnerTests.framework */; };
 		5EA91C09CBC19AAAE09B6E84 /* RunnerUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 950FBD22F2334BB775C2C81D /* RunnerUITests.m */; };
@@ -139,6 +140,7 @@
 		DA5C092A863E933C3C24376B /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		DD5316690A5A6332CBF90420 /* Pods-Runner-RunnerUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner-RunnerUITests.debug.xcconfig"; path = "Target Support Files/Pods-Runner-RunnerUITests/Pods-Runner-RunnerUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		DFFF31FF1607F68E8A0920D3 /* QuickCaptureWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QuickCaptureWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		E2BB99B91873BA4DC564F989 /* QuickCaptureWidget.intentdefinition */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file.intentdefinition; path = QuickCaptureWidget.intentdefinition; sourceTree = "<group>"; };
 		E82E89AAA8C13B048589248D /* Pods-Runner-RunnerUITests.release-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner-RunnerUITests.release-prod.xcconfig"; path = "Target Support Files/Pods-Runner-RunnerUITests/Pods-Runner-RunnerUITests.release-prod.xcconfig"; sourceTree = "<group>"; };
 		EE668AA77DBA4C45DABE86F7 /* QuickCaptureWidgetSupport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuickCaptureWidgetSupport.swift; sourceTree = "<group>"; };
 		F0379D68E6F398CF58FFDB24 /* Pods-Runner.release-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release-prod.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release-prod.xcconfig"; sourceTree = "<group>"; };
@@ -219,6 +221,7 @@
 				7DB0A9B0F7D0EFEB81AD2E18 /* Assets.xcassets */,
 				71545391D04638355293AD5A /* PlusJakartaSans-SemiBold.ttf */,
 				9B027D7E3C94F559C9E8BC79 /* Localizable.strings */,
+				E2BB99B91873BA4DC564F989 /* QuickCaptureWidget.intentdefinition */,
 			);
 			name = QuickCaptureWidget;
 			path = QuickCaptureWidget;
@@ -685,6 +688,7 @@
 				A10008B23E2F395C2567E794 /* QuickCaptureWidget.swift in Sources */,
 				5FA34CE0C40FE554CF3E85DE /* QuickCaptureWidgetBundle.swift in Sources */,
 				7AC9D5399B4ECD59E238D3E3 /* QuickCaptureWidgetSupport.swift in Sources */,
+				3B27CA1AE65AE5F0E89EB535 /* QuickCaptureWidget.intentdefinition in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -803,6 +807,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = QuickCaptureWidget/Info.plist;
+				INTENTS_CODEGEN_LANGUAGE = Swift;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo.dev.QuickCaptureWidget;
@@ -1176,6 +1181,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = QuickCaptureWidget/Info.plist;
+				INTENTS_CODEGEN_LANGUAGE = Swift;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo.QuickCaptureWidget;
@@ -1543,6 +1549,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = QuickCaptureWidget/Info.plist;
+				INTENTS_CODEGEN_LANGUAGE = Swift;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo.QuickCaptureWidget;
@@ -1567,6 +1574,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = QuickCaptureWidget/Info.plist;
+				INTENTS_CODEGEN_LANGUAGE = Swift;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo.QuickCaptureWidget;
@@ -1590,6 +1598,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = QuickCaptureWidget/Info.plist;
+				INTENTS_CODEGEN_LANGUAGE = Swift;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo.dev.QuickCaptureWidget;
@@ -1630,6 +1639,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = QuickCaptureWidget/Info.plist;
+				INTENTS_CODEGEN_LANGUAGE = Swift;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo.dev.QuickCaptureWidget;
@@ -1654,6 +1664,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = QuickCaptureWidget/Info.plist;
+				INTENTS_CODEGEN_LANGUAGE = Swift;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo.QuickCaptureWidget;
@@ -1745,6 +1756,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = QuickCaptureWidget/Info.plist;
+				INTENTS_CODEGEN_LANGUAGE = Swift;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo.QuickCaptureWidget;
@@ -1769,6 +1781,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = QuickCaptureWidget/Info.plist;
+				INTENTS_CODEGEN_LANGUAGE = Swift;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo.QuickCaptureWidget;

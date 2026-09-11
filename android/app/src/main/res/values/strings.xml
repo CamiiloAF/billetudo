@@ -29,4 +29,12 @@
     <string name="widget_shortcut_income_a11y">Registrar un ingreso</string>
     <string name="widget_shortcut_voice_a11y">Registrar por voz</string>
     <string name="widget_shortcut_inbox_a11y">Abrir movimientos pendientes</string>
+
+    <!-- Configuration activity del widget (HU-03). -->
+    <string name="widget_configure_title">Configura tu widget</string>
+    <string name="widget_configure_subtitle">Elige qué atajos mostrar y en qué orden.</string>
+    <string name="widget_configure_save">Guardar</string>
+    <string name="widget_configure_move_up_a11y">Mover hacia arriba</string>
+    <string name="widget_configure_move_down_a11y">Mover hacia abajo</string>
+    <string name="widget_configure_error_empty">Elige al menos un atajo</string>
 </resources>

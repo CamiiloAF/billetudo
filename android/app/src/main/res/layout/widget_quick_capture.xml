@@ -2,10 +2,13 @@
 <!--
   Widget de captura rápida (docs/requirements/fase-2/20-widget-captura-rapida.md).
 
-  Una sola fila de atajos. `QuickCaptureWidgetProvider` esconde los de la
-  derecha según el ancho disponible (HU-06): Android redimensiona en un rango
-  continuo, así que se muestran menos atajos en vez de apretarlos por debajo
-  del área tocable mínima.
+  Una sola fila de hasta 4 atajos, en 4 slots genéricos. `QuickCaptureWidgetProvider`
+  decide en tiempo de render qué atajo va en cada slot (según la configuración
+  guardada por instancia, HU-03) y esconde los que no caben en el ancho
+  disponible (HU-06): Android redimensiona en un rango continuo, así que se
+  muestran menos atajos en vez de apretarlos por debajo del área tocable
+  mínima. Por eso ningún slot lleva ya un ícono/etiqueta fijo en el XML — se
+  asignan con `RemoteViews.setImageViewResource`/`setTextViewText`.
 
   No muestra ningún dato financiero — es un atajo puro (decisión de alcance
   2026-08-17), así que no hay nada que refrescar ni que pueda quedar viejo.
@@ -19,63 +22,54 @@
     android:padding="8dp">
 
     <LinearLayout
-        android:id="@+id/widget_shortcut_expense"
-        style="@style/WidgetShortcut"
-        android:contentDescription="@string/widget_shortcut_expense_a11y">
+        android:id="@+id/widget_shortcut_slot_0"
+        style="@style/WidgetShortcut">
 
         <ImageView
-            style="@style/WidgetShortcutIcon"
-            android:src="@drawable/ic_widget_expense" />
+            android:id="@+id/widget_shortcut_icon_0"
+            style="@style/WidgetShortcutIcon" />
 
         <TextView
-            style="@style/WidgetShortcutLabel"
-            android:text="@string/widget_shortcut_expense" />
+            android:id="@+id/widget_shortcut_label_0"
+            style="@style/WidgetShortcutLabel" />
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/widget_shortcut_income"
-        style="@style/WidgetShortcut"
-        android:contentDescription="@string/widget_shortcut_income_a11y">
+        android:id="@+id/widget_shortcut_slot_1"
+        style="@style/WidgetShortcut">
 
         <ImageView
-            style="@style/WidgetShortcutIcon"
-            android:src="@drawable/ic_widget_income" />
+            android:id="@+id/widget_shortcut_icon_1"
+            style="@style/WidgetShortcutIcon" />
 
         <TextView
-            style="@style/WidgetShortcutLabel"
-            android:text="@string/widget_shortcut_income" />
+            android:id="@+id/widget_shortcut_label_1"
+            style="@style/WidgetShortcutLabel" />
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/widget_shortcut_voice"
-        style="@style/WidgetShortcut"
-        android:contentDescription="@string/widget_shortcut_voice_a11y">
+        android:id="@+id/widget_shortcut_slot_2"
+        style="@style/WidgetShortcut">
 
         <ImageView
-            style="@style/WidgetShortcutIcon"
-            android:src="@drawable/ic_widget_voice" />
+            android:id="@+id/widget_shortcut_icon_2"
+            style="@style/WidgetShortcutIcon" />
 
         <TextView
-            style="@style/WidgetShortcutLabel"
-            android:text="@string/widget_shortcut_voice" />
+            android:id="@+id/widget_shortcut_label_2"
+            style="@style/WidgetShortcutLabel" />
     </LinearLayout>
 
-    <!--
-      Solo Android: la captura por notificación bancaria no existe en iOS
-      (no se pueden leer notificaciones ajenas), así que allá el atajo no
-      aparece en vez de mostrarse deshabilitado.
-    -->
     <LinearLayout
-        android:id="@+id/widget_shortcut_inbox"
-        style="@style/WidgetShortcut"
-        android:contentDescription="@string/widget_shortcut_inbox_a11y">
+        android:id="@+id/widget_shortcut_slot_3"
+        style="@style/WidgetShortcut">
 
         <ImageView
-            style="@style/WidgetShortcutIcon"
-            android:src="@drawable/ic_widget_inbox" />
+            android:id="@+id/widget_shortcut_icon_3"
+            style="@style/WidgetShortcutIcon" />
 
         <TextView
-            style="@style/WidgetShortcutLabel"
-            android:text="@string/widget_shortcut_inbox" />
+            android:id="@+id/widget_shortcut_label_3"
+            style="@style/WidgetShortcutLabel" />
     </LinearLayout>
 </LinearLayout>

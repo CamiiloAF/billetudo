@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Configuration activity del widget de captura rápida (HU-03,
+  docs/requirements/fase-2/20-widget-captura-rapida.md).
+
+  El sistema la abre al añadir el widget, y el usuario puede volver a abrirla
+  después desde el menú de "editar widget" del launcher — misma pantalla.
+
+  Deliberadamente simple: 4 filas fijas (una por atajo), cada una con un
+  checkbox (se muestra o no) y dos flechas (su lugar en la fila). Sin
+  arrastrar-y-soltar ni RecyclerView — un widget de a lo sumo cuatro huecos no
+  justifica esa maquinaria (ver QuickCaptureWidgetConfigureActivity.kt). Las
+  4 filas se escriben explícitas (no con <include>) porque un <include>
+  repetido comparte los mismos ids de hijos entre instancias — no se podría
+  distinguir la fila 0 de la fila 1 con `findViewById`.
+
+  No es una pantalla de `lib/` ni pasa por Pencil: es una superficie del
+  sistema operativo (configuration activity de App Widget), no parte de la
+  navegación de la app en Flutter.
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/widget_surface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/widget_configure_title"
+            android:textColor="@color/widget_text_primary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="16dp"
+            android:text="@string/widget_configure_subtitle"
+            android:textColor="@color/widget_text_secondary"
+            android:textSize="14sp" />
+
+        <!-- Fila 0 -->
+        <LinearLayout
+            android:id="@+id/configure_row_0"
+            style="@style/WidgetConfigureRow">
+
+            <CheckBox
+                android:id="@+id/configure_checkbox_0"
+                style="@style/WidgetConfigureCheckbox" />
+
+            <TextView
+                android:id="@+id/configure_label_0"
+                style="@style/WidgetConfigureLabel" />
+
+            <ImageButton
+                android:id="@+id/configure_up_0"
+                style="@style/WidgetConfigureReorderButton"
+                android:contentDescription="@string/widget_configure_move_up_a11y"
+                android:src="@drawable/ic_widget_configure_up" />
+
+            <ImageButton
+                android:id="@+id/configure_down_0"
+                style="@style/WidgetConfigureReorderButton"
+                android:contentDescription="@string/widget_configure_move_down_a11y"
+                android:src="@drawable/ic_widget_configure_down" />
+        </LinearLayout>
+
+        <!-- Fila 1 -->
+        <LinearLayout
+            android:id="@+id/configure_row_1"
+            style="@style/WidgetConfigureRow">
+
+            <CheckBox
+                android:id="@+id/configure_checkbox_1"
+                style="@style/WidgetConfigureCheckbox" />
+
+            <TextView
+                android:id="@+id/configure_label_1"
+                style="@style/WidgetConfigureLabel" />
+
+            <ImageButton
+                android:id="@+id/configure_up_1"
+                style="@style/WidgetConfigureReorderButton"
+                android:contentDescription="@string/widget_configure_move_up_a11y"
+                android:src="@drawable/ic_widget_configure_up" />
+
+            <ImageButton
+                android:id="@+id/configure_down_1"
+                style="@style/WidgetConfigureReorderButton"
+                android:contentDescription="@string/widget_configure_move_down_a11y"
+                android:src="@drawable/ic_widget_configure_down" />
+        </LinearLayout>
+
+        <!-- Fila 2 -->
+        <LinearLayout
+            android:id="@+id/configure_row_2"
+            style="@style/WidgetConfigureRow">
+
+            <CheckBox
+                android:id="@+id/configure_checkbox_2"
+                style="@style/WidgetConfigureCheckbox" />
+
+            <TextView
+                android:id="@+id/configure_label_2"
+                style="@style/WidgetConfigureLabel" />
+
+            <ImageButton
+                android:id="@+id/configure_up_2"
+                style="@style/WidgetConfigureReorderButton"
+                android:contentDescription="@string/widget_configure_move_up_a11y"
+                android:src="@drawable/ic_widget_configure_up" />
+
+            <ImageButton
+                android:id="@+id/configure_down_2"
+                style="@style/WidgetConfigureReorderButton"
+                android:contentDescription="@string/widget_configure_move_down_a11y"
+                android:src="@drawable/ic_widget_configure_down" />
+        </LinearLayout>
+
+        <!-- Fila 3 -->
+        <LinearLayout
+            android:id="@+id/configure_row_3"
+            style="@style/WidgetConfigureRow">
+
+            <CheckBox
+                android:id="@+id/configure_checkbox_3"
+                style="@style/WidgetConfigureCheckbox" />
+
+            <TextView
+                android:id="@+id/configure_label_3"
+                style="@style/WidgetConfigureLabel" />
+
+            <ImageButton
+                android:id="@+id/configure_up_3"
+                style="@style/WidgetConfigureReorderButton"
+                android:contentDescription="@string/widget_configure_move_up_a11y"
+                android:src="@drawable/ic_widget_configure_up" />
+
+            <ImageButton
+                android:id="@+id/configure_down_3"
+                style="@style/WidgetConfigureReorderButton"
+                android:contentDescription="@string/widget_configure_move_down_a11y"
+                android:src="@drawable/ic_widget_configure_down" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/configure_save"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@color/widget_primary"
+            android:text="@string/widget_configure_save"
+            android:textColor="@color/widget_on_primary" />
+    </LinearLayout>
+</ScrollView>

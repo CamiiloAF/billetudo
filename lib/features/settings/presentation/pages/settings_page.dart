@@ -130,6 +130,19 @@ class SettingsPage extends StatelessWidget {
                         onTap: onOpenQuickAccessOrder,
                       ),
                       const SizedBox(height: 12),
+                      // Announces the home-screen widget instead of
+                      // navigating (HU-03, `20-widget-captura-rapida.md`):
+                      // there is no in-app screen to open — adding and
+                      // configuring the widget both happen in the OS, not
+                      // in Flutter — so this row is informational only.
+                      SettingsField(
+                        icon: LucideIcons.layoutGrid,
+                        label: l10n.settingsWidgetTitle,
+                        sublabel: l10n.settingsWidgetSubtitle,
+                        showChevron: false,
+                        onTap: () {},
+                      ),
+                      const SizedBox(height: 12),
                       BlocBuilder<AppSettingsCubit, AppSettingsState>(
                         builder: (context, settings) => ShowHelpOnEntryField(
                           enabled: settings.showHelpOnSectionEntry,

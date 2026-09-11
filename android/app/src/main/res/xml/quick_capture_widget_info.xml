@@ -8,6 +8,10 @@
 
   `minWidth` ≈ 2 columnas (variante compacta, 2 atajos) y es redimensionable
   hasta la fila completa de 4; el provider decide cuántos caben.
+
+  `configure`: HU-03. El sistema abre `QuickCaptureWidgetConfigureActivity`
+  al añadir el widget; el usuario puede volver a abrirla después desde el
+  propio launcher para elegir qué atajos mostrar y en qué orden.
 -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="110dp"
@@ -23,4 +27,5 @@
     android:previewLayout="@layout/widget_quick_capture"
     android:description="@string/widget_quick_capture_description"
     android:resizeMode="horizontal"
-    android:widgetCategory="home_screen" />
+    android:widgetCategory="home_screen"
+    android:configure="com.billetudo.app.widget.QuickCaptureWidgetConfigureActivity" />

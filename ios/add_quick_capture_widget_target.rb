@@ -52,6 +52,33 @@ LOCALIZATIONS = %w[es en].freeze
 
 RUNNER_BRIDGE_FILE = 'QuickCaptureWidgetBridge.swift'
 
+# Classic (pre-iOS 17) WidgetKit configuration (HU-03,
+# docs/requirements/fase-2/20-widget-captura-rapida.md): the deployment
+# target above is 15.0, below what `AppIntentConfiguration` requires, so the
+# widget's "Edit Widget" screen is built from this `.intentdefinition`
+# instead. `intentbuilderc` (Xcode's private compiler for these files)
+# generates `SelectQuickCaptureShortcutsIntent`/`QuickCapturePreset` Swift
+# types at build time — nothing to add to SOURCE_FILES for that.
+INTENT_DEFINITION_FILE = 'QuickCaptureWidget.intentdefinition'
+
+# Idempotent: adds the `.intentdefinition` to the widget target's Sources
+# build phase and turns on Swift codegen for it, doing nothing if already
+# wired. Returns `true` if it changed anything.
+def ensure_intent_definition(project, target, group)
+  already = target.source_build_phase.files_references.any? do |ref|
+    ref.path&.end_with?(INTENT_DEFINITION_FILE)
+  end
+  return false if already
+
+  ref = group.new_reference(INTENT_DEFINITION_FILE)
+  ref.last_known_file_type = 'file.intentdefinition'
+  target.add_file_references([ref])
+  target.build_configurations.each do |config|
+    config.build_settings['INTENTS_CODEGEN_LANGUAGE'] = 'Swift'
+  end
+  true
+end
+
 project = Xcodeproj::Project.open(PROJECT_PATH)
 runner = project.targets.find { |t| t.name == 'Runner' }
 abort('[x] No se encontró el target Runner.') if runner.nil?
@@ -88,11 +115,20 @@ def fix_phase_order(runner)
 end
 
 if project.targets.any? { |t| t.name == TARGET_NAME }
-  if fix_phase_order(runner)
-    project.save
+  changed = fix_phase_order(runner)
+  if changed
     puts '[ok] Fase "Embed Foundation Extensions" movida antes de "Thin Binary".'
   end
-  puts "[=] El target #{TARGET_NAME} ya existe. Nada más que hacer."
+
+  existing_target = project.targets.find { |t| t.name == TARGET_NAME }
+  existing_group = project.main_group.find_subpath(GROUP_PATH, false)
+  if existing_group && ensure_intent_definition(project, existing_target, existing_group)
+    changed = true
+    puts "[ok] #{INTENT_DEFINITION_FILE} añadido al target #{TARGET_NAME}."
+  end
+
+  project.save if changed
+  puts "[=] El target #{TARGET_NAME} ya existe. Nada más que hacer." unless changed
   exit 0
 end
 
@@ -133,6 +169,8 @@ group.set_path(GROUP_PATH)
 
 source_refs = SOURCE_FILES.map { |name| group.new_reference(name) }
 target.add_file_references(source_refs)
+
+ensure_intent_definition(project, target, group)
 
 resource_refs = RESOURCE_FILES.map { |name| group.new_reference(name) }
 target.add_resources(resource_refs)

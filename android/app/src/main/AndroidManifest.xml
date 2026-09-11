@@ -43,6 +43,23 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/quick_capture_widget_info" />
         </receiver>
+        <!--
+            Configuration activity del widget (HU-03,
+            docs/requirements/fase-2/20-widget-captura-rapida.md): el sistema
+            la abre al añadir el widget (`android:configure` en
+            quick_capture_widget_info.xml) y el usuario puede reabrirla
+            después. `exported="true"` es obligatorio para este tipo de
+            actividad — sin él el launcher no puede lanzarla — pero solo el
+            propio sistema de widgets la invoca en la práctica.
+        -->
+        <activity
+            android:name=".widget.QuickCaptureWidgetConfigureActivity"
+            android:exported="true"
+            android:theme="@style/NormalTheme">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
         <!-- Bank-notification capture (Fase 2, Android only).
              This <service> introduces the FIRST sensitive permission of the
              app and changes the permission list shown in the store: it

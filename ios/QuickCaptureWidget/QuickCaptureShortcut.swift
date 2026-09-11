@@ -1,4 +1,5 @@
 import Foundation
+import Intents
 import SwiftUI
 
 /// The shortcuts the iOS home-screen widget can offer
@@ -72,5 +73,32 @@ enum QuickCaptureShortcut: String, CaseIterable {
     }
     components.removeLast()
     return components.joined(separator: ".")
+  }
+}
+
+extension QuickCaptureShortcut {
+  /// Set and order for a widget nobody has configured yet (HU-03, decision:
+  /// `unknown` — the intent's un-set default — falls back to this). Expense
+  /// and income are the pair most people reach for on day one: neither asks
+  /// for a permission nor depends on voice being available on the device.
+  static let defaultShortcuts: [QuickCaptureShortcut] = [.expense, .income]
+
+  /// Maps the widget's configuration parameter (HU-03) to the shortcuts and
+  /// order the widget shows. iOS does not allow an arbitrary configuration
+  /// screen — only a selection among predefined options
+  /// (`docs/requirements/fase-2/20-widget-captura-rapida.md`) — so the
+  /// options are a fixed set of presets rather than a free reorder of the
+  /// three shortcuts, defined in `QuickCaptureWidget.intentdefinition`.
+  static func shortcuts(for preset: QuickCapturePreset) -> [QuickCaptureShortcut] {
+    switch preset {
+    case .unknown: return defaultShortcuts
+    case .expenseIncome: return [.expense, .income]
+    case .expenseVoice: return [.expense, .voice]
+    case .expenseOnly: return [.expense]
+    case .incomeOnly: return [.income]
+    case .voiceOnly: return [.voice]
+    case .allThree: return [.expense, .income, .voice]
+    @unknown default: return defaultShortcuts
+    }
   }
 }

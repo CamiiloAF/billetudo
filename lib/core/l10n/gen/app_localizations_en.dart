@@ -2407,6 +2407,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Press and hold to drag and reorder';
 
   @override
+  String get settingsWidgetTitle => 'Quick-capture widget';
+
+  @override
+  String get settingsWidgetSubtitle =>
+      'Add it to your home screen to log an expense or income in one tap, without opening the app. Press and hold your home screen, tap Widgets and look for Billetudo.';
+
+  @override
   String get settingsDeleteAccount => 'Delete account';
 
   @override
