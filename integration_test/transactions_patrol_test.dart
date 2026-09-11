@@ -37,6 +37,8 @@ import 'package:billetudo/features/transactions/presentation/pages/transaction_f
 import 'package:billetudo/features/transactions/presentation/widgets/circular_icon_chip.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/filter_chip_pill.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/filters_button.dart';
+import 'package:billetudo/features/transactions/presentation/widgets/period_nav_arrow_button.dart';
+import 'package:billetudo/features/transactions/presentation/widgets/period_nav_bar.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/new_tag_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/transaction_row.dart';
 import 'package:drift/drift.dart' show Value;
@@ -388,10 +390,10 @@ Future<void> _enterAmount(PatrolIntegrationTester $, List<int> digits) async {
     // (see this helper's own doc comment), so `formatSymbol` renders exactly
     // what `TransactionAmountExpandedZone` shows on screen, grouping dots
     // included.
-    final expectedText =
-        money.formatSymbol(whole * 100, currencyCode: 'COP');
+    final expectedText = money.formatSymbol(whole * 100, currencyCode: 'COP');
     final expected = find.text(expectedText);
-    for (var attempt = 0; attempt < 3 && expected.evaluate().isEmpty;
+    for (var attempt = 0;
+        attempt < 3 && expected.evaluate().isEmpty;
         attempt++) {
       await $.tester.tap(find.text('$digit').first);
       await $.tester.pump();
@@ -507,6 +509,34 @@ Future<void> _createAccountScopedBudget(
   await $.tester.pumpAndSettle();
   await $.tester.tap(button);
   await $.tester.pumpAndSettle();
+}
+
+/// Taps the [PeriodNavBar]'s Prev (`LucideIcons.chevronLeft`) or Next
+/// (`LucideIcons.chevronRight`) chevron, matched by widget type/icon —
+/// `PeriodNavArrowButton` wraps the tappable area in a bare `Semantics`, not
+/// a `Tooltip`, so it needs the same robust-widget-predicate approach
+/// `_tapAccountField` already documents for `AccountPickerField`.
+Future<void> _tapPeriodNavArrow(
+    PatrolIntegrationTester $, IconData icon) async {
+  final finder = find.byWidgetPredicate(
+    (widget) => widget is PeriodNavArrowButton && widget.icon == icon,
+  );
+  await $.tester.tap(finder);
+  await $.tester.pumpAndSettle();
+}
+
+/// Reads the current period label rendered by `PeriodNavBar`'s centered
+/// `Text` — the only `Text` descendant of the bar once there is no active
+/// Presupuesto filter (its `Budget Context Tag` row, the only other `Text`
+/// it can render, is conditional on a non-null `budgetOption`; this
+/// scenario only ever applies a Fecha filter).
+String _periodNavLabel(PatrolIntegrationTester $) {
+  final finder = find.descendant(
+    of: find.byType(PeriodNavBar),
+    matching: find.byType(Text),
+  );
+  expect(finder, findsOneWidget);
+  return $.tester.widget<Text>(finder).data!;
 }
 
 void main() {
@@ -1294,10 +1324,7 @@ void main() {
         findsNothing,
       );
       expect(
-        $.tester
-            .widget<TextField>(find.byType(TextField))
-            .controller
-            ?.text,
+        $.tester.widget<TextField>(find.byType(TextField)).controller?.text,
         'Almuerzo oficina',
       );
 
@@ -1311,6 +1338,77 @@ void main() {
         find.text('Almuerzo oficina'),
         findsNWidgets(2),
       );
+    },
+  );
+
+  patrolTest(
+    'Period Nav Bar: aplicar un filtro de Fecha no-default lo muestra y '
+    'Prev/Next navegan entre periodos',
+    ($) async {
+      await startApp($);
+      await _createCashAccount($, 'Efectivo');
+
+      _goToTransactions($);
+      await $.tester.pumpAndSettle();
+
+      // Default filter is `DatePeriodFilter.thisMonth()`
+      // (`TransactionFilter.hasDateFilter`), so `PeriodNavBar` is not built
+      // at all yet.
+      expect(find.byType(PeriodNavBar), findsNothing);
+
+      // Applies a non-default Fecha filter through the real unified filters
+      // sheet: switching granularity to "Semana" (current week) differs from
+      // the default "this month" the moment it is picked — same mechanism
+      // `unified_filters_cubit.dart`'s `granularitySelected` uses, exercised
+      // here through the actual UI instead of a mocked cubit (unlike the
+      // golden tests covering this same widget).
+      //
+      // `find.byTooltip`, not `find.text('Filtros')` (unlike the sibling
+      // "Issue #7" scenario above): `FiltersButton` is icon-only, its
+      // `'Filtros'` label only ever reaches the tree through a `Tooltip`
+      // (shown on long-press, never mounted as a plain `Text` on tap) —
+      // verified against a real emulator run, `find.text('Filtros')` finds 0
+      // widgets here before the sheet is open.
+      await $.tester.tap(find.byTooltip('Filtros'));
+      await $.tester.pumpAndSettle();
+      expect(find.text('FECHA'), findsOneWidget);
+      await $.tester.tap(find.text('Semana'));
+      await $.tester.pumpAndSettle();
+      await $.tester.tap(find.text('Aplicar'));
+      await $.tester.pumpAndSettle();
+
+      // The bar now renders, anchored on the current week: there is no
+      // lower bound on the past (`datePeriodHasPrevious` is always true for
+      // a granular period), but "Next" starts disabled — the current week
+      // has nowhere forward to go (`datePeriodHasNext`'s own doc comment).
+      await _expectEventually($, find.byType(PeriodNavBar), findsOneWidget);
+      final nextArrow = find.byWidgetPredicate(
+        (widget) =>
+            widget is PeriodNavArrowButton &&
+            widget.icon == LucideIcons.chevronRight,
+      );
+      expect($.tester.widget<PeriodNavArrowButton>(nextArrow).enabled, isFalse);
+
+      final originalLabel = _periodNavLabel($);
+
+      // Tap Prev: steps back one week, and the period label changes to
+      // reflect it.
+      await _tapPeriodNavArrow($, LucideIcons.chevronLeft);
+      final previousLabel = _periodNavLabel($);
+      expect(previousLabel, isNot(equals(originalLabel)));
+
+      // Having stepped back, "Next" is enabled again — there is now a period
+      // ahead of the one on screen.
+      expect($.tester.widget<PeriodNavArrowButton>(nextArrow).enabled, isTrue);
+
+      // Tap Next: steps back to the original week — same label as before
+      // stepping away.
+      await _tapPeriodNavArrow($, LucideIcons.chevronRight);
+      expect(_periodNavLabel($), originalLabel);
+
+      // Back at the current week, "Next" is disabled again — the bounded
+      // edge this scenario's own comment above documents.
+      expect($.tester.widget<PeriodNavArrowButton>(nextArrow).enabled, isFalse);
     },
   );
 }
