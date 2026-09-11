@@ -1,4 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Recordatorios de vencimiento (HU-08, pagos programados) y avisos
+         locales. Se piden en contexto, cuando el usuario configura su primer
+         recordatorio, nunca al arrancar. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Android borra todas las alarmas programadas al reiniciar. El receptor
+         de flutter_local_notifications las reprograma con este permiso, y la
+         app además reconcilia el set completo de recordatorios en cada
+         arranque (GenerateDueScheduledPayments -> SyncScheduledPaymentReminders),
+         que es la garantía real de que un reinicio no deja a nadie sin aviso. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <!-- Captura por voz (docs/requirements/fase-2/17-captura-voz.md, HU-07).
          Se pide en runtime, en el momento de dictar: nunca en el arranque ni
          en el onboarding. El audio no se guarda ni se sincroniza. -->
