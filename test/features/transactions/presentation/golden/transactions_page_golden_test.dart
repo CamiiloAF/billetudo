@@ -408,6 +408,92 @@ void main() {
       );
     });
 
+    // `PeriodNavBar` (Fecha variant): a granular period other than the
+    // default "this month" (`hasDateFilter == true`) enables both chevrons —
+    // there is no lower bound on the past and this is a past month, so
+    // `datePeriodHasNext` is also true — and shows no `Budget Context Tag`.
+    testWidgets(
+        'period nav bar: date period, both arrows enabled ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        TransactionsListState(
+          status: TransactionsListStatus.ready,
+          items: items,
+          accounts: accounts,
+          filter: TransactionFilter(
+            datePeriod: DatePeriodFilter.granular(
+              DateGranularity.month,
+              DateTime(2026, 5),
+            ),
+          ),
+        ),
+        'period_nav_date_enabled_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    // `PeriodNavBar` (Fecha variant): a custom range (`DatePeriodFilter
+    // .custom`) has no granularity to step, so both chevrons render inert at
+    // `opacity:0.4` (`datePeriodHasPrevious`/`datePeriodHasNext` both false).
+    testWidgets(
+        'period nav bar: custom range, both arrows disabled ($suffix)',
+        (tester) async {
+      await golden(
+        tester,
+        TransactionsListState(
+          status: TransactionsListStatus.ready,
+          items: items,
+          accounts: accounts,
+          filter: TransactionFilter(
+            datePeriod: DatePeriodFilter.custom(
+              start: DateTime(2026, 7, 3),
+              end: DateTime(2026, 7, 9),
+            ),
+          ),
+        ),
+        'period_nav_custom_disabled_$suffix',
+        brightness: brightness,
+      );
+    });
+
+    // `PeriodNavBar` (Presupuesto variant), complement of "budget chip:
+    // budget selected, active" above: same `Budget Context Tag`, but with
+    // `DatePeriodFilter.budget`'s `hasPrevious`/`hasNext` both true so this
+    // covers the enabled chevrons — the existing golden only covers the
+    // disabled (both-bounds) look.
+    testWidgets(
+        'period nav bar: budget period, both arrows enabled ($suffix)',
+        (tester) async {
+      final budgetOption = BudgetPeriodOption(
+        budgetId: 'budget-1',
+        name: 'Comida',
+        icon: 'utensils',
+        start: DateTime(2026, 7),
+        endExclusive: DateTime(2026, 8),
+      );
+      await golden(
+        tester,
+        TransactionsListState(
+          status: TransactionsListStatus.ready,
+          items: items,
+          accounts: accounts,
+          budgetOptions: [budgetOption],
+          filter: TransactionFilter(
+            budgetPeriod: DatePeriodFilter.budget(
+              budgetId: 'budget-1',
+              start: DateTime(2026, 7),
+              endExclusive: DateTime(2026, 8),
+              hasPrevious: true,
+              hasNext: true,
+            ),
+          ),
+        ),
+        'period_nav_budget_enabled_$suffix',
+        brightness: brightness,
+      );
+    });
+
     // HU-06 sort by amount (`tigaH`/`Q8gSaB` in Pencil): once
     // `TransactionFilter.sortOrder` is an amount order, `TransactionsListView`
     // drops the date-grouped headers for a flat run of `Transaction Row`s
