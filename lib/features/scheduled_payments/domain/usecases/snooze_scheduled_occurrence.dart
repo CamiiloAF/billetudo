@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/error/result.dart';
 import '../entities/snooze_outcome.dart';
 import '../repositories/scheduled_payment_repository.dart';
+import 'sync_scheduled_payment_reminders.dart';
 
 /// HU-07: moves a single occurrence to a later date chosen by the user,
 /// without affecting the balance or the template's cadence — the following
@@ -13,9 +14,10 @@ import '../repositories/scheduled_payment_repository.dart';
 /// `UndoSnoozeScheduledOccurrence`.
 @injectable
 class SnoozeScheduledOccurrence {
-  const SnoozeScheduledOccurrence(this._repository);
+  const SnoozeScheduledOccurrence(this._repository, this._syncReminders);
 
   final ScheduledPaymentRepository _repository;
+  final SyncScheduledPaymentReminders _syncReminders;
 
   static const String fieldNewDate = 'newDate';
 
@@ -36,11 +38,30 @@ class SnoozeScheduledOccurrence {
         ),
       );
     }
-    return _repository.snoozeOccurrence(
+    return _snoozeAndReschedule(
       scheduledPaymentId: scheduledPaymentId,
       occurrenceDate: occurrenceDate,
       newDate: newDate,
     );
+  }
+
+  /// Posponing moves the real due date, so the reminder must move with it
+  /// (HU-08): reminding for a date the user just pushed away would be wrong
+  /// twice — too early, and about a date that no longer exists.
+  FutureResult<SnoozeOutcome> _snoozeAndReschedule({
+    required String scheduledPaymentId,
+    required DateTime occurrenceDate,
+    required DateTime newDate,
+  }) async {
+    final result = await _repository.snoozeOccurrence(
+      scheduledPaymentId: scheduledPaymentId,
+      occurrenceDate: occurrenceDate,
+      newDate: newDate,
+    );
+    if (result.isRight()) {
+      await _syncReminders();
+    }
+    return result;
   }
 
   DateTime _laterOf(DateTime a, DateTime b) =>

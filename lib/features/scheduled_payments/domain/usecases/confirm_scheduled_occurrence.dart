@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/error/result.dart';
 import '../../../transactions/domain/entities/transaction.dart' as tx;
 import '../repositories/scheduled_payment_repository.dart';
+import 'sync_scheduled_payment_reminders.dart';
 
 /// HU-03: applies a pending occurrence with the final (possibly edited)
 /// values from the mandatory confirmation sheet (criterion 7) — there is no
@@ -14,9 +15,10 @@ import '../repositories/scheduled_payment_repository.dart';
 /// occurrence proposes the template's original values again.
 @injectable
 class ConfirmScheduledOccurrence {
-  const ConfirmScheduledOccurrence(this._repository);
+  const ConfirmScheduledOccurrence(this._repository, this._syncReminders);
 
   final ScheduledPaymentRepository _repository;
+  final SyncScheduledPaymentReminders _syncReminders;
 
   FutureResult<tx.Transaction> call({
     required String occurrenceId,
@@ -41,11 +43,31 @@ class ConfirmScheduledOccurrence {
         ),
       );
     }
-    return _repository.confirmOccurrence(
+    return _confirmAndReschedule(
       occurrenceId: occurrenceId,
       date: date,
       accountId: accountId,
       amountMinor: amountMinor,
     );
+  }
+
+  /// Resolving an occurrence moves what the next reminder should point at, so
+  /// the reminder set is reconciled after the write (HU-08).
+  FutureResult<tx.Transaction> _confirmAndReschedule({
+    required String occurrenceId,
+    required DateTime date,
+    required String accountId,
+    required int amountMinor,
+  }) async {
+    final result = await _repository.confirmOccurrence(
+      occurrenceId: occurrenceId,
+      date: date,
+      accountId: accountId,
+      amountMinor: amountMinor,
+    );
+    if (result.isRight()) {
+      await _syncReminders();
+    }
+    return result;
   }
 }

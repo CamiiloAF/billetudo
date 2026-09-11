@@ -48,7 +48,6 @@
   "@commonDone": {},
   "commonRecommended": "Recomendado",
   "@commonRecommended": {},
-  "@commonDone": {},
   "commonCreate": "Crear",
   "@commonCreate": {},
   "errorUnexpected": "Algo salió mal. Intenta de nuevo.",
@@ -3880,7 +3879,6 @@
   "@homeSyncSheetDetails": {},
   "settingsSyncStatus": "Estado de sincronización",
   "@settingsSyncStatus": {},
-
   "importExportHubTitle": "Importar y exportar",
   "@importExportHubTitle": {},
   "importExportHubErrorTitle": "No pudimos cargar esta pantalla",
@@ -3894,7 +3892,13 @@
   "importExportHeroBody": "Movimientos, cuentas, presupuestos, metas, deudas y pagos programados en un solo archivo tuyo. Si cambias de teléfono, la app lo vuelve a cargar tal cual.",
   "@importExportHeroBody": {},
   "importExportCopyStatusLastSaved": "Última copia: {date}",
-  "@importExportCopyStatusLastSaved": {"placeholders": {"date": {"type": "String"}}},
+  "@importExportCopyStatusLastSaved": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "importExportCopyStatusNeverSaved": "Aún no has guardado una copia",
   "@importExportCopyStatusNeverSaved": {},
   "importExportSaveCopyCta": "Guardar una copia",
@@ -3922,13 +3926,34 @@
   "importExportSeeAll": "Ver todas",
   "@importExportSeeAll": {},
   "importExportBatchMeta": "{count} movimientos · {relative}",
-  "@importExportBatchMeta": {"placeholders": {"count": {"type": "int"}, "relative": {"type": "String"}}},
+  "@importExportBatchMeta": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "relative": {
+        "type": "String"
+      }
+    }
+  },
   "importExportBatchRevertedBadge": "Revertida",
   "@importExportBatchRevertedBadge": {},
   "importExportRelativeDays": "hace {n} días",
-  "@importExportRelativeDays": {"placeholders": {"n": {"type": "int"}}},
+  "@importExportRelativeDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "importExportRelativeHours": "hace {n} horas",
-  "@importExportRelativeHours": {"placeholders": {"n": {"type": "int"}}},
+  "@importExportRelativeHours": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "importExportRelativeJustNow": "hace un momento",
   "@importExportRelativeJustNow": {},
   "importExportEmptyHeroTitle": "Trae tu historial",
@@ -3994,7 +4019,16 @@
   "importExportSaveCopyActionShare": "Compartir",
   "@importExportSaveCopyActionShare": {},
   "importExportProgressCaption": "{processed} de {total} filas",
-  "@importExportProgressCaption": {"placeholders": {"processed": {"type": "int"}, "total": {"type": "int"}}},
+  "@importExportProgressCaption": {
+    "placeholders": {
+      "processed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "importExportProgressHint": "No cierres la app mientras esto termina. Puedes cancelar sin perder lo que ya tenías.",
   "@importExportProgressHint": {},
   "importExportIoErrorWriteTitle": "No pudimos guardar el archivo",
@@ -4022,7 +4056,13 @@
   "importExportStepSummary": "Resumen",
   "@importExportStepSummary": {},
   "importExportTemplateMatched": "Reconocimos el formato de \"{name}\" — confirma para continuar",
-  "@importExportTemplateMatched": {"placeholders": {"name": {"type": "String"}}},
+  "@importExportTemplateMatched": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "importExportFieldNotUsed": "No usar",
   "@importExportFieldNotUsed": {},
   "importExportFieldRequired": "Obligatorio",
@@ -4030,7 +4070,13 @@
   "importExportFieldOptional": "Opcional",
   "@importExportFieldOptional": {},
   "importExportFieldPreview": "Vista previa: {value}",
-  "@importExportFieldPreview": {"placeholders": {"value": {"type": "String"}}},
+  "@importExportFieldPreview": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "importExportFormatDetectedTitle": "Formato detectado",
   "@importExportFormatDetectedTitle": {},
   "importExportFormatDateLabel": "Formato de fecha",
@@ -4086,7 +4132,13 @@
   "importExportDestinationsAllInvalidTitle": "Nada por resolver todavía",
   "@importExportDestinationsAllInvalidTitle": {},
   "importExportDestinationsAllInvalidBody": "Ninguna de las {count} filas se pudo leer con el mapeo actual — revisa el paso anterior antes de seguir.",
-  "@importExportDestinationsAllInvalidBody": {"placeholders": {"count": {"type": "int"}}},
+  "@importExportDestinationsAllInvalidBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "importExportDestinationsReviewMappingCta": "Revisar mapeo",
   "@importExportDestinationsReviewMappingCta": {},
   "importExportMappingModeAutomatic": "Automático",
@@ -4114,7 +4166,13 @@
   "importExportDateFormatOptionMdyDot": "MM.DD.AAAA",
   "@importExportDateFormatOptionMdyDot": {},
   "importExportDateFormatPreviewUnreadable": "\"{value}\" no se pudo leer con este formato",
-  "@importExportDateFormatPreviewUnreadable": {"placeholders": {"value": {"type": "String"}}},
+  "@importExportDateFormatPreviewUnreadable": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "importExportTypeValuesResultIncome": "Esta fila se leería como ingreso",
   "@importExportTypeValuesResultIncome": {},
   "importExportTypeValuesResultExpense": "Esta fila se leería como gasto",
@@ -4162,9 +4220,21 @@
   "importExportDuplicateProbable": "Posible duplicado: mismo monto y fecha",
   "@importExportDuplicateProbable": {},
   "importExportInvalidRowsCount": "Ver {n} filas con error",
-  "@importExportInvalidRowsCount": {"placeholders": {"n": {"type": "int"}}},
+  "@importExportInvalidRowsCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "importExportRowNumber": "Fila {n}",
-  "@importExportRowNumber": {"placeholders": {"n": {"type": "int"}}},
+  "@importExportRowNumber": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "importExportIssueMissingAccount": "Falta la cuenta",
   "@importExportIssueMissingAccount": {},
   "importExportIssueMissingDate": "Falta la fecha",
@@ -4180,9 +4250,21 @@
   "importExportConfirmImportCta": "Confirmar importación",
   "@importExportConfirmImportCta": {},
   "importExportImportRowsCta": "Importar {count} movimientos",
-  "@importExportImportRowsCta": {"placeholders": {"count": {"type": "int"}}},
+  "@importExportImportRowsCta": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "importExportDuplicatesSectionTitle": "Posibles duplicados ({count})",
-  "@importExportDuplicatesSectionTitle": {"placeholders": {"count": {"type": "int"}}},
+  "@importExportDuplicatesSectionTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "importExportSaveTemplateToggleLabel": "Guardar esta plantilla de mapeo",
   "@importExportSaveTemplateToggleLabel": {},
   "importExportSaveTemplateToggleHint": "La usarás con un toque la próxima vez que importes de este mismo origen.",
@@ -4194,7 +4276,13 @@
   "importExportSummaryTitle": "Importación completa",
   "@importExportSummaryTitle": {},
   "importExportSummarySubtitle": "{fileName} se procesó y ya está disponible en tus movimientos.",
-  "@importExportSummarySubtitle": {"placeholders": {"fileName": {"type": "String"}}},
+  "@importExportSummarySubtitle": {
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
   "importExportSummaryImported": "Importadas",
   "@importExportSummaryImported": {},
   "importExportSummarySkippedDuplicate": "Omitidas por duplicado",
@@ -4210,13 +4298,31 @@
   "importExportSummarySeeSkipped": "Ver omitidas",
   "@importExportSummarySeeSkipped": {},
   "importExportSummarySeeSkippedWithCount": "Ver {count} omitidas y por qué",
-  "@importExportSummarySeeSkippedWithCount": {"placeholders": {"count": {"type": "int"}}},
+  "@importExportSummarySeeSkippedWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "importExportSkippedSheetTitle": "Lo que no se importó",
   "@importExportSkippedSheetTitle": {},
   "importExportSkippedDuplicateReason": "{count} por posible duplicado: mismo id, o mismo monto y fecha, que un movimiento que ya tenías.",
-  "@importExportSkippedDuplicateReason": {"placeholders": {"count": {"type": "int"}}},
+  "@importExportSkippedDuplicateReason": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "importExportSkippedErrorReason": "{count} por un dato que no pudimos leer: fecha, monto o cuenta incompletos o inválidos en el archivo.",
-  "@importExportSkippedErrorReason": {"placeholders": {"count": {"type": "int"}}},
+  "@importExportSkippedErrorReason": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "importExportBatchesTitle": "Importaciones",
   "@importExportBatchesTitle": {},
   "importExportBatchesErrorTitle": "No pudimos cargar tus importaciones",
@@ -4228,7 +4334,16 @@
   "importExportUndoConfirmTitle": "¿Deshacer esta importación?",
   "@importExportUndoConfirmTitle": {},
   "importExportUndoConfirmBody": "Se quitarán las {count} filas que trajo \"{file}\". Lo que sigas usando fuera de esta importación se conserva.",
-  "@importExportUndoConfirmBody": {"placeholders": {"file": {"type": "String"}, "count": {"type": "int"}}},
+  "@importExportUndoConfirmBody": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "importExportUndoConfirmCta": "Deshacer importación",
   "@importExportUndoConfirmCta": {},
   "importExportUndoConfirmKeepNote": "Las cuentas y categorías que creó esta importación se conservan al deshacerla — solo se eliminan las transacciones que trajo.",
@@ -4238,13 +4353,37 @@
   "importExportRestorePickFileCta": "Elegir archivo",
   "@importExportRestorePickFileCta": {},
   "importExportRestoreSummaryTitle": "Copia del {date}",
-  "@importExportRestoreSummaryTitle": {"placeholders": {"date": {"type": "String"}}},
+  "@importExportRestoreSummaryTitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "importExportRestoreSheetTitle": "Restaurar copia",
   "@importExportRestoreSheetTitle": {},
   "importExportRestoreSheetSubtitle": "Copia del {date} · versión {version} · creada con Billetudo {appVersion}",
-  "@importExportRestoreSheetSubtitle": {"placeholders": {"date": {"type": "String"}, "version": {"type": "int"}, "appVersion": {"type": "String"}}},
+  "@importExportRestoreSheetSubtitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "version": {
+        "type": "int"
+      },
+      "appVersion": {
+        "type": "String"
+      }
+    }
+  },
   "importExportRestoreRowCounts": "Trae {n} filas en total",
-  "@importExportRestoreRowCounts": {"placeholders": {"n": {"type": "int"}}},
+  "@importExportRestoreRowCounts": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "importExportRestoreStatAccounts": "cuentas",
   "@importExportRestoreStatAccounts": {},
   "importExportRestoreStatCategories": "categorías",
@@ -4264,7 +4403,13 @@
   "importExportReplaceAllConfirmTitle": "Esta acción no se puede deshacer",
   "@importExportReplaceAllConfirmTitle": {},
   "importExportReplaceAllConfirmBody": "Vas a reemplazar TODOS tus datos actuales por los de la copia del {date}. Si tienes sesión iniciada, esto también borra tus datos en la nube.",
-  "@importExportReplaceAllConfirmBody": {"placeholders": {"date": {"type": "String"}}},
+  "@importExportReplaceAllConfirmBody": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "importExportRestoreModeMerge": "Fusionar",
   "@importExportRestoreModeMerge": {},
   "importExportRestoreModeMergeHint": "Combina con lo que ya tienes. No duplica si repites la restauración.",
@@ -4297,7 +4442,6 @@
   "@importExportRestoreUpdated": {},
   "importExportRestoreSkipped": "Omitidas",
   "@importExportRestoreSkipped": {},
-
   "reportsTabSummary": "Resumen",
   "@reportsTabSummary": {},
   "reportsTabCashflow": "Flujo",
@@ -5215,5 +5359,148 @@
   "captureIssuerUnknown": "otra app",
   "@captureIssuerUnknown": {},
   "captureSuggestedCategoryLabel": "Sugerida: {category}",
-  "@captureSuggestedCategoryLabel": {"placeholders": {"category": {"type": "String"}}}
+  "@captureSuggestedCategoryLabel": {"placeholders": {"category": {"type": "String"}}},
+  "notificationsChannelRemindersName": "Recordatorios de pagos",
+  "@notificationsChannelRemindersName": {},
+  "notificationsChannelRemindersDescription": "Avisos de los pagos programados que tú configuraste.",
+  "@notificationsChannelRemindersDescription": {},
+  "notificationsChannelCapturesName": "Registro de movimientos",
+  "@notificationsChannelCapturesName": {},
+  "notificationsChannelCapturesDescription": "Avisos para registrar un movimiento cuando lo pediste.",
+  "@notificationsChannelCapturesDescription": {},
+  "notificationsChannelMilestonesName": "Logros de tus metas",
+  "@notificationsChannelMilestonesName": {},
+  "notificationsChannelMilestonesDescription": "Avisos cuando una de tus metas llega a un hito.",
+  "@notificationsChannelMilestonesDescription": {},
+  "remindersNotificationBodyToday": "Hoy se paga {amount} desde {account}",
+  "@remindersNotificationBodyToday": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "account": {
+        "type": "String"
+      }
+    }
+  },
+  "remindersNotificationBodyTomorrow": "Mañana se paga {amount} desde {account}",
+  "@remindersNotificationBodyTomorrow": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "account": {
+        "type": "String"
+      }
+    }
+  },
+  "remindersNotificationBodyInDays": "En {days} días se paga {amount} desde {account}",
+  "@remindersNotificationBodyInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "account": {
+        "type": "String"
+      }
+    }
+  },
+  "remindersFieldSectionLabel": "Recordatorio",
+  "@remindersFieldSectionLabel": {},
+  "remindersOptionNone": "Sin recordatorio",
+  "remindersSheetCaption": "Te mandamos una notificación antes de que llegue la fecha.",
+  "@remindersOptionNone": {},
+  "remindersOptionOnDueDate": "El día del pago",
+  "@remindersOptionOnDueDate": {},
+  "remindersOptionOneDayBefore": "1 día antes",
+  "@remindersOptionOneDayBefore": {},
+  "remindersOptionThreeDaysBefore": "3 días antes",
+  "@remindersOptionThreeDaysBefore": {},
+  "remindersOptionOneWeekBefore": "Una semana antes",
+  "@remindersOptionOneWeekBefore": {},
+  "remindersPermissionNotice": "Guardamos tu preferencia. Para que el aviso llegue, activa las notificaciones de Billetudo en los ajustes de tu teléfono.",
+  "@remindersPermissionNotice": {},
+  "remindersChipOnDueDate": "Te avisamos el día del pago",
+  "@remindersChipOnDueDate": {},
+  "remindersChipOneDayBefore": "Te avisamos 1 día antes",
+  "@remindersChipOneDayBefore": {},
+  "remindersChipDaysBefore": "Te avisamos {days} días antes",
+  "@remindersChipDaysBefore": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "remindersChipOneWeekBefore": "Te avisamos una semana antes",
+  "@remindersChipOneWeekBefore": {},
+  "notificationsSettingsPaymentReminders": "Recordatorios de pago",
+  "@notificationsSettingsPaymentReminders": {},
+  "notificationsSettingsPaymentRemindersSubtitle": "Te avisamos antes de la fecha de un pago programado, con la anticipación que elegiste en cada uno.",
+  "@notificationsSettingsPaymentRemindersSubtitle": {},
+  "notificationsSettingsUpcomingCharges": "Cobros próximos",
+  "@notificationsSettingsUpcomingCharges": {},
+  "notificationsSettingsUpcomingChargesSubtitle": "Un aviso cuando se acerca un pago que ya tienes programado.",
+  "@notificationsSettingsUpcomingChargesSubtitle": {},
+  "notificationsSettingsPendingConfirmations": "Pagos por confirmar",
+  "@notificationsSettingsPendingConfirmations": {},
+  "notificationsSettingsPendingConfirmationsSubtitle": "Cuando un pago manual quedó esperando tu confirmación.",
+  "@notificationsSettingsPendingConfirmationsSubtitle": {},
+  "notificationsSettingsGoalMilestones": "Hitos de metas",
+  "@notificationsSettingsGoalMilestones": {},
+  "notificationsSettingsGoalMilestonesSubtitle": "Cuando llegas a la mitad de una meta y cuando la completas.",
+  "@notificationsSettingsGoalMilestonesSubtitle": {},
+  "insightGoalMilestoneTitle": "{name} va en {percent}%",
+  "@insightGoalMilestoneTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "insightGoalCompletedTitle": "¡Llegaste a tu meta {name}!",
+  "@insightGoalCompletedTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "insightGoalMilestoneBody": "Llevas {amount} de {target}",
+  "@insightGoalMilestoneBody": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsNotifications": "Notificaciones",
+  "settingsNotificationsSubtitle": "Recordatorios de pago, cobros próximos y metas",
+  "notificationsSettingsIntro": "Tú eliges qué te avisamos. Lo que apagues aquí deja de llegar y puedes volver a encenderlo cuando quieras.",
+  "notificationsSettingsDeniedIntro": "Cuando vuelvas a permitir las notificaciones, estos ajustes quedan como los tenías. No se pierde nada.",
+  "notificationsPermissionDeniedTitle": "Tu teléfono tiene las notificaciones apagadas",
+  "notificationsPermissionDeniedBody": "Mientras el permiso esté apagado no te llega ningún aviso, aunque aquí los dejes encendidos. Se activa desde los ajustes del teléfono.",
+  "notificationsPermissionDeniedCta": "Abrir ajustes del teléfono",
+  "insightUpcomingChargeTitleToday": "{name} se cobra hoy",
+  "insightUpcomingChargeTitleTomorrow": "{name} se cobra mañana",
+  "insightUpcomingChargeTitleInDays": "{name} se cobra en {days} días",
+  "insightUpcomingChargeSubtitle": "{amount} · Pago programado",
+  "insightPendingConfirmationTitleToday": "{name} estaba programado para hoy",
+  "insightPendingConfirmationTitleYesterday": "{name} estaba programado para ayer",
+  "insightPendingConfirmationTitleDaysAgo": "{name} estaba programado hace {days} días",
+  "insightPendingConfirmationSubtitle": "{amount} · Espera tu confirmación",
+  "insightActionViewPayment": "Ver pago",
+  "insightActionRemindLater": "Recordar después",
+  "insightActionConfirmPayment": "Confirmar pago",
+  "insightActionNotYet": "Todavía no",
+  "insightActionViewGoal": "Ver meta"
 }

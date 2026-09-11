@@ -38,6 +38,7 @@ class SettingsPage extends StatelessWidget {
     required this.onOpenSyncStatus,
     required this.onOpenQuickAccessOrder,
     required this.onOpenCapture,
+    required this.onOpenNotifications,
     super.key,
   });
 
@@ -48,6 +49,11 @@ class SettingsPage extends StatelessWidget {
   /// Opens "Orden del acceso rápido" (`QuickAccessOrderPage`): reorders the
   /// Home quick-access chips.
   final VoidCallback onOpenQuickAccessOrder;
+
+  /// Opens "Notificaciones" (`NotificationSettingsPage`). A navigation row,
+  /// not a switch: the per-kind granularity lives on the stacked screen
+  /// (`W2383p`), not here.
+  final VoidCallback onOpenNotifications;
 
   /// Opens "Estado de sincronización" (HU-08). Only reachable with a session:
   /// without one there is no cloud to report on, and Ajustes offers
@@ -132,6 +138,13 @@ class SettingsPage extends StatelessWidget {
                         label: l10n.settingsCurrency,
                         sublabel: l10n.settingsCurrencySubtitle,
                         onTap: () => onOpenComingSoon(l10n.settingsCurrency),
+                      ),
+                      const SizedBox(height: 12),
+                      SettingsField(
+                        icon: LucideIcons.bellRing,
+                        label: l10n.settingsNotifications,
+                        sublabel: l10n.settingsNotificationsSubtitle,
+                        onTap: onOpenNotifications,
                       ),
                       const SizedBox(height: 12),
                       SettingsField(

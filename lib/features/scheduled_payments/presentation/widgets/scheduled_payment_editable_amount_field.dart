@@ -110,7 +110,17 @@ class _ScheduledPaymentEditableAmountFieldState
     widget.onChanged(next.amountMinor);
   }
 
-  void _expand() => setState(() => _expanded = true);
+  // Dismissing the system keyboard before expanding is the actual fix for
+  // `docs/dev-runs/` HU-05 overflow: on a real device (unlike a mocked
+  // `flutter test` TextInput channel), the on-screen keyboard stays up from
+  // whatever text field had focus (e.g. Nota) until something else claims
+  // focus. Without this, the software keyboard's inset and this calculator's
+  // own expanded height (header + big value + `NumericKeypad`) briefly
+  // compete for the same space and the fixed body `Column` overflows.
+  void _expand() {
+    FocusScope.of(context).unfocus();
+    setState(() => _expanded = true);
+  }
 
   void _collapse() => setState(() => _expanded = false);
 

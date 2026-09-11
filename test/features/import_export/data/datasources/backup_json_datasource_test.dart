@@ -250,7 +250,7 @@ void main() {
       addTearDown(targetDb.close);
       await targetDb.into(targetDb.accounts).insert(
             AccountsCompanion.insert(
-              id: Value(id),
+              id: const Value(id),
               name: 'Nombre local (más nuevo)',
               type: AccountType.cash,
               currency: 'COP',
@@ -260,7 +260,7 @@ void main() {
 
       await sourceDb.into(sourceDb.accounts).insert(
             AccountsCompanion.insert(
-              id: Value(id),
+              id: const Value(id),
               name: 'Nombre de la copia (más viejo)',
               type: AccountType.cash,
               currency: 'COP',
@@ -323,7 +323,7 @@ void main() {
       const accountId = 'acc-1';
       await sourceDb.into(sourceDb.accounts).insert(
             AccountsCompanion.insert(
-              id: Value(accountId),
+              id: const Value(accountId),
               name: 'Nequi',
               type: AccountType.cash,
               currency: 'COP',

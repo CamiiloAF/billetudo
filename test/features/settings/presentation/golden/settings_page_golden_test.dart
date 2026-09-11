@@ -11,6 +11,8 @@ import 'package:billetudo/features/capture/presentation/cubit/capture_status_cub
 import 'package:billetudo/features/capture/presentation/cubit/capture_status_state.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_state.dart';
+import 'package:billetudo/features/settings/presentation/cubit/notification_settings_cubit.dart';
+import 'package:billetudo/features/settings/presentation/cubit/notification_settings_state.dart';
 import 'package:billetudo/features/settings/presentation/pages/settings_page.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
@@ -38,6 +40,9 @@ class MockSyncStatusCubit extends MockCubit<SyncStatusState>
 /// assert about the Preferencias section.
 class MockCaptureStatusCubit extends MockCubit<CaptureStatusState>
     implements CaptureStatusCubit {}
+
+class MockNotificationSettingsCubit extends MockCubit<NotificationSettingsState>
+    implements NotificationSettingsCubit {}
 
 /// Ajustes, both business states named in `design-system/billetudo/pages/auth.md`:
 ///
@@ -104,6 +109,16 @@ void main() {
       initialState: const CaptureStatusState(isLoading: false),
     );
 
+    // "Avisos": todos los tipos encendidos, que es el default real.
+    final notificationSettingsCubit = MockNotificationSettingsCubit();
+    when(() => notificationSettingsCubit.state)
+        .thenReturn(const NotificationSettingsState(loaded: true));
+    whenListen(
+      notificationSettingsCubit,
+      const Stream<NotificationSettingsState>.empty(),
+      initialState: const NotificationSettingsState(loaded: true),
+    );
+
     await pumpGolden(
       tester,
       MultiBlocProvider(
@@ -113,6 +128,9 @@ void main() {
           BlocProvider<ThemeModeCubit>.value(value: themeModeCubit),
           BlocProvider<SyncStatusCubit>.value(value: syncStatusCubit),
           BlocProvider<CaptureStatusCubit>.value(value: captureStatusCubit),
+          BlocProvider<NotificationSettingsCubit>.value(
+            value: notificationSettingsCubit,
+          ),
         ],
         child: SettingsPage(
           onOpenLogin: () {},
@@ -121,6 +139,7 @@ void main() {
           onOpenSyncStatus: () {},
           onOpenQuickAccessOrder: () {},
           onOpenCapture: (_) {},
+          onOpenNotifications: () {},
         ),
       ),
       brightness: brightness,

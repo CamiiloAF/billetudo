@@ -23,17 +23,64 @@ import '../theme/app_colors.dart';
 /// Metas' "mover dinero" without a linked account) should never read as
 /// already ON — and drops the shadow so it reads flush with the row instead
 /// of interactive.
+///
+/// **Inert state ([inert]):** the `Switch/Off` component (`t0gdV`), used when
+/// the control is untouchable for a reason outside the app — today, the
+/// notification permission revoked at the OS level. Unlike [enabled], it is
+/// not a dimmed look: the track is `$muted` with its `$border` stroke and the
+/// knob keeps its full-opacity `$surface` fill and its shadow. The state is
+/// encoded in the **position** of the knob (left), never in transparency —
+/// `$muted` on `$surface` is ~1.17:1, so colour alone would fail WCAG 1.4.1.
 class AppSwitch extends StatelessWidget {
-  const AppSwitch({required this.value, this.enabled = true, super.key});
+  const AppSwitch({
+    required this.value,
+    this.enabled = true,
+    this.inert = false,
+    super.key,
+  });
 
   final bool value;
 
   /// Defaults to `true` so existing call sites keep their current behaviour.
   final bool enabled;
 
+  /// When `true`, renders `Switch/Off` (`t0gdV`) regardless of [value]: knob
+  /// to the left, `$muted` track with a `$border` stroke, no dimming.
+  final bool inert;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    if (inert) {
+      return Container(
+        width: 48,
+        height: 28,
+        padding: const EdgeInsets.all(3),
+        alignment: Alignment.centerLeft,
+        decoration: BoxDecoration(
+          color: colors.muted,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: colors.border),
+        ),
+        child: Container(
+          width: 22,
+          height: 22,
+          decoration: BoxDecoration(
+            color: colors.surface,
+            shape: BoxShape.circle,
+            border: Border.all(color: colors.border),
+            boxShadow: const [
+              BoxShadow(color: Color(0x29000000), blurRadius: 2),
+              BoxShadow(
+                color: Color(0x3D000000),
+                blurRadius: 3,
+                offset: Offset(0, 1),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     final isOn = enabled && value;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 160),
