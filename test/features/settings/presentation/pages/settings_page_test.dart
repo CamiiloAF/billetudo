@@ -9,11 +9,14 @@ import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
 import 'package:billetudo/features/auth/domain/usecases/sign_out.dart';
 import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
 import 'package:billetudo/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:billetudo/features/capture/presentation/cubit/capture_status_cubit.dart';
+import 'package:billetudo/features/capture/presentation/cubit/capture_status_state.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_state.dart';
 import 'package:billetudo/features/settings/presentation/cubit/notification_settings_cubit.dart';
 import 'package:billetudo/features/settings/presentation/cubit/notification_settings_state.dart';
 import 'package:billetudo/features/settings/presentation/pages/settings_page.dart';
+import 'package:billetudo/features/settings/presentation/widgets/cloud_transcription_field.dart';
 import 'package:billetudo/features/settings/presentation/widgets/settings_session_card.dart';
 import 'package:billetudo/features/settings/presentation/widgets/show_help_on_entry_field.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -38,6 +41,12 @@ class MockThemeModeCubit extends MockCubit<ThemeMode>
 class MockSyncStatusCubit extends MockCubit<SyncStatusState>
     implements SyncStatusCubit {}
 
+/// Seeded `isSupported: false` (the default): Ajustes' capture row draws
+/// nothing off Android, which is what these tests and goldens already
+/// assert about the Preferencias section.
+class MockCaptureStatusCubit extends MockCubit<CaptureStatusState>
+    implements CaptureStatusCubit {}
+
 class MockNotificationSettingsCubit extends MockCubit<NotificationSettingsState>
     implements NotificationSettingsCubit {}
 
@@ -47,6 +56,7 @@ void main() {
   late MockAppSettingsCubit appSettingsCubit;
   late MockThemeModeCubit themeModeCubit;
   late MockSyncStatusCubit syncStatusCubit;
+  late MockCaptureStatusCubit captureStatusCubit;
   late MockNotificationSettingsCubit notificationSettingsCubit;
 
   const user = AuthUser(
@@ -92,6 +102,15 @@ void main() {
       const Stream<SyncStatusState>.empty(),
       initialState: const SyncStatusState(),
     );
+
+    captureStatusCubit = MockCaptureStatusCubit();
+    when(() => captureStatusCubit.state)
+        .thenReturn(const CaptureStatusState(isLoading: false));
+    whenListen(
+      captureStatusCubit,
+      const Stream<CaptureStatusState>.empty(),
+      initialState: const CaptureStatusState(isLoading: false),
+    );
   });
 
   Future<void> pumpSettings(
@@ -113,6 +132,7 @@ void main() {
           BlocProvider<AppSettingsCubit>.value(value: appSettingsCubit),
           BlocProvider<ThemeModeCubit>.value(value: themeModeCubit),
           BlocProvider<SyncStatusCubit>.value(value: syncStatusCubit),
+          BlocProvider<CaptureStatusCubit>.value(value: captureStatusCubit),
           BlocProvider<NotificationSettingsCubit>.value(
             value: notificationSettingsCubit,
           ),
@@ -123,6 +143,7 @@ void main() {
           onOpenComingSoon: onOpenComingSoon ?? (_) {},
           onOpenSyncStatus: onOpenSyncStatus ?? () {},
           onOpenQuickAccessOrder: onOpenQuickAccessOrder ?? () {},
+          onOpenCapture: (_) {},
           onOpenNotifications: () {},
         ),
       ),
@@ -417,6 +438,44 @@ void main() {
       await tester.pump();
 
       expect(opened, 1);
+    });
+  });
+
+  group('"Transcribir mi voz en la nube"', () {
+    testWidgets(
+        'la hoja de consentimiento promete esta fila, así que existe y se '
+        'puede apagar en un toque', (tester) async {
+      when(() => appSettingsCubit.state).thenReturn(
+        const AppSettingsState(cloudTranscriptionEnabled: true),
+      );
+      whenListen(
+        appSettingsCubit,
+        const Stream<AppSettingsState>.empty(),
+        initialState: const AppSettingsState(cloudTranscriptionEnabled: true),
+      );
+      when(() => appSettingsCubit.setCloudTranscriptionEnabled(
+            enabled: any(named: 'enabled'),
+          )).thenAnswer((_) async {});
+      await pumpSettings(tester, session: const AuthSession.signedOut());
+
+      await tester.scrollUntilVisible(
+        find.byType(CloudTranscriptionField),
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.pump();
+      await tester.tap(find.descendant(
+        of: find.byType(CloudTranscriptionField),
+        matching: find.byType(Switch),
+      ));
+      await tester.pump();
+
+      verify(() => appSettingsCubit.setCloudTranscriptionEnabled(
+            enabled: false,
+          )).called(1);
+      // Withdrawing a permission never asks twice.
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.byType(Dialog), findsNothing);
     });
   });
 }

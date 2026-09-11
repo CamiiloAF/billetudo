@@ -26,6 +26,16 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<!-- Voice capture (docs/requirements/fase-2/17-captura-voz.md). Provisional
+	     wording, pending formal drafting by privacy-legal-officer before this
+	     ships to a store listing. The speech string names Apple on purpose: when
+	     the device cannot transcribe on its own, iOS ships the audio to Apple,
+	     and a permission string that hid that would be false. Neither the audio
+	     nor the transcript is ever stored by this app. -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Para que puedas dictar un gasto en vez de escribirlo. El audio no se guarda.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Para convertir en texto lo que dictas y llenar el formulario del gasto. Si tu iPhone no puede hacerlo por su cuenta, iOS envía ese audio a Apple para transcribirlo.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

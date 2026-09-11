@@ -27,6 +27,7 @@ import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart';
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.dart';
 import 'package:billetudo/features/budgets/domain/usecases/watch_featured_budget_progress.dart';
+import 'package:billetudo/features/capture/domain/usecases/watch_pending_capture_count.dart';
 import 'package:billetudo/features/capture/presentation/cubit/capture_shortcut_cubit.dart';
 import 'package:billetudo/features/capture/presentation/cubit/capture_shortcut_state.dart';
 import 'package:billetudo/features/home/domain/usecases/dismiss_home_insight.dart';
@@ -80,6 +81,9 @@ class MockWatchHomeAiInsight extends Mock implements WatchHomeAiInsight {}
 
 class MockWatchPendingScheduledPaymentCount extends Mock
     implements WatchPendingScheduledPaymentCount {}
+
+class MockWatchPendingCaptureCount extends Mock
+    implements WatchPendingCaptureCount {}
 
 class MockCheckAiAccess extends Mock implements CheckAiAccess {}
 
@@ -176,6 +180,7 @@ void main() {
     final watchHomeAiInsight = MockWatchHomeAiInsight();
     final watchPendingScheduledPaymentCount =
         MockWatchPendingScheduledPaymentCount();
+    final watchPendingCaptureCount = MockWatchPendingCaptureCount();
     final checkAiAccess = MockCheckAiAccess();
     final getConversationForInsight = MockGetConversationForInsight();
     final dismissHomeInsight = MockDismissHomeInsight();
@@ -203,6 +208,8 @@ void main() {
         .thenAnswer((_) => const Stream<Result<bool>>.empty());
     when(watchPendingScheduledPaymentCount.call)
         .thenAnswer((_) => const Stream<Result<int>>.empty());
+    when(watchPendingCaptureCount.call)
+        .thenAnswer((_) => const Stream<Result<int>>.empty());
     // Home arranca resolviendo el acceso al asistente. Este test es de HU-06
     // (cerrar sesión), no de IA: `denied` es la respuesta neutra — y el
     // fail-closed por defecto de `AiAccess` — así que la card de IA no se
@@ -228,6 +235,7 @@ void main() {
           watchHasAnyBudget,
           watchHomeAiInsight,
           watchPendingScheduledPaymentCount,
+          watchPendingCaptureCount,
           checkAiAccess,
           getConversationForInsight,
           dismissHomeInsight,

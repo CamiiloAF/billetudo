@@ -19,7 +19,6 @@ import '../../../domain/entities/tag.dart';
 import '../../../domain/entities/transaction.dart' show TransactionType;
 import '../../../domain/entities/transaction_filter.dart';
 import '../../cubit/unified_filters_cubit.dart';
-import '../../utils/date_period_label.dart';
 
 /// Issue #7: the unified bottom sheet replacing the Presupuesto/Fecha/Tipo/
 /// Categoría/Etiqueta sheets that used to open one at a time from the
@@ -120,8 +119,7 @@ class UnifiedFiltersSheetBody extends StatelessWidget {
                 child: Text(l10n.commonClear),
               ),
               right: FilledButton(
-                onPressed: () =>
-                    Navigator.of(context).pop(cubit.buildResult()),
+                onPressed: () => Navigator.of(context).pop(cubit.buildResult()),
                 child: Text(l10n.commonApply),
               ),
             ),
@@ -234,7 +232,8 @@ class UnifiedFilterPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
-    final foreground = selected ? colors.primaryOnSoftStrong : colors.textSecondary;
+    final foreground =
+        selected ? colors.primaryOnSoftStrong : colors.textSecondary;
 
     return Material(
       color: selected ? colors.primarySoft : colors.surface,
@@ -315,12 +314,17 @@ class BudgetFilterSection extends StatelessWidget {
   }
 }
 
-/// Section — Fecha (`uY05Y`): granularity switch + stepper, locked (icon
-/// `lock` + caption, controls at `opacity: 0.4`) while a Presupuesto filter
-/// is active (criterion #9). Also carries the "Rango personalizado" row so
-/// HU-06b's custom-range capability keeps working from the unified sheet,
-/// even though the abbreviated Pencil mockup for this redesign only shows
-/// the granularity/stepper block.
+/// Section — Fecha (`uY05Y`): granularity switch (`hFu41`), locked (icon
+/// `lock` + caption, `Granularity Switch` at `opacity: 0.4`) while a
+/// Presupuesto filter is active (criterion #9). Also carries the "Rango
+/// personalizado" row so HU-06b's custom-range capability keeps working from
+/// the unified sheet.
+///
+/// Adición 2026-09-10 (`JcJQq`/`llEl6`/`hwYxx`): the Prev/Next stepper that
+/// used to sit below the granularity switch was retired from this sheet —
+/// navigating between periods now lives exclusively in the main screen's
+/// `PeriodNavBar`, so this section only chooses **what** to filter
+/// (granularity/custom range), never **which** period within it.
 class DateFilterSection extends StatelessWidget {
   const DateFilterSection({required this.state, super.key});
 
@@ -341,7 +345,8 @@ class DateFilterSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            UnifiedFilterSectionLabel(label: l10n.transactionsFilterSectionDate),
+            UnifiedFilterSectionLabel(
+                label: l10n.transactionsFilterSectionDate),
             if (locked) ...[
               const SizedBox(width: 6),
               Icon(LucideIcons.lock, size: 12, color: colors.textSecondary),
@@ -364,44 +369,24 @@ class DateFilterSection extends StatelessWidget {
           ignoring: locked || isCustom,
           child: Opacity(
             opacity: locked ? 0.4 : (isCustom ? 0.4 : 1),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SegmentedButton<DateGranularity>(
-                  segments: [
-                    ButtonSegment(
-                      value: DateGranularity.week,
-                      label: Text(l10n.dateFilterWeek),
-                    ),
-                    ButtonSegment(
-                      value: DateGranularity.month,
-                      label: Text(l10n.dateFilterMonth),
-                    ),
-                    ButtonSegment(
-                      value: DateGranularity.year,
-                      label: Text(l10n.dateFilterYear),
-                    ),
-                  ],
-                  selected: {granularityView.granularity!},
-                  onSelectionChanged: (selection) =>
-                      cubit.granularitySelected(selection.first),
+            child: SegmentedButton<DateGranularity>(
+              segments: [
+                ButtonSegment(
+                  value: DateGranularity.week,
+                  label: Text(l10n.dateFilterWeek),
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      onPressed: () => cubit.step(-1),
-                      icon: const Icon(LucideIcons.chevronLeft),
-                    ),
-                    Text(datePeriodLabel(granularityView)),
-                    IconButton(
-                      onPressed: () => cubit.step(1),
-                      icon: const Icon(LucideIcons.chevronRight),
-                    ),
-                  ],
+                ButtonSegment(
+                  value: DateGranularity.month,
+                  label: Text(l10n.dateFilterMonth),
+                ),
+                ButtonSegment(
+                  value: DateGranularity.year,
+                  label: Text(l10n.dateFilterYear),
                 ),
               ],
+              selected: {granularityView.granularity!},
+              onSelectionChanged: (selection) =>
+                  cubit.granularitySelected(selection.first),
             ),
           ),
         ),
