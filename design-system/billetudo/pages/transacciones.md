@@ -391,6 +391,8 @@ Rediseño posterior al bloque anterior: los filtros de fecha/presupuesto/tipo/ca
 
 **Referencia visual aprobada:** `CjTBi` ("Movimientos — Period Stepper (pill inline, referencia)"). Reemplaza el rol que tenían `O2xuVc`/`w1zSgx` y `ufP4y`/`nQSNu` como referencia visual del componente — esos frames **siguen en el `.pen` sin actualizar** (todavía muestran la card vieja) y quedan pendientes de una pasada de `pencil-designer` que los actualice a instanciar `vBgce` directamente. No tratar `O2xuVc`/`ufP4y` como la fuente de verdad visual del look final hasta esa actualización.
 
+**Alternativa sugerida por el usuario (2026-09-11), pendiente de construir:** mismo comportamiento de auto-hide por dirección de scroll documentado en `pages/presupuestos.md` § "Stepper de periodo (HU-05)" — el `PeriodStepper` aparecería flotante al scrollear hacia arriba y se ocultaría al scrollear hacia abajo, para consistencia entre ambas features si se termina implementando. Solo documentado, no construido.
+
 **Caso "Budget Context Tag":** el `Context Row` del componente (icono 12px + label 11/700 `$primary-on-soft-strong`, encima del label de periodo) reemplaza al bloque `Budget Context Tag` (`A3Citj`) que documentaba la variante Presupuesto de `ufP4y` — misma función, ahora parte del componente compartido en vez de duplicada ad-hoc.
 
 ## Componentes reutilizables usados
