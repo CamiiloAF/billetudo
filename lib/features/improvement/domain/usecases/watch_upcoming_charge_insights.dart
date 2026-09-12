@@ -41,8 +41,13 @@ class WatchUpcomingChargeInsights {
     };
 
     final projected = _project(
+      // `byId`, not `summaries`: `GetScheduledPayments` can now emit more
+      // than one summary per template (one per projected upcoming date), so
+      // iterating `summaries` here would hand the same `ScheduledPayment` to
+      // `ProjectUpcomingOccurrences` N times and recompute its projection
+      // redundantly — `byId.values` is already deduplicated by template id.
       templates: [
-        for (final summary in summaries)
+        for (final summary in byId.values)
           if (summary.scheduledPayment.amountMinor >=
               InsightThresholds.minimumAmountMinor)
             summary.scheduledPayment,
