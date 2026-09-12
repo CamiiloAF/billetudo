@@ -91,6 +91,18 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
   /// the start is treated as a real failure instead of retrying forever.
   bool _earlyErrorRetried = false;
 
+  /// Set by [cancel]. `cancel()` itself never touches `state.status` (it is
+  /// a deliberate no-op on state, "drops audio and transcript, opens
+  /// nothing"), so [_retryAfterEarlyError]'s guard of `isClosed || status !=
+  /// listening` cannot see a cancellation on its own — `status` is still
+  /// `listening` and `isClosed` only flips once `close()` eventually runs,
+  /// which the caller (`VoiceCaptureSheet`) does asynchronously after the
+  /// sheet's own dismiss animation, not synchronously with `cancel()`. That
+  /// gap is comparable to or longer than [_earlyErrorRetryDelay], so a
+  /// pending retry could otherwise reopen the microphone after the user
+  /// already left. Reset in [start] so a fresh session can retry again.
+  bool _cancelled = false;
+
   /// A transient plugin error (`error_busy`/`error_client`, or an on-device
   /// no-match that fires suspiciously fast) landing inside this window of
   /// `listen()` starting is close enough to session start that the user
@@ -117,6 +129,7 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
     _localeId = localeId;
     _languageCode = languageCode;
     _earlyErrorRetried = false;
+    _cancelled = false;
     emit(const VoiceCaptureState());
 
     _cloudConsent = await _getCloudConsent();
@@ -230,6 +243,7 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
 
   /// "Cancelar": drops audio and transcript, opens nothing, writes nothing.
   Future<void> cancel() async {
+    _cancelled = true;
     await _updates?.cancel();
     _updates = null;
     await _cancelCapture();
@@ -398,10 +412,16 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
 
   Future<void> _retryAfterEarlyError() async {
     await Future<void>.delayed(_earlyErrorRetryDelay);
-    if (isClosed || state.status != VoiceCaptureStatus.listening) {
+    if (isClosed ||
+        _cancelled ||
+        state.status != VoiceCaptureStatus.listening) {
       // The user stopped, cancelled or the sheet closed while this was
       // waiting — reopening the microphone now would be a surprise, not
-      // a fix.
+      // a fix. `_cancelled` covers the gap `cancel()` leaves open: it never
+      // changes `state.status` and `isClosed` only flips once `close()`
+      // eventually runs (asynchronously, after the sheet's dismiss
+      // animation) — without this flag, `status` would still read
+      // `listening` right after a cancel.
       return;
     }
     await _listen();

@@ -344,6 +344,37 @@ void main() {
     );
 
     test(
+      'cancelling mid-retry is respected: the microphone does not reopen '
+      'after the user already left (cancel() never touches status, so the '
+      'retry guard needs its own flag, not just isClosed/listening)',
+      () async {
+        final cubit = buildCubit();
+        await startAndSettle(cubit);
+
+        recognizer.controller.add(
+          const SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.error,
+            error: SpeechRecognitionErrorKind.busy,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+        // The retry is scheduled but has not fired yet. `cancel()` — unlike
+        // `stopListening()` — never changes `state.status`, and the sheet
+        // only calls `close()` later, asynchronously, after its own dismiss
+        // animation: at this exact point the cubit is still open and still
+        // reports `listening`, which is exactly the gap this test guards.
+        await cubit.cancel();
+        expect(cubit.state.status, VoiceCaptureStatus.listening);
+        expect(cubit.isClosed, isFalse);
+
+        await Future<void>.delayed(const Duration(milliseconds: 450));
+
+        expect(recognizer.startCalls, 1);
+        await cubit.close();
+      },
+    );
+
+    test(
       'a final result that regresses to empty keeps the transcript already '
       'shown live',
       () async {
