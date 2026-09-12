@@ -2042,12 +2042,6 @@ abstract class AppLocalizations {
   /// **'Filtros'**
   String get transactionsFiltersButtonLabel;
 
-  /// No description provided for @transactionsChipDateDefaultLabel.
-  ///
-  /// In es, this message translates to:
-  /// **'Este mes'**
-  String get transactionsChipDateDefaultLabel;
-
   /// No description provided for @transactionsPeriodNavPreviousLabel.
   ///
   /// In es, this message translates to:

@@ -889,8 +889,6 @@
   "@transactionsUnifiedFiltersTitle": {},
   "transactionsFiltersButtonLabel": "Filtros",
   "@transactionsFiltersButtonLabel": {},
-  "transactionsChipDateDefaultLabel": "Este mes",
-  "@transactionsChipDateDefaultLabel": {},
   "transactionsPeriodNavPreviousLabel": "Periodo anterior",
   "@transactionsPeriodNavPreviousLabel": {},
   "transactionsPeriodNavNextLabel": "Periodo siguiente",

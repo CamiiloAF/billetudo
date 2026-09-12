@@ -565,7 +565,6 @@ class TransactionsFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final cubit = context.read<TransactionsListCubit>();
     final filter = state.filter;
     final dateActive = filter.hasDateFilter || filter.hasBudgetPeriodFilter;
@@ -583,15 +582,21 @@ class TransactionsFilterBar extends StatelessWidget {
               cubit.updateFilter(filter.copyWith(accountIds: accountIds)),
             ),
           ),
-          const SizedBox(width: 8),
-          FilterChipPill(
-            label: dateActive
-                ? datePeriodLabel(activePeriod)
-                : l10n.transactionsChipDateDefaultLabel,
-            active: dateActive,
-            leadingIcon: LucideIcons.calendar,
-            onTap: () => unawaited(openUnifiedFiltersSheet(context, state)),
-          ),
+          // Bugfix 2026-09-11: this chip must be genuinely conditional — the
+          // design (`pages/transacciones.md` § "Chip Fecha condicional")
+          // says it never renders in the default state, but it used to
+          // always be in the tree and just fall back to
+          // `transactionsChipDateDefaultLabel` ("Este mes") instead of
+          // disappearing, showing a redundant chip for the common case.
+          if (dateActive) ...[
+            const SizedBox(width: 8),
+            FilterChipPill(
+              label: datePeriodLabel(activePeriod),
+              active: true,
+              leadingIcon: LucideIcons.calendar,
+              onTap: () => unawaited(openUnifiedFiltersSheet(context, state)),
+            ),
+          ],
         ],
       ),
     );

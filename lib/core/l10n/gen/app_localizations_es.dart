@@ -1141,9 +1141,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get transactionsFiltersButtonLabel => 'Filtros';
 
   @override
-  String get transactionsChipDateDefaultLabel => 'Este mes';
-
-  @override
   String get transactionsPeriodNavPreviousLabel => 'Periodo anterior';
 
   @override

@@ -355,7 +355,6 @@
   "budgetPeriodFilterEmptyMessage": "You don't have any active budgets",
   "transactionsUnifiedFiltersTitle": "Filters",
   "transactionsFiltersButtonLabel": "Filters",
-  "transactionsChipDateDefaultLabel": "This month",
   "transactionsPeriodNavPreviousLabel": "Previous period",
   "transactionsPeriodNavNextLabel": "Next period",
   "transactionsFilterSectionBudget": "BUDGET",
