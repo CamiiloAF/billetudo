@@ -412,6 +412,46 @@ void main() {
     test('las muletillas de comando no llegan a la nota', () {
       expect(run('apunta 20 mil de pañales').note, 'pañales');
     });
+
+    test(
+      '"gasté 1 millón de pesos en un mackbook pro": el conector y la '
+      'moneda se van con el monto, no quedan sueltos ni duplicados',
+      () {
+        final draft = run(
+          'gasté 1 millón de pesos en un mackbook pro',
+          withAccounts: false,
+        );
+
+        expect(draft.amountMinor, 100000000);
+        expect(draft.note, 'mackbook pro');
+      },
+    );
+
+    test('"gasté veinte mil en almuerzo" ya no deja "de"/"mil" sueltos', () {
+      expect(
+        run('gasté veinte mil en almuerzo', withAccounts: false).note,
+        isNull,
+      );
+    });
+
+    test(
+      '"recibí 500 mil pesos de salario": sin categorías que reclamen '
+      '"salario", la nota es justo lo que sobra',
+      () {
+        final draft = withClock(
+          Clock.fixed(_today),
+          () => parse(
+            const SpokenTransactionInput(
+              transcript: 'recibí 500 mil pesos de salario',
+              currency: 'COP',
+            ),
+          ),
+        );
+
+        expect(draft.amountMinor, 50000000);
+        expect(draft.note, 'salario');
+      },
+    );
   });
 
   group('parseo parcial (HU-05)', () {

@@ -252,6 +252,75 @@ void main() {
       expect(recognizer.startCalls, 1);
       await cubit.close();
     });
+
+    test(
+      'a late "done" after the session already completed is discarded',
+      () async {
+        final cubit = buildCubit();
+        await startAndSettle(cubit);
+
+        // The plugin.stop() race: `stop()` timed out and the recognizer
+        // already emitted its own synthetic `done`, taking the cubit to
+        // `completed` with the draft the user is now reviewing.
+        recognizer.controller.add(
+          const SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.done,
+            transcript: 'gasté veinte mil en mercado con Nequi',
+            isFinal: true,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+        expect(cubit.state.status, VoiceCaptureStatus.completed);
+        final draftBefore = cubit.state.draft;
+
+        // The original plugin.stop() call finally resolves and its listener
+        // fires a second, different final result.
+        recognizer.controller.add(
+          const SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.done,
+            transcript: 'un transcript completamente distinto',
+            isFinal: true,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        expect(cubit.state.status, VoiceCaptureStatus.completed);
+        expect(cubit.state.draft, same(draftBefore));
+        expect(cubit.state.transcript, 'gasté veinte mil en mercado con Nequi');
+        await cubit.close();
+      },
+    );
+
+    test(
+      'a late "done" after landing on noAmount is discarded too',
+      () async {
+        final cubit = buildCubit();
+        await startAndSettle(cubit);
+
+        recognizer.controller.add(
+          const SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.done,
+            transcript: 'me tomé un tinto en la esquina',
+            isFinal: true,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+        expect(cubit.state.status, VoiceCaptureStatus.noAmount);
+
+        recognizer.controller.add(
+          const SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.done,
+            transcript: 'gasté veinte mil en mercado',
+            isFinal: true,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        expect(cubit.state.status, VoiceCaptureStatus.noAmount);
+        expect(cubit.state.transcript, 'me tomé un tinto en la esquina');
+        await cubit.close();
+      },
+    );
   });
 
   group('leaving', () {

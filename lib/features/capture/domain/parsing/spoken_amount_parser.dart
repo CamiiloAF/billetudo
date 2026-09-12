@@ -200,6 +200,21 @@ class SpokenAmountParser {
         break;
       }
 
+      if (lexicon.currencyConnectorWords.contains(word)) {
+        // "un millón **de** pesos": only swallow the connector when it is
+        // actually gluing the scale to its currency, so a bare "de" left
+        // dangling in the note (e.g. before a category name) is untouched.
+        final next =
+            index + 1 < tokens.length ? tokens.normalized[index + 1] : '';
+        if (!sawValue ||
+            !lexicon.currencyWords.contains(next) ||
+            !tokens.isFree(index + 1)) {
+          break;
+        }
+        index++;
+        continue;
+      }
+
       final digits = _digitsToMinor(word);
       if (digits != null) {
         if (sawValue) {

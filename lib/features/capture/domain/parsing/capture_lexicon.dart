@@ -20,6 +20,7 @@ class CaptureLexicon {
     required this.andWords,
     required this.decimalJoinWords,
     required this.currencyWords,
+    required this.currencyConnectorWords,
     required this.expenseVerbs,
     required this.incomeVerbs,
     required this.weekdays,
@@ -54,6 +55,13 @@ class CaptureLexicon {
   /// Words that make the unit explicit and therefore switch the magnitude
   /// heuristic off ("pesos").
   final Set<String> currencyWords;
+
+  /// Connectors that glue a scale word to the currency that follows it ("un
+  /// millón **de** pesos"). Only consumed as part of the amount when a
+  /// [currencyWords] entry immediately follows — otherwise the word is left
+  /// for the note like any other filler, so "un millón de dólares gringos"
+  /// still reads "gringos" afterwards instead of swallowing it too.
+  final Set<String> currencyConnectorWords;
 
   /// Verb phrases (as word sequences) that mark the movement as an expense.
   final List<List<String>> expenseVerbs;
@@ -154,6 +162,7 @@ const CaptureLexicon spanishCaptureLexicon = CaptureLexicon(
   andWords: <String>{'y'},
   decimalJoinWords: <String>{'con'},
   currencyWords: <String>{'peso', 'pesos', 'cop'},
+  currencyConnectorWords: <String>{'de'},
   expenseVerbs: <List<String>>[
     <String>['gaste'],
     <String>['gastamos'],
@@ -303,6 +312,9 @@ const CaptureLexicon englishCaptureLexicon = CaptureLexicon(
   andWords: <String>{'and'},
   decimalJoinWords: <String>{'point'},
   currencyWords: <String>{'peso', 'pesos', 'dollar', 'dollars', 'bucks'},
+  // English does not glue a scale word to its currency with a connector
+  // ("a million dollars", never "a million of dollars").
+  currencyConnectorWords: <String>{},
   expenseVerbs: <List<String>>[
     <String>['spent'],
     <String>['paid'],

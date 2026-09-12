@@ -263,6 +263,16 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
     if (isClosed) {
       return;
     }
+    // A late callback from a `stop()` call the 2s timeout already gave up on
+    // (see `SpeechToTextRecognizer.stop`) can still fire after the cubit left
+    // `listening`/`stopping` — the subscription stays alive for the whole
+    // session, not just while those two states hold. Once the session has
+    // moved on to a terminal status, discarding it here is what stops that
+    // stray `done` from overwriting a draft the user is already reviewing.
+    if (state.status != VoiceCaptureStatus.listening &&
+        state.status != VoiceCaptureStatus.stopping) {
+      return;
+    }
     switch (update.phase) {
       case SpeechRecognitionPhase.listening:
         emit(
