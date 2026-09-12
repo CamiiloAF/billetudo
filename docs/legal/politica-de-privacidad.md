@@ -1,19 +1,6 @@
-<!--
-  ================================================================
-  BORRADOR v1.8 — REDACTADO, NO PUBLICADO.
-  No ejecutar `web/build_site.py` con esta versión ni desplegar el
-  sitio hasta que la captura por voz y la lectura de avisos del banco
-  estén en el build que llega al usuario (TestFlight / Internal
-  Testing cuenta como "llega al usuario").
-  Una política que describe funciones que el binario no tiene es una
-  declaración falsa, igual que una que omite las que sí tiene.
-  Detalle y responsables: docs/legal/checklist-fase-2.md §9.
-  ================================================================
--->
-
 # Política de privacidad de billetudo
 
-**Versión 1.8** · **Última actualización: 9 de septiembre de 2026** · **En vigor desde: `[VERIFICAR: fecha de publicación — se fija cuando el build con captura por voz y lectura de avisos bancarios salga a TestFlight / Internal Testing, y la política se publica ANTES de ese envío]`**
+**Versión 1.8** · **Última actualización: 9 de septiembre de 2026** · **En vigor desde: 12 de septiembre de 2026**
 
 Esta política explica qué datos maneja billetudo, dónde viven, quién más los
 toca y qué puedes hacer al respecto. Está escrita para que se entienda leyéndola
@@ -567,7 +554,7 @@ Google, también fuera de tu país.
 | Supabase | **Estados Unidos** |
 | PowerSync | **Estados Unidos** |
 | Google (API de Gemini, solo si usas el asistente) | **Estados Unidos** y, según la disponibilidad del servicio, otros países donde Google opera |
-| Apple o Google (reconocimiento de voz, solo al dictar y solo en teléfonos sin reconocimiento local) | En la infraestructura de cada uno, **fuera de tu país**. `[VERIFICAR: Apple y Google no publican la región concreta de proceso de sus reconocedores de voz para apps de terceros; no se afirma un país concreto porque no se pudo confirmar]` |
+| Apple o Google (reconocimiento de voz, solo al dictar y solo en teléfonos sin reconocimiento local) | En la infraestructura de cada uno, **fuera de tu país**. Ni Apple ni Google publican el país exacto donde procesan el reconocimiento de voz de apps de terceros, así que no podemos nombrarte uno: lo que sí podemos asegurarte es que ocurre en la nube de quien fabrica tu teléfono, no en nuestros servidores ni en los de Supabase |
 
 **Por qué es así:** son los proveedores que hacen posible la sincronización sin
 pérdida de datos y sin que tengamos que operar servidores propios. No hay hoy un
@@ -598,7 +585,7 @@ consuelo.
 | Copias de seguridad del proveedor de base de datos | **No hay.** El plan que usamos en Supabase no incluye copias de seguridad automáticas |
 | El audio que dictas y su transcripción | **No se conservan.** Existen en la memoria del teléfono mientras el formulario está abierto y se descartan al cerrarlo. Lo único que sobrevive es lo que tú dejaste guardado en un campo del formulario |
 | El texto de un aviso de tu banco | **No se conserva, en ninguna parte y en ningún momento.** No hay dónde guardarlo (sección 4.6) |
-| Capturas pendientes que no has confirmado | En tu teléfono —y en tu cuenta, si iniciaste sesión— hasta que las confirmes, las descartes o las borres. `[VERIFICAR: si se decide que caduquen solas a los 30 o 90 días, esta fila cambia y hay que decir el plazo exacto]` |
+| Capturas pendientes que no has confirmado | En tu teléfono —y en tu cuenta, si iniciaste sesión— hasta que las confirmes, las descartes o las borres. **Hoy no caducan solas**: pueden quedarse ahí indefinidamente si no actúas sobre ellas |
 | Capturas que descartaste | Se eliminan definitivamente pasada la ventana para deshacer la acción. No quedan marcadas como borradas: se van |
 | Lo que la app aprendió (comercio → categoría) | Mientras exista tu cuenta o hasta que uses "borrar lo capturado" (sección 18.4) |
 | Tus conversaciones con el asistente | Solo en tu teléfono, hasta que las borres tú, borres los datos de la app o la desinstales. **No se respaldan**: si cambias de teléfono, no viajan |
