@@ -217,6 +217,9 @@ void main() {
         () async {
       final cubit = buildCubit();
       await startAndSettle(cubit);
+      // Past the early-retry window (see the next group), so this one really
+      // is the user's silence, not the plugin still settling.
+      await Future<void>.delayed(const Duration(milliseconds: 1300));
 
       recognizer.controller.add(
         const SpeechRecognitionUpdate(
@@ -252,6 +255,126 @@ void main() {
       expect(recognizer.startCalls, 1);
       await cubit.close();
     });
+
+    test(
+      'a transient error right after start retries once before giving up '
+      '("Intentar de nuevo" must not flash an instant failure)',
+      () async {
+        final cubit = buildCubit();
+        await startAndSettle(cubit);
+        expect(recognizer.startCalls, 1);
+
+        // `error_busy`/`error_client`/a too-fast no-match this close to
+        // `listen()` starting is the plugin still settling, not real
+        // silence — the bug this test guards against.
+        recognizer.controller.add(
+          const SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.error,
+            error: SpeechRecognitionErrorKind.busy,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        // The user is never shown a failure for this one: the session stays
+        // on the listening surface while the silent retry is pending.
+        expect(cubit.state.status, VoiceCaptureStatus.listening);
+        expect(recognizer.startCalls, 1);
+
+        await Future<void>.delayed(const Duration(milliseconds: 450));
+
+        expect(recognizer.startCalls, 2);
+        expect(cubit.state.status, VoiceCaptureStatus.listening);
+        await cubit.close();
+      },
+    );
+
+    test(
+      'a second transient error after the retry gives up for real',
+      () async {
+        final cubit = buildCubit();
+        await startAndSettle(cubit);
+
+        recognizer.controller.add(
+          const SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.error,
+            error: SpeechRecognitionErrorKind.busy,
+          ),
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 450));
+        expect(recognizer.startCalls, 2);
+
+        recognizer.controller.add(
+          const SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.error,
+            error: SpeechRecognitionErrorKind.busy,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        // Only one silent retry per session: a second transient error is a
+        // real failure, not another chance.
+        expect(cubit.state.status, VoiceCaptureStatus.noAmount);
+        expect(recognizer.startCalls, 2);
+        await cubit.close();
+      },
+    );
+
+    test(
+      'stopping mid-retry is respected: the microphone does not reopen',
+      () async {
+        final cubit = buildCubit();
+        await startAndSettle(cubit);
+
+        recognizer.controller.add(
+          const SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.error,
+            error: SpeechRecognitionErrorKind.busy,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+        // The retry is scheduled but has not fired yet.
+        await cubit.stopListening();
+        await Future<void>.delayed(const Duration(milliseconds: 450));
+
+        // The pending retry saw the session was no longer listening and
+        // backed off instead of reopening the microphone underneath "Listo".
+        expect(recognizer.startCalls, 1);
+        await cubit.close();
+      },
+    );
+
+    test(
+      'a final result that regresses to empty keeps the transcript already '
+      'shown live',
+      () async {
+        final cubit = buildCubit();
+        await startAndSettle(cubit);
+
+        recognizer.controller.add(
+          const SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.listening,
+            transcript: 'gasté veinte mil en mercado con Nequi',
+            soundLevel: 0.5,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+        expect(cubit.state.transcript, 'gasté veinte mil en mercado con Nequi');
+
+        // A known `speech_to_text`/Android quirk: the final result arrives
+        // empty even though a correct partial was already shown live.
+        recognizer.controller.add(
+          const SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.done,
+            isFinal: true,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        expect(cubit.state.status, VoiceCaptureStatus.completed);
+        expect(cubit.state.draft!.amountMinor, 2000000);
+        await cubit.close();
+      },
+    );
 
     test(
       'a late "done" after the session already completed is discarded',

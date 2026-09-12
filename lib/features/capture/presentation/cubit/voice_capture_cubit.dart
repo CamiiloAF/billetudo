@@ -83,6 +83,28 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
   String _languageCode = 'es';
   String _currency = 'COP';
 
+  /// When the current session actually asked the plugin to listen, so a
+  /// transient error can be told apart from a real "nothing was said".
+  DateTime? _listeningStartedAt;
+
+  /// Only one silent retry per session — a second transient error close to
+  /// the start is treated as a real failure instead of retrying forever.
+  bool _earlyErrorRetried = false;
+
+  /// A transient plugin error (`error_busy`/`error_client`, or an on-device
+  /// no-match that fires suspiciously fast) landing inside this window of
+  /// `listen()` starting is close enough to session start that the user
+  /// could not possibly have finished speaking yet — see
+  /// `SpeechToTextRecognizer._kindOf`'s doc on `error_busy`/`error_client`
+  /// being a known transient fault of `speech_to_text`, sometimes fired
+  /// right after a previous session's teardown before the native recognizer
+  /// is ready for a new one.
+  static const Duration _earlyErrorRetryWindow = Duration(milliseconds: 1200);
+
+  /// Small pause before asking the plugin to listen again, giving the native
+  /// recognizer a beat to actually release the previous session.
+  static const Duration _earlyErrorRetryDelay = Duration(milliseconds: 400);
+
   /// Checks every precondition and, if they hold, opens the microphone.
   ///
   /// [localeId] is the recognizer locale (`es_CO`) and [languageCode] the
@@ -94,6 +116,7 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
   }) async {
     _localeId = localeId;
     _languageCode = languageCode;
+    _earlyErrorRetried = false;
     emit(const VoiceCaptureState());
 
     _cloudConsent = await _getCloudConsent();
@@ -237,6 +260,7 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
   Future<void> _listen() async {
     await _updates?.cancel();
     _updates = _watchUpdates().listen(_onUpdate);
+    _listeningStartedAt = DateTime.now();
     final started = await _startCapture(
       localeId: _localeId,
       // Never true unless this device's owner said so on `kJG43`. The default
@@ -283,7 +307,17 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
           ),
         );
       case SpeechRecognitionPhase.done:
-        _finish(update.transcript);
+        // `speech_to_text`'s final result can arrive empty or shorter than
+        // the last partial the user already saw live on screen — a known
+        // Android quirk, not proof the words were never really heard.
+        // `state.transcript` already holds the longest run-up-to-now
+        // (updated on every `listening` phase above), so it wins whenever
+        // the final event regresses instead of confirming what was shown.
+        _finish(
+          update.transcript.trim().length >= state.transcript.trim().length
+              ? update.transcript
+              : state.transcript,
+        );
       case SpeechRecognitionPhase.error:
         _onError(update);
     }
@@ -329,12 +363,48 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
       // the transcript on that error would throw away real, valid input for
       // a plugin quirk — so whatever was heard is kept, exactly like
       // `noSpeech`.
+      //
+      // But when one of these fires this early, with nothing heard yet, it
+      // is not the user's silence — it is the plugin still settling from the
+      // previous session (or, on Android, an aggressive on-device no-match
+      // timeout tripping before the mic was truly ready). Surfacing "no
+      // captamos el monto" on the very first frame reads as a broken mic, so
+      // one silent retry is attempted first instead of asking the user to
+      // read and act on a failure they never had a real chance to avoid.
       case SpeechRecognitionErrorKind.busy:
       case SpeechRecognitionErrorKind.noSpeech:
       case SpeechRecognitionErrorKind.unknown:
       case null:
+        if (_shouldRetryEarlyError()) {
+          _earlyErrorRetried = true;
+          unawaited(_retryAfterEarlyError());
+          return;
+        }
         _finish(state.transcript);
     }
+  }
+
+  /// Whether the error just received is close enough to session start, with
+  /// nothing heard yet, that it is worth one silent retry instead of ending
+  /// the session. See the doc on [_earlyErrorRetryWindow].
+  bool _shouldRetryEarlyError() {
+    final startedAt = _listeningStartedAt;
+    return !_earlyErrorRetried &&
+        state.status == VoiceCaptureStatus.listening &&
+        !state.hasTranscript &&
+        startedAt != null &&
+        DateTime.now().difference(startedAt) < _earlyErrorRetryWindow;
+  }
+
+  Future<void> _retryAfterEarlyError() async {
+    await Future<void>.delayed(_earlyErrorRetryDelay);
+    if (isClosed || state.status != VoiceCaptureStatus.listening) {
+      // The user stopped, cancelled or the sheet closed while this was
+      // waiting — reopening the microphone now would be a surprise, not
+      // a fix.
+      return;
+    }
+    await _listen();
   }
 
   void _finish(String transcript) {
