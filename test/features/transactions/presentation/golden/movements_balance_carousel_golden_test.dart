@@ -96,8 +96,12 @@ void main() {
     // `MovementsBalanceCardCredit` variant (debt `$expense-text`, cupo
     // disponible and the progress bar) with its dot active.
     testWidgets('credit card active ($suffix)', (tester) async {
-      final cubit = BalanceCarouselCubit(_FakeCarouselPrefs(collapsed: false))
-        ..pageChanged(2);
+      final cubit = BalanceCarouselCubit(_FakeCarouselPrefs(collapsed: false));
+      // `BalanceCarouselState`'s own default is collapsed; force this
+      // fixture's actual expanded state explicitly instead of relying on
+      // that default, the same way production reads it back via `.load()`.
+      await cubit.load();
+      cubit.pageChanged(2);
       addTearDown(cubit.close);
 
       await pumpGolden(

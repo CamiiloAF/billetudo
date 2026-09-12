@@ -162,7 +162,8 @@ class GoalRepositoryImpl implements GoalRepository {
           if (result case Left(value: final failure)) {
             return Left<Failure, GoalDetail>(failure);
           }
-          final detail = result.getOrElse((_) => throw StateError('unreachable'));
+          final detail =
+              result.getOrElse((_) => throw StateError('unreachable'));
           final goal = detail.progress.goal;
           final coherence = await _coherenceForGoal(goal);
           final accountTombstoned = await _isAccountTombstoned(goal.accountId);
@@ -208,18 +209,19 @@ class GoalRepositoryImpl implements GoalRepository {
         final now = DateTime.now();
         final goalCompanion = GoalMapper.toInsertCompanion(draft, now: now);
         final initialAmount = draft.initialSavedMinor;
-        final initialContribution = (initialAmount == null || initialAmount <= 0)
-            ? null
-            : db.GoalContributionsCompanion.insert(
-                // Overwritten with the real id by the datasource once the
-                // goal is inserted, in the same atomic write.
-                goalId: '',
-                amountMinor: initialAmount,
-                direction: db.GoalMovementDirection.contribution,
-                date: now,
-                createdAt: Value(now),
-                updatedAt: Value(now.millisecondsSinceEpoch),
-              );
+        final initialContribution =
+            (initialAmount == null || initialAmount <= 0)
+                ? null
+                : db.GoalContributionsCompanion.insert(
+                    // Overwritten with the real id by the datasource once the
+                    // goal is inserted, in the same atomic write.
+                    goalId: '',
+                    amountMinor: initialAmount,
+                    direction: db.GoalMovementDirection.contribution,
+                    date: now,
+                    createdAt: Value(now),
+                    updatedAt: Value(now.millisecondsSinceEpoch),
+                  );
         // Atomic: the goal, its optional initial contribution, and the
         // milestone/completion reconciliation it can trigger either all
         // commit together or none do — the same guarantee `_writeMovement`
@@ -287,7 +289,9 @@ class GoalRepositoryImpl implements GoalRepository {
         // below `savedMinor` (or simply reaching it here) marks completion.
         DateTime? completedAt = updated.completedAt;
         final raisedTarget = draft.targetMinor > existing.targetMinor;
-        if (completedAt != null && raisedTarget && savedMinor < updated.targetMinor) {
+        if (completedAt != null &&
+            raisedTarget &&
+            savedMinor < updated.targetMinor) {
           completedAt = null;
         } else if (completedAt == null && savedMinor >= updated.targetMinor) {
           completedAt = now;
@@ -320,7 +324,8 @@ class GoalRepositoryImpl implements GoalRepository {
       });
 
   @override
-  FutureResult<Unit> archiveGoal(String id) => _setArchivedAt(id, DateTime.now());
+  FutureResult<Unit> archiveGoal(String id) =>
+      _setArchivedAt(id, DateTime.now());
 
   @override
   FutureResult<Unit> unarchiveGoal(String id) => _setArchivedAt(id, null);
@@ -605,7 +610,8 @@ class GoalRepositoryImpl implements GoalRepository {
               deletedAt: now,
               updatedAt: now.millisecondsSinceEpoch,
             );
-            await _reconcileAfterHistoryRewrite(contributionRow.goalId, now: now);
+            await _reconcileAfterHistoryRewrite(contributionRow.goalId,
+                now: now);
           });
           return const Right(unit);
         },
@@ -769,7 +775,8 @@ class GoalRepositoryImpl implements GoalRepository {
           .map(GoalContributionMapper.toEntity)
           .toList();
       activeWithProgress.add(
-        _progressCalculator.calculate(goal: entity, contributions: contributions),
+        _progressCalculator.calculate(
+            goal: entity, contributions: contributions),
       );
     }
     final signals = await _coherenceSignals(activeWithProgress);

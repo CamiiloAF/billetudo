@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:billetudo/core/preferences/balance_carousel_cubit.dart';
 import 'package:billetudo/core/preferences/balance_carousel_preference_datasource.dart';
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
@@ -39,7 +41,16 @@ Widget _withProviders(TransactionsListCubit cubit, Widget page) =>
       providers: [
         BlocProvider<TransactionsListCubit>.value(value: cubit),
         BlocProvider<BalanceCarouselCubit>(
-          create: (_) => BalanceCarouselCubit(_FakeCarouselPrefs()),
+          // `BalanceCarouselState`'s own default is collapsed (a fresh
+          // install with no saved preference). Production always calls
+          // `.load()` right after construction (see `app_router.dart`); do
+          // the same here so this cubit actually reflects `_FakeCarouselPrefs`
+          // (expanded) instead of silently starting from the state's default.
+          create: (_) {
+            final carousel = BalanceCarouselCubit(_FakeCarouselPrefs());
+            unawaited(carousel.load());
+            return carousel;
+          },
         ),
       ],
       child: page,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:billetudo/core/preferences/balance_carousel_cubit.dart';
 import 'package:billetudo/core/preferences/balance_carousel_preference_datasource.dart';
 import 'package:billetudo/features/capture/presentation/cubit/capture_review_item.dart';
@@ -41,7 +43,16 @@ Widget _withProviders(
         BlocProvider<TransactionsListCubit>.value(value: listCubit),
         BlocProvider<PendingCapturesCubit>.value(value: capturesCubit),
         BlocProvider<BalanceCarouselCubit>(
-          create: (_) => BalanceCarouselCubit(_FakeCarouselPrefs()),
+          // `BalanceCarouselState`'s own default is collapsed; force this
+          // fixture's expanded state explicitly via `.load()` (mirrors
+          // production's `app_router.dart`) instead of relying on that
+          // default. Harmless here since this fixture has no accounts and
+          // the carousel never renders, but keeps this fake honest.
+          create: (_) {
+            final carousel = BalanceCarouselCubit(_FakeCarouselPrefs());
+            unawaited(carousel.load());
+            return carousel;
+          },
         ),
       ],
       child: page,

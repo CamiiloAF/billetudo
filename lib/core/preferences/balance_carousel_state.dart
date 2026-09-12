@@ -9,10 +9,11 @@ import 'package:equatable/equatable.dart';
 /// card the user last swiped to, and so the carousel reopens on that card after
 /// being collapsed.
 class BalanceCarouselState extends Equatable {
-  const BalanceCarouselState({this.collapsed = false, this.currentPage = 0});
+  const BalanceCarouselState({this.collapsed = true, this.currentPage = 0});
 
   /// `true` = the compact bar, `false` = the full carousel. Defaults to
-  /// expanded until `load` resolves the stored value.
+  /// collapsed until `load` resolves the stored value, so a first-launch
+  /// user never sees it flash open before snapping shut.
   final bool collapsed;
 
   /// Index of the active card in the shown-accounts list. Callers must clamp
