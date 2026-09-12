@@ -8,10 +8,16 @@ import 'project_upcoming_occurrences.dart';
 
 /// How far ahead the "Activos" list projects a template's future occurrences
 /// (see [GetScheduledPayments._expand]). This screen has no period boundary
-/// of its own the way a budget cycle does, so a fixed forward window stands
-/// in for one: long enough that a monthly/weekly template's next few real
-/// dates show up, short enough that a daily one does not flood the list.
-const _projectionWindowDays = 90;
+/// of its own the way a budget cycle does — Presupuestos' equivalent list
+/// gets that boundary for free from the active budget period, which is
+/// exactly why it never floods.
+///
+/// **2026-09-11 fix — calendar months, not a fixed day count.** A flat 90-day
+/// window (about 3 calendar months) made a screen meant for "próximos
+/// vencimientos" show templates as far out as December from a September
+/// visit, reported as clutter. The window is now "this month + next month"
+/// (see [_windowEnd]), mirroring how a user reads the screen — near-term
+/// commitments, not a quarter-long forecast.
 
 /// HU-04: reactive list of active templates' upcoming occurrences, ordered
 /// by date ascending, for the "próximos vencimientos" screen.
@@ -66,9 +72,7 @@ class GetScheduledPayments {
   List<ScheduledPaymentSummary> _expand(List<ScheduledPaymentSummary> items) {
     final now = clock.now();
     final windowStart = DateTime(now.year, now.month, now.day);
-    final windowEnd = windowStart.add(
-      const Duration(days: _projectionWindowDays),
-    );
+    final windowEnd = _windowEnd(now);
 
     final expanded = <ScheduledPaymentSummary>[];
     for (final item in items) {
@@ -113,4 +117,12 @@ class GetScheduledPayments {
 
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
+
+  /// The last day of the month *after* [now]'s — "this month + next month".
+  /// `DateTime(year, month + 2)` overflows the month argument past 12 exactly
+  /// the way `DateTime` is documented to normalize (e.g. month 14 rolls into
+  /// the next year's February), so this needs no manual December-wrap
+  /// special case.
+  static DateTime _windowEnd(DateTime now) =>
+      DateTime(now.year, now.month + 2).subtract(const Duration(days: 1));
 }

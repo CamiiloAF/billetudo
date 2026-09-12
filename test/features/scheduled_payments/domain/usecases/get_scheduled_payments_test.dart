@@ -17,8 +17,8 @@ void main() {
   late MockScheduledPaymentRepository repository;
   late GetScheduledPayments useCase;
 
-  // Fixed "now" so the 90-day forward window is deterministic. Templates
-  // below are anchored relative to it.
+  // Fixed "now" so the "this month + next month" forward window is
+  // deterministic. Templates below are anchored relative to it.
   final now = DateTime(2026, 1, 1);
 
   setUp(() {
@@ -54,14 +54,12 @@ void main() {
             isA<Result<List<ScheduledPaymentSummary>>>().having(
               (r) => r.getOrElse((_) => const []).map((e) => e.nextPaymentDate),
               'projected dates',
-              // 2025-09-01 monthly forward lands on 2026-01-01 (today),
-              // 2026-02-01, 2026-03-01 and 2026-04-01 — all within the
-              // 90-day inclusive window (Jan 1 + 90 days = Apr 1).
+              // 2025-09-01 monthly forward lands on 2026-01-01 (today) and
+              // 2026-02-01 — both within "this month + next month" (window
+              // ends Feb 28, 2026). March's date falls outside it.
               [
                 DateTime(2026),
                 DateTime(2026, 2),
-                DateTime(2026, 3, 1),
-                DateTime(2026, 4, 1),
               ],
             ),
           ),
@@ -125,11 +123,11 @@ void main() {
               (r) => r.getOrElse((_) => const []).map((e) => e.nextPaymentDate),
               'projected dates',
               // The Jan 10 row comes from the awaiting occurrence, not a
-              // duplicate projection; Feb 10 and Mar 10 are still projected.
+              // duplicate projection; Feb 10 is still projected (Mar 10
+              // falls outside the "this month + next month" window).
               [
                 DateTime(2026, 1, 10),
                 DateTime(2026, 2, 10),
-                DateTime(2026, 3, 10)
               ],
             ),
           ),
