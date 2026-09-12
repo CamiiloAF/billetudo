@@ -1,7 +1,4 @@
 import 'package:billetudo/core/error/result.dart';
-import 'package:billetudo/features/categories/domain/entities/category.dart'
-    show CategoryKind;
-import 'package:billetudo/features/categories/domain/entities/category_node.dart';
 import 'package:billetudo/features/transactions/domain/entities/budget_period_option.dart';
 import 'package:billetudo/features/transactions/domain/entities/date_period_filter.dart';
 import 'package:billetudo/features/transactions/domain/entities/tag.dart';
@@ -15,7 +12,6 @@ import 'package:mocktail/mocktail.dart';
 import '../usecase_mocks.dart';
 
 void main() {
-  late MockWatchCategories watchCategories;
   late MockWatchTags watchTags;
 
   final food = BudgetPeriodOption(
@@ -32,18 +28,12 @@ void main() {
   );
 
   setUp(() {
-    watchCategories = MockWatchCategories();
     watchTags = MockWatchTags();
-    when(() => watchCategories(CategoryKind.expense))
-        .thenAnswer((_) => Stream.value(const Right(<CategoryNode>[])));
-    when(() => watchCategories(CategoryKind.income))
-        .thenAnswer((_) => Stream.value(const Right(<CategoryNode>[])));
     when(() => watchTags())
         .thenAnswer((_) => Stream.value(const Right(<Tag>[])));
   });
 
-  UnifiedFiltersCubit build() =>
-      UnifiedFiltersCubit(watchCategories, watchTags);
+  UnifiedFiltersCubit build() => UnifiedFiltersCubit(watchTags);
 
   group('start', () {
     blocTest<UnifiedFiltersCubit, UnifiedFiltersState>(

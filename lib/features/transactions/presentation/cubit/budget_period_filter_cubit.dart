@@ -51,7 +51,7 @@ class BudgetPeriodFilterState extends Equatable {
 
 /// Drives the "Presupuesto" filter sheet: a live list of active budgets
 /// ([WatchBudgetPeriodOptions]) plus a single-selection working copy, exactly
-/// paralleling `AccountFilterCubit`/`DateFilterCubit` — nothing reaches
+/// paralleling `AccountFilterCubit`/`CategoryFilterCubit` — nothing reaches
 /// `TransactionsListCubit` until the sheet's "Aplicar".
 ///
 /// Re-resolves the selected budget's current period window live every time

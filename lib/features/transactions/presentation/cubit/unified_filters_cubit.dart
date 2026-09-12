@@ -5,9 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
-import '../../../categories/domain/entities/category.dart' show CategoryKind;
-import '../../../categories/domain/entities/category_node.dart';
-import '../../../categories/domain/usecases/watch_categories.dart';
 import '../../domain/entities/budget_period_option.dart';
 import '../../domain/entities/date_period_filter.dart';
 import '../../domain/entities/tag.dart';
@@ -28,8 +25,6 @@ class UnifiedFiltersState extends Equatable {
     this.selectedBudgetId,
     DatePeriodFilter? datePeriod,
     Set<TransactionType> types = const <TransactionType>{},
-    this.expenseNodes = const <CategoryNode>[],
-    this.incomeNodes = const <CategoryNode>[],
     Set<String> categoryIds = const <String>{},
     this.tags = const <Tag>[],
     Set<String> tagIds = const <String>{},
@@ -53,8 +48,6 @@ class UnifiedFiltersState extends Equatable {
   final DatePeriodFilter datePeriod;
 
   final Set<TransactionType> types;
-  final List<CategoryNode> expenseNodes;
-  final List<CategoryNode> incomeNodes;
 
   /// Empty means "all categories".
   final Set<String> categoryIds;
@@ -84,8 +77,6 @@ class UnifiedFiltersState extends Equatable {
     bool clearSelectedBudget = false,
     DatePeriodFilter? datePeriod,
     Set<TransactionType>? types,
-    List<CategoryNode>? expenseNodes,
-    List<CategoryNode>? incomeNodes,
     Set<String>? categoryIds,
     List<Tag>? tags,
     Set<String>? tagIds,
@@ -99,8 +90,6 @@ class UnifiedFiltersState extends Equatable {
             : (selectedBudgetId ?? this.selectedBudgetId),
         datePeriod: datePeriod ?? this.datePeriod,
         types: types ?? this.types,
-        expenseNodes: expenseNodes ?? this.expenseNodes,
-        incomeNodes: incomeNodes ?? this.incomeNodes,
         categoryIds: categoryIds ?? this.categoryIds,
         tags: tags ?? this.tags,
         tagIds: tagIds ?? this.tagIds,
@@ -114,8 +103,6 @@ class UnifiedFiltersState extends Equatable {
         selectedBudgetId,
         datePeriod,
         types,
-        expenseNodes,
-        incomeNodes,
         categoryIds,
         tags,
         tagIds,
@@ -163,21 +150,19 @@ class UnifiedFiltersResult extends Equatable {
 ///    tells the widget tree whether to render that section at all.
 @injectable
 class UnifiedFiltersCubit extends Cubit<UnifiedFiltersState> {
-  UnifiedFiltersCubit(this._watchCategories, this._watchTags)
-      : super(UnifiedFiltersState());
+  UnifiedFiltersCubit(this._watchTags) : super(UnifiedFiltersState());
 
-  final WatchCategories _watchCategories;
   final WatchTags _watchTags;
 
-  StreamSubscription<Result<List<CategoryNode>>>? _expenseSubscription;
-  StreamSubscription<Result<List<CategoryNode>>>? _incomeSubscription;
   StreamSubscription<Result<List<Tag>>>? _tagsSubscription;
 
   /// Opens the sheet seeded with [filter]'s currently applied values
   /// (criterion #11: an untouched dimension is never reset) and
   /// [budgetOptions] — already loaded by `TransactionsListState`, so this
-  /// cubit does not need its own budgets subscription, unlike
-  /// categories/tags which it does watch live.
+  /// cubit does not need its own budgets subscription. Categories are the
+  /// full-tree picker's own concern (`CategoryFilterSheet`/
+  /// `CategoryFilterCubit`, which has its own live watch) — this cubit only
+  /// tracks the working set of selected `categoryIds`.
   Future<void> start({
     required TransactionFilter filter,
     required List<BudgetPeriodOption> budgetOptions,
@@ -193,42 +178,6 @@ class UnifiedFiltersCubit extends Cubit<UnifiedFiltersState> {
         tagIds: filter.tagIds,
       ),
     );
-    _expenseSubscription =
-        _watchCategories(CategoryKind.expense).listen((result) {
-      if (isClosed) {
-        return;
-      }
-      emit(
-        result.fold(
-          (failure) => state.copyWith(
-            status: UnifiedFiltersStatus.failure,
-            failure: failure,
-          ),
-          (nodes) => state.copyWith(
-            status: UnifiedFiltersStatus.ready,
-            expenseNodes: nodes,
-          ),
-        ),
-      );
-    });
-    _incomeSubscription =
-        _watchCategories(CategoryKind.income).listen((result) {
-      if (isClosed) {
-        return;
-      }
-      emit(
-        result.fold(
-          (failure) => state.copyWith(
-            status: UnifiedFiltersStatus.failure,
-            failure: failure,
-          ),
-          (nodes) => state.copyWith(
-            status: UnifiedFiltersStatus.ready,
-            incomeNodes: nodes,
-          ),
-        ),
-      );
-    });
     _tagsSubscription = _watchTags().listen((result) {
       if (isClosed) {
         return;
@@ -312,13 +261,11 @@ class UnifiedFiltersCubit extends Cubit<UnifiedFiltersState> {
 
   /// Header's "Limpiar todo"/footer's "Limpiar": every working dimension
   /// back to its untouched default in one tap, keeping the loaded lists
-  /// (budgets/categories/tags) so the sheet does not flash back to loading.
+  /// (budgets/tags) so the sheet does not flash back to loading.
   void clearAll() => emit(
         UnifiedFiltersState(
           status: state.status,
           budgetOptions: state.budgetOptions,
-          expenseNodes: state.expenseNodes,
-          incomeNodes: state.incomeNodes,
           tags: state.tags,
         ),
       );
@@ -352,11 +299,7 @@ class UnifiedFiltersCubit extends Cubit<UnifiedFiltersState> {
   }
 
   Future<void> _cancelSubscriptions() async {
-    await _expenseSubscription?.cancel();
-    await _incomeSubscription?.cancel();
     await _tagsSubscription?.cancel();
-    _expenseSubscription = null;
-    _incomeSubscription = null;
     _tagsSubscription = null;
   }
 

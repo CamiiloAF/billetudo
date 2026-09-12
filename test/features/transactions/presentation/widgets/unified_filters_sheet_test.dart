@@ -56,7 +56,7 @@ void main() {
     required TransactionFilter filter,
     required List<BudgetPeriodOption> budgetOptions,
   }) async {
-    final cubit = UnifiedFiltersCubit(watchCategories, watchTags);
+    final cubit = UnifiedFiltersCubit(watchTags);
     await cubit.start(filter: filter, budgetOptions: budgetOptions);
     await tester.pumpAppWidget(
       BlocProvider<UnifiedFiltersCubit>.value(
