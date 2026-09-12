@@ -166,8 +166,7 @@ class AccountFormCubit extends Cubit<AccountFormState> {
 
   void last4Changed(String value) => emit(state.copyWith(last4: value));
 
-  void cardLast4Changed(String value) =>
-      emit(state.copyWith(cardLast4: value));
+  void cardLast4Changed(String value) => emit(state.copyWith(cardLast4: value));
 
   void toggleNumberVisibility() =>
       emit(state.copyWith(numberVisible: !state.numberVisible));

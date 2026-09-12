@@ -28,7 +28,8 @@ void main() {
       final l10n = AppLocalizations.of(context);
 
       expect(find.text(l10n.tutorialsMenuViewHelp), findsOneWidget);
-      expect(find.text(l10n.scheduledPaymentsMenuViewHelpSubtitle), findsOneWidget);
+      expect(find.text(l10n.scheduledPaymentsMenuViewHelpSubtitle),
+          findsOneWidget);
       expect(find.text(l10n.scheduledPaymentsTitle), findsOneWidget);
     });
 

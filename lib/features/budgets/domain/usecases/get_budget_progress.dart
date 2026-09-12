@@ -61,7 +61,8 @@ class GetBudgetProgress {
     final spent = matched.fold<int>(
       0,
       (sum, d) =>
-          sum + (d.expense.isIncome ? -d.expense.amountMinor : d.expense.amountMinor),
+          sum +
+          (d.expense.isIncome ? -d.expense.amountMinor : d.expense.amountMinor),
     );
 
     // A past window is closed history: nothing "programado" is still owed

@@ -156,9 +156,7 @@ class ScheduledPaymentsLocalDatasource {
     final query = _db.selectOnly(_db.debts)
       ..addColumns([_db.debts.startDate])
       ..where(_db.debts.id.equals(debtId));
-    return query
-        .map((row) => row.read(_db.debts.startDate))
-        .getSingleOrNull();
+    return query.map((row) => row.read(_db.debts.startDate)).getSingleOrNull();
   }
 
   /// Only guards `tombstonedAt IS NULL`: a deleted template cannot be
@@ -504,8 +502,7 @@ class ScheduledPaymentsLocalDatasource {
               (o) =>
                   o.scheduledPaymentId.equals(scheduledPaymentId) &
                   (o.status.equalsValue(ScheduledOccurrenceStatus.pending) |
-                      o.status
-                          .equalsValue(ScheduledOccurrenceStatus.snoozed)),
+                      o.status.equalsValue(ScheduledOccurrenceStatus.snoozed)),
             ))
           .go();
 

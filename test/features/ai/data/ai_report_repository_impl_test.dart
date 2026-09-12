@@ -95,7 +95,8 @@ void main() {
   });
 
   group('failures', () {
-    test('a session-less report is phrased as an auth problem, not as a '
+    test(
+        'a session-less report is phrased as an auth problem, not as a '
         'network one', () async {
       when(() => remote.insertReport(any()))
           .thenThrow(const AiReportException(isUnauthenticated: true));

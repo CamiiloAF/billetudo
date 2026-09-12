@@ -33,8 +33,9 @@ void main() {
   });
 
   test('los ids caben en el rango de 32 bits con signo de Android', () {
-    final maxId = NotificationId.blockStart(AppNotificationChannel.values.last) +
-        NotificationId.blockSize;
+    final maxId =
+        NotificationId.blockStart(AppNotificationChannel.values.last) +
+            NotificationId.blockSize;
 
     expect(maxId, lessThan(2147483647));
   });

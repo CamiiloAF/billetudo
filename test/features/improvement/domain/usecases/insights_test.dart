@@ -109,7 +109,8 @@ void main() {
           final result = await WatchUpcomingChargeInsights(
             getScheduledPayments,
             const ProjectUpcomingOccurrences(),
-          )().first;
+          )()
+              .first;
           return result.getOrElse((_) => const <Insight>[]);
         },
       );
@@ -143,7 +144,8 @@ void main() {
             WatchPendingConfirmationInsights(getPendingOccurrences),
             WatchGoalMilestoneInsights(watchGoals),
             preferences,
-          )().first;
+          )()
+              .first;
           return result.getOrElse((_) => const <Insight>[]);
         },
       );
@@ -295,8 +297,7 @@ void main() {
 
     test('aplica el tope de frecuencia', () async {
       stubTemplates([
-        for (var i = 0; i < 10; i++)
-          summary(id: 'sp-$i', note: 'Pago $i'),
+        for (var i = 0; i < 10; i++) summary(id: 'sp-$i', note: 'Pago $i'),
       ]);
 
       final insights = await all();

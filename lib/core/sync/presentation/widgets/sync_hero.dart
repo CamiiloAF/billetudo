@@ -145,7 +145,8 @@ class SyncHero extends StatelessWidget {
               ),
               if (compact && trailingChevron) ...[
                 const SizedBox(width: 8),
-                Icon(LucideIcons.chevronRight, size: 18, color: colors.textSecondary),
+                Icon(LucideIcons.chevronRight,
+                    size: 18, color: colors.textSecondary),
               ],
             ],
           ),

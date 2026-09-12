@@ -60,8 +60,7 @@ void main() {
     expect(filtersButton(tester).activeCount, 0);
   });
 
-  testWidgets(
-      'con un presupuesto aplicado, el botón Filtros muestra badge 1',
+  testWidgets('con un presupuesto aplicado, el botón Filtros muestra badge 1',
       (tester) async {
     await pump(
       tester,

@@ -81,8 +81,8 @@ class ScheduledPaymentReminderSheet extends StatelessWidget {
             icon: option.$1 == null ? LucideIcons.bellOff : LucideIcons.bell,
             label: option.$2,
             selected: option.$1 == selected,
-            onTap: () => Navigator.of(context)
-                .pop((picked: true, reminder: option.$1)),
+            onTap: () =>
+                Navigator.of(context).pop((picked: true, reminder: option.$1)),
           ),
       ],
     );

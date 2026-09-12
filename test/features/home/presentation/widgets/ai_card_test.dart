@@ -29,8 +29,7 @@ void main() {
         onCreateBudget: onCreateBudget ?? () {},
         onDismissInsight: onDismissInsight,
         onStartInsightConversation: onStartInsightConversation ?? (_) {},
-        onContinueInsightConversation:
-            onContinueInsightConversation ?? (_) {},
+        onContinueInsightConversation: onContinueInsightConversation ?? (_) {},
       );
 
   group('sin insight: variante "con chips" (default, sin importar acceso)', () {
@@ -89,8 +88,8 @@ void main() {
       expect(diagonalChip.isDirectNav, isFalse);
     });
 
-    testWidgets(
-        'los 4 chips quedan forzados al mismo alto fijo', (tester) async {
+    testWidgets('los 4 chips quedan forzados al mismo alto fijo',
+        (tester) async {
       tester.view.physicalSize = const Size(1400, 800);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);

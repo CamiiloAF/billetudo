@@ -35,7 +35,8 @@ void main() {
             conversationId: conversationId,
             role: role,
             content: content,
-            createdAt: createdAt == null ? const Value.absent() : Value(createdAt),
+            createdAt:
+                createdAt == null ? const Value.absent() : Value(createdAt),
             status: Value(status),
             proposalsJson: Value(proposalsJson),
           ),
@@ -75,7 +76,8 @@ void main() {
 
     test('breaks a same-millisecond tie by id so the turn never swaps order',
         () async {
-      await insertMessage(id: 'b-assistant', content: 'respuesta', createdAt: 7);
+      await insertMessage(
+          id: 'b-assistant', content: 'respuesta', createdAt: 7);
       await insertMessage(id: 'a-user', content: 'pregunta', createdAt: 7);
 
       final rows = await datasource.watchMessages('conv-1').first;
@@ -150,7 +152,8 @@ void main() {
         proposalsJson: '[{"id":"tc_0_0"}]',
       );
 
-      expect((await datasource.findById('m1'))!.proposalsJson, '[{"id":"tc_0_0"}]');
+      expect((await datasource.findById('m1'))!.proposalsJson,
+          '[{"id":"tc_0_0"}]');
       expect((await datasource.findById('m2'))!.proposalsJson, '[]');
       expect((await datasource.findById('m1'))!.content, 'Hola');
     });
@@ -165,8 +168,7 @@ void main() {
   });
 
   group('lastConversationId', () {
-    test('is null when nobody has ever talked to the assistant here',
-        () async {
+    test('is null when nobody has ever talked to the assistant here', () async {
       expect(await datasource.lastConversationId(), isNull);
     });
 

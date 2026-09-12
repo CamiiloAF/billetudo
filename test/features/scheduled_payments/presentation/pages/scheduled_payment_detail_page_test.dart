@@ -301,8 +301,7 @@ void main() {
         ),
       );
 
-      final button =
-          tester.widget<LoadMoreButton>(find.byType(LoadMoreButton));
+      final button = tester.widget<LoadMoreButton>(find.byType(LoadMoreButton));
       expect(button.loading, isTrue);
     });
   });

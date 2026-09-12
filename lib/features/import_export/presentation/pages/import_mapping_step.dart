@@ -66,7 +66,8 @@ class ImportMappingStep extends StatelessWidget {
   final void Function(DateComponentOrder order, DateSeparatorChar separator)
       onDateFormatChanged;
   final ValueChanged<DecimalConvention> onDecimalConventionChanged;
-  final void Function(int columnIndex, TypeColumnValues values) onTypeColumnChanged;
+  final void Function(int columnIndex, TypeColumnValues values)
+      onTypeColumnChanged;
   final VoidCallback onAmountSignModeChanged;
   final VoidCallback onConfirm;
 
@@ -112,7 +113,8 @@ class ImportMappingStep extends StatelessWidget {
         ),
         Expanded(
           child: mappingMode == ImportMappingMode.automatic
-              ? AutomaticMappingSummary(sample: sample, dialect: dialect, mapping: mapping)
+              ? AutomaticMappingSummary(
+                  sample: sample, dialect: dialect, mapping: mapping)
               : ListView(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 140),
                   children: [
@@ -134,9 +136,10 @@ class ImportMappingStep extends StatelessWidget {
                     ImportFormatField(
                       icon: LucideIcons.hash,
                       label: l10n.importExportFormatDecimalLabel,
-                      value: dialect.decimalConvention == DecimalConvention.comma
-                          ? l10n.importExportDecimalComma
-                          : l10n.importExportDecimalDot,
+                      value:
+                          dialect.decimalConvention == DecimalConvention.comma
+                              ? l10n.importExportDecimalComma
+                              : l10n.importExportDecimalDot,
                       onTap: () => _pickDecimalFormat(context),
                     ),
                     const SizedBox(height: 8),
@@ -159,7 +162,9 @@ class ImportMappingStep extends StatelessWidget {
                           ?.copyWith(fontSize: 13, fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 8),
-                    for (var index = 0; index < sample.headers.length; index++) ...[
+                    for (var index = 0;
+                        index < sample.headers.length;
+                        index++) ...[
                       if (index > 0) const SizedBox(height: 12),
                       Builder(
                         builder: (context) {
@@ -243,8 +248,8 @@ class ImportMappingStep extends StatelessWidget {
     }
     final normalizedHeaders = sample.headers.map(normalizeForMatching).toList();
     for (final vocabulary in CsvVocabulary.all) {
-      final label =
-          normalizeForMatching(vocabulary.transactionHeaders[TransactionCsvColumn.type]!);
+      final label = normalizeForMatching(
+          vocabulary.transactionHeaders[TransactionCsvColumn.type]!);
       final index = normalizedHeaders.indexOf(label);
       if (index != -1) {
         return index;
@@ -316,7 +321,8 @@ class ImportMappingStep extends StatelessWidget {
     );
   }
 
-  String _fieldLabel(AppLocalizations l10n, ImportField field) => switch (field) {
+  String _fieldLabel(AppLocalizations l10n, ImportField field) =>
+      switch (field) {
         ImportField.id => l10n.importExportFieldId,
         ImportField.date => l10n.importExportFieldDate,
         ImportField.amount => l10n.importExportFieldAmount,

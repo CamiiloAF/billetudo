@@ -90,8 +90,7 @@ void main() {
     await cubit.close();
   });
 
-  test('un fallo deja la sección vacía en vez de romper la pantalla',
-      () async {
+  test('un fallo deja la sección vacía en vez de romper la pantalla', () async {
     final cubit = InsightsCubit(watchInsights);
     await cubit.start();
 

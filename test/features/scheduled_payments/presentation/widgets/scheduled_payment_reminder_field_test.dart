@@ -18,7 +18,8 @@ void main() {
         home: Scaffold(body: child),
       );
 
-  testWidgets('sin recordatorio: placeholder y campana tachada', (tester) async {
+  testWidgets('sin recordatorio: placeholder y campana tachada',
+      (tester) async {
     await tester.pumpWidget(
       appWith(
         ScheduledPaymentReminderField(
@@ -75,9 +76,11 @@ void main() {
     await tester.tap(find.text('Sin recordatorio'));
     await tester.pumpAndSettle();
 
-    final rows = tester.widgetList<ReminderOptionRow>(
-      find.byType(ReminderOptionRow),
-    ).toList();
+    final rows = tester
+        .widgetList<ReminderOptionRow>(
+          find.byType(ReminderOptionRow),
+        )
+        .toList();
     expect(rows, hasLength(5));
     // El polo apagado va primero y es el seleccionado por defecto.
     expect(rows.first.label, 'Sin recordatorio');

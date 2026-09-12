@@ -142,7 +142,8 @@ void main() {
       expect(find.text('Deuda'), findsNothing);
     });
 
-    testWidgets('una deuda que el dispositivo no resuelve usa una etiqueta '
+    testWidgets(
+        'una deuda que el dispositivo no resuelve usa una etiqueta '
         'genérica, nunca el id crudo', (tester) async {
       await pumpCard(
         tester,

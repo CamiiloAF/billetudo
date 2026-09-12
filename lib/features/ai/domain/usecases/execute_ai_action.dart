@@ -172,7 +172,8 @@ class ExecuteAiAction {
   ) async {
     final accountResult = await _accounts.getAccount(proposal.accountId);
     if (accountResult case Left(value: final failure)) {
-      return Left(_asReferenceFailure(failure, TransactionDraft.fieldAccountId));
+      return Left(
+          _asReferenceFailure(failure, TransactionDraft.fieldAccountId));
     }
 
     CategoryKind? categoryKind;

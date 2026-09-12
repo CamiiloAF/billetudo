@@ -98,7 +98,8 @@ void main() {
           onOpenSettings: () {},
           onSignOut: () {},
           onOpenAi: (_) {},
-          onOpenAiInsightQuestion: ({required question, required insightType}) async {},
+          onOpenAiInsightQuestion: (
+              {required question, required insightType}) async {},
           onOpenAiConversation: (_) async {},
         ),
       ),

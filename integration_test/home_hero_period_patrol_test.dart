@@ -50,8 +50,7 @@ Future<void> _createCashAccount(PatrolIntegrationTester $, String name) async {
   await $.tester.pumpAndSettle();
   await $.tester.tap(find.byTooltip('Guardar'));
   await $.tester.pumpAndSettle();
-  GoRouter.of($.tester.element(find.byType(Scaffold).first))
-      .go(AppRoutes.home);
+  GoRouter.of($.tester.element(find.byType(Scaffold).first)).go(AppRoutes.home);
   await $.tester.pumpAndSettle();
 }
 

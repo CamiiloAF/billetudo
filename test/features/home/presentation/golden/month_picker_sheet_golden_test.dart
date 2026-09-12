@@ -49,12 +49,14 @@ void main() {
         await openSheet(tester, brightness);
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/month_picker_sheet_current_year_$suffix.png'),
+          matchesGoldenFile(
+              'goldens/month_picker_sheet_current_year_$suffix.png'),
         );
       });
     });
 
-    testWidgets('month picker — año anterior, sin selección ni deshabilitados ($suffix)',
+    testWidgets(
+        'month picker — año anterior, sin selección ni deshabilitados ($suffix)',
         (tester) async {
       await withClock(Clock.fixed(fixedNow), () async {
         await openSheet(tester, brightness);

@@ -20,8 +20,7 @@ class FakeDriftException implements Exception {
   const FakeDriftException();
 
   @override
-  String toString() =>
-      'SqliteException: near "INSERT": ai_messages, with args '
+  String toString() => 'SqliteException: near "INSERT": ai_messages, with args '
       '[me gasté la plata en el bar]';
 }
 
@@ -114,7 +113,8 @@ void main() {
       expect(messages.single.proposals, isEmpty);
     });
 
-    test('re-appending a user bubble after the turn lands does not duplicate '
+    test(
+        're-appending a user bubble after the turn lands does not duplicate '
         'it', () async {
       final pending = buildAiMessage(
         id: 'm1',
@@ -180,8 +180,8 @@ void main() {
           .getRight()
           .toNullable()!;
 
-      expect(messages.single.proposals.single.status,
-          AiProposalStatus.confirmed);
+      expect(
+          messages.single.proposals.single.status, AiProposalStatus.confirmed);
     });
 
     test('an unknown message id is a NotFoundFailure, not a silent no-op',
@@ -306,7 +306,8 @@ void main() {
       guarded = AiHistoryRepositoryImpl(local, crash);
     });
 
-    test('a failing write reports the exception type, never the SQL that '
+    test(
+        'a failing write reports the exception type, never the SQL that '
         'carries the message text', () async {
       when(() => local.findById(any())).thenThrow(const FakeDriftException());
 

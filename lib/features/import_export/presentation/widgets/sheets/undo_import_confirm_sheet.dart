@@ -18,7 +18,8 @@ class UndoImportConfirmSheet extends StatelessWidget {
 
   final ImportBatch batch;
 
-  static Future<bool?> show(BuildContext context, {required ImportBatch batch}) =>
+  static Future<bool?> show(BuildContext context,
+          {required ImportBatch batch}) =>
       BottomSheetBase.show<bool>(
         context,
         builder: (context) => UndoImportConfirmSheet(batch: batch),
@@ -36,7 +37,8 @@ class UndoImportConfirmSheet extends StatelessWidget {
         Container(
           width: 56,
           height: 56,
-          decoration: BoxDecoration(color: colors.expenseSoft, shape: BoxShape.circle),
+          decoration:
+              BoxDecoration(color: colors.expenseSoft, shape: BoxShape.circle),
           child: Icon(LucideIcons.undo2, color: colors.expenseText, size: 26),
         ),
         const SizedBox(height: 16),

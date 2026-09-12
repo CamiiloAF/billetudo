@@ -89,7 +89,6 @@ void registerPresentationFallbacks() {
   );
 }
 
-class MockConfirmPendingCapture extends Mock
-    implements ConfirmPendingCapture {}
+class MockConfirmPendingCapture extends Mock implements ConfirmPendingCapture {}
 
 class MockGetCategory extends Mock implements GetCategory {}

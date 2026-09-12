@@ -13,7 +13,8 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../../../support/golden_helpers.dart';
 
-class MockRestoreCubit extends MockCubit<RestoreState> implements RestoreCubit {}
+class MockRestoreCubit extends MockCubit<RestoreState>
+    implements RestoreCubit {}
 
 /// HU-04's restore flow, now a modal sheet (`RestoreSheetBody`, decision
 /// 2026-08-06) instead of a full page (`restore_page.dart`, removed). Covers
@@ -38,7 +39,11 @@ void main() {
     schemaVersion: 9,
     appVersion: '1.4.0',
     createdAt: DateTime(2026, 7, 15),
-    rowCountsByTable: const {'transactions': 512, 'accounts': 4, 'categories': 20},
+    rowCountsByTable: const {
+      'transactions': 512,
+      'accounts': 4,
+      'categories': 20
+    },
   );
 
   const doneSummary = RestoreSummary(
@@ -122,7 +127,8 @@ void main() {
 
     // `NY5o6`/`MjNwC`: the escalated "Reemplazar todo" confirmation is its
     // own step, separate from the mode-choice summary above.
-    testWidgets('replace all confirm, inert (unacknowledged) ($suffix)', (tester) async {
+    testWidgets('replace all confirm, inert (unacknowledged) ($suffix)',
+        (tester) async {
       await golden(
         tester,
         RestoreState(
@@ -168,7 +174,8 @@ void main() {
       );
     });
 
-    testWidgets('error, newer format version rejected ($suffix)', (tester) async {
+    testWidgets('error, newer format version rejected ($suffix)',
+        (tester) async {
       await golden(
         tester,
         const RestoreState(step: RestoreStep.error),

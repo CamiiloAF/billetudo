@@ -35,8 +35,9 @@ class FakeNotificationScheduler implements NotificationScheduler {
   }
 
   @override
-  FutureResult<bool> hasPermission() async =>
-      failEverything ? const Left(UnexpectedFailure('nope')) : Right(
+  FutureResult<bool> hasPermission() async => failEverything
+      ? const Left(UnexpectedFailure('nope'))
+      : Right(
           permissionGranted,
         );
 
@@ -75,8 +76,9 @@ class FakeNotificationScheduler implements NotificationScheduler {
   }
 
   @override
-  FutureResult<List<int>> pendingIds() async =>
-      failEverything ? const Left(UnexpectedFailure('nope')) : Right(
+  FutureResult<List<int>> pendingIds() async => failEverything
+      ? const Left(UnexpectedFailure('nope'))
+      : Right(
           scheduled.keys.toList(),
         );
 
@@ -96,8 +98,7 @@ class FakeNotificationPreferences implements NotificationPreferences {
   final Map<NotificationKind, bool> values = <NotificationKind, bool>{};
 
   @override
-  Future<bool> isEnabled(NotificationKind kind) async =>
-      values[kind] ?? true;
+  Future<bool> isEnabled(NotificationKind kind) async => values[kind] ?? true;
 
   @override
   Future<void> setEnabled(
@@ -107,7 +108,8 @@ class FakeNotificationPreferences implements NotificationPreferences {
       values[kind] = enabled;
 
   @override
-  Future<Map<NotificationKind, bool>> readAll() async => <NotificationKind, bool>{
+  Future<Map<NotificationKind, bool>> readAll() async =>
+      <NotificationKind, bool>{
         for (final kind in NotificationKind.values) kind: values[kind] ?? true,
       };
 }

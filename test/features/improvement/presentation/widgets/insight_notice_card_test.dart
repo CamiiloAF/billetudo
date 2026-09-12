@@ -100,7 +100,8 @@ void main() {
 
     await tester.pumpWidget(appWith(cardFor(insight)));
 
-    expect(find.text('El arriendo estaba programado para ayer'), findsOneWidget);
+    expect(
+        find.text('El arriendo estaba programado para ayer'), findsOneWidget);
     expect(find.text('Confirmar pago'), findsOneWidget);
     expect(find.text('Todavía no'), findsOneWidget);
   });

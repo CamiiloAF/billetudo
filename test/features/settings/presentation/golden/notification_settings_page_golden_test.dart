@@ -30,7 +30,8 @@ void main() {
     String name, {
     required Brightness brightness,
     required bool permissionGranted,
-    Map<NotificationKind, bool> enabledByKind = const <NotificationKind, bool>{},
+    Map<NotificationKind, bool> enabledByKind =
+        const <NotificationKind, bool>{},
   }) async {
     final state = NotificationSettingsState(
       loaded: true,

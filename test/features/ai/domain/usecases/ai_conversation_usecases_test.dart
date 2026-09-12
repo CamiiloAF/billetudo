@@ -66,7 +66,8 @@ void main() {
       finishReason: AiFinishReason.message,
       content: 'listo',
     );
-    when(() => ai.sendTurn(any())).thenAnswer((_) async => const Right(response));
+    when(() => ai.sendTurn(any()))
+        .thenAnswer((_) async => const Right(response));
 
     final result = await SendAiTurn(ai)(request);
 
@@ -106,7 +107,8 @@ void main() {
 
   test('AppendAiMessage persists the bubble it was given', () async {
     final message = buildAiMessage(id: 'm9');
-    when(() => history.append(any())).thenAnswer((_) async => const Right(unit));
+    when(() => history.append(any()))
+        .thenAnswer((_) async => const Right(unit));
 
     await AppendAiMessage(history)(message);
 
@@ -142,9 +144,8 @@ void main() {
     when(history.startNewConversation)
         .thenAnswer((_) async => const Right('conv-7'));
 
-    final id = (await StartNewAiConversation(history)())
-        .getRight()
-        .toNullable();
+    final id =
+        (await StartNewAiConversation(history)()).getRight().toNullable();
 
     expect(id, 'conv-7');
   });
@@ -163,7 +164,8 @@ void main() {
       reportedText: 'texto reportado',
       clientVersion: '1.12.0+134',
     );
-    when(() => reports.report(any())).thenAnswer((_) async => const Right(unit));
+    when(() => reports.report(any()))
+        .thenAnswer((_) async => const Right(unit));
 
     await ReportAiMessage(reports)(report);
 

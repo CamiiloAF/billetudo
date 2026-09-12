@@ -199,8 +199,7 @@ void main() {
     expect(insight?.queueLength, 2);
   });
 
-  test('propaga un fallo del repositorio de transacciones como Left',
-      () async {
+  test('propaga un fallo del repositorio de transacciones como Left', () async {
     const failure = DatabaseFailure('boom');
     when(() => repository.watchTransactions(any())).thenAnswer(
       (_) => Stream.value(const Left(failure)),
@@ -275,8 +274,7 @@ void main() {
       expect(result.getRight().toNullable(), isNull);
     });
 
-    test('un insight descartado el mes pasado sí reaparece este mes',
-        () async {
+    test('un insight descartado el mes pasado sí reaparece este mes', () async {
       when(() => eventRepository.watch()).thenAnswer(
         (_) => Stream.value(
           Right(
@@ -328,8 +326,7 @@ void main() {
       });
     });
 
-    test('un insight mostrado hace más de 24h sí puede reaparecer',
-        () async {
+    test('un insight mostrado hace más de 24h sí puede reaparecer', () async {
       await withClock(Clock.fixed(DateTime(2026, 7, 10, 12)), () async {
         when(() => eventRepository.watch()).thenAnswer(
           (_) => Stream.value(
@@ -356,8 +353,7 @@ void main() {
       });
     });
 
-    test(
-        'los dos tipos son independientes: descartar uno no afecta al otro',
+    test('los dos tipos son independientes: descartar uno no afecta al otro',
         () async {
       when(() => repository.watchTransactions(any())).thenAnswer(
         (_) => Stream.value(

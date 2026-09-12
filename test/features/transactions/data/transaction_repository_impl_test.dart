@@ -580,8 +580,7 @@ void main() {
   });
 
   group('watchRecentTransactions (Home HU-05)', () {
-    test('no aplica ningún filtro de fecha: cruza meses libremente',
-        () async {
+    test('no aplica ningún filtro de fecha: cruza meses libremente', () async {
       final august = await createTransaction(
         expenseDraft(date: DateTime(2026, 8, 1)),
       );
@@ -612,7 +611,8 @@ void main() {
       );
     });
 
-    test('excluye transacciones borradas (deletedAt), igual que watchTransactions',
+    test(
+        'excluye transacciones borradas (deletedAt), igual que watchTransactions',
         () async {
       final visible = await createTransaction(expenseDraft());
       final trashed = await createTransaction(

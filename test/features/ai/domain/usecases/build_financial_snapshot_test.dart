@@ -596,9 +596,10 @@ void main() {
       // model can find them.
       expect(ids, containsAll(<String>['cat-debts', 'cat-debts-ktm']));
 
-      final subcategory = categoryEntries.cast<Map<String, Object?>>().firstWhere(
-            (entry) => entry['categoryId'] == 'cat-debts-ktm',
-          );
+      final subcategory =
+          categoryEntries.cast<Map<String, Object?>>().firstWhere(
+                (entry) => entry['categoryId'] == 'cat-debts-ktm',
+              );
       expect(subcategory['parentId'], 'cat-debts');
     });
   });

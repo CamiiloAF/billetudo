@@ -539,7 +539,8 @@ void main() {
               builder: (context) => TextButton(
                 onPressed: () => navKey.currentState!.push(
                   MaterialPageRoute<void>(
-                    builder: (_) => BlocProvider<ScheduledPaymentFormCubit>.value(
+                    builder: (_) =>
+                        BlocProvider<ScheduledPaymentFormCubit>.value(
                       value: cubit,
                       child: const ScheduledPaymentFormPage(),
                     ),
@@ -608,8 +609,8 @@ void main() {
           ),
           GoRoute(
             path: '/pagos-programados/:id/editar',
-            builder: (context, state) => BlocProvider<
-                ScheduledPaymentFormCubit>.value(
+            builder: (context, state) =>
+                BlocProvider<ScheduledPaymentFormCubit>.value(
               value: cubit,
               child: const ScheduledPaymentFormPage(),
             ),

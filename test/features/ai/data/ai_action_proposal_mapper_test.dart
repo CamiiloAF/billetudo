@@ -163,7 +163,8 @@ void main() {
         buildBudgetProposal(amountMinor: 45000000),
       );
 
-      expect((json['payload']! as Map<String, Object?>)['amountMinor'], 45000000);
+      expect(
+          (json['payload']! as Map<String, Object?>)['amountMinor'], 45000000);
       expect(
         (json['payload']! as Map<String, Object?>)['amountMinor'],
         isA<int>(),
@@ -208,8 +209,10 @@ void main() {
             .having((p) => p.amountMinor, 'amountMinor', 45000000)
             .having((p) => p.period, 'period', BudgetPeriod.monthly)
             .having((p) => p.recurring, 'recurring', false)
-            .having((p) => p.categoryIds, 'categoryIds', {'cat-1', 'cat-2'})
-            .having((p) => p.accountIds, 'accountIds', {'acc-1'}),
+            .having((p) => p.categoryIds, 'categoryIds', {
+          'cat-1',
+          'cat-2'
+        }).having((p) => p.accountIds, 'accountIds', {'acc-1'}),
       );
     });
 
@@ -259,7 +262,8 @@ void main() {
       );
     });
 
-    test('a goal with an out-of-range targetDate keeps the goal, drops the date',
+    test(
+        'a goal with an out-of-range targetDate keeps the goal, drops the date',
         () {
       final proposal = AiActionProposalMapper.fromJson(<String, Object?>{
         'id': 'tc_0_1',
@@ -358,7 +362,8 @@ void main() {
   });
 
   group('unknown kinds degrade instead of throwing', () {
-    test('an unknown kind becomes UnsupportedProposal keeping the raw kind', () {
+    test('an unknown kind becomes UnsupportedProposal keeping the raw kind',
+        () {
       final proposal = AiActionProposalMapper.fromJson(<String, Object?>{
         'id': 'tc_9_9',
         'kind': 'create_spaceship',
@@ -440,8 +445,7 @@ void main() {
           transactionJson(payload: transactionPayload(accountId: null)),
       'an account id of the wrong type':
           transactionJson(payload: transactionPayload(accountId: 42)),
-      'a payload that is a list instead of an object':
-          <String, Object?>{
+      'a payload that is a list instead of an object': <String, Object?>{
         'id': 'tc_0_0',
         'kind': 'create_transaction',
         'title': 'Registrar el almuerzo',

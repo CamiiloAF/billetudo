@@ -830,8 +830,7 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
   /// Whether two dates fall on the same calendar day — the granularity a
   /// scheduled-payment date carries, so a time component never reads as a
   /// reschedule (item 18).
-  static bool _sameDate(DateTime a, DateTime b) =>
-      _dateOnly(a) == _dateOnly(b);
+  static bool _sameDate(DateTime a, DateTime b) => _dateOnly(a) == _dateOnly(b);
 
   /// Advances the template cursor (`nextDate`) one cadence past [occurrenceDate],
   /// mirroring `_catchUpTemplate`, but only when that date is at or after the

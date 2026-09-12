@@ -204,8 +204,7 @@ void main() {
     testWidgets(
       'renders only "Entendido" as the primary button, no CTA',
       (tester) async {
-        final content =
-            await readContent(tester, TutorialKey.debtLinkMovement);
+        final content = await readContent(tester, TutorialKey.debtLinkMovement);
         await pumpSheet(tester, TutorialKey.debtLinkMovement);
 
         expect(content.points, hasLength(1));

@@ -60,8 +60,7 @@ void main() {
     );
   }
 
-  testWidgets('modo enlazar muestra el banner y oculta el FAB',
-      (tester) async {
+  testWidgets('modo enlazar muestra el banner y oculta el FAB', (tester) async {
     await pump(
       tester,
       linkMode: TransactionsLinkMode(

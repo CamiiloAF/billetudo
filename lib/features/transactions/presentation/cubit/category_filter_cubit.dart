@@ -103,7 +103,8 @@ class CategoryFilterCubit extends Cubit<CategoryFilterState> {
     Set<TransactionType> activeTypes = const <TransactionType>{},
   }) async {
     await _cancelSubscriptions();
-    emit(CategoryFilterState(selected: initialSelected, activeTypes: activeTypes));
+    emit(CategoryFilterState(
+        selected: initialSelected, activeTypes: activeTypes));
     _expenseSubscription =
         _watchCategories(CategoryKind.expense).listen((result) {
       if (isClosed) {

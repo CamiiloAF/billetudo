@@ -25,15 +25,16 @@ void main() {
         conversationId: conversationId,
         role: role,
         content: content,
-        createdAt: createdAt ?? DateTime.utc(2026, 8, 25).millisecondsSinceEpoch,
+        createdAt:
+            createdAt ?? DateTime.utc(2026, 8, 25).millisecondsSinceEpoch,
         status: status,
         proposalsJson: proposalsJson,
       );
 
   group('role', () {
     test('reads the user back as the user', () {
-      expect(AiMessageMapper.toEntity(row(role: 'user')).role,
-          AiMessageRole.user);
+      expect(
+          AiMessageMapper.toEntity(row(role: 'user')).role, AiMessageRole.user);
     });
 
     test('attributes an unreadable role to the assistant', () {
@@ -45,7 +46,8 @@ void main() {
   });
 
   group('status', () {
-    test('accepts "sending" as an alias of pending, so an older row still '
+    test(
+        'accepts "sending" as an alias of pending, so an older row still '
         'reads as on its way', () {
       expect(
         AiMessageMapper.toEntity(row(status: 'sending')).status,

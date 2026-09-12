@@ -255,8 +255,7 @@ void main() {
         reason: 'el selector suelta el foco antes de abrir la hoja');
   });
 
-  testWidgets(
-      'al tocar el selector de Día de corte el foco queda en nada',
+  testWidgets('al tocar el selector de Día de corte el foco queda en nada',
       (tester) async {
     await pumpForm(
       tester,

@@ -66,8 +66,7 @@ class ScheduledPaymentReminderField extends StatelessWidget {
           // pole of the field: the frame renders it in `$text-secondary`
           // with `bell-off`, same as any other placeholder.
           hasValue: reminder != null,
-          inlineIcon:
-              reminder == null ? LucideIcons.bellOff : LucideIcons.bell,
+          inlineIcon: reminder == null ? LucideIcons.bellOff : LucideIcons.bell,
           onTap: () async {
             // `dismissSystemKeyboard` (not a bare `unfocus()`): on a real
             // device the system keyboard's close animation is not

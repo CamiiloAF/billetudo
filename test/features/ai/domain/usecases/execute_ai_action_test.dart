@@ -142,7 +142,8 @@ void main() {
       );
     });
 
-    test('drops hallucinated category and account ids instead of failing the '
+    test(
+        'drops hallucinated category and account ids instead of failing the '
         'whole action', () async {
       when(() => getCategory('cat-real'))
           .thenAnswer((_) async => Right(buildCategory(id: 'cat-real')));
@@ -163,8 +164,8 @@ void main() {
         ),
       );
 
-      final draft =
-          verify(() => createBudget(captureAny())).captured.single as BudgetDraft;
+      final draft = verify(() => createBudget(captureAny())).captured.single
+          as BudgetDraft;
       expect(draft.categoryIds, {'cat-real'});
       expect(draft.accountIds, {'acc-real'});
       expect(result.isRight(), isTrue);
@@ -175,8 +176,8 @@ void main() {
 
       await usecase(buildBudgetProposal(amountMinor: 45000000));
 
-      final draft =
-          verify(() => createBudget(captureAny())).captured.single as BudgetDraft;
+      final draft = verify(() => createBudget(captureAny())).captured.single
+          as BudgetDraft;
       expect(draft.amountMinor, 45000000);
       expect(draft.currency, 'COP');
     });
@@ -216,7 +217,8 @@ void main() {
     });
 
     test('propagates a validation failure from CreateGoal unwrapped', () async {
-      const failure = ValidationFailure('account not found', field: 'accountId');
+      const failure =
+          ValidationFailure('account not found', field: 'accountId');
       when(() => createGoal(any()))
           .thenAnswer((_) async => const Left(failure));
 

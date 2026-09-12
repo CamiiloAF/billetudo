@@ -735,8 +735,9 @@ void main() {
       final log = await targetDb
           .customSelect('SELECT category_id FROM delete_log ORDER BY seq')
           .get();
-      final deleteOrder =
-          [for (final row in log) row.read<String>('category_id')];
+      final deleteOrder = [
+        for (final row in log) row.read<String>('category_id')
+      ];
       expect(
         deleteOrder,
         [childId, parentId, grandparentId],
@@ -1076,8 +1077,7 @@ void main() {
           reason: '${result.getLeft().toNullable()}');
       final categories = await targetDb.select(targetDb.categories).get();
       expect(categories, hasLength(2));
-      final newParent =
-          categories.firstWhere((c) => c.parentId == null);
+      final newParent = categories.firstWhere((c) => c.parentId == null);
       final newChild = categories.firstWhere((c) => c.parentId != null);
       expect(newParent.id, isNot(parentId));
       expect(newChild.id, isNot(childId));
@@ -1160,8 +1160,7 @@ void main() {
             idsByTable: any(named: 'idsByTable'),
           )).thenAnswer((_) async => const Right({}));
       final (dbA, datasourceA) = await buildSignedInTarget(resolverA);
-      final resultA =
-          await datasourceA.restore(path, mode: RestoreMode.merge);
+      final resultA = await datasourceA.restore(path, mode: RestoreMode.merge);
       expect(resultA.isRight(), isTrue,
           reason: '${resultA.getLeft().toNullable()}');
       final idsA =
@@ -1181,8 +1180,7 @@ void main() {
             'accounts': [accountId],
           }));
       final (dbB, datasourceB) = await buildSignedInTarget(resolverB);
-      final resultB =
-          await datasourceB.restore(path, mode: RestoreMode.merge);
+      final resultB = await datasourceB.restore(path, mode: RestoreMode.merge);
       expect(resultB.isRight(), isTrue,
           reason: '${resultB.getLeft().toNullable()}');
       final idsB =

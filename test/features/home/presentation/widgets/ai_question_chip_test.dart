@@ -74,8 +74,7 @@ void main() {
     expect(icon.color, AppColors.dark.primaryOnSoft);
   });
 
-  testWidgets(
-      'tema claro: fondo usa AppColors.muted; icono usa primaryOnSoft',
+  testWidgets('tema claro: fondo usa AppColors.muted; icono usa primaryOnSoft',
       (tester) async {
     await tester.pumpHomeWidget(
       AiQuestionChip(label: 'Pregunta', onTap: () {}),

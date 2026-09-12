@@ -746,9 +746,7 @@ class FinancialSnapshot extends Equatable {
             for (final total in currencyTotals!) total.toJson()
           ],
         if (categories != null)
-          'categories': [
-            for (final category in categories!) category.toJson()
-          ],
+          'categories': [for (final category in categories!) category.toJson()],
         if (spendingByCategory != null &&
             spendingCurrency != null &&
             spendingTotalFormatted != null)
