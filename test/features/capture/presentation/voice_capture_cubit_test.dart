@@ -233,6 +233,95 @@ void main() {
       await cubit.close();
     });
 
+    test(
+      'goes quiet for 1.5s after the last recognized word and stops on its '
+      'own, the same way "Listo" would (2026-09-12: real-device testing '
+      "narrowed the whole saga down to this — the manual 'Listo' path always "
+      'worked, only relying on the plugin to end the session automatically '
+      'did not)',
+      () async {
+        final cubit = buildCubit();
+        await startAndSettle(cubit);
+
+        recognizer.controller.add(
+          const SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.listening,
+            transcript: 'gasté',
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+        expect(recognizer.stopCalls, 0);
+
+        // Ambient sound-level pings with the same transcript must not count
+        // as "still talking" and must not restart the clock.
+        await Future<void>.delayed(const Duration(milliseconds: 800));
+        recognizer.controller.add(
+          const SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.listening,
+            transcript: 'gasté',
+            soundLevel: 0.4,
+          ),
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 800));
+
+        // 1.6s after the transcript last actually changed: auto-stop fired,
+        // the exact same call "Listo" makes.
+        expect(recognizer.stopCalls, 1);
+        await cubit.close();
+      },
+    );
+
+    test(
+      'a new word resets the silence clock instead of stopping mid-sentence',
+      () async {
+        final cubit = buildCubit();
+        await startAndSettle(cubit);
+
+        recognizer.controller.add(
+          const SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.listening,
+            transcript: 'gasté',
+          ),
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 1200));
+        expect(recognizer.stopCalls, 0);
+
+        // A new word before the 1.5s window elapsed restarts the countdown.
+        recognizer.controller.add(
+          const SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.listening,
+            transcript: 'gasté veinte mil',
+          ),
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 1200));
+        expect(recognizer.stopCalls, 0);
+        expect(cubit.state.status, VoiceCaptureStatus.listening);
+
+        await cubit.stopListening();
+        await cubit.close();
+      },
+    );
+
+    test('tapping "Listo" cancels a pending auto-stop, no double stop() call',
+        () async {
+      final cubit = buildCubit();
+      await startAndSettle(cubit);
+
+      recognizer.controller.add(
+        const SpeechRecognitionUpdate(
+          phase: SpeechRecognitionPhase.listening,
+          transcript: 'gasté veinte mil en almuerzo',
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      await cubit.stopListening();
+      await Future<void>.delayed(const Duration(milliseconds: 1600));
+
+      expect(recognizer.stopCalls, 1);
+      await cubit.close();
+    });
+
     test('on-device unavailable is surfaced, never downgraded to cloud',
         () async {
       final cubit = buildCubit();

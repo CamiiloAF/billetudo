@@ -117,6 +117,23 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
   /// recognizer a beat to actually release the previous session.
   static const Duration _earlyErrorRetryDelay = Duration(milliseconds: 400);
 
+  /// Fires [stopListening] on the user's behalf a beat after they stop
+  /// talking, instead of trusting the plugin's own silence/end-of-speech
+  /// detection to close the session cleanly.
+  ///
+  /// 2026-09-12: real-device testing narrowed the whole "captura por voz
+  /// falla" saga down to one thing — tapping "Listo" always worked; only the
+  /// *automatic* end of a session (the user just going quiet) reliably did
+  /// not, looping the recognizer back into listening instead of finishing.
+  /// Rather than keep chasing that inside the plugin/native layer, this
+  /// reuses the one path already proven to work: [stopListening] itself,
+  /// fired here instead of by a tap.
+  Timer? _autoStopTimer;
+
+  /// How long to wait, after the transcript last grew, before treating
+  /// silence as "done talking" and calling [stopListening] automatically.
+  static const Duration _autoStopSilenceDelay = Duration(milliseconds: 1500);
+
   /// Checks every precondition and, if they hold, opens the microphone.
   ///
   /// [localeId] is the recognizer locale (`es_CO`) and [languageCode] the
@@ -131,6 +148,7 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
     _languageCode = languageCode;
     _earlyErrorRetried = false;
     _cancelled = false;
+    _cancelAutoStop();
     emit(const VoiceCaptureState());
 
     _cloudConsent = await _getCloudConsent();
@@ -219,6 +237,7 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
   /// recognizer reports failure instead of a final transcript, whatever was
   /// heard so far is still kept rather than left stranded in `stopping`.
   Future<void> stopListening() async {
+    _cancelAutoStop();
     if (state.status != VoiceCaptureStatus.listening) {
       return;
     }
@@ -259,6 +278,7 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
   /// "Cancelar": drops audio and transcript, opens nothing, writes nothing.
   Future<void> cancel() async {
     _cancelled = true;
+    _cancelAutoStop();
     await _updates?.cancel();
     _updates = null;
     await _cancelCapture();
@@ -278,12 +298,33 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
 
   @override
   Future<void> close() async {
+    _cancelAutoStop();
     await _updates?.cancel();
     _updates = null;
     // Belt and braces: a sheet dismissed by the scrim or the back gesture must
     // not leave the microphone open a single frame longer than the UI.
     unawaited(_cancelCapture());
     return super.close();
+  }
+
+  /// (Re)starts the [_autoStopTimer] countdown — called every time new words
+  /// land, so it only ever fires this long after the LAST recognized word,
+  /// never the first.
+  void _scheduleAutoStop() {
+    _autoStopTimer?.cancel();
+    _autoStopTimer = Timer(_autoStopSilenceDelay, () {
+      if (isClosed || state.status != VoiceCaptureStatus.listening) {
+        // The session already ended some other way (manual "Listo",
+        // cancel, a real error) — nothing to stop.
+        return;
+      }
+      unawaited(stopListening());
+    });
+  }
+
+  void _cancelAutoStop() {
+    _autoStopTimer?.cancel();
+    _autoStopTimer = null;
   }
 
   Future<void> _listen({MicrophonePermissionStatus? knownPermission}) async {
@@ -329,6 +370,13 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
     }
     switch (update.phase) {
       case SpeechRecognitionPhase.listening:
+        // `onSoundLevelChange` alone (ambient noise, breathing) also arrives
+        // as a `listening` update with the transcript unchanged — only new
+        // recognized words count as "still talking" and restart the clock.
+        if (update.transcript != state.transcript &&
+            update.transcript.isNotEmpty) {
+          _scheduleAutoStop();
+        }
         emit(
           state.copyWith(
             status: VoiceCaptureStatus.listening,
@@ -354,6 +402,10 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
   }
 
   void _onError(SpeechRecognitionUpdate update) {
+    // Whatever this error resolves to (a real failure, or the early-retry
+    // path re-arming `_listen`), the countdown that was running against the
+    // now-dead session no longer means anything.
+    _cancelAutoStop();
     switch (update.error) {
       case SpeechRecognitionErrorKind.permission:
         emit(state.copyWith(status: VoiceCaptureStatus.permissionNeeded));
@@ -444,6 +496,7 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
   }
 
   void _finish(String transcript) {
+    _cancelAutoStop();
     final draft = _parse(
       SpokenTransactionInput(
         transcript: transcript,
