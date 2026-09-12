@@ -114,8 +114,7 @@ class _VoiceListeningIndicatorState extends State<VoiceListeningIndicator>
                   color: colors.primary,
                   shape: BoxShape.circle,
                 ),
-                child:
-                    Icon(LucideIcons.mic, size: 36, color: colors.onPrimary),
+                child: Icon(LucideIcons.mic, size: 36, color: colors.onPrimary),
               ),
             ),
           ),
@@ -241,8 +240,9 @@ class _VoiceWaveBarsState extends State<VoiceWaveBars>
             return Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                for (var i = 0; i < VoiceWaveBars.restingHeights.length; i++)
-                  ...[
+                for (var i = 0;
+                    i < VoiceWaveBars.restingHeights.length;
+                    i++) ...[
                   if (i > 0) const SizedBox(width: 5),
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 90),

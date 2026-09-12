@@ -39,9 +39,8 @@ class BudgetPeriodFilterState extends Equatable {
       BudgetPeriodFilterState(
         status: status ?? this.status,
         options: options ?? this.options,
-        selectedBudgetId: clearSelected
-            ? null
-            : (selectedBudgetId ?? this.selectedBudgetId),
+        selectedBudgetId:
+            clearSelected ? null : (selectedBudgetId ?? this.selectedBudgetId),
         failure: failure,
       );
 

@@ -87,7 +87,8 @@ void main() {
       ),
     );
 
-    final pills = tester.widgetList<FilterChipPill>(find.byType(FilterChipPill));
+    final pills =
+        tester.widgetList<FilterChipPill>(find.byType(FilterChipPill));
     for (final pill in pills) {
       expect(pill.active, isTrue, reason: '${pill.label} debería estar activo');
     }

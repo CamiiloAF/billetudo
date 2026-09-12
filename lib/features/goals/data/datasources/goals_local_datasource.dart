@@ -84,10 +84,9 @@ class GoalsLocalDatasource {
   /// The account row for [accountId], ignoring tombstone/archival — HU-12's
   /// coherence still needs the balance of an account a goal is linked to even
   /// if that account was since archived (only a hard tombstone hides it).
-  Future<Account?> getAccount(String accountId) =>
-      (_db.select(_db.accounts)
-            ..where((a) => a.id.equals(accountId) & a.tombstonedAt.isNull()))
-          .getSingleOrNull();
+  Future<Account?> getAccount(String accountId) => (_db.select(_db.accounts)
+        ..where((a) => a.id.equals(accountId) & a.tombstonedAt.isNull()))
+      .getSingleOrNull();
 
   /// Same as [getAccount] but ignoring the tombstone too — the "cuenta con
   /// lápida" detail state (`XoGzx`) and the movement detail sheet's account
@@ -206,22 +205,28 @@ class GoalsLocalDatasource {
         final transaction = await _db
             .into(_db.transactions)
             .insertReturning(transactionCompanion);
-        final contribution = await _db.into(_db.goalContributions).insertReturning(
-              contributionCompanionBuilder(transaction.id),
-            );
+        final contribution =
+            await _db.into(_db.goalContributions).insertReturning(
+                  contributionCompanionBuilder(transaction.id),
+                );
         return (transaction, contribution);
       });
 
   /// Reads a transaction ignoring the goal filter, to validate a link target
   /// (HU-03 "enlazar un movimiento existente").
-  Future<Transaction?> getTransaction(String id) => (_db.select(_db.transactions)
-        ..where(
-          (t) => t.id.equals(id) & t.deletedAt.isNull() & t.tombstonedAt.isNull(),
-        ))
-      .getSingleOrNull();
+  Future<Transaction?> getTransaction(String id) =>
+      (_db.select(_db.transactions)
+            ..where(
+              (t) =>
+                  t.id.equals(id) &
+                  t.deletedAt.isNull() &
+                  t.tombstonedAt.isNull(),
+            ))
+          .getSingleOrNull();
 
   /// HU-08 cascade: the movement (if any) mirroring [transactionId].
-  Future<GoalContribution?> getContributionByTransaction(String transactionId) =>
+  Future<GoalContribution?> getContributionByTransaction(
+          String transactionId) =>
       (_db.select(_db.goalContributions)
             ..where(
               (c) =>

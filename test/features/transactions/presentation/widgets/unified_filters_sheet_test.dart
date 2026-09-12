@@ -137,8 +137,7 @@ void main() {
       expect(find.text('Categorías'), findsOneWidget);
     });
 
-    testWidgets(
-        'con categorías seleccionadas muestra el conteo y se resalta',
+    testWidgets('con categorías seleccionadas muestra el conteo y se resalta',
         (tester) async {
       await pump(
         tester,

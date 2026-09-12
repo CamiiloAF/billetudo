@@ -396,8 +396,8 @@ void main() {
 
         await golden(
           tester,
-          (context) =>
-              BudgetPeriodFilterSheet.show(context, initialBudgetId: 'budget-1'),
+          (context) => BudgetPeriodFilterSheet.show(context,
+              initialBudgetId: 'budget-1'),
           'budget_period_filter_selected_$suffix',
           brightness: brightness,
         );
