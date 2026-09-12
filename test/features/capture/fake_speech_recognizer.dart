@@ -86,11 +86,18 @@ class FakeMicrophonePermissionGate implements MicrophonePermissionGate {
   MicrophonePermissionStatus status;
   MicrophonePermissionStatus? statusAfterRequest;
 
+  /// When set, [current] returns this instead of [status] — simulating the
+  /// real-device race `GetVoiceCaptureAvailability`'s `knownPermission`
+  /// param exists to sidestep: `Permission.microphone.status` reading the
+  /// pre-grant value for a beat right after `.request()` already resolved
+  /// `granted`. [request] never touches this field, unlike [status].
+  MicrophonePermissionStatus? currentLag;
+
   int requestCalls = 0;
   int openSettingsCalls = 0;
 
   @override
-  Future<MicrophonePermissionStatus> current() async => status;
+  Future<MicrophonePermissionStatus> current() async => currentLag ?? status;
 
   @override
   Future<MicrophonePermissionStatus> request() async {

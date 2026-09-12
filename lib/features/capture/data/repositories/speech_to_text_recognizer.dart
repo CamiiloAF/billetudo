@@ -77,6 +77,18 @@ class SpeechToTextRecognizer implements SpeechRecognizer {
         );
       }
       if (!_initialized) {
+        // Bugfix 2026-09-12: a failed `initialize()` on Android is not
+        // reliably retryable on the SAME `SpeechToText` instance — a common
+        // real-device trigger is the mic permission having just been
+        // granted a beat before this ran, which the plugin's own internal
+        // check can still miss the same way `Permission.microphone.status`
+        // can (see `GetVoiceCaptureAvailability`'s doc). Once that happens,
+        // calling `.initialize()` again on this same object kept failing
+        // forever — the instance itself seems to latch onto the failure.
+        // Dropping `_plugin` here means the *next* `prepare()` builds a
+        // fresh `SpeechToText()` and gets a real second chance instead of
+        // retrying against an instance already poisoned by the first miss.
+        _plugin = null;
         return const Right(SpeechRecognizerAvailability.unavailable());
       }
       final locales = await plugin.locales();

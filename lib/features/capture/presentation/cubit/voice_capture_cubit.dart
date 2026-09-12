@@ -125,6 +125,7 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
   Future<void> start({
     required String localeId,
     required String languageCode,
+    MicrophonePermissionStatus? knownPermission,
   }) async {
     _localeId = localeId;
     _languageCode = languageCode;
@@ -137,7 +138,10 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
       return;
     }
     await _loadVocabulary();
-    final availability = await _getAvailability(localeId: localeId);
+    final availability = await _getAvailability(
+      localeId: localeId,
+      knownPermission: knownPermission,
+    );
     if (isClosed) {
       return;
     }
@@ -167,7 +171,11 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
         soundLevel: 0,
       ),
     );
-    await _listen();
+    // `resolved.permission` was just confirmed accurate for this very call —
+    // pass it on so `_listen`/`StartVoiceCapture` do not immediately
+    // re-query the OS and risk hitting the same stale-read race a second
+    // time for no new information.
+    await _listen(knownPermission: resolved.permission);
   }
 
   /// The primary CTA of the explainer while the permission is still askable:
@@ -187,7 +195,14 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
       );
       return;
     }
-    await start(localeId: _localeId, languageCode: _languageCode);
+    await start(
+      localeId: _localeId,
+      languageCode: _languageCode,
+      // The status this very call just got from the OS — see
+      // `GetVoiceCaptureAvailability`'s doc on why `start` must not
+      // re-derive it from a fresh, independently-racy platform query.
+      knownPermission: status,
+    );
   }
 
   /// The only way back from a permanently denied microphone. The app never
@@ -271,7 +286,7 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
     return super.close();
   }
 
-  Future<void> _listen() async {
+  Future<void> _listen({MicrophonePermissionStatus? knownPermission}) async {
     await _updates?.cancel();
     _updates = _watchUpdates().listen(_onUpdate);
     _listeningStartedAt = DateTime.now();
@@ -281,6 +296,7 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
       // is still on-device first; this only decides whether the session may
       // continue when that turns out to be impossible.
       allowCloudRecognition: _cloudConsent.isGranted,
+      knownPermission: knownPermission,
     );
     if (isClosed) {
       return;

@@ -563,5 +563,27 @@ void main() {
       expect(recognizer.startCalls, 0);
       await cubit.close();
     });
+
+    test(
+      'granting still starts the session even when a re-query of the OS '
+      'permission would still read the pre-grant value for a beat (the '
+      "reported bug: 'doy permiso e inmediatamente dice desactivado')",
+      () async {
+        gate
+          ..status = MicrophonePermissionStatus.denied
+          ..statusAfterRequest = MicrophonePermissionStatus.granted
+          // `request()` itself correctly resolves `granted`, but a
+          // *separate* `current()` call right after — exactly what `start`
+          // would do without `knownPermission` — still lags behind.
+          ..currentLag = MicrophonePermissionStatus.denied;
+        final cubit = buildCubit();
+        await startAndSettle(cubit);
+        await cubit.requestPermission();
+        await Future<void>.delayed(Duration.zero);
+
+        expect(cubit.state.status, VoiceCaptureStatus.listening);
+        await cubit.close();
+      },
+    );
   });
 }
