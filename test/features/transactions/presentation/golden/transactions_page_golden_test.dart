@@ -305,7 +305,8 @@ void main() {
       );
     });
 
-    testWidgets('with data: long category name wraps to 2 lines, not overflow '
+    testWidgets(
+        'with data: long category name wraps to 2 lines, not overflow '
         '($suffix)', (tester) async {
       await golden(
         tester,
@@ -411,7 +412,7 @@ void main() {
       );
     });
 
-    // `PeriodNavBar` (Fecha variant): a granular period other than the
+    // `PeriodStepper` (Fecha variant): a granular period other than the
     // default "this month" (`hasDateFilter == true`) enables both chevrons —
     // there is no lower bound on the past and this is a past month, so
     // `datePeriodHasNext` is also true — and shows no `Budget Context Tag`.
@@ -436,7 +437,7 @@ void main() {
       );
     });
 
-    // `PeriodNavBar` (Fecha variant): a custom range (`DatePeriodFilter
+    // `PeriodStepper` (Fecha variant): a custom range (`DatePeriodFilter
     // .custom`) has no granularity to step at all, so the nav bar does not
     // render — only its chip does (bugfix: it used to render with both
     // chevrons inert instead, which read as a stepper for a period that has
@@ -463,7 +464,7 @@ void main() {
       },
     );
 
-    // `PeriodNavBar` (Presupuesto variant), complement of "budget chip:
+    // `PeriodStepper` (Presupuesto variant), complement of "budget chip:
     // budget selected, active" above: same `Budget Context Tag`, but with
     // `DatePeriodFilter.budget`'s `hasPrevious`/`hasNext` both true so this
     // covers the enabled chevrons — the existing golden only covers the

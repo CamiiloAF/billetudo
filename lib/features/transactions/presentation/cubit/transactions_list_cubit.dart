@@ -277,7 +277,7 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
     }
   }
 
-  /// `PeriodNavBar`'s Prev/Next (`design-system/billetudo/pages/
+  /// `PeriodStepper`'s Prev/Next (`design-system/billetudo/pages/
   /// transacciones.md` § "Period Nav Bar en la pantalla principal"),
   /// `direction` `-1`/`1`: steps whichever period dimension is active —
   /// `filter.budgetPeriod` when a Presupuesto filter is applied (via

@@ -10,6 +10,7 @@ import '../../../../core/utils/money_formatter.dart';
 import '../../../../core/widgets/load_more_button.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
+import '../../../../core/widgets/period_stepper.dart';
 import '../../../categories/presentation/utils/category_appearance.dart';
 import '../../../settings/presentation/cubit/app_settings_cubit.dart';
 import '../../domain/entities/budget_scope.dart';
@@ -25,14 +26,14 @@ import '../widgets/budget_featured_badge.dart';
 import '../widgets/budget_progress_bar.dart';
 import '../widgets/budget_scheduled_entry_card.dart';
 import '../widgets/budgets_error_view.dart';
-import '../widgets/period_stepper_pill.dart';
 import '../widgets/sheets/budget_adjust_amount_sheet.dart';
 import '../widgets/sheets/budget_detail_actions_sheet.dart';
 import '../widgets/sheets/budget_scheduled_sheet.dart';
 import '../widgets/sheets/confirm_delete_budget_sheet.dart';
 
-/// The budget detail (`NloPT`, HU-04/HU-05). Hero + activity, with the floating
-/// period stepper anchored at the bottom and the actions in the header overflow.
+/// The budget detail (`NloPT`, HU-04/HU-05). An inline period stepper at the
+/// top of the scroll, then hero + activity, with the actions in the header
+/// overflow.
 class BudgetDetailPage extends StatelessWidget {
   const BudgetDetailPage({
     required this.onEdit,
@@ -246,10 +247,11 @@ class BudgetDetailPage extends StatelessWidget {
                         ? l10n.budgetAdjustUpdatedSnackbar
                         : l10n.budgetAdjustScheduledSnackbar,
                   ),
-                  // Float above the anchored period stepper (bottom: 0) so it
-                  // does not cover the ← / → CTA while it is visible.
+                  // Cierre 2026-09-11: the period stepper no longer floats
+                  // over the bottom of the screen (it moved inline, to the
+                  // top of the scroll), so this snackbar no longer needs a
+                  // tall bottom margin to clear it.
                   behavior: SnackBarBehavior.floating,
-                  margin: const EdgeInsets.fromLTRB(16, 0, 16, 84),
                 ),
               );
           },
@@ -264,9 +266,7 @@ class BudgetDetailPage extends StatelessWidget {
               ..showSnackBar(
                 SnackBar(
                   content: Text(l10n.budgetAdjustCancelledSnackbar),
-                  // Float above the anchored period stepper, same as above.
                   behavior: SnackBarBehavior.floating,
-                  margin: const EdgeInsets.fromLTRB(16, 0, 16, 84),
                 ),
               );
           },
@@ -275,7 +275,9 @@ class BudgetDetailPage extends StatelessWidget {
   }
 }
 
-/// The detail content: a scrolling hero + activity under a floating stepper.
+/// The detail content: an inline `PeriodStepper` at the top of the scroll,
+/// followed by the hero + activity (Cierre 2026-09-11: the stepper stopped
+/// floating over the content — see `PeriodStepper`).
 class BudgetDetailBody extends StatelessWidget {
   const BudgetDetailBody({
     required this.state,
@@ -310,81 +312,86 @@ class BudgetDetailBody extends StatelessWidget {
       return const SizedBox.shrink();
     }
     final progress = view.progress;
+    final l10n = AppLocalizations.of(context);
+    final locale = Localizations.localeOf(context).toString();
 
-    return Stack(
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
       children: [
-        ListView(
-          padding: const EdgeInsets.fromLTRB(20, 10, 20, 96),
-          children: [
-            BudgetDetailHero(state: state),
-            // HU-12: the "Programado" entry (`s09qcC`) is its own card under
-            // the hero, not part of it — hidden entirely when the window has
-            // nothing scheduled (`kLUl7`).
-            if (progress.scheduledMinor > 0) ...[
-              const SizedBox(height: 16),
-              BudgetScheduledEntryCard(
-                label: AppLocalizations.of(context).budgetScheduledLabel,
-                sub: BudgetFormat.scheduledEntrySub(
-                  AppLocalizations.of(context),
-                  progress,
-                  budget.currency,
-                  view.scheduledItems.length,
-                ),
-                amountLabel: const MoneyFormatter().formatSymbol(
-                  progress.scheduledMinor,
-                  currencyCode: budget.currency,
-                ),
-                atRisk: progress.isScheduledOverspendRisk,
-                onTap: () => BudgetScheduledSheet.show(
-                  context,
-                  items: view.scheduledItems,
-                  totalMinor: progress.scheduledMinor,
-                  currency: budget.currency,
-                  onOpenScheduledPayment: onOpenScheduledPayment,
-                  onSeeAllScheduled: onSeeAllScheduled,
-                ),
-              ),
-            ],
-            // "Ajustar monto": the pending-override banner (`s09qcC` instance),
-            // shown only when the window the stepper is showing has an
-            // override — hidden entirely otherwise, same convention as the
-            // "Programado" card above.
-            if (state.pendingAdjustment case final adjustment?) ...[
-              const SizedBox(height: 16),
-              BudgetAdjustmentEntryCard(
-                label: AppLocalizations.of(context).budgetAdjustBannerLabel,
-                sub: AppLocalizations.of(context).budgetAdjustBannerSub(
-                  const MoneyFormatter().formatSymbol(
-                    adjustment.newAmountMinor,
-                    currencyCode: budget.currency,
-                  ),
-                  BudgetFormat.rangeLabel(
-                    view.window,
-                    Localizations.localeOf(context).toString(),
-                  ),
-                ),
-                onTap: onAdjustAmount,
-              ),
-            ],
-            // `QWC08` spaces the hero and the activity by 16, not 24.
-            const SizedBox(height: 16),
-            BudgetActivitySection(
-              state: state,
-              onLoadMore: cubit.loadMoreActivity,
-              onOpenTransaction: onOpenTransaction,
-            ),
-          ],
+        // Period Stepper (Cierre 2026-09-11, migrado al componente
+        // compartido `vBgce` — `design-system/billetudo/pages/
+        // presupuestos.md` § "migra a componente compartido"): inline, at
+        // the top of the scroll, in the same spot the floating pill's
+        // `Positioned` used to occupy conceptually — this screen's own
+        // period navigation, now living in the normal content flow instead
+        // of anchored over it.
+        PeriodStepper(
+          previousLabel: l10n.budgetPeriodPreviousTooltip,
+          nextLabel: l10n.budgetPeriodNextTooltip,
+          rangeLabel:
+              BudgetFormat.stepperRange(l10n, budget, view.window, locale),
+          stateLabel:
+              BudgetFormat.stepperState(l10n, budget, view.window, locale),
+          onPrevious: view.window.hasPrevious ? cubit.previousPeriod : null,
+          onNext: view.window.hasNext ? cubit.nextPeriod : null,
         ),
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: PeriodStepperPill(
-            budget: budget,
-            window: view.window,
-            onPrevious: cubit.previousPeriod,
-            onNext: cubit.nextPeriod,
+        const SizedBox(height: 16),
+        BudgetDetailHero(state: state),
+        // HU-12: the "Programado" entry (`s09qcC`) is its own card under
+        // the hero, not part of it — hidden entirely when the window has
+        // nothing scheduled (`kLUl7`).
+        if (progress.scheduledMinor > 0) ...[
+          const SizedBox(height: 16),
+          BudgetScheduledEntryCard(
+            label: AppLocalizations.of(context).budgetScheduledLabel,
+            sub: BudgetFormat.scheduledEntrySub(
+              AppLocalizations.of(context),
+              progress,
+              budget.currency,
+              view.scheduledItems.length,
+            ),
+            amountLabel: const MoneyFormatter().formatSymbol(
+              progress.scheduledMinor,
+              currencyCode: budget.currency,
+            ),
+            atRisk: progress.isScheduledOverspendRisk,
+            onTap: () => BudgetScheduledSheet.show(
+              context,
+              items: view.scheduledItems,
+              totalMinor: progress.scheduledMinor,
+              currency: budget.currency,
+              onOpenScheduledPayment: onOpenScheduledPayment,
+              onSeeAllScheduled: onSeeAllScheduled,
+            ),
           ),
+        ],
+        // "Ajustar monto": the pending-override banner (`s09qcC` instance),
+        // shown only when the window the stepper is showing has an
+        // override — hidden entirely otherwise, same convention as the
+        // "Programado" card above.
+        if (state.pendingAdjustment case final adjustment?) ...[
+          const SizedBox(height: 16),
+          BudgetAdjustmentEntryCard(
+            label: AppLocalizations.of(context).budgetAdjustBannerLabel,
+            sub: AppLocalizations.of(context).budgetAdjustBannerSub(
+              const MoneyFormatter().formatSymbol(
+                adjustment.newAmountMinor,
+                currencyCode: budget.currency,
+              ),
+              BudgetFormat.rangeLabel(
+                view.window,
+                Localizations.localeOf(context).toString(),
+              ),
+            ),
+            onTap: onAdjustAmount,
+          ),
+        ],
+        // `QWC08` spaces the hero and the activity by 16, not 24.
+        const SizedBox(height: 16),
+        BudgetActivitySection(
+          state: state,
+          onLoadMore: cubit.loadMoreActivity,
+          onOpenTransaction: onOpenTransaction,
         ),
       ],
     );

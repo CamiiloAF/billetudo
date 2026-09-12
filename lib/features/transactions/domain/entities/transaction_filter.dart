@@ -64,7 +64,7 @@ class TransactionFilter extends Equatable {
   /// which is what flips the Fecha chip/badge on.
   bool get hasDateFilter => datePeriod != DatePeriodFilter.thisMonth();
 
-  /// Whether the active period can be stepped back/forward (`PeriodNavBar`'s
+  /// Whether the active period can be stepped back/forward (`PeriodStepper`'s
   /// condition, Adición 2026-09-10 `u6sSAc`/`w9Eszi`). A custom range has no
   /// "previous"/"next" window — only its chip should show, never the nav
   /// bar.

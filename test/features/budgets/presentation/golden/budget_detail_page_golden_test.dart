@@ -24,8 +24,9 @@ class MockBudgetDetailCubit extends MockCubit<BudgetDetailState>
 class MockAppSettingsCubit extends MockCubit<AppSettingsState>
     implements AppSettingsCubit {}
 
-/// The budget detail: hero + period activity + the floating period stepper
-/// (`PeriodStepperPill`).
+/// The budget detail: hero + period activity + the inline `PeriodStepper`
+/// at the top of the scroll (Cierre 2026-09-11, migrated off the previous
+/// inline `PeriodStepper`).
 ///
 /// Pencil rows (`design-system/billetudo/pages/presupuestos.md`):
 /// `detail_recurring_healthy` → `NloPT` / `vHIu4` (Detalle — recurrente sano) ·
@@ -107,9 +108,8 @@ void main() {
           zeroBasedEnabled: false,
           categoriesSeeded: true,
           onboardingCompleted: true,
-          featuredBudgetMode: isFeatured
-              ? FeaturedBudgetMode.manual
-              : FeaturedBudgetMode.none,
+          featuredBudgetMode:
+              isFeatured ? FeaturedBudgetMode.manual : FeaturedBudgetMode.none,
           featuredBudgetId: isFeatured ? state.budget?.id : null,
         ),
         activeBudgets: isFeatured && state.budget != null && state.view != null
@@ -136,7 +136,7 @@ void main() {
           onClosed: () {},
           onOpenTransaction: (_) async => null,
           onOpenScheduledPayment: (_) {},
-            onSeeAllScheduled: () {},
+          onSeeAllScheduled: () {},
         ),
       ),
       brightness: brightness,

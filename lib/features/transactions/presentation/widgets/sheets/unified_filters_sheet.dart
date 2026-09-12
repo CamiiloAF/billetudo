@@ -348,7 +348,7 @@ class BudgetFilterSection extends StatelessWidget {
 /// Adición 2026-09-10 (`JcJQq`/`llEl6`/`hwYxx`): the Prev/Next stepper that
 /// used to sit below the granularity switch was retired from this sheet —
 /// navigating between periods now lives exclusively in the main screen's
-/// `PeriodNavBar`, so this section only chooses **what** to filter
+/// `PeriodStepper`, so this section only chooses **what** to filter
 /// (granularity/custom range), never **which** period within it.
 class DateFilterSection extends StatelessWidget {
   const DateFilterSection({required this.state, super.key});
