@@ -62,6 +62,17 @@ class AppFab extends StatelessWidget {
           customBorder: const CircleBorder(),
           child: Tooltip(
             message: tooltip,
+            // `Tooltip` defaults to showing itself on long-press on mobile
+            // (`TooltipTriggerMode.longPress`), which registers its own
+            // long-press recognizer in the same gesture arena as the
+            // `InkWell` above — two long-press recognizers racing for the
+            // same touch, and the tooltip kept winning it, permanently
+            // blocking `onLongPress` (voice capture) from ever firing.
+            // `manual` removes that gesture recognizer entirely; the visual
+            // tooltip is still reachable via mouse hover on desktop/web
+            // (unaffected by `triggerMode`) and screen readers get the label
+            // straight from `Semantics` below, not from this overlay.
+            triggerMode: TooltipTriggerMode.manual,
             child: Semantics(
               button: true,
               label: tooltip,

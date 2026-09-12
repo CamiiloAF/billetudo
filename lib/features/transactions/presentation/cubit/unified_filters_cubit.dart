@@ -294,23 +294,13 @@ class UnifiedFiltersCubit extends Cubit<UnifiedFiltersState> {
     emit(state.copyWith(types: next));
   }
 
-  /// HU-06's symmetric toggle: a root category selects/deselects itself and
-  /// its whole subcategory tree in one block.
-  void toggleRootCategory(CategoryNode node) {
-    final subIds = node.subcategories.map((category) => category.id);
-    final wasSelected = state.categoryIds.contains(node.root.id);
-    final next = Set<String>.of(state.categoryIds);
-    if (wasSelected) {
-      next
-        ..remove(node.root.id)
-        ..removeAll(subIds);
-    } else {
-      next
-        ..add(node.root.id)
-        ..addAll(subIds);
-    }
-    emit(state.copyWith(categoryIds: next));
-  }
+  /// Categoría's summary control opens `CategoryFilterSheet` (the full
+  /// expandable root/subcategory tree, driven by its own `CategoryFilterCubit`)
+  /// and hands back the whole next selection on "Aplicar" — this replaces the
+  /// working set wholesale, unlike the type/tag toggles which flip one id at
+  /// a time.
+  void setCategoryIds(Set<String> categoryIds) =>
+      emit(state.copyWith(categoryIds: categoryIds));
 
   void toggleTag(String tagId) {
     final next = Set<String>.of(state.tagIds);

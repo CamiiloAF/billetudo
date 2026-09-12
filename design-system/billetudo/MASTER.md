@@ -352,6 +352,20 @@ Overlay de sugerencias de nota basado en historial: aparece bajo el campo "Nota"
 
 ---
 
+### Period Stepper (`vBgce`)
+
+Componente transversal de navegación de periodo (mes/rango/ciclo de presupuesto): pill inline con chevrones circulares `$muted` (`chevron-left`/`chevron-right`, `opacity:0.4` en el extremo del rango navegable) + centro con el label del periodo — colocado en el flujo normal de la pantalla, **no flotante**. Unificado el 2026-09-11: reemplaza dos patrones antes duplicados y visualmente distintos — `PeriodNavBar` de Movimientos (card cuadrada `cornerRadius:16`) y `PeriodStepperPill` de Presupuestos (pill flotante anclada abajo). Se evaluaron 3 variantes (V1 card unificada, V2 pill flotante universal, V3 pill inline híbrida); se eligió **V3** por conservar la identidad "pill" sin el coste de ocupar espacio flotante permanente ni competir con el FAB.
+
+- **Estructura:** `Chev L` (44×44, circular, `$muted`/`chevron-left` en `$text-primary`) — `Center` (`layout:vertical`, `gap:2`) — `Chev R` (igual, atenuado cuando no hay periodo siguiente/anterior).
+- **`Center` admite 2 formas de contenido**, intercambiables via `Replace()`:
+  - **Label simple** (caso 1 línea — Movimientos: "Julio 2026", 15/700 `$text-primary`).
+  - **Rango + Estado** (2 fragmentos en una línea — Presupuestos: "25 ago – 25 sep" 15/700 `$text-primary` + "· vigente" 12/600 `$text-secondary`).
+- **`Context Row` opcional** (icono 12px + label 11/700 `$primary-on-soft-strong`, `enabled:false` por defecto): fila encima del label de periodo, para el caso "Budget Context Tag" (ej. "Comida del mes") cuando Movimientos tiene un filtro de presupuesto activo.
+- **Hallazgo de esta ronda — verificar SIEMPRE `library`/`fontFamily` en nodos creados desde cero:** al construir el componente con `Insert()` sin partir de un nodo existente, Pencil aplicó por defecto `library:"Material Symbols Rounded"` en los íconos y `fontFamily:"Inter"` en los textos, en vez de `"lucide"` y `"$font-body"` — rompiendo glifos (se veían como "?") y tipografía en silencio hasta verificarlo con `TakeScreenshot`. Los íconos de este sistema son SIEMPRE `library:"lucide"`; el texto SIEMPRE `fontFamily:"$font-body"`.
+- **Usado en:** Movimientos (`pages/transacciones.md` § "Period Nav Bar") y Presupuestos (`pages/presupuestos.md` § "Stepper de periodo HU-05"). **Pendiente:** los frames canónicos de ambas features (`O2xuVc`/`ufP4y` en Movimientos; `NloPT`/`fU7hF`/`MZrD8` en Presupuestos) aún no instancian `vBgce` — muestran su look anterior. Referencias visuales aprobadas del componente nuevo: `CjTBi` (caso Movimientos) y `w3uTz` (casos Presupuestos, 2 líneas).
+
+---
+
 ## Tono de marca
 
 - Nunca colores/iconografia punitiva para gastos (sin rojos de alarma en montos de categoria — se usa `$text-primary`, no `$expense`, para montos normales).

@@ -138,6 +138,17 @@ class SpeechToTextRecognizer implements SpeechRecognizer {
           listenFor: _activeMaxDuration,
           pauseFor: _activePauseFor,
           cancelOnError: true,
+          // The plugin defaults to `ListenMode.confirmation` — built for a
+          // short yes/no-shaped utterance, with an aggressive on-device
+          // silence/no-match timeout on Android that can fire within a
+          // second or two of `listen()` starting, before the user has had
+          // time to speak at all ("no alcanzamos a captar el monto" on the
+          // very first frame). `dictation` is what the plugin itself
+          // documents as the mode for "longer spoken content, sentences or
+          // paragraphs" — exactly a spoken transaction like "gasté veinte
+          // mil en almuerzo" — and gives the recognizer a much more lenient
+          // window before it gives up on hearing anything.
+          listenMode: ListenMode.dictation,
         ),
       );
       _hardStop?.cancel();
