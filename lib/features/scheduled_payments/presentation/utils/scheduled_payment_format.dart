@@ -122,16 +122,17 @@ abstract final class ScheduledPaymentFormat {
   /// open-ended recurring one, or "... hasta el 13 de julio de 2027" when it
   /// has an [ScheduledPayment.endDate].
   ///
-  /// The template has no separate "first payment" field distinct from
-  /// [ScheduledPayment.nextDate] (it advances only when the generator
-  /// processes it — see that field's doc), so `nextDate` doubles as the
-  /// anchor date for "desde el...".
+  /// The anchor date for "desde el..." is [ScheduledPayment.firstPaymentDate]
+  /// — the immutable date the user originally picked — never
+  /// [ScheduledPayment.nextDate], which is a mutable cursor the catch-up
+  /// generator advances after each occurrence and would drift the phrase
+  /// away from the schedule's real start.
   static String recurrencePhrase(
     BuildContext context,
     AppLocalizations l10n,
     ScheduledPayment payment,
   ) {
-    final date = phraseDateLabel(context, payment.nextDate);
+    final date = phraseDateLabel(context, payment.firstPaymentDate);
     if (payment.frequency == ScheduledPaymentFrequency.once) {
       return l10n.scheduledPaymentDetailRecurrenceOnce(date);
     }

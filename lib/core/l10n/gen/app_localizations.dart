@@ -11158,6 +11158,12 @@ abstract class AppLocalizations {
   /// **'Preparando el micrófono…'**
   String get captureVoicePreparing;
 
+  /// No description provided for @captureVoiceStopping.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardando lo que escuchamos…'**
+  String get captureVoiceStopping;
+
   /// No description provided for @captureVoiceHint.
   ///
   /// In es, this message translates to:

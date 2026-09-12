@@ -9,14 +9,35 @@ import 'circular_icon_chip.dart';
 import 'filter_chip_pill.dart';
 
 /// Issue #7: the account filter moves out of the unified filters sheet and
-/// into its own row of chips in the Movimientos filter bar — "Todas"
-/// (`check-check`) first, one pill per active account, then "Limpiar" (`x`)
-/// last (`nMKtn`'s `Chips Row`), all multi-selection.
+/// into its own row of chips in the Movimientos filter bar — a leading
+/// toggle chip, one pill per active account, all multi-selection
+/// (`nMKtn`'s `Chips Row`).
 ///
 /// [selected] is inclusive-empty, the same rule as
 /// `TransactionFilter.accountIds`: an empty set means every active account
 /// is implicitly selected (HU-06a's untouched "Todas" default) — rendered
 /// with every chip active, never with none.
+///
+/// Issue #incidencias-pruebas-manuales: the row used to carry two circular
+/// chips — a leading "Todas" (`check-check`) that always emitted an empty
+/// set, and a trailing "Limpiar" (`x`) that emitted the exact same empty
+/// set — so both did the same thing and neither ever visibly reacted to the
+/// filter already being "all selected". `TransactionFilter.accountIds` has
+/// no way to represent "no accounts" (empty is read as "no filter" all the
+/// way down to the SQL `WHERE`, see `TransactionsLocalDatasource`), so a
+/// real "select none" state isn't representable — and per the individual
+/// pill's own [_toggled] rule, at least one account always stays selected
+/// anyway. The two redundant chips collapse into one real toggle instead:
+///
+/// * Not every account is selected yet → `check-check`, "Todas" — tap emits
+///   the *explicit* full id set (not empty) so the resulting state is
+///   distinguishable by equality from the implicit-empty default and the
+///   chip can tell it's now "all selected".
+/// * Every account is already selected (implicit empty or explicit full
+///   set) → `x`, "Limpiar" (rendered `active`, matching the pills) — tap
+///   emits a single-account set (the first active account), the same floor
+///   [_toggled] already enforces, instead of a "zero selected" state the
+///   rest of the domain can't express.
 class AccountFilterChipRow extends StatelessWidget {
   const AccountFilterChipRow({
     required this.accounts,
@@ -61,13 +82,25 @@ class AccountFilterChipRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
 
+    final allIds = {for (final entry in accounts) entry.account.id};
+    final isAllSelected = selected.isEmpty || selected.length >= allIds.length;
+
     return Row(
       children: [
         CircularIconChip(
-          icon: LucideIcons.checkCheck,
-          semanticLabel: l10n.accountFilterSelectAll,
-          tooltip: l10n.accountFilterSelectAll,
-          onTap: () => onChanged(const <String>{}),
+          icon: isAllSelected ? LucideIcons.x : LucideIcons.checkCheck,
+          semanticLabel:
+              isAllSelected ? l10n.commonClear : l10n.accountFilterSelectAll,
+          tooltip:
+              isAllSelected ? l10n.commonClear : l10n.accountFilterSelectAll,
+          active: isAllSelected,
+          onTap: () => onChanged(
+            isAllSelected
+                ? (accounts.isEmpty
+                    ? const <String>{}
+                    : {accounts.first.account.id})
+                : allIds,
+          ),
         ),
         const SizedBox(width: 8),
         for (final entry in accounts) ...[
@@ -96,12 +129,6 @@ class AccountFilterChipRow extends StatelessWidget {
           ),
           const SizedBox(width: 8),
         ],
-        CircularIconChip(
-          icon: LucideIcons.x,
-          semanticLabel: l10n.commonClear,
-          tooltip: l10n.commonClear,
-          onTap: () => onChanged(const <String>{}),
-        ),
       ],
     );
   }

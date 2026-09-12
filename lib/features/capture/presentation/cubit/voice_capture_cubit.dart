@@ -160,11 +160,23 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
 
   /// "Listo": ends the session on purpose and keeps what was recognized. The
   /// accessible route that does not require holding a gesture down.
+  ///
+  /// Moves to [VoiceCaptureStatus.stopping] immediately so the button gives
+  /// feedback the instant it is tapped — `speech_to_text`'s `stop()` is known
+  /// to hang without ever resolving or firing a final result on some OEM
+  /// builds of Android, and a silent no-op reads as a broken button. If the
+  /// recognizer reports failure instead of a final transcript, whatever was
+  /// heard so far is still kept rather than left stranded in `stopping`.
   Future<void> stopListening() async {
     if (state.status != VoiceCaptureStatus.listening) {
       return;
     }
-    await _stopCapture();
+    emit(state.copyWith(status: VoiceCaptureStatus.stopping));
+    final result = await _stopCapture();
+    if (isClosed) {
+      return;
+    }
+    result.fold((_) => _finish(state.transcript), (_) {});
   }
 
   /// "Permitir y dictar" on `kJG43`: records the consent and starts a fresh
@@ -294,13 +306,20 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
         }
       case SpeechRecognitionErrorKind.network:
         _emitUnavailable(VoiceCaptureUnavailableReason.network);
-      case SpeechRecognitionErrorKind.busy:
-        _emitUnavailable(VoiceCaptureUnavailableReason.busy);
       case SpeechRecognitionErrorKind.unavailable:
         _emitUnavailable(VoiceCaptureUnavailableReason.recognizer);
       // Silence, noise or a covered microphone is not an error the user has to
       // read about as a failure: it lands on the same "no captamos el monto"
       // surface, which keeps both exits open and blames nobody.
+      //
+      // `busy` joins this group rather than `_emitUnavailable`: on Android it
+      // is reported for both a genuinely busy recognizer and the plugin's own
+      // `error_client`, a known transient fault of `speech_to_text` that can
+      // fire even after audio was already recognized correctly. Discarding
+      // the transcript on that error would throw away real, valid input for
+      // a plugin quirk — so whatever was heard is kept, exactly like
+      // `noSpeech`.
+      case SpeechRecognitionErrorKind.busy:
       case SpeechRecognitionErrorKind.noSpeech:
       case SpeechRecognitionErrorKind.unknown:
       case null:

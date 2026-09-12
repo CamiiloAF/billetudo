@@ -437,10 +437,12 @@ void main() {
     });
 
     // `PeriodNavBar` (Fecha variant): a custom range (`DatePeriodFilter
-    // .custom`) has no granularity to step, so both chevrons render inert at
-    // `opacity:0.4` (`datePeriodHasPrevious`/`datePeriodHasNext` both false).
+    // .custom`) has no granularity to step at all, so the nav bar does not
+    // render — only its chip does (bugfix: it used to render with both
+    // chevrons inert instead, which read as a stepper for a period that has
+    // no previous/next window).
     testWidgets(
-      'period nav bar: custom range, both arrows disabled ($suffix)',
+      'period nav bar: custom range, bar does not render ($suffix)',
       (tester) async {
         await golden(
           tester,

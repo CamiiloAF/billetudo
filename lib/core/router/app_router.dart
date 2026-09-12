@@ -166,6 +166,15 @@ import '../widgets/coming_soon_page.dart';
 abstract final class AppRoutes {
   const AppRoutes._();
 
+  /// The root navigator's context, valid anywhere in the app — not just
+  /// inside a route this router built. Used at the movement-form's
+  /// `onSaved` below, and by `CaptureShortcutListener`
+  /// (`docs/requirements/fase-2/20-widget-captura-rapida.md`) to open the
+  /// voice dictation sheet from above the router's own subtree, which has
+  /// no `Navigator` of its own to anchor a modal to.
+  static BuildContext? get rootNavigatorContext =>
+      _rootNavigatorKey.currentContext;
+
   static const String home = '/';
   static const String onboarding = '/bienvenida';
   static const String onboardingAccount = '/bienvenida/cuenta';
@@ -236,16 +245,6 @@ abstract final class AppRoutes {
   static const String importCsv = '$importExport/importar';
   static const String importBatches = '$importExport/importaciones';
 
-  /// Voice capture (`docs/requirements/fase-2/17-captura-voz.md`).
-  ///
-  /// **PENDIENTE DE CABLEAR:** the screen behind this path is being built on
-  /// `feat/capture-voice`; no `GoRoute` declares it here yet, so it is listed
-  /// in [pendingWidgetTargets] and the home-screen widget's "Voz" shortcut
-  /// degrades to the manual form until that branch lands (HU-02: a
-  /// unavailable capture never dead-ends the user). Wiring it up is deleting
-  /// it from that set — nothing on the native side changes.
-  static const String voiceCapture = '/captura/voz';
-
   /// Bank-notification inbox behind the bell
   /// (`docs/requirements/fase-2/19-notificaciones-bancarias.md`) — the same
   /// Avisos centre [notices] already opens from Home's bell. The widget's
@@ -260,12 +259,12 @@ abstract final class AppRoutes {
   /// instead of landing on the router's error page — HU-01 is explicit that a
   /// widget tap costs a slower launch, never an error.
   ///
-  /// [bankInbox] is not listed: it now resolves to the real [notices] route.
-  /// [voiceCapture] still is — the voice capture surface is a bottom sheet
-  /// (`VoiceCaptureSheet`), not a page a route can land on directly, so
-  /// wiring it up needs a small bridge page (or a `CaptureShortcutListener`
-  /// callback that can open a sheet), not just removing it from this set.
-  static const Set<String> pendingWidgetTargets = {voiceCapture};
+  /// [bankInbox] is not listed: it resolves to the real [notices] route.
+  /// Voice is not listed either: it never was a page a `GoRoute` could serve
+  /// — the dictation surface is a bottom sheet (`VoiceCaptureSheet`) that
+  /// `CaptureShortcutListener` now opens directly over Home via
+  /// `startVoiceCaptureFlow` and [rootNavigatorContext].
+  static const Set<String> pendingWidgetTargets = {};
 
   /// The new-movement form with [type] preselected — the destination of the
   /// home-screen widget's "Gasto"/"Ingreso" shortcuts (HU-01/HU-02 of

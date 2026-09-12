@@ -15,6 +15,7 @@ import '../../../../core/widgets/scroll_aware_fab_visibility.dart';
 import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
 import '../../../accounts/presentation/widgets/account_gate_copy.dart';
 import '../../../capture/presentation/cubit/capture_review_item.dart';
+import '../../../capture/presentation/utils/start_voice_capture_flow.dart';
 import '../../../capture/presentation/widgets/pending_captures_list_slot.dart';
 import '../../domain/entities/transaction_filter.dart';
 import '../cubit/transactions_list_cubit.dart';
@@ -179,6 +180,11 @@ class _TransactionsPageState extends State<TransactionsPage>
                   icon: LucideIcons.plus,
                   tooltip: l10n.transactionsAdd,
                   onPressed: () => unawaited(_addTransaction(context)),
+                  // Same primary voice trigger as `HomePage`'s FAB: tap and
+                  // hold are two different actions on the same button, both
+                  // of which end on the same form.
+                  onLongPress: () => unawaited(startVoiceCaptureFlow(context)),
+                  longPressHint: l10n.captureVoiceFabLongPressHint,
                 ),
               ),
         body: SafeArea(
@@ -257,8 +263,7 @@ class _TransactionsPageState extends State<TransactionsPage>
                   // only while the active period is not the default "este
                   // mes sin presupuesto" — the common case renders nothing
                   // here, at zero space cost.
-                  if (state.filter.hasDateFilter ||
-                      state.filter.hasBudgetPeriodFilter) ...[
+                  if (state.filter.hasNavigablePeriod) ...[
                     const SizedBox(height: 8),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),

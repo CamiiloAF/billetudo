@@ -5426,6 +5426,8 @@
   "@captureVoiceListening": {},
   "captureVoicePreparing": "Preparando el micrófono…",
   "@captureVoicePreparing": {},
+  "captureVoiceStopping": "Guardando lo que escuchamos…",
+  "@captureVoiceStopping": {},
   "captureVoiceHint": "Di algo como «gasté veinte mil en almuerzo»",
   "@captureVoiceHint": {},
   "captureVoicePrivacyCaption": "El audio no se guarda. Solo se usa para llenar el formulario.",

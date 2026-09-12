@@ -54,6 +54,10 @@ class SpeechToTextRecognizer implements SpeechRecognizer {
   /// ever fails to honour it, this timer still closes the microphone.
   Timer? _hardStop;
 
+  /// How long [stop] waits for `speech_to_text` before giving up on it and
+  /// closing the session itself. See [stop]'s doc comment.
+  static const Duration _stopTimeout = Duration(seconds: 2);
+
   @override
   Stream<SpeechRecognitionUpdate> get updates => _updates.stream;
 
@@ -162,9 +166,28 @@ class SpeechToTextRecognizer implements SpeechRecognizer {
     if (plugin == null) {
       return const Right(unit);
     }
+    var timedOut = false;
     try {
-      await plugin.stop();
+      // Belt and braces on top of the plugin itself: `speech_to_text.stop()`
+      // is known to never resolve, and never fire a final `onResult`, on some
+      // Android OEM builds. Without this timeout that hangs "Listo" forever
+      // with no feedback (5b) instead of closing the session with whatever
+      // was already transcribed.
+      await plugin.stop().timeout(
+            _stopTimeout,
+            onTimeout: () => timedOut = true,
+          );
       _listening = false;
+      if (timedOut) {
+        _emit(
+          SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.done,
+            transcript: _transcript,
+            isFinal: true,
+          ),
+        );
+        _transcript = '';
+      }
       return const Right(unit);
     } on Exception catch (error, stackTrace) {
       _listening = false;
@@ -248,6 +271,12 @@ class SpeechToTextRecognizer implements SpeechRecognizer {
   /// Platforms report the level on different scales (iOS in dB, Android
   /// roughly 0..10). Clamped into 0..1 for the indicator; it drives an
   /// animation, never a stored value.
+  // TODO(cami): this `level > 1 ? level / 10 : level` split is an assumed
+  // scale, not one verified against real `onSoundLevelChange` callbacks on
+  // device. `VoiceWaveBars` was widened to react more visibly to whatever
+  // comes out of here (see its `_heightFor`), but if the bars still look flat
+  // or erratic on a real phone, capture actual values from both platforms
+  // first and recalibrate this mapping — do not guess again.
   double _normalizeLevel(double level) {
     if (level <= 0) {
       return 0;

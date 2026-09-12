@@ -37,15 +37,18 @@ class VoiceCaptureListeningBody extends StatelessWidget {
     final colors = context.colors;
     final theme = Theme.of(context);
     final isPreparing = state.status == VoiceCaptureStatus.preparing;
+    final isStopping = state.status == VoiceCaptureStatus.stopping;
     final hasTranscript = state.hasTranscript;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
         VoiceListeningIndicator(
-          statusLabel: isPreparing
-              ? l10n.captureVoicePreparing
-              : l10n.captureVoiceListening,
+          statusLabel: isStopping
+              ? l10n.captureVoiceStopping
+              : isPreparing
+                  ? l10n.captureVoicePreparing
+                  : l10n.captureVoiceListening,
           soundLevel: state.soundLevel,
           soundLevelLabel: l10n.captureVoiceSoundLevelLabel,
         ),
@@ -75,9 +78,10 @@ class VoiceCaptureListeningBody extends StatelessWidget {
             label: Text(l10n.captureVoiceCancel),
           ),
           right: FilledButton.icon(
-            // Disabled only while the microphone has not opened yet: there is
-            // nothing to finish, and Cancelar next to it still leaves.
-            onPressed: isPreparing ? null : onDone,
+            // Disabled while the microphone has not opened yet (nothing to
+            // finish) or while the session is already closing, so a second
+            // tap on a hung "Listo" cannot fire a second `stop()`.
+            onPressed: isPreparing || isStopping ? null : onDone,
             icon: const Icon(LucideIcons.check, size: 18),
             label: Text(l10n.captureVoiceDone),
           ),

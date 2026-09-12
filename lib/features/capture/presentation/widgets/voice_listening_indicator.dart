@@ -84,9 +84,10 @@ class VoiceListeningIndicator extends StatelessWidget {
 ///
 /// The frame's heights are read as the **peak**: at a full level every bar
 /// renders exactly what `ayjtW` draws (46pt tallest inside a 48pt row), and a
-/// quieter room only dips them, down to 70%. Never to zero — a flat line reads
-/// as "the microphone is off", and this indicator has to look alive from the
-/// moment it appears, before the user has said a word.
+/// quieter room dips them down to 40% — wide enough that speaking visibly
+/// moves the bars instead of just nudging them. Never to zero — a flat line
+/// reads as "the microphone is off", and this indicator has to look alive
+/// from the moment it appears, before the user has said a word.
 class VoiceWaveBars extends StatelessWidget {
   const VoiceWaveBars({
     required this.soundLevel,
@@ -153,9 +154,15 @@ class VoiceWaveBars extends StatelessWidget {
     );
   }
 
-  /// 70% of the design height at silence, exactly the design height at peak.
+  /// 40% of the design height at silence, exactly the design height at peak.
+  ///
+  /// Widened from the original 70%-100% range, which read as nearly static
+  /// even while speaking. The fine calibration of the level this multiplies
+  /// against still lives in `SpeechToTextRecognizer._normalizeLevel` and has
+  /// not been re-verified against real `onSoundLevelChange` values on device
+  /// — see that method's doc comment.
   static double _heightFor(double resting, double level) {
-    final scaled = resting * (0.7 + 0.3 * level);
+    final scaled = resting * (0.4 + 0.6 * level);
     return scaled < _minHeight ? _minHeight : scaled;
   }
 }

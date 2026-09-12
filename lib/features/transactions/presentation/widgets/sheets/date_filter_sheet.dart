@@ -102,6 +102,11 @@ class DateFilterSheetBody extends StatelessWidget {
                       selected: {granularityView.granularity!},
                       onSelectionChanged: (selection) =>
                           cubit.granularitySelected(selection.first),
+                      // Without this, the selected segment's check icon
+                      // changes the row's total width depending on which
+                      // segment is active. Selection stays legible from the
+                      // fill/color alone.
+                      showSelectedIcon: false,
                     ),
                     const SizedBox(height: 12),
                     Row(

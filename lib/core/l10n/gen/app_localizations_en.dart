@@ -6845,6 +6845,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get captureVoicePreparing => 'Getting the microphone ready…';
 
   @override
+  String get captureVoiceStopping => 'Saving what we heard…';
+
+  @override
   String get captureVoiceHint => 'Try something like “spent twenty on lunch”';
 
   @override

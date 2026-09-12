@@ -301,4 +301,12 @@ class GoalsLocalDatasource {
           updatedAt: Value(updatedAt),
         ),
       );
+
+  /// Runs [body] inside a single database transaction, so a movement write
+  /// (insert/update/delete on `GoalContributions`) and the `Goals` progress
+  /// reconciliation it triggers (`completedAt`/`lastMilestonePct`) either both
+  /// commit or both roll back — never one without the other, same precedent
+  /// as `PendingCapturesLocalDatasource.runInTransaction`.
+  Future<T> runInTransaction<T>(Future<T> Function() body) =>
+      _db.transaction(body);
 }

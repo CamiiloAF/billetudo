@@ -26,15 +26,15 @@ void main() {
       );
     });
 
-    test('a destination not wired yet degrades to the manual form', () {
-      // Voice (`feat/capture-voice`) has no `GoRoute` here yet — its surface
-      // is a bottom sheet (`VoiceCaptureSheet`), not a page a route can land
-      // on directly — so the shortcut must land on a usable form, never on
-      // the router's error page.
+    test('voice resolves to Home, not a page route', () {
+      // Voice has no `GoRoute` of its own — its surface is a bottom sheet
+      // (`VoiceCaptureSheet`) that `CaptureShortcutListener` opens directly
+      // over Home, so `routeFor` names Home as the screen it must show over.
+      // `CaptureShortcutListener` never actually calls `resolve` for voice
+      // (see `capture_shortcut_destination.dart`'s class doc).
       expect(
         CaptureShortcutDestination.routeFor(CaptureShortcut.voice),
-        '/movimientos/nuevo?type=expense',
-        reason: 'pending destination voice must have a fallback',
+        AppRoutes.home,
       );
     });
   });

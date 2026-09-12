@@ -11,8 +11,13 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../categories/presentation/widgets/pump_widget.dart';
 
 /// GitHub issue #7: the account filter's own row of chips in the Movimientos
-/// bar — one chip per active account plus "Todas"/"Limpiar", never landing on
-/// zero selected accounts.
+/// bar — one chip per active account plus a single "Todas"/"Limpiar" toggle
+/// chip, never landing on zero selected accounts.
+///
+/// Issue #incidencias-pruebas-manuales: the toggle chip renders
+/// `check-check` ("Todas") while some account is missing from the
+/// selection, and switches to `x` ("Limpiar") once every account ends up
+/// selected — only one of the two icons is ever present at a time.
 void main() {
   AccountWithBalance account(String id, String name) => AccountWithBalance(
         account: Account(
@@ -88,24 +93,41 @@ void main() {
     }
   });
 
-  testWidgets('tocar "Todas" limpia el filtro (selected vacío)',
-      (tester) async {
+  testWidgets(
+      'con una selección parcial, el chip toggle muestra "Todas" y al '
+      'tocarlo selecciona explícitamente todas las cuentas', (tester) async {
     final result = await pumpAndTap(
       tester,
       selected: {cash.account.id},
       tapTarget: circularIconChip(LucideIcons.checkCheck),
     );
-    expect(result, isEmpty);
+    expect(
+      result,
+      {cash.account.id, bank.account.id, savings.account.id},
+    );
   });
 
-  testWidgets('tocar "Limpiar" también vuelve al default (Todas)',
+  testWidgets(
+      'con todas las cuentas seleccionadas (implícito), el chip toggle '
+      'muestra "Limpiar" y al tocarlo deja solo la primera cuenta',
       (tester) async {
     final result = await pumpAndTap(
       tester,
-      selected: {cash.account.id},
+      selected: const {},
       tapTarget: circularIconChip(LucideIcons.x),
     );
-    expect(result, isEmpty);
+    expect(result, {cash.account.id});
+  });
+
+  testWidgets(
+      'con todas las cuentas seleccionadas explícitamente, el chip toggle '
+      'también muestra "Limpiar"', (tester) async {
+    final result = await pumpAndTap(
+      tester,
+      selected: {cash.account.id, bank.account.id, savings.account.id},
+      tapTarget: circularIconChip(LucideIcons.x),
+    );
+    expect(result, {cash.account.id});
   });
 
   testWidgets(
