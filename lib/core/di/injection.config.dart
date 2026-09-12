@@ -1463,8 +1463,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i49.GetScheduledPaymentHistory>(() =>
         _i49.GetScheduledPaymentHistory(
             gh<_i680.ScheduledPaymentRepository>()));
-    gh.factory<_i265.GetScheduledPayments>(() =>
-        _i265.GetScheduledPayments(gh<_i680.ScheduledPaymentRepository>()));
     gh.factory<_i889.GetTags>(
         () => _i889.GetTags(gh<_i680.ScheduledPaymentRepository>()));
     gh.factory<_i452.SetScheduledPaymentTags>(() =>
@@ -1528,11 +1526,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i49.CsvWriterDatasource>(),
           gh<_i672.ZipPackagerDatasource>(),
         ));
-    gh.factory<_i957.WatchUpcomingChargeInsights>(
-        () => _i957.WatchUpcomingChargeInsights(
-              gh<_i265.GetScheduledPayments>(),
-              gh<_i450.ProjectUpcomingOccurrences>(),
-            ));
     gh.factory<_i184.GetVoiceCaptureAvailability>(
         () => _i184.GetVoiceCaptureAvailability(
               gh<_i312.SpeechRecognizer>(),
@@ -1739,6 +1732,10 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i450.ProjectUpcomingOccurrences>(),
           gh<_i795.BudgetCategoryScopeResolver>(),
           gh<_i474.CrashReporter>(),
+        ));
+    gh.factory<_i265.GetScheduledPayments>(() => _i265.GetScheduledPayments(
+          gh<_i680.ScheduledPaymentRepository>(),
+          gh<_i450.ProjectUpcomingOccurrences>(),
         ));
     gh.factory<_i769.WatchPendingConfirmationInsights>(() =>
         _i769.WatchPendingConfirmationInsights(
@@ -2089,6 +2086,11 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i494.ReportAiMessage>(),
           gh<_i1026.AiClientContextProvider>(),
         ));
+    gh.factory<_i957.WatchUpcomingChargeInsights>(
+        () => _i957.WatchUpcomingChargeInsights(
+              gh<_i265.GetScheduledPayments>(),
+              gh<_i450.ProjectUpcomingOccurrences>(),
+            ));
     gh.factory<_i695.ArchiveGoal>(
         () => _i695.ArchiveGoal(gh<_i696.GoalRepository>()));
     gh.factory<_i1023.ContributeToGoal>(
