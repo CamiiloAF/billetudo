@@ -139,6 +139,7 @@ class DateFilterSheetBody extends StatelessWidget {
                     )
                   : l10n.dateFilterCustomRange,
               onTap: () => _pickCustomRange(context, cubit, filter),
+              onClear: isCustom ? cubit.clearToThisMonth : null,
             ),
             const SizedBox(height: 16),
             SheetButtonsRow(
@@ -182,12 +183,20 @@ class DateFilterSheetBody extends StatelessWidget {
 /// The "Rango personalizado" row: a plain entry that opens the range picker
 /// when granularity is active, and — once a custom range is the working
 /// selection — the highlighted block (`$primary-soft` fill, `$primary` border,
-/// the range dates and a `check`) that reads as the chosen mode.
+/// the range dates) that reads as the chosen mode.
+///
+/// Issue #incidencias-pruebas-manuales: once selected, the only way to clear
+/// this specific filter used to be the sheet footer's "Limpiar" (which resets
+/// the whole sheet). The trailing `check` is swapped for a tappable `x`
+/// (same nested-`InkWell`-over-`Padding` pattern as
+/// `TransactionFormFieldButton.onCleared`) so the chip can clear itself
+/// directly, without also opening the picker when the "x" itself is tapped.
 class DateFilterCustomRangeRow extends StatelessWidget {
   const DateFilterCustomRangeRow({
     required this.selected,
     required this.label,
     required this.onTap,
+    this.onClear,
     super.key,
   });
 
@@ -198,10 +207,15 @@ class DateFilterCustomRangeRow extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
+  /// Clears the custom range back to "Este mes". Only used/shown when
+  /// [selected] is `true`.
+  final VoidCallback? onClear;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final accent = selected ? colors.primary : colors.textSecondary;
     return Material(
       color: selected ? colors.primarySoft : Colors.transparent,
@@ -233,9 +247,32 @@ class DateFilterCustomRangeRow extends StatelessWidget {
                   ),
                 ),
               ),
-              if (selected) ...[
-                const SizedBox(width: 10),
-                Icon(LucideIcons.check, size: 18, color: colors.primary),
+              if (selected && onClear != null) ...[
+                const SizedBox(width: 4),
+                Tooltip(
+                  message: l10n.commonClear,
+                  child: Semantics(
+                    label: l10n.commonClear,
+                    button: true,
+                    excludeSemantics: true,
+                    child: Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        onTap: onClear,
+                        customBorder: const CircleBorder(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Icon(
+                            LucideIcons.x,
+                            size: 16,
+                            color: colors.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ],
           ),
