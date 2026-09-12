@@ -417,6 +417,16 @@ class DateFilterSection extends StatelessWidget {
               // (`Semana` widens when selected, `Mes`/`Año` shrink) —
               // selection stays legible from the fill/color alone.
               showSelectedIcon: false,
+              // `expandedInsets` is Material's own switch for "fill the
+              // parent and split evenly": it forces `childWidth =
+              // constraints.maxWidth / childCount` in the render object
+              // (see `_SegmentedButtonRenderWidget._calculateHorizontalChildSize`),
+              // which is exactly "equal width per segment" and avoids
+              // reimplementing the connected look (shared borders,
+              // exclusive selection) that splitting into separate widgets
+              // would lose. `EdgeInsets.zero` because the sheet already
+              // provides its own horizontal padding around this section.
+              expandedInsets: EdgeInsets.zero,
             ),
           ),
         ),
