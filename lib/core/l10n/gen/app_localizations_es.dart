@@ -1141,9 +1141,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get transactionsFiltersButtonLabel => 'Filtros';
 
   @override
-  String get transactionsChipDateDefaultLabel => 'Este mes';
-
-  @override
   String get transactionsPeriodNavPreviousLabel => 'Periodo anterior';
 
   @override
@@ -6859,6 +6856,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get captureVoicePreparing => 'Preparando el micrófono…';
+
+  @override
+  String get captureVoiceStopping => 'Guardando lo que escuchamos…';
 
   @override
   String get captureVoiceHint => 'Di algo como «gasté veinte mil en almuerzo»';

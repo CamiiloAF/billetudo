@@ -355,7 +355,6 @@
   "budgetPeriodFilterEmptyMessage": "You don't have any active budgets",
   "transactionsUnifiedFiltersTitle": "Filters",
   "transactionsFiltersButtonLabel": "Filters",
-  "transactionsChipDateDefaultLabel": "This month",
   "transactionsPeriodNavPreviousLabel": "Previous period",
   "transactionsPeriodNavNextLabel": "Next period",
   "transactionsFilterSectionBudget": "BUDGET",
@@ -2412,6 +2411,7 @@
 
   "captureVoiceListening": "Listening…",
   "captureVoicePreparing": "Getting the microphone ready…",
+  "captureVoiceStopping": "Saving what we heard…",
   "captureVoiceHint": "Try something like “spent twenty on lunch”",
   "captureVoicePrivacyCaption": "The audio isn't stored. It's only used to fill in the form.",
   "captureVoicePartialCaption": "When you're done we'll open the form with what we understood. You confirm.",

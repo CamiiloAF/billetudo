@@ -1140,9 +1140,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionsFiltersButtonLabel => 'Filters';
 
   @override
-  String get transactionsChipDateDefaultLabel => 'This month';
-
-  @override
   String get transactionsPeriodNavPreviousLabel => 'Previous period';
 
   @override
@@ -6843,6 +6840,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get captureVoicePreparing => 'Getting the microphone ready…';
+
+  @override
+  String get captureVoiceStopping => 'Saving what we heard…';
 
   @override
   String get captureVoiceHint => 'Try something like “spent twenty on lunch”';

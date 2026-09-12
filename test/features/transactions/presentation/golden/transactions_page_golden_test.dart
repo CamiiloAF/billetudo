@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:billetudo/core/preferences/balance_carousel_cubit.dart';
 import 'package:billetudo/core/preferences/balance_carousel_preference_datasource.dart';
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
@@ -39,7 +41,16 @@ Widget _withProviders(TransactionsListCubit cubit, Widget page) =>
       providers: [
         BlocProvider<TransactionsListCubit>.value(value: cubit),
         BlocProvider<BalanceCarouselCubit>(
-          create: (_) => BalanceCarouselCubit(_FakeCarouselPrefs()),
+          // `BalanceCarouselState`'s own default is collapsed (a fresh
+          // install with no saved preference). Production always calls
+          // `.load()` right after construction (see `app_router.dart`); do
+          // the same here so this cubit actually reflects `_FakeCarouselPrefs`
+          // (expanded) instead of silently starting from the state's default.
+          create: (_) {
+            final carousel = BalanceCarouselCubit(_FakeCarouselPrefs());
+            unawaited(carousel.load());
+            return carousel;
+          },
         ),
       ],
       child: page,
@@ -305,7 +316,8 @@ void main() {
       );
     });
 
-    testWidgets('with data: long category name wraps to 2 lines, not overflow '
+    testWidgets(
+        'with data: long category name wraps to 2 lines, not overflow '
         '($suffix)', (tester) async {
       await golden(
         tester,
@@ -411,7 +423,7 @@ void main() {
       );
     });
 
-    // `PeriodNavBar` (Fecha variant): a granular period other than the
+    // `PeriodStepper` (Fecha variant): a granular period other than the
     // default "this month" (`hasDateFilter == true`) enables both chevrons —
     // there is no lower bound on the past and this is a past month, so
     // `datePeriodHasNext` is also true — and shows no `Budget Context Tag`.
@@ -436,11 +448,13 @@ void main() {
       );
     });
 
-    // `PeriodNavBar` (Fecha variant): a custom range (`DatePeriodFilter
-    // .custom`) has no granularity to step, so both chevrons render inert at
-    // `opacity:0.4` (`datePeriodHasPrevious`/`datePeriodHasNext` both false).
+    // `PeriodStepper` (Fecha variant): a custom range (`DatePeriodFilter
+    // .custom`) has no granularity to step at all, so the nav bar does not
+    // render — only its chip does (bugfix: it used to render with both
+    // chevrons inert instead, which read as a stepper for a period that has
+    // no previous/next window).
     testWidgets(
-      'period nav bar: custom range, both arrows disabled ($suffix)',
+      'period nav bar: custom range, bar does not render ($suffix)',
       (tester) async {
         await golden(
           tester,
@@ -461,7 +475,7 @@ void main() {
       },
     );
 
-    // `PeriodNavBar` (Presupuesto variant), complement of "budget chip:
+    // `PeriodStepper` (Presupuesto variant), complement of "budget chip:
     // budget selected, active" above: same `Budget Context Tag`, but with
     // `DatePeriodFilter.budget`'s `hasPrevious`/`hasNext` both true so this
     // covers the enabled chevrons — the existing golden only covers the

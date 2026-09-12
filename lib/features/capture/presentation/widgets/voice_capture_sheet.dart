@@ -107,7 +107,8 @@ class _VoiceCaptureSheetState extends State<VoiceCaptureSheet> {
         },
         builder: (context, state) => switch (state.status) {
           VoiceCaptureStatus.preparing ||
-          VoiceCaptureStatus.listening =>
+          VoiceCaptureStatus.listening ||
+          VoiceCaptureStatus.stopping =>
             VoiceCaptureListeningBody(
               state: state,
               onCancel: () => unawaited(_cancel()),

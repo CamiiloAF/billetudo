@@ -1,3 +1,4 @@
+import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/categories/domain/entities/category.dart';
 import 'package:billetudo/features/categories/domain/entities/category_node.dart';
@@ -5,6 +6,7 @@ import 'package:billetudo/features/transactions/domain/entities/budget_period_op
 import 'package:billetudo/features/transactions/domain/entities/date_period_filter.dart';
 import 'package:billetudo/features/transactions/domain/entities/tag.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_filter.dart';
+import 'package:billetudo/features/transactions/presentation/cubit/category_filter_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/unified_filters_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/unified_filters_sheet.dart';
 import 'package:flutter/material.dart';
@@ -40,14 +42,21 @@ void main() {
         .thenAnswer((_) => Stream.value(const Right(<CategoryNode>[])));
     when(() => watchTags())
         .thenAnswer((_) => Stream.value(const Right(<Tag>[])));
+    // `CategoryFilterSection`'s summary control opens `CategoryFilterSheet`,
+    // which resolves its own `CategoryFilterCubit` from `getIt`.
+    getIt.registerFactory<CategoryFilterCubit>(
+      () => CategoryFilterCubit(watchCategories),
+    );
   });
+
+  tearDown(getIt.reset);
 
   Future<void> pump(
     WidgetTester tester, {
     required TransactionFilter filter,
     required List<BudgetPeriodOption> budgetOptions,
   }) async {
-    final cubit = UnifiedFiltersCubit(watchCategories, watchTags);
+    final cubit = UnifiedFiltersCubit(watchTags);
     await cubit.start(filter: filter, budgetOptions: budgetOptions);
     await tester.pumpAppWidget(
       BlocProvider<UnifiedFiltersCubit>.value(
@@ -117,5 +126,37 @@ void main() {
           (opacity) => opacity.opacity == 0.4,
         );
     expect(dimmed, isNotEmpty);
+  });
+
+  group('Categoría', () {
+    testWidgets(
+        'sin selección muestra el control genérico "Categorías" sin '
+        'resaltar', (tester) async {
+      await pump(tester, filter: TransactionFilter(), budgetOptions: const []);
+
+      expect(find.text('Categorías'), findsOneWidget);
+    });
+
+    testWidgets('con categorías seleccionadas muestra el conteo y se resalta',
+        (tester) async {
+      await pump(
+        tester,
+        filter: TransactionFilter(categoryIds: const {'cat-1', 'cat-2'}),
+        budgetOptions: const [],
+      );
+
+      expect(find.text('2 categorías'), findsOneWidget);
+    });
+
+    testWidgets(
+        'tocar el control abre el selector completo de categorías '
+        '(CategoryFilterSheet)', (tester) async {
+      await pump(tester, filter: TransactionFilter(), budgetOptions: const []);
+
+      await tester.tap(find.text('Categorías'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Filtrar por categoría'), findsOneWidget);
+    });
   });
 }

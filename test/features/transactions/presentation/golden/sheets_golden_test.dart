@@ -6,19 +6,16 @@ import 'package:billetudo/features/accounts/domain/entities/account_with_balance
 import 'package:billetudo/features/categories/domain/entities/category.dart';
 import 'package:billetudo/features/categories/domain/entities/category_node.dart';
 import 'package:billetudo/features/transactions/domain/entities/budget_period_option.dart';
-import 'package:billetudo/features/transactions/domain/entities/date_period_filter.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_edit_impact.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/account_filter_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/budget_period_filter_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/category_filter_cubit.dart';
-import 'package:billetudo/features/transactions/presentation/cubit/date_filter_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/tag_filter_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/account_filter_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/budget_period_filter_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/category_filter_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/confirm_delete_transaction_sheet.dart';
-import 'package:billetudo/features/transactions/presentation/widgets/sheets/date_filter_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/edit_impact_warning_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/future_date_scheduled_payment_prompt_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/new_tag_sheet.dart';
@@ -41,9 +38,6 @@ class MockCategoryFilterCubit extends MockCubit<CategoryFilterState>
 
 class MockTagFilterCubit extends MockCubit<TagFilterState>
     implements TagFilterCubit {}
-
-class MockDateFilterCubit extends MockCubit<DateFilterState>
-    implements DateFilterCubit {}
 
 class MockBudgetPeriodFilterCubit extends MockCubit<BudgetPeriodFilterState>
     implements BudgetPeriodFilterCubit {}
@@ -116,9 +110,8 @@ void main() {
     required Brightness brightness,
   }) =>
       // Pins clock.now() to goldenReferenceNow for the whole pump/tap/expect
-      // choreography, so a widget that resolves "today" during build (e.g.
-      // DateFilterSheet's inert-granularity fallback for a custom range)
-      // doesn't drift against the committed PNG on a later run. See
+      // choreography, so a widget that resolves "today" during build doesn't
+      // drift against the committed PNG on a later run. See
       // pumpWithFixedClock's doc for why this beats a per-widget fix.
       withClock(Clock.fixed(goldenReferenceNow), () async {
         setGoldenViewport(tester);
@@ -297,49 +290,6 @@ void main() {
     });
 
     group('date filter ($suffix)', () {
-      testWidgets('this month (default granular period)', (tester) async {
-        // `DatePeriodFilter.thisMonth()` defaults to real `DateTime.now()`
-        // when no anchor is passed — pin it to the frozen golden reference
-        // date so this doesn't drift every calendar month (see
-        // goldenReferenceNow's doc and commit b5d60300).
-        final thisMonth = DatePeriodFilter.thisMonth(goldenReferenceNow);
-        final cubit = MockDateFilterCubit();
-        when(() => cubit.state)
-            .thenReturn(DateFilterState(filter: thisMonth));
-        getIt.registerFactory<DateFilterCubit>(() => cubit);
-
-        await golden(
-          tester,
-          (context) async {
-            await DateFilterSheet.show(
-              context,
-              initial: thisMonth,
-            );
-          },
-          'date_filter_month_$suffix',
-          brightness: brightness,
-        );
-      });
-
-      testWidgets('custom range', (tester) async {
-        final range = DatePeriodFilter.custom(
-          start: DateTime(2026, 7, 1),
-          end: DateTime(2026, 7, 15),
-        );
-        final cubit = MockDateFilterCubit();
-        when(() => cubit.state).thenReturn(DateFilterState(filter: range));
-        getIt.registerFactory<DateFilterCubit>(() => cubit);
-
-        await golden(
-          tester,
-          (context) async {
-            await DateFilterSheet.show(context, initial: range);
-          },
-          'date_filter_custom_range_$suffix',
-          brightness: brightness,
-        );
-      });
-
       // The app's own range calendar (`Sheet - Rango Personalizado`/`OFdj4`),
       // opened from "Personalizado" instead of Material's
       // `showDateRangePicker` — the two "Desde"/"Hasta" fields, the
@@ -446,8 +396,8 @@ void main() {
 
         await golden(
           tester,
-          (context) =>
-              BudgetPeriodFilterSheet.show(context, initialBudgetId: 'budget-1'),
+          (context) => BudgetPeriodFilterSheet.show(context,
+              initialBudgetId: 'budget-1'),
           'budget_period_filter_selected_$suffix',
           brightness: brightness,
         );

@@ -36,7 +36,14 @@ void main() {
         brightness: Brightness.light,
       ),
     );
-    await tester.pumpAndSettle();
+    // `VoiceCaptureListeningBody` renders `VoiceListeningIndicator` /
+    // `VoiceWaveBars`, both of which run a `..repeat()` `AnimationController`
+    // for their idle "alive" motion — `pumpAndSettle` never converges against
+    // an infinite loop. A first frame plus one fixed time step is enough to
+    // assert on the static content every group in this file checks (text,
+    // taps, widget presence); none of them measure the animation itself.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
   }
 
   group('listening (f8OP8a / Z6imP)', () {

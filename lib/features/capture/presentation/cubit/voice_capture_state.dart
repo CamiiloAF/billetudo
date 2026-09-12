@@ -17,6 +17,11 @@ enum VoiceCaptureStatus {
   /// surface; what differs is whether [VoiceCaptureState.transcript] is empty.
   listening,
 
+  /// Transitional: the user tapped "Listo" and the session is closing. Not a
+  /// designed frame, but a real state — without it the button can look
+  /// unresponsive while `stop()` is in flight, inviting a second tap.
+  stopping,
+
   /// `lLKTv`: the session ended with something transcribed but no amount in
   /// it. Nothing is lost — the transcript still travels to the form as a note.
   noAmount,
@@ -55,6 +60,13 @@ enum VoiceCaptureUnavailableReason {
   network,
 
   /// Another app holds the microphone.
+  ///
+  /// Kept for `VoiceCaptureUnavailableBody` and its tests, but the cubit no
+  /// longer reaches it from `error_busy`/`error_client`: those are treated as
+  /// recoverable (see `VoiceCaptureCubit._onError`) because `error_client` is
+  /// a known transient fault that can fire even with a valid transcript
+  /// already recognized, and discarding it would be worse than a stale label
+  /// here.
   busy,
 }
 

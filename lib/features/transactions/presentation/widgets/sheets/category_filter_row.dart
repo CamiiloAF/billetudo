@@ -8,8 +8,9 @@ import '../../../../categories/domain/entities/category.dart';
 import '../../../../categories/presentation/utils/category_appearance.dart';
 
 /// A row of the `Filtrar por categoría` sheet (`q0CTl`/`NZbsD`): a root or a
-/// subcategory, selected by tapping the whole row body — there is no
-/// checkbox, the selected state is only the row's `fill`/`stroke`.
+/// subcategory, selected by tapping the whole row body. Selection shows both
+/// the row's `fill`/`stroke` and a trailing check mark — the fill alone read
+/// as a plain highlight, not as an obviously multi-selectable control.
 ///
 /// A root has two independent tap zones: the row body ([onToggleSelected])
 /// and, when it has subcategories, the trailing 44x44 chevron
@@ -106,6 +107,14 @@ class CategoryFilterRow extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (selected) ...[
+                      const SizedBox(width: 8),
+                      Icon(
+                        LucideIcons.check,
+                        size: isSubcategory ? 16 : 20,
+                        color: colors.primary,
+                      ),
+                    ],
                   ],
                 ),
               ),

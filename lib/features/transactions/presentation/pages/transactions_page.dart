@@ -9,17 +9,22 @@ import '../../../../core/preferences/balance_carousel_cubit.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_fab.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
+import '../../../../core/widgets/period_stepper.dart';
 import '../../../../core/widgets/root_tab_header.dart';
 import '../../../../core/widgets/scroll_aware_fab.dart';
 import '../../../../core/widgets/scroll_aware_fab_visibility.dart';
 import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
 import '../../../accounts/presentation/widgets/account_gate_copy.dart';
 import '../../../capture/presentation/cubit/capture_review_item.dart';
+import '../../../capture/presentation/utils/start_voice_capture_flow.dart';
 import '../../../capture/presentation/widgets/pending_captures_list_slot.dart';
+import '../../../categories/presentation/utils/category_appearance.dart';
+import '../../domain/entities/budget_period_option.dart';
 import '../../domain/entities/transaction_filter.dart';
 import '../cubit/transactions_list_cubit.dart';
 import '../cubit/transactions_list_state.dart';
 import '../utils/date_period_label.dart';
+import '../utils/date_period_navigation.dart';
 import '../utils/open_unified_filters_sheet.dart';
 import '../utils/transaction_amount_presentation.dart';
 import '../utils/transaction_date_grouping.dart';
@@ -29,7 +34,6 @@ import '../widgets/account_filter_chip_row.dart';
 import '../widgets/filter_chip_pill.dart';
 import '../widgets/filters_button.dart';
 import '../widgets/movements_balance_carousel.dart';
-import '../widgets/period_nav_bar.dart';
 import '../widgets/skeleton_row.dart';
 import '../widgets/transaction_group_header.dart';
 import '../widgets/transaction_row.dart';
@@ -179,6 +183,11 @@ class _TransactionsPageState extends State<TransactionsPage>
                   icon: LucideIcons.plus,
                   tooltip: l10n.transactionsAdd,
                   onPressed: () => unawaited(_addTransaction(context)),
+                  // Same primary voice trigger as `HomePage`'s FAB: tap and
+                  // hold are two different actions on the same button, both
+                  // of which end on the same form.
+                  onLongPress: () => unawaited(startVoiceCaptureFlow(context)),
+                  longPressHint: l10n.captureVoiceFabLongPressHint,
                 ),
               ),
         body: SafeArea(
@@ -224,6 +233,24 @@ class _TransactionsPageState extends State<TransactionsPage>
                   ? linkMode.onLinkTransaction
                   : (String id) => _openTransaction(context, id);
               final showCarousel = linkMode == null;
+              // `PeriodStepper` inputs (Cierre 2026-09-11, `vBgce`): the
+              // active period is either a Presupuesto window or a Fecha
+              // period — never both, per the sheet's mutual-exclusion
+              // contract — so exactly one of these resolves.
+              final budgetPeriod = state.filter.budgetPeriod;
+              final activePeriod = budgetPeriod ?? state.filter.datePeriod;
+              final hasPreviousPeriod = budgetPeriod != null
+                  ? budgetPeriod.hasPrevious
+                  : datePeriodHasPrevious(activePeriod);
+              final hasNextPeriod = budgetPeriod != null
+                  ? budgetPeriod.hasNext
+                  : datePeriodHasNext(activePeriod, DateTime.now());
+              final budgetOption = budgetPeriod == null
+                  ? null
+                  : _findBudgetOption(
+                      state.budgetOptions,
+                      budgetPeriod.budgetId!,
+                    );
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -253,24 +280,39 @@ class _TransactionsPageState extends State<TransactionsPage>
                   TransactionsSearchRow(state: state),
                   const SizedBox(height: 8),
                   TransactionsFilterBar(state: state),
-                  // Period Nav Bar (Adición 2026-09-10, `u6sSAc`/`w9Eszi`):
-                  // only while the active period is not the default "este
-                  // mes sin presupuesto" — the common case renders nothing
-                  // here, at zero space cost.
-                  if (state.filter.hasDateFilter ||
-                      state.filter.hasBudgetPeriodFilter) ...[
+                  // Period Stepper (Adición 2026-09-10, migrado al
+                  // componente compartido `vBgce` el 2026-09-11): only while
+                  // the active period is not the default "este mes sin
+                  // presupuesto" — the common case renders nothing here, at
+                  // zero space cost.
+                  if (state.filter.hasNavigablePeriod) ...[
                     const SizedBox(height: 8),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: PeriodNavBar(
-                        filter: state.filter,
-                        budgetOptions: state.budgetOptions,
-                        onPrevious: () => unawaited(
-                          context.read<TransactionsListCubit>().stepPeriod(-1),
-                        ),
-                        onNext: () => unawaited(
-                          context.read<TransactionsListCubit>().stepPeriod(1),
-                        ),
+                      child: PeriodStepper(
+                        previousLabel: l10n.transactionsPeriodNavPreviousLabel,
+                        nextLabel: l10n.transactionsPeriodNavNextLabel,
+                        label: datePeriodLabel(activePeriod),
+                        contextIcon: budgetOption == null
+                            ? null
+                            : CategoryAppearance.iconForOrPlaceholder(
+                                budgetOption.icon,
+                              ),
+                        contextLabel: budgetOption?.name,
+                        onPrevious: hasPreviousPeriod
+                            ? () => unawaited(
+                                  context
+                                      .read<TransactionsListCubit>()
+                                      .stepPeriod(-1),
+                                )
+                            : null,
+                        onNext: hasNextPeriod
+                            ? () => unawaited(
+                                  context
+                                      .read<TransactionsListCubit>()
+                                      .stepPeriod(1),
+                                )
+                            : null,
                       ),
                     ),
                   ],
@@ -364,6 +406,21 @@ class _TransactionsPageState extends State<TransactionsPage>
       ),
     );
   }
+}
+
+/// Resolves the active `filter.budgetPeriod`'s name/icon for the
+/// `PeriodStepper`'s `Context Row` — same list `TransactionsListState
+/// .budgetOptions` already keeps for the Presupuesto chip.
+BudgetPeriodOption? _findBudgetOption(
+  List<BudgetPeriodOption> options,
+  String budgetId,
+) {
+  for (final option in options) {
+    if (option.budgetId == budgetId) {
+      return option;
+    }
+  }
+  return null;
 }
 
 /// Whether HU-06's search/filters are all at their untouched default (the
@@ -508,7 +565,6 @@ class TransactionsFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final cubit = context.read<TransactionsListCubit>();
     final filter = state.filter;
     final dateActive = filter.hasDateFilter || filter.hasBudgetPeriodFilter;
@@ -526,15 +582,21 @@ class TransactionsFilterBar extends StatelessWidget {
               cubit.updateFilter(filter.copyWith(accountIds: accountIds)),
             ),
           ),
-          const SizedBox(width: 8),
-          FilterChipPill(
-            label: dateActive
-                ? datePeriodLabel(activePeriod)
-                : l10n.transactionsChipDateDefaultLabel,
-            active: dateActive,
-            leadingIcon: LucideIcons.calendar,
-            onTap: () => unawaited(openUnifiedFiltersSheet(context, state)),
-          ),
+          // Bugfix 2026-09-11: this chip must be genuinely conditional — the
+          // design (`pages/transacciones.md` § "Chip Fecha condicional")
+          // says it never renders in the default state, but it used to
+          // always be in the tree and just fall back to
+          // `transactionsChipDateDefaultLabel` ("Este mes") instead of
+          // disappearing, showing a redundant chip for the common case.
+          if (dateActive) ...[
+            const SizedBox(width: 8),
+            FilterChipPill(
+              label: datePeriodLabel(activePeriod),
+              active: true,
+              leadingIcon: LucideIcons.calendar,
+              onTap: () => unawaited(openUnifiedFiltersSheet(context, state)),
+            ),
+          ],
         ],
       ),
     );

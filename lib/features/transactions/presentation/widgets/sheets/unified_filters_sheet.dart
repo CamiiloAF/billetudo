@@ -11,7 +11,6 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../../core/widgets/date_range_picker_sheet.dart';
 import '../../../../../core/widgets/sheet_buttons_row.dart';
-import '../../../../categories/domain/entities/category_node.dart';
 import '../../../../categories/presentation/utils/category_appearance.dart';
 import '../../../domain/entities/budget_period_option.dart';
 import '../../../domain/entities/date_period_filter.dart';
@@ -19,6 +18,7 @@ import '../../../domain/entities/tag.dart';
 import '../../../domain/entities/transaction.dart' show TransactionType;
 import '../../../domain/entities/transaction_filter.dart';
 import '../../cubit/unified_filters_cubit.dart';
+import 'category_filter_sheet.dart';
 
 /// Issue #7: the unified bottom sheet replacing the Presupuesto/Fecha/Tipo/
 /// Categoría/Etiqueta sheets that used to open one at a time from the
@@ -220,6 +220,7 @@ class UnifiedFilterPill extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.icon,
+    this.onClear,
     super.key,
   });
 
@@ -228,12 +229,21 @@ class UnifiedFilterPill extends StatelessWidget {
   final IconData? icon;
   final VoidCallback onTap;
 
+  /// When set (and [selected] is true), replaces the trailing space with a
+  /// tappable "x" that clears this pill's selection — for pills whose [onTap]
+  /// doesn't itself toggle off (e.g. the custom-range pill, which re-opens
+  /// the date picker on tap instead of clearing). `null` for every other
+  /// pill in this sheet (Presupuesto/Tipo/Categoría/Etiqueta), which already
+  /// toggle off on a second tap and don't need a separate clear target.
+  final VoidCallback? onClear;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
     final foreground =
         selected ? colors.primaryOnSoftStrong : colors.textSecondary;
+    final showClear = selected && onClear != null;
 
     return Material(
       color: selected ? colors.primarySoft : colors.surface,
@@ -265,6 +275,21 @@ class UnifiedFilterPill extends StatelessWidget {
                   color: foreground,
                 ),
               ),
+              if (showClear) ...[
+                const SizedBox(width: 8),
+                Semantics(
+                  button: true,
+                  label: AppLocalizations.of(context).commonClear,
+                  child: InkWell(
+                    onTap: onClear,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(2),
+                      child: Icon(LucideIcons.x, size: 16, color: foreground),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -323,7 +348,7 @@ class BudgetFilterSection extends StatelessWidget {
 /// Adición 2026-09-10 (`JcJQq`/`llEl6`/`hwYxx`): the Prev/Next stepper that
 /// used to sit below the granularity switch was retired from this sheet —
 /// navigating between periods now lives exclusively in the main screen's
-/// `PeriodNavBar`, so this section only chooses **what** to filter
+/// `PeriodStepper`, so this section only chooses **what** to filter
 /// (granularity/custom range), never **which** period within it.
 class DateFilterSection extends StatelessWidget {
   const DateFilterSection({required this.state, super.key});
@@ -387,6 +412,21 @@ class DateFilterSection extends StatelessWidget {
               selected: {granularityView.granularity!},
               onSelectionChanged: (selection) =>
                   cubit.granularitySelected(selection.first),
+              // Without this, the selected segment's check icon changes the
+              // row's total width depending on which segment is active
+              // (`Semana` widens when selected, `Mes`/`Año` shrink) —
+              // selection stays legible from the fill/color alone.
+              showSelectedIcon: false,
+              // `expandedInsets` is Material's own switch for "fill the
+              // parent and split evenly": it forces `childWidth =
+              // constraints.maxWidth / childCount` in the render object
+              // (see `_SegmentedButtonRenderWidget._calculateHorizontalChildSize`),
+              // which is exactly "equal width per segment" and avoids
+              // reimplementing the connected look (shared borders,
+              // exclusive selection) that splitting into separate widgets
+              // would lose. `EdgeInsets.zero` because the sheet already
+              // provides its own horizontal padding around this section.
+              expandedInsets: EdgeInsets.zero,
             ),
           ),
         ),
@@ -410,6 +450,7 @@ class DateFilterSection extends StatelessWidget {
                   icon: LucideIcons.calendarRange,
                   selected: isCustom,
                   onTap: () => _pickCustomRange(context, cubit, filter),
+                  onClear: isCustom ? cubit.clearDateToThisMonth : null,
                 ),
               ],
             ),
@@ -493,12 +534,13 @@ class TypeFilterSection extends StatelessWidget {
   }
 }
 
-/// Section — Categoría (`yXu2h`): root categories of both trees (income and
-/// expense), the symmetric root/subtree toggle of HU-06. Flat root pills —
-/// matching `rktqT`'s mockup, unlike the standalone `CategoryFilterSheet`'s
-/// expandable root/subcategory list (still used elsewhere, e.g. Presupuestos'
-/// form and Exportar) — so filtering by an individual subcategory from this
-/// sheet is not available; only the root/whole-tree granularity is.
+/// Section — Categoría (`yXu2h`): a single summary control that opens the
+/// full `CategoryFilterSheet` (both trees, expandable root/subcategory list,
+/// symmetric root/subtree toggle, "Seleccionar todo"/"Ninguno") instead of
+/// this sheet's own flat root-only pills — the same sub-sheet Presupuestos'
+/// form and Exportar already drive via `CategoryFilterCubit`, so filtering by
+/// an individual subcategory is available here too, not just by root/whole
+/// tree.
 class CategoryFilterSection extends StatelessWidget {
   const CategoryFilterSection({required this.state, super.key});
 
@@ -508,10 +550,7 @@ class CategoryFilterSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final cubit = context.read<UnifiedFiltersCubit>();
-    final nodes = <CategoryNode>[
-      ...state.expenseNodes,
-      ...state.incomeNodes,
-    ];
+    final selectedCount = state.categoryIds.length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -522,15 +561,23 @@ class CategoryFilterSection extends StatelessWidget {
         const SizedBox(height: 10),
         UnifiedFilterPillRow(
           children: [
-            for (final node in nodes) ...[
-              UnifiedFilterPill(
-                label: node.root.name,
-                icon: CategoryAppearance.iconForOrPlaceholder(node.root.icon),
-                selected: state.categoryIds.contains(node.root.id),
-                onTap: () => cubit.toggleRootCategory(node),
-              ),
-              if (node != nodes.last) const SizedBox(width: 8),
-            ],
+            UnifiedFilterPill(
+              label: selectedCount == 0
+                  ? l10n.transactionsFilterCategories
+                  : l10n.transactionsFilterCategoriesSelected(selectedCount),
+              icon: LucideIcons.shapes,
+              selected: selectedCount > 0,
+              onTap: () async {
+                final selected = await CategoryFilterSheet.show(
+                  context,
+                  initialSelected: state.categoryIds,
+                  activeTypes: state.types,
+                );
+                if (selected != null) {
+                  cubit.setCategoryIds(selected);
+                }
+              },
+            ),
           ],
         ),
       ],

@@ -258,6 +258,89 @@ void main() {
       }
     });
 
+    test('verbos de ingreso ampliados (es-CO)', () {
+      for (final phrase in <String>[
+        'me consignó cincuenta mil',
+        'me depositó cincuenta mil',
+        'me transfirió cincuenta mil',
+        'me ingresaron cincuenta mil',
+        'me cayó cincuenta mil',
+        'me cayeron cincuenta mil',
+        'me devolvieron cincuenta mil',
+        'me devolvió cincuenta mil',
+        'me reembolsaron cincuenta mil',
+        'me reembolsó cincuenta mil',
+        'me reintegraron cincuenta mil',
+        'me dieron cincuenta mil',
+        'me dio cincuenta mil',
+        'me prestaron cincuenta mil',
+        'cobramos cincuenta mil',
+        'ganamos cincuenta mil',
+        'vendí cincuenta mil',
+        'vendimos cincuenta mil',
+      ]) {
+        expect(
+          run(phrase).type,
+          TransactionType.income,
+          reason: phrase,
+        );
+      }
+    });
+
+    test(
+      '"pagué" nunca se lee como ingreso solo porque el sustantivo lo sea',
+      () {
+        expect(
+          run('pagué el ingreso del gimnasio').type,
+          TransactionType.expense,
+        );
+        expect(
+          run('pagué el depósito').type,
+          TransactionType.expense,
+        );
+      },
+    );
+
+    test(
+      '"me pagó" no está en el léxico: sin tilde colisiona con "me pago" '
+      '(gasto reflexivo real, "me pago el gimnasio")',
+      () {
+        expect(
+          run('me pago el gimnasio').type,
+          isNot(TransactionType.income),
+        );
+      },
+    );
+
+    test(
+      '"me ingresó" no está en el léxico: sin tilde colisiona con "me '
+      'ingreso" (inscribirme, no dinero, "me ingreso al gimnasio")',
+      () {
+        expect(
+          run('me ingreso al gimnasio').type,
+          isNot(TransactionType.income),
+        );
+      },
+    );
+
+    test(
+      '"me prestó" no está en el léxico: sin tilde colisiona con "me '
+      'presto" (tomar prestado, dirección opuesta, "me presto el carro")',
+      () {
+        expect(
+          run('me presto el carro').type,
+          isNot(TransactionType.income),
+        );
+      },
+    );
+
+    test('"quincena" como sustantivo toma la polaridad del verbo', () {
+      final draft = run('me llegó la quincena, dos millones');
+
+      expect(draft.type, TransactionType.income);
+      expect(draft.amountMinor, 200000000);
+    });
+
     test('"me pagaron" nunca se lee como "pagué"', () {
       final draft = run('me pagaron dos millones');
 
@@ -412,6 +495,46 @@ void main() {
     test('las muletillas de comando no llegan a la nota', () {
       expect(run('apunta 20 mil de pañales').note, 'pañales');
     });
+
+    test(
+      '"gasté 1 millón de pesos en un mackbook pro": el conector y la '
+      'moneda se van con el monto, no quedan sueltos ni duplicados',
+      () {
+        final draft = run(
+          'gasté 1 millón de pesos en un mackbook pro',
+          withAccounts: false,
+        );
+
+        expect(draft.amountMinor, 100000000);
+        expect(draft.note, 'mackbook pro');
+      },
+    );
+
+    test('"gasté veinte mil en almuerzo" ya no deja "de"/"mil" sueltos', () {
+      expect(
+        run('gasté veinte mil en almuerzo', withAccounts: false).note,
+        isNull,
+      );
+    });
+
+    test(
+      '"recibí 500 mil pesos de salario": sin categorías que reclamen '
+      '"salario", la nota es justo lo que sobra',
+      () {
+        final draft = withClock(
+          Clock.fixed(_today),
+          () => parse(
+            const SpokenTransactionInput(
+              transcript: 'recibí 500 mil pesos de salario',
+              currency: 'COP',
+            ),
+          ),
+        );
+
+        expect(draft.amountMinor, 50000000);
+        expect(draft.note, 'salario');
+      },
+    );
   });
 
   group('parseo parcial (HU-05)', () {

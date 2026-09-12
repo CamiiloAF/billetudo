@@ -2042,12 +2042,6 @@ abstract class AppLocalizations {
   /// **'Filtros'**
   String get transactionsFiltersButtonLabel;
 
-  /// No description provided for @transactionsChipDateDefaultLabel.
-  ///
-  /// In es, this message translates to:
-  /// **'Este mes'**
-  String get transactionsChipDateDefaultLabel;
-
   /// No description provided for @transactionsPeriodNavPreviousLabel.
   ///
   /// In es, this message translates to:
@@ -11157,6 +11151,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Preparando el micrófono…'**
   String get captureVoicePreparing;
+
+  /// No description provided for @captureVoiceStopping.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardando lo que escuchamos…'**
+  String get captureVoiceStopping;
 
   /// No description provided for @captureVoiceHint.
   ///

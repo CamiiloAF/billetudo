@@ -24,9 +24,14 @@ class ScheduledPaymentsListState extends Equatable {
 
   final ScheduledPaymentsListStatus status;
 
-  /// Active templates ordered by `nextDate` ascending, already carrying each
-  /// template's `pendingOccurrenceCount` (criterion 11) — no separate entry
-  /// per pending occurrence.
+  /// Active templates' upcoming occurrences ordered by date ascending
+  /// (2026-09 fix, `GetScheduledPayments`): a template with a DUE occurrence
+  /// still carries its `pendingOccurrenceCount` as a single entry (criterion
+  /// 11, no separate entry per pending occurrence), but one without a due
+  /// occurrence can now appear as *more than one* entry — one per real
+  /// projected date inside the forward window — so [items] no longer maps
+  /// 1:1 to templates. Use [activeCount] for "how many templates", not
+  /// `items.length`.
   final List<ScheduledPaymentSummary> items;
 
   final ScheduledPaymentsListStatus finishedStatus;
@@ -46,8 +51,11 @@ class ScheduledPaymentsListState extends Equatable {
       status == ScheduledPaymentsListStatus.ready && items.isEmpty;
 
   /// "Activos · N": every active template counts once, pending or not
-  /// (criterion 11).
-  int get activeCount => items.length;
+  /// (criterion 11) — counted by distinct `scheduledPayment.id` rather than
+  /// `items.length` since a template without a due occurrence can now
+  /// contribute more than one row (2026-09 fix, `GetScheduledPayments`).
+  int get activeCount =>
+      items.map((item) => item.scheduledPayment.id).toSet().length;
 
   /// "Terminados · N". The chip is not rendered at all when this is 0.
   int get finishedCount => finishedItems.length;

@@ -1027,8 +1027,6 @@ import 'package:billetudo/features/transactions/presentation/cubit/category_filt
     as _i315;
 import 'package:billetudo/features/transactions/presentation/cubit/category_quick_picker_cubit.dart'
     as _i304;
-import 'package:billetudo/features/transactions/presentation/cubit/date_filter_cubit.dart'
-    as _i499;
 import 'package:billetudo/features/transactions/presentation/cubit/tag_filter_cubit.dart'
     as _i506;
 import 'package:billetudo/features/transactions/presentation/cubit/transaction_detail_cubit.dart'
@@ -1091,7 +1089,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => const _i450.ProjectUpcomingOccurrences());
     gh.factory<_i604.GetTransactionEditImpact>(
         () => const _i604.GetTransactionEditImpact());
-    gh.factory<_i499.DateFilterCubit>(() => _i499.DateFilterCubit());
     gh.lazySingleton<_i433.PowerSyncDatabase>(
         () => registerModule.powerSyncDatabase());
     gh.lazySingleton<_i249.AppDatabase>(() => registerModule.appDatabase());
@@ -1466,8 +1463,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i49.GetScheduledPaymentHistory>(() =>
         _i49.GetScheduledPaymentHistory(
             gh<_i680.ScheduledPaymentRepository>()));
-    gh.factory<_i265.GetScheduledPayments>(() =>
-        _i265.GetScheduledPayments(gh<_i680.ScheduledPaymentRepository>()));
     gh.factory<_i889.GetTags>(
         () => _i889.GetTags(gh<_i680.ScheduledPaymentRepository>()));
     gh.factory<_i452.SetScheduledPaymentTags>(() =>
@@ -1531,11 +1526,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i49.CsvWriterDatasource>(),
           gh<_i672.ZipPackagerDatasource>(),
         ));
-    gh.factory<_i957.WatchUpcomingChargeInsights>(
-        () => _i957.WatchUpcomingChargeInsights(
-              gh<_i265.GetScheduledPayments>(),
-              gh<_i450.ProjectUpcomingOccurrences>(),
-            ));
     gh.factory<_i184.GetVoiceCaptureAvailability>(
         () => _i184.GetVoiceCaptureAvailability(
               gh<_i312.SpeechRecognizer>(),
@@ -1631,10 +1621,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i836.DeleteAllCaptureData>(() => _i836.DeleteAllCaptureData(
           gh<_i869.PendingCaptureRepository>(),
           gh<_i415.CaptureLearningRepository>(),
-        ));
-    gh.factory<_i929.UnifiedFiltersCubit>(() => _i929.UnifiedFiltersCubit(
-          gh<_i722.WatchCategories>(),
-          gh<_i121.WatchTags>(),
         ));
     gh.lazySingleton<_i173.LocalDataWipeDatasource>(
         () => _i173.LocalDataWipeDatasource(
@@ -1747,6 +1733,10 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i795.BudgetCategoryScopeResolver>(),
           gh<_i474.CrashReporter>(),
         ));
+    gh.factory<_i265.GetScheduledPayments>(() => _i265.GetScheduledPayments(
+          gh<_i680.ScheduledPaymentRepository>(),
+          gh<_i450.ProjectUpcomingOccurrences>(),
+        ));
     gh.factory<_i769.WatchPendingConfirmationInsights>(() =>
         _i769.WatchPendingConfirmationInsights(
             gh<_i551.GetPendingOccurrences>()));
@@ -1758,6 +1748,8 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i416.NotificationCaptureRepository>(),
               gh<_i872.CaptureOfferRepository>(),
             ));
+    gh.factory<_i929.UnifiedFiltersCubit>(
+        () => _i929.UnifiedFiltersCubit(gh<_i121.WatchTags>()));
     gh.factory<_i175.EnsureNotificationPermission>(() =>
         _i175.EnsureNotificationPermission(gh<_i239.NotificationScheduler>()));
     gh.factory<_i105.InitializeNotifications>(
@@ -2094,6 +2086,11 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i494.ReportAiMessage>(),
           gh<_i1026.AiClientContextProvider>(),
         ));
+    gh.factory<_i957.WatchUpcomingChargeInsights>(
+        () => _i957.WatchUpcomingChargeInsights(
+              gh<_i265.GetScheduledPayments>(),
+              gh<_i450.ProjectUpcomingOccurrences>(),
+            ));
     gh.factory<_i695.ArchiveGoal>(
         () => _i695.ArchiveGoal(gh<_i696.GoalRepository>()));
     gh.factory<_i1023.ContributeToGoal>(

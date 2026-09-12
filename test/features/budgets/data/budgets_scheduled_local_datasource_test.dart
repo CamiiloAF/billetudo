@@ -42,6 +42,7 @@ void main() {
     DateTime? nextDate,
     DateTime? endDate,
     DateTime? tombstonedAt,
+    String? debtId,
   }) =>
       database.into(database.scheduledPayments).insertReturning(
             ScheduledPaymentsCompanion.insert(
@@ -55,6 +56,19 @@ void main() {
               nextDate: nextDate ?? DateTime(2026, 7, 1),
               endDate: Value(endDate),
               tombstonedAt: Value(tombstonedAt),
+              debtId: Value(debtId),
+              updatedAt: const Value(0),
+            ),
+          );
+
+  Future<Debt> createDebt({DateTime? closedAt}) =>
+      database.into(database.debts).insertReturning(
+            DebtsCompanion.insert(
+              name: 'Cuota moto',
+              direction: DebtDirection.iOwe,
+              principalMinor: 100000,
+              currency: 'COP',
+              closedAt: Value(closedAt),
               updatedAt: const Value(0),
             ),
           );
@@ -123,6 +137,25 @@ void main() {
       final rows = await datasource.watchScheduledExpenseTemplates().first;
 
       expect(rows.map((r) => r.template.id), [notYetFired.id]);
+    });
+
+    test(
+        'excludes a cuota linked to an already-closed debt '
+        '(bugfix 2026-09-11: used to keep projecting forever)', () async {
+      final account = await createAccount('Efectivo');
+      final closedDebt = await createDebt(closedAt: DateTime(2026, 6, 1));
+      await createTemplate(accountId: account.id, debtId: closedDebt.id);
+      final openDebt = await createDebt();
+      final openCuota =
+          await createTemplate(accountId: account.id, debtId: openDebt.id);
+      final unlinked = await createTemplate(accountId: account.id);
+
+      final rows = await datasource.watchScheduledExpenseTemplates().first;
+
+      expect(
+        rows.map((r) => r.template.id).toSet(),
+        {openCuota.id, unlinked.id},
+      );
     });
   });
 

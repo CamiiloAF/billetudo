@@ -162,7 +162,8 @@ class GoalRepositoryImpl implements GoalRepository {
           if (result case Left(value: final failure)) {
             return Left<Failure, GoalDetail>(failure);
           }
-          final detail = result.getOrElse((_) => throw StateError('unreachable'));
+          final detail =
+              result.getOrElse((_) => throw StateError('unreachable'));
           final goal = detail.progress.goal;
           final coherence = await _coherenceForGoal(goal);
           final accountTombstoned = await _isAccountTombstoned(goal.accountId);
@@ -208,37 +209,45 @@ class GoalRepositoryImpl implements GoalRepository {
         final now = DateTime.now();
         final goalCompanion = GoalMapper.toInsertCompanion(draft, now: now);
         final initialAmount = draft.initialSavedMinor;
-        final initialContribution = (initialAmount == null || initialAmount <= 0)
-            ? null
-            : db.GoalContributionsCompanion.insert(
-                // Overwritten with the real id by the datasource once the
-                // goal is inserted, in the same atomic write.
-                goalId: '',
-                amountMinor: initialAmount,
-                direction: db.GoalMovementDirection.contribution,
-                date: now,
-                createdAt: Value(now),
-                updatedAt: Value(now.millisecondsSinceEpoch),
-              );
-        final row = await _local.insertGoalWithInitialContribution(
-          goalCompanion: goalCompanion,
-          initialContribution: initialContribution,
-        );
-        var goal = GoalMapper.toEntity(row);
-
-        if (initialContribution != null) {
-          // HU-06/HU-07: a declared starting progress can itself already
-          // reach a milestone or complete the goal on day one.
-          await _reconcileProgressState(
-            goal: goal,
-            savedMinor: initialAmount!,
-            now: now,
+        final initialContribution =
+            (initialAmount == null || initialAmount <= 0)
+                ? null
+                : db.GoalContributionsCompanion.insert(
+                    // Overwritten with the real id by the datasource once the
+                    // goal is inserted, in the same atomic write.
+                    goalId: '',
+                    amountMinor: initialAmount,
+                    direction: db.GoalMovementDirection.contribution,
+                    date: now,
+                    createdAt: Value(now),
+                    updatedAt: Value(now.millisecondsSinceEpoch),
+                  );
+        // Atomic: the goal, its optional initial contribution, and the
+        // milestone/completion reconciliation it can trigger either all
+        // commit together or none do — the same guarantee `_writeMovement`
+        // gives every later movement.
+        final goal = await _local.runInTransaction(() async {
+          final row = await _local.insertGoalWithInitialContribution(
+            goalCompanion: goalCompanion,
+            initialContribution: initialContribution,
           );
-          final refreshed = await _local.getGoal(goal.id);
-          if (refreshed != null) {
-            goal = GoalMapper.toEntity(refreshed);
+          var goal = GoalMapper.toEntity(row);
+
+          if (initialContribution != null) {
+            // HU-06/HU-07: a declared starting progress can itself already
+            // reach a milestone or complete the goal on day one.
+            await _reconcileProgressState(
+              goal: goal,
+              savedMinor: initialAmount!,
+              now: now,
+            );
+            final refreshed = await _local.getGoal(goal.id);
+            if (refreshed != null) {
+              goal = GoalMapper.toEntity(refreshed);
+            }
           }
-        }
+          return goal;
+        });
 
         return Right(goal);
       });
@@ -280,7 +289,9 @@ class GoalRepositoryImpl implements GoalRepository {
         // below `savedMinor` (or simply reaching it here) marks completion.
         DateTime? completedAt = updated.completedAt;
         final raisedTarget = draft.targetMinor > existing.targetMinor;
-        if (completedAt != null && raisedTarget && savedMinor < updated.targetMinor) {
+        if (completedAt != null &&
+            raisedTarget &&
+            savedMinor < updated.targetMinor) {
           completedAt = null;
         } else if (completedAt == null && savedMinor >= updated.targetMinor) {
           completedAt = now;
@@ -313,7 +324,8 @@ class GoalRepositoryImpl implements GoalRepository {
       });
 
   @override
-  FutureResult<Unit> archiveGoal(String id) => _setArchivedAt(id, DateTime.now());
+  FutureResult<Unit> archiveGoal(String id) =>
+      _setArchivedAt(id, DateTime.now());
 
   @override
   FutureResult<Unit> unarchiveGoal(String id) => _setArchivedAt(id, null);
@@ -408,44 +420,56 @@ class GoalRepositoryImpl implements GoalRepository {
         final goal = GoalMapper.toEntity(goalRow);
         final now = DateTime.now();
 
-        db.GoalContribution contributionRow;
-        if (draft.moveMoney) {
-          final (_, contribution) = await _local.insertMovementWithTransfer(
-            transactionCompanion: db.TransactionsCompanion.insert(
-              accountId: draft.originAccountId!,
-              transferAccountId: Value(draft.destinationAccountId),
-              categoryId: Value(draft.categoryId),
-              amountMinor: draft.amountMinor,
-              currency: draft.currency,
-              type: db.EntryType.transfer,
-              date: draft.date,
-              note: Value(draft.note),
-              source: const Value(db.TxSource.manual),
-              goalId: Value(draft.goalId),
-              countsInBudget: Value(draft.countsInBudget),
-              createdAt: Value(now),
-              updatedAt: Value(now.millisecondsSinceEpoch),
-            ),
-            contributionCompanionBuilder: (transactionId) =>
-                GoalContributionMapper.toInsertCompanion(
-              draft,
-              now: now,
-              transactionId: transactionId,
-            ),
-          );
-          contributionRow = contribution;
-        } else {
-          contributionRow = await _local.insertContribution(
-            GoalContributionMapper.toInsertCompanion(draft, now: now),
-          );
-        }
+        // Atomic: writing the movement (a tracking-only `GoalContribution`,
+        // or a real transfer + the `GoalContribution` mirroring it) and
+        // reconciling the goal's `completedAt`/`lastMilestonePct` against it
+        // must commit or roll back together. Otherwise a failure in the
+        // reconciliation step alone would leave an already-committed,
+        // orphaned movement behind while the caller sees a `Left` — i.e. the
+        // user is told the save failed for a contribution that, in the
+        // database, actually went through.
+        final (contributionRow, crossedMilestonePct) =
+            await _local.runInTransaction(() async {
+          db.GoalContribution contributionRow;
+          if (draft.moveMoney) {
+            final (_, contribution) = await _local.insertMovementWithTransfer(
+              transactionCompanion: db.TransactionsCompanion.insert(
+                accountId: draft.originAccountId!,
+                transferAccountId: Value(draft.destinationAccountId),
+                categoryId: Value(draft.categoryId),
+                amountMinor: draft.amountMinor,
+                currency: draft.currency,
+                type: db.EntryType.transfer,
+                date: draft.date,
+                note: Value(draft.note),
+                source: const Value(db.TxSource.manual),
+                goalId: Value(draft.goalId),
+                countsInBudget: Value(draft.countsInBudget),
+                createdAt: Value(now),
+                updatedAt: Value(now.millisecondsSinceEpoch),
+              ),
+              contributionCompanionBuilder: (transactionId) =>
+                  GoalContributionMapper.toInsertCompanion(
+                draft,
+                now: now,
+                transactionId: transactionId,
+              ),
+            );
+            contributionRow = contribution;
+          } else {
+            contributionRow = await _local.insertContribution(
+              GoalContributionMapper.toInsertCompanion(draft, now: now),
+            );
+          }
 
-        final savedMinor = await _savedMinorOf(draft.goalId);
-        final crossedMilestonePct = await _reconcileProgressState(
-          goal: goal,
-          savedMinor: savedMinor,
-          now: now,
-        );
+          final savedMinor = await _savedMinorOf(draft.goalId);
+          final crossedMilestonePct = await _reconcileProgressState(
+            goal: goal,
+            savedMinor: savedMinor,
+            now: now,
+          );
+          return (contributionRow, crossedMilestonePct);
+        });
 
         return Right((
           GoalContributionMapper.toEntity(contributionRow),
@@ -472,21 +496,30 @@ class GoalRepositoryImpl implements GoalRepository {
           );
         }
         final now = DateTime.now();
-        final row = await _local.insertContribution(
-          GoalContributionMapper.toLinkedInsertCompanion(
-            goalId: goalId,
-            amountMinor: transactionRow.amountMinor,
-            direction: direction,
-            date: transactionRow.date,
-            now: now,
-            transactionId: transactionId,
-            note: note,
-          ),
-        );
-
         final goal = GoalMapper.toEntity(goalRow);
-        final savedMinor = await _savedMinorOf(goalId);
-        await _reconcileProgressState(goal: goal, savedMinor: savedMinor, now: now);
+        // Atomic for the same reason as `_writeMovement`: linking a
+        // transaction and reconciling the goal's progress state must not be
+        // able to leave the link committed with the reconciliation lost.
+        final row = await _local.runInTransaction(() async {
+          final row = await _local.insertContribution(
+            GoalContributionMapper.toLinkedInsertCompanion(
+              goalId: goalId,
+              amountMinor: transactionRow.amountMinor,
+              direction: direction,
+              date: transactionRow.date,
+              now: now,
+              transactionId: transactionId,
+              note: note,
+            ),
+          );
+          final savedMinor = await _savedMinorOf(goalId);
+          await _reconcileProgressState(
+            goal: goal,
+            savedMinor: savedMinor,
+            now: now,
+          );
+          return row;
+        });
 
         return Right(GoalContributionMapper.toEntity(row));
       });
@@ -504,15 +537,17 @@ class GoalRepositoryImpl implements GoalRepository {
           return const Right(unit);
         }
         final now = DateTime.now();
-        await _local.updateContributionAmountForTransaction(
-          transactionId: transactionId,
-          amountMinor: amountMinor,
-          updatedAt: now.millisecondsSinceEpoch,
-        );
-        await _reconcileAfterHistoryRewrite(
-          contributionRow.goalId,
-          now: now,
-        );
+        await _local.runInTransaction(() async {
+          await _local.updateContributionAmountForTransaction(
+            transactionId: transactionId,
+            amountMinor: amountMinor,
+            updatedAt: now.millisecondsSinceEpoch,
+          );
+          await _reconcileAfterHistoryRewrite(
+            contributionRow.goalId,
+            now: now,
+          );
+        });
         return const Right(unit);
       });
 
@@ -525,11 +560,11 @@ class GoalRepositoryImpl implements GoalRepository {
         if (contributionRow == null) {
           return const Right(unit);
         }
-        await _local.deleteContributionForTransaction(transactionId);
-        await _reconcileAfterHistoryRewrite(
-          contributionRow.goalId,
-          now: DateTime.now(),
-        );
+        final now = DateTime.now();
+        await _local.runInTransaction(() async {
+          await _local.deleteContributionForTransaction(transactionId);
+          await _reconcileAfterHistoryRewrite(contributionRow.goalId, now: now);
+        });
         return const Right(unit);
       });
 
@@ -569,12 +604,15 @@ class GoalRepositoryImpl implements GoalRepository {
             );
           }
           final now = DateTime.now();
-          await _local.softDeleteContribution(
-            contributionId,
-            deletedAt: now,
-            updatedAt: now.millisecondsSinceEpoch,
-          );
-          await _reconcileAfterHistoryRewrite(contributionRow.goalId, now: now);
+          await _local.runInTransaction(() async {
+            await _local.softDeleteContribution(
+              contributionId,
+              deletedAt: now,
+              updatedAt: now.millisecondsSinceEpoch,
+            );
+            await _reconcileAfterHistoryRewrite(contributionRow.goalId,
+                now: now);
+          });
           return const Right(unit);
         },
       );
@@ -614,14 +652,16 @@ class GoalRepositoryImpl implements GoalRepository {
           );
         }
         final now = DateTime.now();
-        await _local.updateContributionFields(
-          contributionId,
-          amountMinor: amountMinor,
-          date: date,
-          note: note,
-          updatedAt: now.millisecondsSinceEpoch,
-        );
-        await _reconcileAfterHistoryRewrite(row.goalId, now: now);
+        await _local.runInTransaction(() async {
+          await _local.updateContributionFields(
+            contributionId,
+            amountMinor: amountMinor,
+            date: date,
+            note: note,
+            updatedAt: now.millisecondsSinceEpoch,
+          );
+          await _reconcileAfterHistoryRewrite(row.goalId, now: now);
+        });
         return const Right(unit);
       });
 
@@ -735,7 +775,8 @@ class GoalRepositoryImpl implements GoalRepository {
           .map(GoalContributionMapper.toEntity)
           .toList();
       activeWithProgress.add(
-        _progressCalculator.calculate(goal: entity, contributions: contributions),
+        _progressCalculator.calculate(
+            goal: entity, contributions: contributions),
       );
     }
     final signals = await _coherenceSignals(activeWithProgress);

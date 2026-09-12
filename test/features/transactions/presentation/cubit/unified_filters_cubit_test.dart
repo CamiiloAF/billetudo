@@ -1,6 +1,4 @@
 import 'package:billetudo/core/error/result.dart';
-import 'package:billetudo/features/categories/domain/entities/category.dart';
-import 'package:billetudo/features/categories/domain/entities/category_node.dart';
 import 'package:billetudo/features/transactions/domain/entities/budget_period_option.dart';
 import 'package:billetudo/features/transactions/domain/entities/date_period_filter.dart';
 import 'package:billetudo/features/transactions/domain/entities/tag.dart';
@@ -14,7 +12,6 @@ import 'package:mocktail/mocktail.dart';
 import '../usecase_mocks.dart';
 
 void main() {
-  late MockWatchCategories watchCategories;
   late MockWatchTags watchTags;
 
   final food = BudgetPeriodOption(
@@ -31,18 +28,12 @@ void main() {
   );
 
   setUp(() {
-    watchCategories = MockWatchCategories();
     watchTags = MockWatchTags();
-    when(() => watchCategories(CategoryKind.expense))
-        .thenAnswer((_) => Stream.value(const Right(<CategoryNode>[])));
-    when(() => watchCategories(CategoryKind.income))
-        .thenAnswer((_) => Stream.value(const Right(<CategoryNode>[])));
     when(() => watchTags())
         .thenAnswer((_) => Stream.value(const Right(<Tag>[])));
   });
 
-  UnifiedFiltersCubit build() =>
-      UnifiedFiltersCubit(watchCategories, watchTags);
+  UnifiedFiltersCubit build() => UnifiedFiltersCubit(watchTags);
 
   group('start', () {
     blocTest<UnifiedFiltersCubit, UnifiedFiltersState>(
@@ -248,33 +239,11 @@ void main() {
     );
 
     blocTest<UnifiedFiltersCubit, UnifiedFiltersState>(
-      'toggleRootCategory selecciona la raíz y sus subcategorías en bloque',
+      'setCategoryIds reemplaza el conjunto completo de categorías',
       build: build,
       act: (cubit) async {
         await cubit.start(filter: TransactionFilter(), budgetOptions: const []);
-        cubit.toggleRootCategory(
-          CategoryNode(
-            root: Category(
-              id: 'root-1',
-              name: 'Comida y bebida',
-              kind: CategoryKind.expense,
-              sortOrder: 0,
-              createdAt: DateTime(2026),
-              updatedAt: 0,
-            ),
-            subcategories: [
-              Category(
-                id: 'sub-1',
-                name: 'Restaurantes',
-                kind: CategoryKind.expense,
-                parentId: 'root-1',
-                sortOrder: 0,
-                createdAt: DateTime(2026),
-                updatedAt: 0,
-              ),
-            ],
-          ),
-        );
+        cubit.setCategoryIds({'root-1', 'sub-1'});
       },
       verify: (cubit) => expect(cubit.state.categoryIds, {'root-1', 'sub-1'}),
     );

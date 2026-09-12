@@ -28,12 +28,25 @@ class StartVoiceCapture {
   static const String fieldRecognizer = 'recognizer';
   static const String fieldLocale = 'locale';
 
+  /// [knownPermission], when given, is trusted in place of re-querying
+  /// [MicrophonePermissionGate.current] — see `GetVoiceCaptureAvailability`'s
+  /// doc for why: `VoiceCaptureCubit.start` already resolved an accurate
+  /// permission a moment earlier in the very same call, and re-querying the
+  /// OS again here (bugfix 2026-09-12) was a second, independent instance of
+  /// the exact race that doc describes — the platform's permission status
+  /// can still read stale right after a fresh grant, so this call could
+  /// reject a session `start()` itself had just confirmed was allowed,
+  /// bouncing the user straight back to "El micrófono está desactivado"
+  /// after the listening screen had already appeared. A caller with no
+  /// fresh confirmation (e.g. a retry well after the original `start()`
+  /// call) should leave this null and get the real, current answer.
   FutureResult<Unit> call({
     required String localeId,
     bool allowCloudRecognition = false,
     Duration maxDuration = VoiceCaptureLimits.maxListenDuration,
+    MicrophonePermissionStatus? knownPermission,
   }) async {
-    final permission = await _permissionGate.current();
+    final permission = knownPermission ?? await _permissionGate.current();
     if (permission != MicrophonePermissionStatus.granted) {
       return const Left(
         ValidationFailure(

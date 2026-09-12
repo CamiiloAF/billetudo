@@ -28,6 +28,8 @@ import 'package:billetudo/core/database/app_database.dart' hide CategoryKind;
 import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/router/app_router.dart';
 import 'package:billetudo/core/utils/money_formatter.dart';
+import 'package:billetudo/core/widgets/period_stepper.dart';
+import 'package:billetudo/core/widgets/period_stepper_chevron.dart';
 import 'package:billetudo/core/widgets/toggle_field.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/account_select_row.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/info_row.dart';
@@ -37,8 +39,6 @@ import 'package:billetudo/features/transactions/presentation/pages/transaction_f
 import 'package:billetudo/features/transactions/presentation/widgets/circular_icon_chip.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/filter_chip_pill.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/filters_button.dart';
-import 'package:billetudo/features/transactions/presentation/widgets/period_nav_arrow_button.dart';
-import 'package:billetudo/features/transactions/presentation/widgets/period_nav_bar.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/new_tag_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/transaction_row.dart';
 import 'package:drift/drift.dart' show Value;
@@ -511,28 +511,27 @@ Future<void> _createAccountScopedBudget(
   await $.tester.pumpAndSettle();
 }
 
-/// Taps the [PeriodNavBar]'s Prev (`LucideIcons.chevronLeft`) or Next
-/// (`LucideIcons.chevronRight`) chevron, matched by widget type/icon —
-/// `PeriodNavArrowButton` wraps the tappable area in a bare `Semantics`, not
-/// a `Tooltip`, so it needs the same robust-widget-predicate approach
+/// Taps the shared [PeriodStepper]'s Prev (`LucideIcons.chevronLeft`) or
+/// Next (`LucideIcons.chevronRight`) chevron, matched by widget type/icon —
+/// `PeriodStepperChevron` needs the same robust-widget-predicate approach
 /// `_tapAccountField` already documents for `AccountPickerField`.
 Future<void> _tapPeriodNavArrow(
     PatrolIntegrationTester $, IconData icon) async {
   final finder = find.byWidgetPredicate(
-    (widget) => widget is PeriodNavArrowButton && widget.icon == icon,
+    (widget) => widget is PeriodStepperChevron && widget.icon == icon,
   );
   await $.tester.tap(finder);
   await $.tester.pumpAndSettle();
 }
 
-/// Reads the current period label rendered by `PeriodNavBar`'s centered
-/// `Text` — the only `Text` descendant of the bar once there is no active
-/// Presupuesto filter (its `Budget Context Tag` row, the only other `Text`
-/// it can render, is conditional on a non-null `budgetOption`; this
-/// scenario only ever applies a Fecha filter).
+/// Reads the current period label rendered by [PeriodStepper]'s centered
+/// `Text` — the only `Text` descendant of the pill once there is no active
+/// Presupuesto filter (its `Context Row`, the only other `Text` it can
+/// render, is conditional on a non-null `budgetOption`; this scenario only
+/// ever applies a Fecha filter).
 String _periodNavLabel(PatrolIntegrationTester $) {
   final finder = find.descendant(
-    of: find.byType(PeriodNavBar),
+    of: find.byType(PeriodStepper),
     matching: find.byType(Text),
   );
   expect(finder, findsOneWidget);
@@ -1352,9 +1351,9 @@ void main() {
       await $.tester.pumpAndSettle();
 
       // Default filter is `DatePeriodFilter.thisMonth()`
-      // (`TransactionFilter.hasDateFilter`), so `PeriodNavBar` is not built
+      // (`TransactionFilter.hasDateFilter`), so `PeriodStepper` is not built
       // at all yet.
-      expect(find.byType(PeriodNavBar), findsNothing);
+      expect(find.byType(PeriodStepper), findsNothing);
 
       // Applies a non-default Fecha filter through the real unified filters
       // sheet: switching granularity to "Semana" (current week) differs from
@@ -1381,13 +1380,16 @@ void main() {
       // lower bound on the past (`datePeriodHasPrevious` is always true for
       // a granular period), but "Next" starts disabled — the current week
       // has nowhere forward to go (`datePeriodHasNext`'s own doc comment).
-      await _expectEventually($, find.byType(PeriodNavBar), findsOneWidget);
+      await _expectEventually($, find.byType(PeriodStepper), findsOneWidget);
       final nextArrow = find.byWidgetPredicate(
         (widget) =>
-            widget is PeriodNavArrowButton &&
+            widget is PeriodStepperChevron &&
             widget.icon == LucideIcons.chevronRight,
       );
-      expect($.tester.widget<PeriodNavArrowButton>(nextArrow).enabled, isFalse);
+      expect(
+        $.tester.widget<PeriodStepperChevron>(nextArrow).onPressed,
+        isNull,
+      );
 
       final originalLabel = _periodNavLabel($);
 
@@ -1399,7 +1401,10 @@ void main() {
 
       // Having stepped back, "Next" is enabled again — there is now a period
       // ahead of the one on screen.
-      expect($.tester.widget<PeriodNavArrowButton>(nextArrow).enabled, isTrue);
+      expect(
+        $.tester.widget<PeriodStepperChevron>(nextArrow).onPressed,
+        isNotNull,
+      );
 
       // Tap Next: steps back to the original week — same label as before
       // stepping away.
@@ -1408,7 +1413,10 @@ void main() {
 
       // Back at the current week, "Next" is disabled again — the bounded
       // edge this scenario's own comment above documents.
-      expect($.tester.widget<PeriodNavArrowButton>(nextArrow).enabled, isFalse);
+      expect(
+        $.tester.widget<PeriodStepperChevron>(nextArrow).onPressed,
+        isNull,
+      );
     },
   );
 }

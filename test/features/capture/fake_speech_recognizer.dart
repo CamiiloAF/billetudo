@@ -27,6 +27,11 @@ class FakeSpeechRecognizer implements SpeechRecognizer {
   int startCalls = 0;
   int stopCalls = 0;
   int cancelCalls = 0;
+
+  /// Every call in order (`'start'`, `'stop'`, `'cancel'`), for the cases
+  /// where the ORDER is the point and not just the count — `retry()` has to
+  /// cancel the live recognizer *before* starting the next session.
+  final List<String> calls = [];
   bool? lastAllowCloudRecognition;
   String? lastLocaleId;
   Duration? lastMaxDuration;
@@ -54,6 +59,7 @@ class FakeSpeechRecognizer implements SpeechRecognizer {
     Duration pauseFor = VoiceCaptureLimits.pauseForSilence,
   }) async {
     startCalls++;
+    calls.add('start');
     lastLocaleId = localeId;
     lastAllowCloudRecognition = allowCloudRecognition;
     lastMaxDuration = maxDuration;
@@ -64,6 +70,7 @@ class FakeSpeechRecognizer implements SpeechRecognizer {
   @override
   Future<Result<Unit>> stop() async {
     stopCalls++;
+    calls.add('stop');
     _listening = false;
     return const Right(unit);
   }
@@ -71,6 +78,7 @@ class FakeSpeechRecognizer implements SpeechRecognizer {
   @override
   Future<Result<Unit>> cancel() async {
     cancelCalls++;
+    calls.add('cancel');
     _listening = false;
     return const Right(unit);
   }
@@ -86,11 +94,18 @@ class FakeMicrophonePermissionGate implements MicrophonePermissionGate {
   MicrophonePermissionStatus status;
   MicrophonePermissionStatus? statusAfterRequest;
 
+  /// When set, [current] returns this instead of [status] — simulating the
+  /// real-device race `GetVoiceCaptureAvailability`'s `knownPermission`
+  /// param exists to sidestep: `Permission.microphone.status` reading the
+  /// pre-grant value for a beat right after `.request()` already resolved
+  /// `granted`. [request] never touches this field, unlike [status].
+  MicrophonePermissionStatus? currentLag;
+
   int requestCalls = 0;
   int openSettingsCalls = 0;
 
   @override
-  Future<MicrophonePermissionStatus> current() async => status;
+  Future<MicrophonePermissionStatus> current() async => currentLag ?? status;
 
   @override
   Future<MicrophonePermissionStatus> request() async {

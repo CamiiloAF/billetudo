@@ -1,6 +1,4 @@
 import 'package:billetudo/core/di/injection.dart';
-import 'package:billetudo/features/categories/domain/entities/category.dart';
-import 'package:billetudo/features/categories/domain/entities/category_node.dart';
 import 'package:billetudo/features/transactions/domain/entities/budget_period_option.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_filter.dart';
@@ -24,25 +22,6 @@ import '../../transaction_fixtures.dart';
 class MockUnifiedFiltersCubit extends MockCubit<UnifiedFiltersState>
     implements UnifiedFiltersCubit {}
 
-final DateTime _instant = DateTime(2026, 7, 15);
-final int _instantMillis = _instant.millisecondsSinceEpoch;
-
-Category _buildCategory({
-  required String id,
-  required String name,
-  required String icon,
-  CategoryKind kind = CategoryKind.expense,
-}) =>
-    Category(
-      id: id,
-      name: name,
-      kind: kind,
-      icon: icon,
-      sortOrder: 0,
-      createdAt: _instant,
-      updatedAt: _instantMillis,
-    );
-
 void main() {
   setUpAll(() async {
     registerFallbackValue(TransactionFilter());
@@ -60,34 +39,6 @@ void main() {
     start: DateTime(2026, 7),
     endExclusive: DateTime(2026, 8),
   );
-
-  final expenseNodes = [
-    CategoryNode(
-      root: _buildCategory(
-        id: 'cat-food',
-        name: 'Comida',
-        icon: 'utensils-crossed',
-      ),
-    ),
-    CategoryNode(
-      root: _buildCategory(
-        id: 'cat-transport',
-        name: 'Transporte',
-        icon: 'bus',
-      ),
-    ),
-  ];
-
-  final incomeNodes = [
-    CategoryNode(
-      root: _buildCategory(
-        id: 'cat-salary',
-        name: 'Salario',
-        icon: 'briefcase',
-        kind: CategoryKind.income,
-      ),
-    ),
-  ];
 
   final tags = [buildTag(id: 'tag-1', name: 'viaje')];
 
@@ -137,8 +88,6 @@ void main() {
           UnifiedFiltersState(
             status: UnifiedFiltersStatus.ready,
             budgetOptions: [food],
-            expenseNodes: expenseNodes,
-            incomeNodes: incomeNodes,
             tags: tags,
           ),
         );
@@ -161,8 +110,6 @@ void main() {
         when(() => cubit.state).thenReturn(
           UnifiedFiltersState(
             status: UnifiedFiltersStatus.ready,
-            expenseNodes: expenseNodes,
-            incomeNodes: incomeNodes,
             tags: tags,
           ),
         );
@@ -194,8 +141,6 @@ void main() {
             selectedBudgetId: 'budget-1',
             types: const {TransactionType.expense},
             categoryIds: const {'cat-food'},
-            expenseNodes: expenseNodes,
-            incomeNodes: incomeNodes,
             tags: tags,
             tagIds: const {'tag-1'},
           ),

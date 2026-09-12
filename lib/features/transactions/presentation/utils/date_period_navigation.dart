@@ -1,6 +1,6 @@
 import '../../domain/entities/date_period_filter.dart';
 
-/// Whether `PeriodNavBar`'s "Prev" control should be enabled for [period]:
+/// Whether `PeriodStepper`'s "Prev" control should be enabled for [period]:
 /// only a granular (week/month/year) Fecha period can step backward — neither
 /// a custom range nor a Presupuesto window (handled separately, via
 /// `DatePeriodFilter.hasPrevious`) has that concept.
@@ -13,7 +13,7 @@ import '../../domain/entities/date_period_filter.dart';
 bool datePeriodHasPrevious(DatePeriodFilter period) =>
     !period.isCustomRange && !period.isBudgetPeriod;
 
-/// Whether `PeriodNavBar`'s "Next" control should be enabled for [period],
+/// Whether `PeriodStepper`'s "Next" control should be enabled for [period],
 /// evaluated against [now].
 ///
 /// UX decision (same caveat as [datePeriodHasPrevious]): Movimientos never
