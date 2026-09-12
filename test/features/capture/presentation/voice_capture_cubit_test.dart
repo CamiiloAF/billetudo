@@ -675,4 +675,175 @@ void main() {
       },
     );
   });
+
+  // 2026-09-12, all reproduced on a real device: Android's native
+  // `stopListening` returns `success(false)` and emits nothing at all when it
+  // is already not listening, so a `stop()` that resolves fine is no proof a
+  // terminal update is coming. The fake recognizer below reproduces exactly
+  // that — `stop()` succeeds and never emits.
+  group('ending a session the plugin never closes', () {
+    const phrase = 'gasté veinte mil en mercado con Nequi';
+
+    /// Leaves the cubit in `stopping` with [phrase] recognized and no terminal
+    /// update on the way — the hang the deadline exists for.
+    Future<VoiceCaptureCubit> stoppingWithNoTerminal() async {
+      final cubit = buildCubit();
+      await startAndSettle(cubit);
+      recognizer.controller.add(
+        const SpeechRecognitionUpdate(
+          phase: SpeechRecognitionPhase.listening,
+          transcript: phrase,
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+      await cubit.stopListening();
+      expect(cubit.state.status, VoiceCaptureStatus.stopping);
+      expect(recognizer.stopCalls, 1);
+      return cubit;
+    }
+
+    test(
+      'the 2.5s deadline resolves the session with what was heard instead of '
+      'sitting on "Guardando lo que escuchamos…" forever',
+      () async {
+        final cubit = await stoppingWithNoTerminal();
+
+        await Future<void>.delayed(const Duration(milliseconds: 2600));
+
+        expect(cubit.state.status, VoiceCaptureStatus.completed);
+        expect(cubit.state.transcript, phrase);
+        expect(cubit.state.draft!.amountMinor, 2000000);
+        await cubit.close();
+      },
+    );
+
+    test('a terminal that does arrive cancels the deadline, no second finish',
+        () async {
+      final cubit = await stoppingWithNoTerminal();
+
+      recognizer.controller.add(
+        const SpeechRecognitionUpdate(
+          phase: SpeechRecognitionPhase.done,
+          transcript: phrase,
+          isFinal: true,
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(cubit.state.status, VoiceCaptureStatus.completed);
+      final draftBefore = cubit.state.draft;
+
+      await Future<void>.delayed(const Duration(milliseconds: 2600));
+
+      // The deadline did not fire a second `_finish` over the draft the user
+      // is already reviewing.
+      expect(cubit.state.draft, same(draftBefore));
+      expect(cubit.state.status, VoiceCaptureStatus.completed);
+      await cubit.close();
+    });
+
+    test('cancelling drops the deadline: no draft appears after the user left',
+        () async {
+      final cubit = await stoppingWithNoTerminal();
+
+      await cubit.cancel();
+      await Future<void>.delayed(const Duration(milliseconds: 2600));
+
+      // `cancel()` never touches `status` by design, so `stopping` staying put
+      // with no draft is exactly "the timer never fired".
+      expect(cubit.state.status, VoiceCaptureStatus.stopping);
+      expect(cubit.state.draft, isNull);
+      await cubit.close();
+    });
+
+    test('closing drops the deadline: no timer outlives the sheet', () async {
+      final cubit = await stoppingWithNoTerminal();
+
+      await cubit.close();
+      await Future<void>.delayed(const Duration(milliseconds: 2600));
+
+      // Had the timer survived `close()`, its `_finish` would either have
+      // produced a draft here or thrown on emitting after close.
+      expect(cubit.state.status, VoiceCaptureStatus.stopping);
+      expect(cubit.state.draft, isNull);
+    });
+
+    test(
+      'a stray listening update cannot bounce a stopping session back to '
+      '"Escuchando…" (on device the sheet flipped back 0.08s later)',
+      () async {
+        final cubit = await stoppingWithNoTerminal();
+
+        recognizer.controller.add(
+          const SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.listening,
+            transcript: phrase,
+            soundLevel: 0.3,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        expect(cubit.state.status, VoiceCaptureStatus.stopping);
+        expect(cubit.state.transcript, phrase);
+        await cubit.close();
+      },
+    );
+
+    test(
+      'an empty listening update never erases words already on screen (an '
+      'internal recognizer restart mid-sentence used to wipe them)',
+      () async {
+        final cubit = buildCubit();
+        await startAndSettle(cubit);
+        recognizer.controller.add(
+          const SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.listening,
+            transcript: phrase,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        recognizer.controller.add(
+          const SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.listening,
+            soundLevel: 0.2,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        expect(cubit.state.status, VoiceCaptureStatus.listening);
+        expect(cubit.state.transcript, phrase);
+
+        // And the words survive all the way into the draft.
+        await cubit.stopListening();
+        recognizer.controller.add(
+          const SpeechRecognitionUpdate(
+            phase: SpeechRecognitionPhase.done,
+            isFinal: true,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        expect(cubit.state.status, VoiceCaptureStatus.completed);
+        expect(cubit.state.draft!.amountMinor, 2000000);
+        await cubit.close();
+      },
+    );
+
+    test(
+      '"Intentar de nuevo" cancels the live recognizer before opening the '
+      'microphone again (Android refuses a start while one is still alive)',
+      () async {
+        final cubit = buildCubit();
+        await startAndSettle(cubit);
+        expect(recognizer.calls, ['start']);
+
+        await cubit.retry();
+        await Future<void>.delayed(Duration.zero);
+
+        expect(recognizer.calls, ['start', 'cancel', 'start']);
+        expect(cubit.state.status, VoiceCaptureStatus.listening);
+        await cubit.close();
+      },
+    );
+  });
 }

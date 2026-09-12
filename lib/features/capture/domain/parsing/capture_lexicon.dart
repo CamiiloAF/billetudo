@@ -174,20 +174,55 @@ const CaptureLexicon spanishCaptureLexicon = CaptureLexicon(
     <String>['nos', 'costo'],
     <String>['costo'],
   ],
+  // Anything that is not listed here falls through to an expense, so the list
+  // has to cover third person singular ("me pagó") as much as plural, and the
+  // colloquial es-CO forms ("me cayó"). What it must *not* do is win over a
+  // legitimate expense: since these are matched first, a verb that doubles as
+  // a noun ("pago", "depósito", "ingreso") is only ever accepted with "me" /
+  // "nos" in front — bare, it would read "pagué el ingreso del gimnasio" as
+  // money coming in.
   incomeVerbs: <List<String>>[
     <String>['me', 'pagaron'],
     <String>['nos', 'pagaron'],
+    // Deliberately not "me pago" / "nos pago": normalized without accents,
+    // that token is identical to the first-person present of "pagar" — "me
+    // pago el gimnasio", a real and common expense, not someone paying the
+    // user. Unlike the entries below, this one is not resolvable from text
+    // alone, so it stays out rather than risk reading an expense as income.
     <String>['me', 'consignaron'],
+    <String>['me', 'consigno'],
     <String>['me', 'depositaron'],
+    <String>['me', 'deposito'],
     <String>['me', 'transfirieron'],
+    <String>['me', 'transfirio'],
+    <String>['me', 'ingresaron'],
+    // Not "me ingreso": same accent-loss collision as "pago" above, this time
+    // with "me ingreso al gimnasio" / "me ingreso a la universidad" — a
+    // common reflexive "enroll myself", not money coming in.
     <String>['me', 'entro'],
     <String>['me', 'entraron'],
     <String>['me', 'llego'],
     <String>['me', 'llegaron'],
+    <String>['me', 'cayo'],
+    <String>['me', 'cayeron'],
+    <String>['me', 'devolvieron'],
+    <String>['me', 'devolvio'],
+    <String>['me', 'reembolsaron'],
+    <String>['me', 'reembolso'],
+    <String>['me', 'reintegraron'],
+    <String>['me', 'dieron'],
+    <String>['me', 'dio'],
+    <String>['me', 'prestaron'],
+    // Not "me presto": same collision, with "me presto el carro" / "me
+    // presto plata" — borrowing something, the opposite direction of money.
     <String>['recibi'],
     <String>['recibimos'],
     <String>['cobre'],
+    <String>['cobramos'],
     <String>['gane'],
+    <String>['ganamos'],
+    <String>['vendi'],
+    <String>['vendimos'],
   ],
   weekdays: <String, int>{
     'lunes': 1,
@@ -232,6 +267,9 @@ const CaptureLexicon spanishCaptureLexicon = CaptureLexicon(
     'sueldo': <String>['salario', 'sueldo', 'nomina'],
     'salario': <String>['salario', 'sueldo', 'nomina'],
     'nomina': <String>['salario', 'sueldo', 'nomina'],
+    // A noun, not a verb: it suggests a category, and the polarity still comes
+    // from the verb ("me llegó la quincena").
+    'quincena': <String>['salario', 'sueldo', 'nomina'],
   },
   fillerWords: <String>{
     'a',

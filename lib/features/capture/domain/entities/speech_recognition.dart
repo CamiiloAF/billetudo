@@ -120,8 +120,21 @@ class SpeechRecognizerAvailability extends Equatable {
 abstract final class VoiceCaptureLimits {
   static const Duration maxListenDuration = Duration(seconds: 30);
 
-  /// Silence after which the recognizer considers the phrase finished.
-  static const Duration pauseForSilence = Duration(seconds: 3);
+  /// Safety net for the "the user never said anything at all" case, **not**
+  /// the end-of-phrase detector.
+  ///
+  /// `speech_to_text` maps this to its `pauseFor`, and it initializes its
+  /// `_lastSpeechEventAt` to the moment the session started — on Android the
+  /// same value also goes out as
+  /// `EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS`. So it is counted
+  /// from the *start of the session*, not from the last recognized word: a
+  /// short value cuts the user off before they have had time to speak, and the
+  /// empty transcript that follows reads as "no amount" and loops on retry.
+  /// Hence the generous value. The real end of phrase is
+  /// `VoiceCaptureCubit._autoStopSilenceDelay` (1.5 s measured from the last
+  /// recognized word, which is the correct measure); [maxListenDuration] stays
+  /// the hard cap.
+  static const Duration pauseForSilence = Duration(seconds: 10);
 }
 
 /// State of the microphone permission (HU-07).
