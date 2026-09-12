@@ -15,6 +15,7 @@ class ScheduledPaymentLinkedDebt extends Equatable {
     required this.id,
     required this.name,
     required this.iOwe,
+    this.closedAt,
   });
 
   final String id;
@@ -24,6 +25,15 @@ class ScheduledPaymentLinkedDebt extends Equatable {
   /// expense); false when the money is owed to the user (`owedToMe` → income).
   final bool iOwe;
 
+  /// `Debts.closedAt`, mapped through unchanged: non-null once the debt was
+  /// manually closed or completed (HU-07 in Deudas). Lets
+  /// `ScheduledPaymentDetail.isActive` finish a linked cuota's template the
+  /// moment its debt closes, without this feature depending on the `Debt`
+  /// entity or writing anything back to `ScheduledPayments`.
+  final DateTime? closedAt;
+
+  bool get isClosed => closedAt != null;
+
   @override
-  List<Object?> get props => [id, name, iOwe];
+  List<Object?> get props => [id, name, iOwe, closedAt];
 }

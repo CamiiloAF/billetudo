@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,8 @@ import 'core/l10n/gen/app_localizations.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_mode_cubit.dart';
+import 'features/capture/presentation/cubit/capture_shortcut_cubit.dart';
+import 'features/capture/presentation/widgets/capture_shortcut_listener.dart';
 
 /// Root widget of billetudo: theme (light/dark, `themeMode` driven by
 /// [ThemeModeCubit] — Ajustes → "Apariencia", local-only per-device
@@ -38,10 +42,20 @@ class _BilletudoAppState extends State<BilletudoApp> {
   // on a `BilletudoApp` rebuild.
   final ThemeModeCubit _themeModeCubit = getIt<ThemeModeCubit>()..load();
 
+  // Also a DI singleton: a home-screen widget tap can arrive before the first
+  // frame (cold start) or while the app sits in the background, and both go
+  // through this same instance
+  // (`docs/requirements/fase-2/20-widget-captura-rapida.md`).
+  late final CaptureShortcutCubit _captureShortcutCubit =
+      getIt<CaptureShortcutCubit>()..start();
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<ThemeModeCubit>.value(
-      value: _themeModeCubit,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<ThemeModeCubit>.value(value: _themeModeCubit),
+        BlocProvider<CaptureShortcutCubit>.value(value: _captureShortcutCubit),
+      ],
       child: BlocBuilder<ThemeModeCubit, ThemeMode>(
         builder: (context, themeMode) => MaterialApp.router(
           onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
@@ -50,6 +64,14 @@ class _BilletudoAppState extends State<BilletudoApp> {
           darkTheme: AppTheme.dark(),
           themeMode: themeMode,
           routerConfig: _router,
+          // Wraps the router's own subtree, so the shortcut can navigate no
+          // matter which screen is on top.
+          builder: (context, child) => CaptureShortcutListener(
+            currentLocation: () =>
+                _router.routerDelegate.currentConfiguration.uri.toString(),
+            onOpenRoute: (route) => unawaited(_router.push<Object?>(route)),
+            child: child ?? const SizedBox.shrink(),
+          ),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
         ),

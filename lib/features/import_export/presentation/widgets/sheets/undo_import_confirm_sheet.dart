@@ -4,8 +4,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
+import '../../../../../core/widgets/privacy_note_strip.dart';
 import '../../../domain/entities/import_batch.dart';
-import '../privacy_note_strip.dart';
 
 /// HU-08's "Deshacer esta importación" confirmation (`l1twf`/`r59P4P`).
 ///
@@ -18,7 +18,8 @@ class UndoImportConfirmSheet extends StatelessWidget {
 
   final ImportBatch batch;
 
-  static Future<bool?> show(BuildContext context, {required ImportBatch batch}) =>
+  static Future<bool?> show(BuildContext context,
+          {required ImportBatch batch}) =>
       BottomSheetBase.show<bool>(
         context,
         builder: (context) => UndoImportConfirmSheet(batch: batch),
@@ -36,7 +37,8 @@ class UndoImportConfirmSheet extends StatelessWidget {
         Container(
           width: 56,
           height: 56,
-          decoration: BoxDecoration(color: colors.expenseSoft, shape: BoxShape.circle),
+          decoration:
+              BoxDecoration(color: colors.expenseSoft, shape: BoxShape.circle),
           child: Icon(LucideIcons.undo2, color: colors.expenseText, size: 26),
         ),
         const SizedBox(height: 16),

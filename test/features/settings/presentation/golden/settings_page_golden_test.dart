@@ -7,8 +7,12 @@ import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
 import 'package:billetudo/features/auth/domain/usecases/sign_out.dart';
 import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
 import 'package:billetudo/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:billetudo/features/capture/presentation/cubit/capture_status_cubit.dart';
+import 'package:billetudo/features/capture/presentation/cubit/capture_status_state.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_state.dart';
+import 'package:billetudo/features/settings/presentation/cubit/notification_settings_cubit.dart';
+import 'package:billetudo/features/settings/presentation/cubit/notification_settings_state.dart';
 import 'package:billetudo/features/settings/presentation/pages/settings_page.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +34,15 @@ class MockThemeModeCubit extends MockCubit<ThemeMode>
 
 class MockSyncStatusCubit extends MockCubit<SyncStatusState>
     implements SyncStatusCubit {}
+
+/// Seeded `isSupported: false` (the default): Ajustes' capture row draws
+/// nothing off Android, which is what these tests and goldens already
+/// assert about the Preferencias section.
+class MockCaptureStatusCubit extends MockCubit<CaptureStatusState>
+    implements CaptureStatusCubit {}
+
+class MockNotificationSettingsCubit extends MockCubit<NotificationSettingsState>
+    implements NotificationSettingsCubit {}
 
 /// Ajustes, both business states named in `design-system/billetudo/pages/auth.md`:
 ///
@@ -87,6 +100,25 @@ void main() {
       initialState: const SyncStatusState(),
     );
 
+    final captureStatusCubit = MockCaptureStatusCubit();
+    when(() => captureStatusCubit.state)
+        .thenReturn(const CaptureStatusState(isLoading: false));
+    whenListen(
+      captureStatusCubit,
+      const Stream<CaptureStatusState>.empty(),
+      initialState: const CaptureStatusState(isLoading: false),
+    );
+
+    // "Avisos": todos los tipos encendidos, que es el default real.
+    final notificationSettingsCubit = MockNotificationSettingsCubit();
+    when(() => notificationSettingsCubit.state)
+        .thenReturn(const NotificationSettingsState(loaded: true));
+    whenListen(
+      notificationSettingsCubit,
+      const Stream<NotificationSettingsState>.empty(),
+      initialState: const NotificationSettingsState(loaded: true),
+    );
+
     await pumpGolden(
       tester,
       MultiBlocProvider(
@@ -95,6 +127,10 @@ void main() {
           BlocProvider<AppSettingsCubit>.value(value: appSettingsCubit),
           BlocProvider<ThemeModeCubit>.value(value: themeModeCubit),
           BlocProvider<SyncStatusCubit>.value(value: syncStatusCubit),
+          BlocProvider<CaptureStatusCubit>.value(value: captureStatusCubit),
+          BlocProvider<NotificationSettingsCubit>.value(
+            value: notificationSettingsCubit,
+          ),
         ],
         child: SettingsPage(
           onOpenLogin: () {},
@@ -102,6 +138,8 @@ void main() {
           onOpenComingSoon: (_) {},
           onOpenSyncStatus: () {},
           onOpenQuickAccessOrder: () {},
+          onOpenCapture: (_) {},
+          onOpenNotifications: () {},
         ),
       ),
       brightness: brightness,

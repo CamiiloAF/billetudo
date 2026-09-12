@@ -86,6 +86,13 @@ class LoginPage extends StatelessWidget {
       builder: (context, state) {
         final cubit = context.read<LoginCubit>();
         final isLoading = state.status == LoginStatus.loading;
+        // Both providers share a single `status`, so it alone can't tell
+        // which button is mid-flight — filter by `lastProvider` too. Never
+        // let both spinners show at once (GH-25).
+        final isGoogleLoading =
+            isLoading && state.lastProvider == AuthProvider.google;
+        final isAppleLoading =
+            isLoading && state.lastProvider == AuthProvider.apple;
 
         return Scaffold(
           backgroundColor: colors.background,
@@ -161,7 +168,8 @@ class LoginPage extends StatelessWidget {
                     ),
                   ),
                   AuthSignInButtonsGroup(
-                    isGoogleLoading: isLoading,
+                    isGoogleLoading: isGoogleLoading,
+                    isAppleLoading: isAppleLoading,
                     onGoogle: isLoading ? null : cubit.continueWithGoogle,
                     onApple: isLoading ? null : cubit.continueWithApple,
                     onSkip: onSkip,

@@ -88,7 +88,8 @@ void main() {
 
   testWidgets(
       'banco (alta): "siguiente" encadena Nombre → Institución → Saldo inicial '
-      '→ Número → Últimos 4 → Tasa (saltando Moneda) y "listo" cierra el '
+      '→ Número → Últimos 4 → Tasa → Últimos 4 tarjeta (saltando Moneda) y '
+      '"listo" cierra el '
       'teclado', (tester) async {
     await pumpForm(
       tester,
@@ -102,8 +103,10 @@ void main() {
     final institution = editableByLabel('Institución (opcional)');
     final balance = editableByLabel('Saldo inicial');
     final number = editableByLabel('Número de cuenta');
-    final last4 = editableByLabel('Últimos 4 dígitos');
+    final last4 = editableByLabel('Últimos 4 dígitos de la cuenta');
     final rate = editableByLabel('Tasa de interés');
+    final cardLast4 =
+        editableByLabel('Últimos 4 dígitos de la tarjeta (opcional)');
 
     // The declared keyboard actions: every field but the last says "siguiente"
     // (next); the last says "listo" (done).
@@ -112,7 +115,8 @@ void main() {
     expect(actionOf(tester, balance), TextInputAction.next);
     expect(actionOf(tester, number), TextInputAction.next);
     expect(actionOf(tester, last4), TextInputAction.next);
-    expect(actionOf(tester, rate), TextInputAction.done);
+    expect(actionOf(tester, rate), TextInputAction.next);
+    expect(actionOf(tester, cardLast4), TextInputAction.done);
 
     // Walk the chain: focus the first field, then press "siguiente" each time.
     await tester.enterText(name, 'Cuenta');
@@ -143,6 +147,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(hasFocus(tester, rate), isTrue, reason: 'Últimos 4 → Tasa');
 
+    // The card's last 4 close the form: optional, and last of the chain.
+    await tester.testTextInput.receiveAction(TextInputAction.next);
+    await tester.pumpAndSettle();
+    expect(hasFocus(tester, cardLast4), isTrue,
+        reason: 'Tasa → Últimos 4 de la tarjeta');
+
     // "listo" on the last field dismisses the keyboard: nothing keeps focus.
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
@@ -164,8 +174,10 @@ void main() {
 
     final name = editableByLabel('Nombre de la cuenta');
     final institution = editableByLabel('Institución (opcional)');
-    final last4 = editableByLabel('Últimos 4 dígitos');
+    final last4 = editableByLabel('Últimos 4 dígitos de la cuenta');
     final rate = editableByLabel('Tasa de interés');
+    final cardLast4 =
+        editableByLabel('Últimos 4 dígitos de la tarjeta (opcional)');
     final creditLimit = editableByLabel('Cupo máximo');
     final debt = editableByLabel('Deuda actual');
 
@@ -175,6 +187,7 @@ void main() {
     expect(actionOf(tester, institution), TextInputAction.next);
     expect(actionOf(tester, last4), TextInputAction.next);
     expect(actionOf(tester, rate), TextInputAction.next);
+    expect(actionOf(tester, cardLast4), TextInputAction.next);
     expect(actionOf(tester, creditLimit), TextInputAction.next);
     expect(actionOf(tester, debt), TextInputAction.done);
 
@@ -197,7 +210,13 @@ void main() {
 
     await tester.testTextInput.receiveAction(TextInputAction.next);
     await tester.pumpAndSettle();
-    expect(hasFocus(tester, creditLimit), isTrue, reason: 'Tasa → Cupo máximo');
+    expect(hasFocus(tester, cardLast4), isTrue,
+        reason: 'Tasa → Últimos 4 de la tarjeta');
+
+    await tester.testTextInput.receiveAction(TextInputAction.next);
+    await tester.pumpAndSettle();
+    expect(hasFocus(tester, creditLimit), isTrue,
+        reason: 'Últimos 4 de la tarjeta → Cupo máximo');
 
     await tester.testTextInput.receiveAction(TextInputAction.next);
     await tester.pumpAndSettle();
@@ -236,8 +255,7 @@ void main() {
         reason: 'el selector suelta el foco antes de abrir la hoja');
   });
 
-  testWidgets(
-      'al tocar el selector de Día de corte el foco queda en nada',
+  testWidgets('al tocar el selector de Día de corte el foco queda en nada',
       (tester) async {
     await pumpForm(
       tester,

@@ -4,11 +4,12 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 
-/// Trailing affordance of `QuickAccessRow` that opens Ajustes ▸ "Orden del
+/// 6th and last item of `QuickAccessRow`'s horizontal scroll — Pencil node
+/// `u4f7l` ("Quick Access Chip A · Ajustes") — opening Ajustes ▸ "Orden del
 /// acceso rápido" (`AppRoutes.quickAccessOrder`).
 ///
-/// Deliberately NOT a `QuickAccessChip`: a fourth pill identical to the others
-/// reads as a fourth destination, and this one configures the row instead of
+/// Deliberately NOT a `QuickAccessChip`: a sixth pill identical to the others
+/// reads as a sixth destination, and this one configures the row instead of
 /// navigating into a section. It keeps the row's chrome (`$surface` fill,
 /// `$border` outline, 44pt tap target) so it still belongs to the strip, but
 /// drops the label and takes the circular shape of the design system's shared

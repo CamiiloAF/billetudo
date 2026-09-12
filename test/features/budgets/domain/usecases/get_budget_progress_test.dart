@@ -302,7 +302,12 @@ void main() {
 
       expect(view.activity, hasLength(1));
       final row = view.activity.single;
-      expect(row.id, 'tx-transfer-dest');
+      // Bugfix (issue #7 item 4): the `-dest` suffix is a synthetic,
+      // in-memory disambiguator (`BudgetsLocalDatasource.watchExpenses`) —
+      // never a real `Transaction.id`. A lone destination-side row must
+      // resolve back to the real id so tapping it can open the actual
+      // transaction's detail instead of a "not found" error.
+      expect(row.id, 'tx-transfer');
       expect(row.isNettedTransfer, isFalse);
       expect(row.isIncome, isTrue);
       expect(row.amountMinor, 50000);

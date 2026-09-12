@@ -6,25 +6,23 @@ import 'package:billetudo/features/accounts/domain/entities/account_with_balance
 import 'package:billetudo/features/categories/domain/entities/category.dart';
 import 'package:billetudo/features/categories/domain/entities/category_node.dart';
 import 'package:billetudo/features/transactions/domain/entities/budget_period_option.dart';
-import 'package:billetudo/features/transactions/domain/entities/date_period_filter.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_edit_impact.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/account_filter_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/budget_period_filter_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/category_filter_cubit.dart';
-import 'package:billetudo/features/transactions/presentation/cubit/date_filter_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/tag_filter_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/account_filter_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/budget_period_filter_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/category_filter_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/confirm_delete_transaction_sheet.dart';
-import 'package:billetudo/features/transactions/presentation/widgets/sheets/date_filter_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/edit_impact_warning_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/future_date_scheduled_payment_prompt_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/new_tag_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/tag_filter_sheet.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/type_filter_sheet.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -40,9 +38,6 @@ class MockCategoryFilterCubit extends MockCubit<CategoryFilterState>
 
 class MockTagFilterCubit extends MockCubit<TagFilterState>
     implements TagFilterCubit {}
-
-class MockDateFilterCubit extends MockCubit<DateFilterState>
-    implements DateFilterCubit {}
 
 class MockBudgetPeriodFilterCubit extends MockCubit<BudgetPeriodFilterState>
     implements BudgetPeriodFilterCubit {}
@@ -113,26 +108,31 @@ void main() {
     Future<void> Function(BuildContext context) openSheet,
     String name, {
     required Brightness brightness,
-  }) async {
-    setGoldenViewport(tester);
-    await tester.pumpWidget(
-      wrapForGolden(
-        Builder(
-          builder: (context) => ElevatedButton(
-            onPressed: () => openSheet(context),
-            child: const Text('open'),
+  }) =>
+      // Pins clock.now() to goldenReferenceNow for the whole pump/tap/expect
+      // choreography, so a widget that resolves "today" during build doesn't
+      // drift against the committed PNG on a later run. See
+      // pumpWithFixedClock's doc for why this beats a per-widget fix.
+      withClock(Clock.fixed(goldenReferenceNow), () async {
+        setGoldenViewport(tester);
+        await tester.pumpWidget(
+          wrapForGolden(
+            Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () => openSheet(context),
+                child: const Text('open'),
+              ),
+            ),
+            brightness: brightness,
           ),
-        ),
-        brightness: brightness,
-      ),
-    );
-    await tester.tap(find.byType(ElevatedButton));
-    await tester.pumpAndSettle();
-    await expectLater(
-      find.byType(MaterialApp),
-      matchesGoldenFile('goldens/sheet_$name.png'),
-    );
-  }
+        );
+        await tester.tap(find.byType(ElevatedButton));
+        await tester.pumpAndSettle();
+        await expectLater(
+          find.byType(MaterialApp),
+          matchesGoldenFile('goldens/sheet_$name.png'),
+        );
+      });
 
   for (final brightness in Brightness.values) {
     final suffix = brightness == Brightness.light ? 'light' : 'dark';
@@ -290,44 +290,6 @@ void main() {
     });
 
     group('date filter ($suffix)', () {
-      testWidgets('this month (default granular period)', (tester) async {
-        final cubit = MockDateFilterCubit();
-        when(() => cubit.state)
-            .thenReturn(DateFilterState(filter: DatePeriodFilter.thisMonth()));
-        getIt.registerFactory<DateFilterCubit>(() => cubit);
-
-        await golden(
-          tester,
-          (context) async {
-            await DateFilterSheet.show(
-              context,
-              initial: DatePeriodFilter.thisMonth(),
-            );
-          },
-          'date_filter_month_$suffix',
-          brightness: brightness,
-        );
-      });
-
-      testWidgets('custom range', (tester) async {
-        final range = DatePeriodFilter.custom(
-          start: DateTime(2026, 7, 1),
-          end: DateTime(2026, 7, 15),
-        );
-        final cubit = MockDateFilterCubit();
-        when(() => cubit.state).thenReturn(DateFilterState(filter: range));
-        getIt.registerFactory<DateFilterCubit>(() => cubit);
-
-        await golden(
-          tester,
-          (context) async {
-            await DateFilterSheet.show(context, initial: range);
-          },
-          'date_filter_custom_range_$suffix',
-          brightness: brightness,
-        );
-      });
-
       // The app's own range calendar (`Sheet - Rango Personalizado`/`OFdj4`),
       // opened from "Personalizado" instead of Material's
       // `showDateRangePicker` — the two "Desde"/"Hasta" fields, the
@@ -434,8 +396,8 @@ void main() {
 
         await golden(
           tester,
-          (context) =>
-              BudgetPeriodFilterSheet.show(context, initialBudgetId: 'budget-1'),
+          (context) => BudgetPeriodFilterSheet.show(context,
+              initialBudgetId: 'budget-1'),
           'budget_period_filter_selected_$suffix',
           brightness: brightness,
         );

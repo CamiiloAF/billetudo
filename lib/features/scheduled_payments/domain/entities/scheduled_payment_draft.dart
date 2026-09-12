@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/error/result.dart';
 import '../../../categories/domain/entities/category.dart' show CategoryKind;
 import 'scheduled_payment.dart';
+import 'scheduled_payment_reminder.dart';
 
 /// Input for creating or editing a scheduled payment template (HU-01/HU-05).
 ///
@@ -34,6 +35,7 @@ class ScheduledPaymentDraft extends Equatable {
     this.tagIds = const <String>[],
     this.debtId,
     this.goalId,
+    this.reminderLeadDays,
   });
 
   // Field keys, so presentation matches `ValidationFailure.field` without
@@ -48,6 +50,7 @@ class ScheduledPaymentDraft extends Equatable {
   static const String fieldEndDate = 'endDate';
   static const String fieldNote = 'note';
   static const String fieldGoalId = 'goalId';
+  static const String fieldReminderLeadDays = 'reminderLeadDays';
 
   static const int maxNoteLength = 500;
 
@@ -90,6 +93,13 @@ class ScheduledPaymentDraft extends Equatable {
   /// Carried through untouched, same as [debtId]: a cross-link, not a
   /// business rule the draft computes.
   final String? goalId;
+
+  /// Days before the due date to remind the user (HU-08). `null` = no
+  /// reminder, and it is the default the form starts on. Only the leads
+  /// offered by [ScheduledPaymentReminder] are accepted; anything else is a
+  /// [ValidationFailure], so a lead the UI cannot render never reaches the
+  /// database.
+  final int? reminderLeadDays;
 
   /// Validates every business rule of HU-01/HU-05/criterion 16 and returns a
   /// **normalized** draft: trimmed/upper-cased currency, trimmed note (blank
@@ -149,6 +159,17 @@ class ScheduledPaymentDraft extends Equatable {
       );
     }
 
+    final reminderLeadDays = this.reminderLeadDays;
+    if (reminderLeadDays != null &&
+        !ScheduledPaymentReminder.isSupportedLead(reminderLeadDays)) {
+      return const Left(
+        ValidationFailure(
+          'the reminder lead is not one of the offered options',
+          field: fieldReminderLeadDays,
+        ),
+      );
+    }
+
     final endDate = this.endDate;
     if (endDate != null && endDate.isBefore(nextDate)) {
       return const Left(
@@ -196,6 +217,7 @@ class ScheduledPaymentDraft extends Equatable {
         tagIds: tagIds,
         debtId: debtId,
         goalId: goalId,
+        reminderLeadDays: reminderLeadDays,
       ),
     );
   }
@@ -278,5 +300,6 @@ class ScheduledPaymentDraft extends Equatable {
         tagIds,
         debtId,
         goalId,
+        reminderLeadDays,
       ];
 }

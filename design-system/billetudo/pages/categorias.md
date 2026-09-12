@@ -2,7 +2,7 @@
 
 Sobreescribe/complementa `design-system/billetudo/MASTER.md`. Fuente real: `billetudo.pen`.
 
-**Estado:** aprobado y terminado (claro + oscuro), tras varias rondas de auditoria adversarial con `ui-ux-reviewer` y correccion con `pencil-designer`.
+**Estado:** aprobado y terminado (claro + oscuro). Fix de legibilidad + affordance de fila (issue #21) aplicado 2026-09-02, ver detalle en "Listado principal" más abajo.
 
 ## Frames
 
@@ -32,6 +32,14 @@ Todas las piezas existen en tema Claro y en su copia Oscuro (`Copy()+theme:{mode
 ## Listado principal (`bA51N`)
 
 **Decision de diseño (variante ganadora):** se exploraron 3 variantes — tabs subrayado + acordeon, toggle + tarjetas con chips, y lista agrupada sin selector. Se eligio **Toggle (Segmented Control) + Acordeon** (variante 1, con el toggle reemplazando las tabs originales por pedido del usuario). Razon de peso: escalabilidad — con las ~17 categorias raiz de gasto del set semilla, el acordeon colapsado ocupa ~1200px de scroll total vs ~2700px de la variante de tarjetas siempre expandidas; ademas los chips de subcategoria truncaban nombres largos reales del apendice ("Impuestos y matricula (SOAT, revision, etc.)"), cosa que el acordeon con `fill_container`+wrap real no sufre. Variantes descartadas eliminadas del `.pen` (regla: al elegir, se borran las demas de inmediato).
+
+**Corrección de legibilidad + affordance (2026-09-02, issue #21):** el componente `Category Manage Row` (`R6fYf`) no aplicaba `textGrowth:"fixed-width"` a su texto `Name`, cortando nombres largos reales del apéndice (ej. "Impuestos y matricula (SOAT, revision, etc.)"). Se exploraron 3 variantes de fix (V1 ancho fijo + wrap, V2 sin botón editar, V3 dos líneas); se eligió **V1** y se aterrizó su corrección directamente en `R6fYf` (edición in-place del componente base de producción, no reemplazo de referencias — solo 5 instancias reales lo usan). Además de la legibilidad, se corrigieron 2 hallazgos de `ui-ux-reviewer` sobre affordance:
+- **Chevron sin área tocable propia:** el ícono medía 20×20 sin hit-area — se envolvió en un frame invisible de 44×44 (`fill:[]`) que preserva el ícono visual pero cumple el tap target mínimo.
+- **Botón de editar sin `fill`:** ya usaba `$muted` en `R6fYf` (consistente con la regla de fondo sutil genérico de MASTER); se sincronizó el mismo tratamiento en `MzGp1` mientras existió como exploración.
+
+El orden final de la fila es Icon Wrap → Mid (nombre + contador) → Edit Button → Chevron Hit Area (lápiz antes que chevron, confirmado por el usuario). Las variantes V2 (`UoWYR`/`rN03a`) y V3 (`R1sKs`/`JVGiX`) se descartaron y se borraron del canvas.
+
+**Nota técnica para futuras copias oscuras:** la copia oscura de un listado generada con `Copy()+theme:dark` puede producir frames PLANOS sin `ref` al componente original (verificado en `WIUxb`) — un fix al componente base en claro **no se propaga solo** a esas instancias oscuras ya materializadas; hay que replicarlo a mano fila por fila. Revisar esto en cualquier pantalla con el mismo patrón antes de asumir que "arreglar el componente basta".
 
 1. Titulo "Categorias" + boton `+` (crear categoria raiz).
 2. **Toggle** (`Segmented Control`, componente `hFu41`) Gasto/Ingreso — el 3er segmento "Transferencia" queda oculto (`enabled:false`, `width:0`), ya que las categorias nunca aplican a transferencias.
@@ -110,7 +118,7 @@ Se exploraron y descartaron 2 variantes con catalogo ampliado (grilla+scroll sin
 
 ## Componentes reutilizables nuevos de esta feature
 
-Documentados en detalle (estructura + overrides) deben agregarse a `design-system/billetudo/MASTER.md`: `Delete Link` (reemplaza copias sueltas del link "Eliminar X" en Cuentas y Categorias, icono `trash-2`, height:44), `Icon Tile` (grilla de iconos del selector), `Appearance Field` (fila "Icono y color" de los formularios — el nodo interno `N04bc` (ícono `lock`, Lucide, 13px, `$text-secondary`) existe en el componente pero queda **siempre `enabled:false`, en toda instancia, raíz o subcategoría** — corregido tras feedback del usuario: el candado en esta fila no debe verse nunca; el único candado real de la feature es el de la sección "Color" dentro del selector de ícono/color bloqueado, ver arriba), `Parent Category Row` (fila del selector de categoria padre).
+Documentados en detalle (estructura + overrides) deben agregarse a `design-system/billetudo/MASTER.md`: `Delete Link` (reemplaza copias sueltas del link "Eliminar X" en Cuentas y Categorias, icono `trash-2`, height:44), `Icon Tile` (grilla de iconos del selector), `Appearance Field` (fila "Icono y color" de los formularios — el nodo interno `N04bc` (ícono `lock`, Lucide, 13px, `$text-secondary`) existe en el componente pero queda **siempre `enabled:false`, en toda instancia, raíz o subcategoría** — corregido tras feedback del usuario: el candado en esta fila no debe verse nunca; el único candado real de la feature es el de la sección "Color" dentro del selector de ícono/color bloqueado, ver arriba), `Parent Category Row` (fila del selector de categoria padre), `Category Manage Row` (`R6fYf`, fila raíz del acordeon del listado: icon-wrap + nombre (`textGrowth:"fixed-width"`) + contador + Edit Button (44×44, `fill:$muted`) + Chevron con hit-area de 44×44 — ver corrección de legibilidad/affordance arriba), `Category Manage Sub Row` (`F6niu`, fila de subcategoría dentro de una raíz expandida, indentada — no tocada por el fix de esta ronda).
 
 ## Tokens de accesibilidad — hallazgo nuevo de esta feature
 

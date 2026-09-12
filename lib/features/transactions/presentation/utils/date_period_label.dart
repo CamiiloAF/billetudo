@@ -15,11 +15,12 @@ String monthYearLabel(DateTime anchor) {
   return raw[0].toUpperCase() + raw.substring(1);
 }
 
-/// "Este mes" / "Julio 2026" / "3 jul - 9 jul" / a custom range — whatever
-/// best names [period], shared by the Chip Fecha and the date filter sheet's
-/// stepper so both read the same label for the same period.
+/// "Este mes" / "Julio 2026" / "3 jul - 9 jul" / a custom range / a budget's
+/// window ("25 ago – 25 sep") — whatever best names [period], shared by the
+/// Chip Fecha, `PeriodStepper` and the unified filters sheet so all three read
+/// the same label for the same period.
 String datePeriodLabel(DatePeriodFilter period) {
-  if (period.isCustomRange) {
+  if (period.isCustomRange || period.isBudgetPeriod) {
     return _rangeLabel(period);
   }
   return switch (period.granularity!) {

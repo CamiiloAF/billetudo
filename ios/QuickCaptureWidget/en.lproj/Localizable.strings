@@ -1,0 +1,17 @@
+/*
+  English strings of the quick-capture widget (HU-09). See the duplication
+  note in `es.lproj/Localizable.strings`.
+
+  There is no "Pendientes"/"Pending" shortcut here: the bank-notification
+  inbox it opens is Android-only.
+*/
+"widget_quick_capture_name" = "Quick capture";
+"widget_quick_capture_description" = "Log a movement in one tap, without opening the app.";
+
+"widget_shortcut_expense" = "Expense";
+"widget_shortcut_income" = "Income";
+"widget_shortcut_voice" = "Voice";
+
+"widget_shortcut_expense_a11y" = "Log an expense";
+"widget_shortcut_income_a11y" = "Log an income";
+"widget_shortcut_voice_a11y" = "Log by voice";

@@ -124,7 +124,8 @@ class QuickAccessOrderRow extends StatelessWidget {
                 color: colors.primarySoft,
                 borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
               ),
-              child: Icon(_iconFor(item), size: 20, color: colors.primaryOnSoft),
+              child:
+                  Icon(_iconFor(item), size: 20, color: colors.primaryOnSoft),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -145,15 +146,19 @@ class QuickAccessOrderRow extends StatelessWidget {
 
   IconData _iconFor(QuickAccessItem item) => switch (item) {
         QuickAccessItem.scheduledPayments => LucideIcons.calendarClock,
+        QuickAccessItem.accounts => LucideIcons.wallet,
         QuickAccessItem.debts => LucideIcons.handCoins,
         QuickAccessItem.reports => LucideIcons.chartColumn,
+        QuickAccessItem.goals => LucideIcons.target,
       };
 
   String _labelFor(AppLocalizations l10n, QuickAccessItem item) =>
       switch (item) {
         QuickAccessItem.scheduledPayments =>
           l10n.homeQuickAccessScheduledPayments,
+        QuickAccessItem.accounts => l10n.accountsTitle,
         QuickAccessItem.debts => l10n.moreDebts,
         QuickAccessItem.reports => l10n.moreReports,
+        QuickAccessItem.goals => l10n.navGoals,
       };
 }

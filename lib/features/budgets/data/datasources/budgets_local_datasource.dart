@@ -389,13 +389,26 @@ class BudgetsLocalDatasource {
   // -- Scheduled payments (HU-12) ---------------------------------------------
 
   /// Active expense scheduled-payment templates that can feed a budget's
-  /// "programado" segment: `type = expense`, not tombstoned, and — for a
+  /// "programado" segment: `type = expense`, not tombstoned, — for a
   /// `once` template that already fired — excluded (its `nextDate` never
   /// advances past the date it already generated, so it must not be
-  /// re-projected; same rule `_activeExpr` applies in Pagos Programados,
-  /// reselected here rather than imported, per the data-layer boundary).
+  /// re-projected), and — when linked to a `Debt` (`debtId`) — excluded once
+  /// that debt is closed (`Debts.closedAt`). Both rules mirror `_activeExpr`
+  /// in Pagos Programados, reselected here rather than imported, per the
+  /// data-layer boundary — bugfix 2026-09-11: this method used to skip the
+  /// debt check, so a cuota whose debt was already paid off (and which had
+  /// therefore disappeared from Pagos Programados' "Activos" list) kept
+  /// projecting into every future budget period forever.
   /// Enriched with account/category names for display.
   Stream<List<BudgetScheduledTemplateRow>> watchScheduledExpenseTemplates() {
+    final linkedDebtOpen = existsQuery(
+      _db.selectOnly(_db.debts)
+        ..addColumns([_db.debts.id])
+        ..where(
+          _db.debts.id.equalsExp(_db.scheduledPayments.debtId) &
+              _db.debts.closedAt.isNull(),
+        ),
+    );
     final query = _db.select(_db.scheduledPayments).join([
       innerJoin(
         _db.accounts,
@@ -412,7 +425,8 @@ class BudgetsLocalDatasource {
             (_db.scheduledPayments.frequency
                     .equalsValue(ScheduleFrequency.once)
                     .not() |
-                _onceAlreadyFired().not()),
+                _onceAlreadyFired().not()) &
+            (_db.scheduledPayments.debtId.isNull() | linkedDebtOpen),
       );
 
     return query.watch().map(

@@ -1,5 +1,6 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/features/home/domain/entities/quick_access_item.dart';
+import 'package:billetudo/features/home/presentation/widgets/quick_access_chip_with_badge.dart';
 import 'package:billetudo/features/home/presentation/widgets/quick_access_row.dart';
 import 'package:billetudo/features/home/presentation/widgets/quick_access_settings_button.dart';
 import 'package:flutter/material.dart';
@@ -10,16 +11,22 @@ import 'pump_widget.dart';
 void main() {
   Widget row({
     List<QuickAccessItem>? order,
+    int pendingScheduledCount = 0,
     VoidCallback? onOpenScheduledPayments,
+    VoidCallback? onOpenAccounts,
     VoidCallback? onOpenDebts,
     VoidCallback? onOpenReports,
+    VoidCallback? onOpenGoals,
     VoidCallback? onCustomize,
   }) =>
       QuickAccessRow(
         order: order ?? QuickAccessItem.defaultOrder,
+        pendingScheduledCount: pendingScheduledCount,
         onOpenScheduledPayments: onOpenScheduledPayments ?? () {},
+        onOpenAccounts: onOpenAccounts ?? () {},
         onOpenDebts: onOpenDebts ?? () {},
         onOpenReports: onOpenReports ?? () {},
+        onOpenGoals: onOpenGoals ?? () {},
         onCustomize: onCustomize ?? () {},
       );
 
@@ -27,19 +34,49 @@ void main() {
       AppLocalizations.of(tester.element(find.byType(QuickAccessRow)));
 
   testWidgets(
-      'muestra el caption "Acceso rápido" y los 3 chips con sus '
-      'labels (HU-05b)', (tester) async {
+      'muestra el caption "Acceso rápido" y los 5 chips con sus '
+      'labels (criterio 13)', (tester) async {
     await tester.pumpHomeWidget(row());
     final l10n = l10nOf(tester);
 
     expect(find.text(l10n.homeQuickAccessTitle), findsOneWidget);
-    expect(find.byType(QuickAccessChip), findsNWidgets(3));
+    expect(find.byType(QuickAccessChip), findsNWidgets(5));
     expect(
       find.text(l10n.homeQuickAccessScheduledPayments),
       findsOneWidget,
     );
+    expect(find.text(l10n.accountsTitle), findsOneWidget);
     expect(find.text(l10n.moreDebts), findsOneWidget);
     expect(find.text(l10n.moreReports), findsOneWidget);
+    expect(find.text(l10n.navGoals), findsOneWidget);
+  });
+
+  testWidgets(
+      'con ocurrencias pendientes, el chip de pagos programados lleva badge '
+      'con el contador (criterio 13)', (tester) async {
+    await tester.pumpHomeWidget(row(pendingScheduledCount: 2));
+
+    expect(find.byType(QuickAccessChipWithBadge), findsOneWidget);
+    expect(find.text('2'), findsOneWidget);
+    // Con badge, ya no es una instancia del chip base — 4 quedan sin badge.
+    expect(find.byType(QuickAccessChip), findsNWidgets(4));
+  });
+
+  testWidgets(
+      'con más de 9 ocurrencias pendientes, el badge corta en "9+" '
+      '(criterio 13)', (tester) async {
+    await tester.pumpHomeWidget(row(pendingScheduledCount: 15));
+
+    expect(find.text('9+'), findsOneWidget);
+  });
+
+  testWidgets(
+      'sin ocurrencias pendientes, el chip de pagos programados no lleva '
+      'badge (criterio 13)', (tester) async {
+    await tester.pumpHomeWidget(row());
+
+    expect(find.byType(QuickAccessChipWithBadge), findsNothing);
+    expect(find.byType(QuickAccessChip), findsNWidgets(5));
   });
 
   testWidgets(
@@ -47,35 +84,31 @@ void main() {
       (tester) async {
     await tester.pumpHomeWidget(row());
 
-    // La ruedita existe pero NO cuenta como un cuarto destino: sigue habiendo
-    // exactamente 3 chips. Si alguna vez se implementa como QuickAccessChip,
+    // La ruedita existe pero NO cuenta como un sexto destino: sigue habiendo
+    // exactamente 5 chips. Si alguna vez se implementa como QuickAccessChip,
     // este test falla — es justo la confusión visual que se quiso evitar.
     expect(find.byType(QuickAccessSettingsButton), findsOneWidget);
-    expect(find.byType(QuickAccessChip), findsNWidgets(3));
+    expect(find.byType(QuickAccessChip), findsNWidgets(5));
   });
 
   testWidgets(
-      'la ruedita cabe en una pantalla de teléfono real: va anclada al borde '
-      'derecho, fuera del scroll de los chips', (tester) async {
-    // Regresión: cuando el botón vivía DENTRO del SingleChildScrollView,
-    // los 3 chips medían ~507pt contra los 390pt de un teléfono y la ruedita
-    // se renderizaba pasada la pantalla — un punto de entrada que nadie podía
-    // ver ni tocar sin deslizar. Ningún golden lo detectó porque el widget
-    // simplemente quedaba fuera del área capturada.
-    const phoneWidth = 390.0;
-    tester.view.physicalSize = const Size(phoneWidth, 844) * 3;
-    tester.view.devicePixelRatio = 3;
-    addTearDown(tester.view.reset);
-
+      'la ruedita es el 6.º y último ítem del scroll horizontal, después de '
+      'los 5 chips de categoría (nodo Pencil u4f7l)', (tester) async {
     await tester.pumpHomeWidget(row());
 
     final gear = tester.getRect(find.byType(QuickAccessSettingsButton));
-    expect(gear.right, lessThanOrEqualTo(phoneWidth));
-    expect(gear.left, greaterThanOrEqualTo(0));
-    // Y sigue leyéndose como el cierre de la tira, no como su comienzo.
+    final lastChip = tester.getRect(find.byType(QuickAccessChip).last);
+
+    // Sigue leyéndose como el cierre de la tira, no como su comienzo — y
+    // ahora vive DENTRO del mismo scroll horizontal que los chips, ya no
+    // fijo aparte fuera de él.
+    expect(gear.left, greaterThan(lastChip.right));
     expect(
-      gear.left,
-      greaterThan(tester.getRect(find.byType(QuickAccessChip).first).right),
+      find.descendant(
+        of: find.byType(SingleChildScrollView),
+        matching: find.byType(QuickAccessSettingsButton),
+      ),
+      findsOneWidget,
     );
   });
 
@@ -119,6 +152,18 @@ void main() {
     expect(tapped, 1);
   });
 
+  testWidgets('tocar el chip de cuentas dispara onOpenAccounts',
+      (tester) async {
+    var tapped = 0;
+    await tester.pumpHomeWidget(row(onOpenAccounts: () => tapped++));
+    final l10n = l10nOf(tester);
+
+    await tester.tap(find.text(l10n.accountsTitle));
+    await tester.pump();
+
+    expect(tapped, 1);
+  });
+
   testWidgets('tocar el chip de deudas dispara onOpenDebts', (tester) async {
     var tapped = 0;
     await tester.pumpHomeWidget(row(onOpenDebts: () => tapped++));
@@ -142,11 +187,22 @@ void main() {
     expect(tapped, 1);
   });
 
-  testWidgets('tema oscuro: renderiza los 3 chips sin excepción (HU-11)',
+  testWidgets('tocar el chip de metas dispara onOpenGoals', (tester) async {
+    var tapped = 0;
+    await tester.pumpHomeWidget(row(onOpenGoals: () => tapped++));
+    final l10n = l10nOf(tester);
+
+    await tester.tap(find.text(l10n.navGoals));
+    await tester.pump();
+
+    expect(tapped, 1);
+  });
+
+  testWidgets('tema oscuro: renderiza los 5 chips sin excepción (HU-11)',
       (tester) async {
     await tester.pumpHomeWidget(row(), brightness: Brightness.dark);
 
-    expect(find.byType(QuickAccessChip), findsNWidgets(3));
+    expect(find.byType(QuickAccessChip), findsNWidgets(5));
     expect(tester.takeException(), isNull);
   });
 
@@ -159,6 +215,8 @@ void main() {
           QuickAccessItem.reports,
           QuickAccessItem.debts,
           QuickAccessItem.scheduledPayments,
+          QuickAccessItem.accounts,
+          QuickAccessItem.goals,
         ],
       ),
     );

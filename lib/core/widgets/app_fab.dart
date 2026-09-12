@@ -14,12 +14,25 @@ class AppFab extends StatelessWidget {
     required this.icon,
     required this.tooltip,
     required this.onPressed,
+    this.onLongPress,
+    this.longPressHint,
     super.key,
   });
 
   final IconData icon;
   final String tooltip;
   final VoidCallback onPressed;
+
+  /// The secondary gesture (`17-captura-voz.md` HU-02: press and hold to
+  /// dictate). `null` on every FAB that has none, which is all of them but
+  /// Inicio's.
+  final VoidCallback? onLongPress;
+
+  /// Already localized description of [onLongPress], exposed as a semantics
+  /// long-press hint. A hidden gesture that a screen reader cannot announce
+  /// is not discoverable at all — the minitutorial teaches it visually, this
+  /// is its accessible counterpart.
+  final String? longPressHint;
 
   static const double _size = 56;
 
@@ -45,12 +58,25 @@ class AppFab extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onPressed,
+          onLongPress: onLongPress,
           customBorder: const CircleBorder(),
           child: Tooltip(
             message: tooltip,
+            // `Tooltip` defaults to showing itself on long-press on mobile
+            // (`TooltipTriggerMode.longPress`), which registers its own
+            // long-press recognizer in the same gesture arena as the
+            // `InkWell` above — two long-press recognizers racing for the
+            // same touch, and the tooltip kept winning it, permanently
+            // blocking `onLongPress` (voice capture) from ever firing.
+            // `manual` removes that gesture recognizer entirely; the visual
+            // tooltip is still reachable via mouse hover on desktop/web
+            // (unaffected by `triggerMode`) and screen readers get the label
+            // straight from `Semantics` below, not from this overlay.
+            triggerMode: TooltipTriggerMode.manual,
             child: Semantics(
               button: true,
               label: tooltip,
+              onLongPressHint: longPressHint,
               child: Icon(icon, size: 24, color: colors.onPrimary),
             ),
           ),

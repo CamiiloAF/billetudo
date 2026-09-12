@@ -81,10 +81,38 @@ dependencies:
   #purchases_flutter: ^10.4.1
 
   # --- Captura sin fricción ---
-  # Igual: enlazan frameworks nativos y arrastran declaraciones de privacidad
-  # (micrófono, cámara) que todavía no hay qué justificar.
-  #speech_to_text: ^6.6.2
+  # `speech_to_text` entra con la feature de captura por voz (Fase 2,
+  # docs/requirements/fase-2/17-captura-voz.md). Arrastra RECORD_AUDIO en
+  # Android (ya declarado en el manifiesto, junto al <queries> del
+  # RecognitionService) y NSMicrophoneUsageDescription +
+  # NSSpeechRecognitionUsageDescription en iOS: ya están declarados en
+  # Info.plist, pero con texto PROVISIONAL — la redacción formal depende de
+  # privacy-legal-officer antes de publicar en tienda. El audio→texto se pide
+  # on-device (`SpeechListenOptions.onDevice`); no hay backend ni API key.
+  speech_to_text: ^7.4.0
+  # OCR sigue fuera: su feature (18-captura-ocr.md) no está construida, y el
+  # plugin arrastra CAMERA + NSCameraUsageDescription que hoy no hay qué
+  # justificar ante las tiendas.
   #google_mlkit_text_recognition: ^0.13.0
+
+  # --- Notificaciones locales (recordatorios de vencimiento HU-08 y avisos
+  # del centro de notificaciones) ---
+  # Solo locales: se programan en el dispositivo, funcionan sin conexión y sin
+  # costo marginal. No hay Firebase ni push remotas en el proyecto.
+  # `timezone` es requisito de `zonedSchedule`, que es la única forma de
+  # programar a una hora local estable frente a cambios de huso.
+  flutter_local_notifications: ^22.3.0
+  timezone: ^0.11.1
+  # Necesario para el permiso POST_NOTIFICATIONS (Android 13+) y para
+  # RECORD_AUDIO, ambos en runtime.
+  #
+  # 12.x, NO 13.x: permission_handler_android 14.1.0 (que arrastra la 13.0.2)
+  # trae un build.gradle.kts con `kotlin { compilerOptions { ... } }` que este
+  # proyecto no resuelve — "Unresolved reference: compilerOptions" — y rompe
+  # cualquier build de Android antes siquiera de compilar codigo propio.
+  # Verificado: con 12.0.1 el APK dev compila. No subir sin volver a probar
+  # `flutter build apk --debug --flavor dev`.
+  permission_handler: ^12.0.1
 
   # --- Utilidades ---
   intl: ^0.20.2
@@ -156,6 +184,16 @@ dependencies:
   csv: ^6.0.0
   archive: ^4.0.4
   file_picker: ^12.0.0-beta.7
+  package_info_plus: ^10.2.1
+  flutter_timezone: ^5.1.0
+
+  # --- Legal links (Ajustes) ---
+  # Opens the privacy policy and the terms of use in the system browser
+  # (`lib/core/config/legal_urls.dart`). Both stores require those URLs to be
+  # reachable from inside the app, so this is a shipping requirement, not a
+  # convenience. Already present transitively; declared here because the app
+  # code imports it directly.
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   sentry_dart_plugin: ^3.4.0
@@ -225,6 +263,16 @@ flutter:
 
   assets:
     - assets/branding/
+    # Reglas de parseo de notificaciones bancarias (Fase 2, HU-03). Es la
+    # FUENTE ÚNICA: la lee el motor Dart y también el servicio Kotlin, desde
+    # flutter_assets/assets/capture/issuer_rules.json. Mover este archivo
+    # obliga a cambiar IssuerRulesLoader.kt.
+    - assets/capture/
+    # Fallback empaquetado de política de privacidad y términos de uso, para
+    # cuando la descarga del documento vigente falla con conexión disponible
+    # (ver docs/legal/entrega-de-documentos-legales.md). Debe mantenerse
+    # sincronizado a mano con docs/legal/ en cada release — nunca placeholder.
+    - lib/core/legal/assets/
 
   # Plus Jakarta Sans se declara como UNA familia con sus 5 pesos, no via
   # `google_fonts`. Motivo: `GoogleFonts.plusJakartaSansTextTheme` fija

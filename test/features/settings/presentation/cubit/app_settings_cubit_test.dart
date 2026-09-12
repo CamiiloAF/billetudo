@@ -1,9 +1,13 @@
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/features/ai/domain/entities/ai_consent.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_period_window.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_progress.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_scope.dart';
 import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.dart';
+import 'package:billetudo/features/capture/domain/entities/cloud_transcription_consent.dart';
+import 'package:billetudo/features/capture/domain/usecases/get_cloud_transcription_consent.dart';
+import 'package:billetudo/features/capture/domain/usecases/set_cloud_transcription_consent.dart';
 import 'package:billetudo/features/home/domain/entities/quick_access_item.dart';
 import 'package:billetudo/features/settings/domain/entities/app_settings.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
@@ -12,6 +16,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../capture/fake_cloud_transcription_consent_store.dart';
 import 'usecase_mocks.dart';
 
 void main() {
@@ -23,6 +28,9 @@ void main() {
   late MockWatchHelpEnabled watchHelpEnabled;
   late MockSetTutorialsEnabled setTutorialsEnabled;
   late MockSetQuickAccessOrder setQuickAccessOrder;
+  late MockSetAiNotesAccessEnabled setAiNotesAccessEnabled;
+  late MockClearAiConsent clearAiConsent;
+  late FakeCloudTranscriptionConsentStore consentStore;
 
   const enabledSettings = AppSettings(
     zeroBasedEnabled: true,
@@ -76,6 +84,9 @@ void main() {
     watchHelpEnabled = MockWatchHelpEnabled();
     setTutorialsEnabled = MockSetTutorialsEnabled();
     setQuickAccessOrder = MockSetQuickAccessOrder();
+    setAiNotesAccessEnabled = MockSetAiNotesAccessEnabled();
+    clearAiConsent = MockClearAiConsent();
+    consentStore = FakeCloudTranscriptionConsentStore();
     // Default: no active budgets; individual tests override.
     when(getActiveBudgets.call)
         .thenAnswer((_) => Stream.value(const Right([])));
@@ -94,6 +105,10 @@ void main() {
         watchHelpEnabled,
         setTutorialsEnabled,
         setQuickAccessOrder,
+        setAiNotesAccessEnabled,
+        clearAiConsent,
+        GetCloudTranscriptionConsent(consentStore),
+        SetCloudTranscriptionConsent(consentStore),
       );
 
   test(
@@ -236,4 +251,117 @@ void main() {
       ]),
     ).called(1),
   );
+
+  blocTest<AppSettingsCubit, AppSettingsState>(
+    'setAiNotesAccessEnabled delegates to the use case instead of emitting '
+    'directly: the settings stream is the source of truth',
+    setUp: () => when(() => setAiNotesAccessEnabled(enabled: true))
+        .thenAnswer((_) async => const Right(unit)),
+    build: build,
+    act: (cubit) => cubit.setAiNotesAccessEnabled(enabled: true),
+    expect: () => <AppSettingsState>[],
+    verify: (_) =>
+        verify(() => setAiNotesAccessEnabled(enabled: true)).called(1),
+  );
+
+  blocTest<AppSettingsCubit, AppSettingsState>(
+    'turning the notes access off goes through the same use case with false '
+    '— withdrawing the permission is never a different code path',
+    setUp: () => when(() => setAiNotesAccessEnabled(enabled: false))
+        .thenAnswer((_) async => const Right(unit)),
+    build: build,
+    act: (cubit) => cubit.setAiNotesAccessEnabled(enabled: false),
+    expect: () => <AppSettingsState>[],
+    verify: (_) =>
+        verify(() => setAiNotesAccessEnabled(enabled: false)).called(1),
+  );
+
+  blocTest<AppSettingsCubit, AppSettingsState>(
+    'clearAiConsent delegates to the use case (RGPD art. 7.3) instead of '
+    'emitting directly: the settings stream is the source of truth',
+    setUp: () =>
+        when(clearAiConsent.call).thenAnswer((_) async => const Right(unit)),
+    build: build,
+    act: (cubit) => cubit.clearAiConsent(),
+    expect: () => <AppSettingsState>[],
+    verify: (_) => verify(clearAiConsent.call).called(1),
+  );
+
+  test(
+      'hasAcceptedAiConsent follows the stored consent, so Ajustes only offers '
+      'the withdrawal when there is one to withdraw', () async {
+    when(getAppSettings.call).thenAnswer(
+      (_) => Stream.value(
+        Right(
+          const AppSettings.defaults().copyWith(
+            aiConsentAcceptedAt: DateTime(2026, 8, 25),
+            aiConsentVersion: currentAiConsentVersion,
+          ),
+        ),
+      ),
+    );
+    final cubit = build();
+    await cubit.start();
+    await Future<void>.delayed(Duration.zero);
+    expect(cubit.state.hasAcceptedAiConsent, isTrue);
+    await cubit.close();
+  });
+
+  group('Transcribir mi voz en la nube (kJG43\'s promised reversal)', () {
+    test('start() surfaces a granted consent as an on switch', () async {
+      when(getAppSettings.call)
+          .thenAnswer((_) => Stream.value(const Right(AppSettings.defaults())));
+      consentStore.consent = CloudTranscriptionConsent.granted;
+      final cubit = build();
+      await cubit.start();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.cloudTranscriptionEnabled, isTrue);
+      await cubit.close();
+    });
+
+    test('an unanswered question is not consent: the switch stays off',
+        () async {
+      when(getAppSettings.call)
+          .thenAnswer((_) => Stream.value(const Right(AppSettings.defaults())));
+      final cubit = build();
+      await cubit.start();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(consentStore.consent, CloudTranscriptionConsent.unset);
+      expect(cubit.state.cloudTranscriptionEnabled, isFalse);
+      await cubit.close();
+    });
+
+    test('turning it off from Ajustes records an explicit refusal', () async {
+      when(getAppSettings.call)
+          .thenAnswer((_) => Stream.value(const Right(AppSettings.defaults())));
+      consentStore.consent = CloudTranscriptionConsent.granted;
+      final cubit = build();
+      await cubit.start();
+      await Future<void>.delayed(Duration.zero);
+
+      await cubit.setCloudTranscriptionEnabled(enabled: false);
+
+      expect(consentStore.consent, CloudTranscriptionConsent.declined);
+      expect(cubit.state.cloudTranscriptionEnabled, isFalse);
+      await cubit.close();
+    });
+
+    test('turning it on from Ajustes is the same consent the sheet writes',
+        () async {
+      when(getAppSettings.call)
+          .thenAnswer((_) => Stream.value(const Right(AppSettings.defaults())));
+      consentStore.consent = CloudTranscriptionConsent.declined;
+      final cubit = build();
+      await cubit.start();
+      await Future<void>.delayed(Duration.zero);
+
+      await cubit.setCloudTranscriptionEnabled(enabled: true);
+
+      expect(consentStore.consent, CloudTranscriptionConsent.granted);
+      expect(cubit.state.cloudTranscriptionEnabled, isTrue);
+      await cubit.close();
+    });
+  });
 }

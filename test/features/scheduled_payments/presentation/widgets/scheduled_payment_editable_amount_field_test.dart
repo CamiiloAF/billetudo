@@ -74,4 +74,31 @@ void main() {
     expect(reported, 500); // $5.00, entero en centavos.
     expect(reported, isA<int>());
   });
+
+  testWidgets(
+      'teclear un dígito sobre un monto precargado lo reemplaza, no lo multiplica por 10 (issue #18)',
+      (tester) async {
+    int? reported;
+    await tester.pumpWidget(
+      appWith(
+        ScheduledPaymentEditableAmountField(
+          amountMinor: 10000, // $100.00 precargado, sin tocar todavía.
+          currency: 'COP',
+          onChanged: (value) => reported = value,
+        ),
+      ),
+    );
+
+    await tester.tap(find.byType(InkWell).first);
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.descendant(of: find.byType(NumericKeypad), matching: find.text('5')),
+    );
+    await tester.pump();
+
+    // El primer dígito reemplaza el monto precargado ($5.00), nunca lo
+    // multiplica por 10 y lo anexa ($1000.05).
+    expect(reported, 500);
+  });
 }

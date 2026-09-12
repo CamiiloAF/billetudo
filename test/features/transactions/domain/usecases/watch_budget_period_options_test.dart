@@ -89,6 +89,7 @@ void main() {
           icon: 'utensils',
           start: DateTime(2026, 7),
           endExclusive: DateTime(2026, 8),
+          hasNext: true,
         ),
       ],
     );
@@ -119,8 +120,7 @@ void main() {
   test('depende de GetActiveBudgets: ya excluye los archivados', () async {
     final repository = _MockBudgetRepository();
     when(repository.watchActiveBudgets).thenAnswer(
-      (_) =>
-          Stream<Result<List<BudgetWithProgress>>>.value(const Right([])),
+      (_) => Stream<Result<List<BudgetWithProgress>>>.value(const Right([])),
     );
     final watchBudgetPeriodOptions =
         WatchBudgetPeriodOptions(GetActiveBudgets(repository));

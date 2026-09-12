@@ -20,6 +20,7 @@ class ScheduledPaymentDetail extends Equatable {
     required this.accountName,
     required this.historyTotalCount,
     this.generatedTransactionCount = 0,
+    this.resolvedOccurrenceCount = 0,
     this.categoryName,
     this.categoryIcon,
     this.categoryColor,
@@ -90,19 +91,42 @@ class ScheduledPaymentDetail extends Equatable {
   /// generated) does not read as already fired.
   final int generatedTransactionCount;
 
+  /// How many occurrences of this template are resolved — `confirmed` OR
+  /// `skipped`. Distinct from [generatedTransactionCount] (only `confirmed`,
+  /// which alone keeps driving the "PAGO EJECUTADO" label — a skipped `once`
+  /// never generated a transaction, so it must not read as executed) and from
+  /// [historyTotalCount] (which this equals for a template with no
+  /// in-flight pending/snoozed rows, but is computed independently so this
+  /// field never depends on pagination window size).
+  final int resolvedOccurrenceCount;
+
   /// Whether this is a `once` template whose single transaction has already
-  /// been generated — the fact `ScheduledPayment.isActive` asks the caller
-  /// for, since the template itself has no column recording it fired. Keyed
-  /// on [generatedTransactionCount], never the combined history total.
+  /// been generated — the fact the "PAGO EJECUTADO" label needs. Keyed on
+  /// [generatedTransactionCount], never the combined history total: a
+  /// skipped `once` (no transaction ever generated) must not read as
+  /// executed.
   bool get onceAlreadyGenerated =>
       scheduledPayment.frequency == ScheduledPaymentFrequency.once &&
       generatedTransactionCount > 0;
 
+  /// Whether this is a `once` template whose single occurrence has already
+  /// been resolved (confirmed OR skipped) — the fact `ScheduledPayment.isActive`
+  /// asks the caller for, since the template itself has no column recording
+  /// it. Keyed on [resolvedOccurrenceCount], not [onceAlreadyGenerated]: a
+  /// skipped `once` never generated a transaction, but it is still done —
+  /// revivable only via "Recuperar", not still-active.
+  bool get _onceAlreadyResolved =>
+      scheduledPayment.frequency == ScheduledPaymentFrequency.once &&
+      resolvedOccurrenceCount > 0;
+
   /// Whether the template still produces future occurrences: drives the
   /// hero's "PRÓXIMO PAGO" vs. "PAGO EJECUTADO" and the ficha's
-  /// "Activa"/"Terminada" (Pencil `OY2Kj` vs. `Eyold`).
+  /// "Activa"/"Terminada" (Pencil `OY2Kj` vs. `Eyold`). Also finishes a
+  /// cuota's template the moment its linked debt closes, without
+  /// `ScheduledPayment` (a pure domain entity) depending on `Debt`.
   bool get isActive =>
-      scheduledPayment.isActive(onceAlreadyGenerated: onceAlreadyGenerated);
+      scheduledPayment.isActive(onceAlreadyResolved: _onceAlreadyResolved) &&
+      linkedDebt?.isClosed != true;
 
   @override
   List<Object?> get props => [
@@ -118,6 +142,7 @@ class ScheduledPaymentDetail extends Equatable {
         history,
         historyTotalCount,
         generatedTransactionCount,
+        resolvedOccurrenceCount,
         linkedDebt,
         linkedGoal,
       ];

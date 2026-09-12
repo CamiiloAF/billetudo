@@ -6,6 +6,8 @@ import '../../../accounts/domain/entities/account_with_balance.dart';
 import '../../../auth/domain/entities/auth_user.dart';
 import '../../../budgets/domain/entities/budget_with_progress.dart';
 import '../../../transactions/domain/entities/transaction_with_details.dart';
+import '../../domain/entities/hero_state.dart';
+import '../../domain/entities/home_ai_insight.dart';
 import '../../domain/entities/home_snapshot.dart';
 import '../../domain/entities/month_spending.dart';
 
@@ -39,6 +41,11 @@ class HomeState extends Equatable {
     this.failure,
     this.user,
     this.pendingUndoId,
+    this.hasAnyBudget = true,
+    this.aiInsight,
+    this.pendingScheduledCount = 0,
+    this.pendingCaptureCount = 0,
+    this.budgetChipIsDirectNav = true,
   });
 
   /// "Movimientos recientes" stays unbound (criterion 1) regardless of the
@@ -73,6 +80,40 @@ class HomeState extends Equatable {
   /// from Home's recent activity. `null` once dismissed or undone.
   final String? pendingUndoId;
 
+  /// Whether the user has ever created an active budget (`WatchHasAnyBudget`)
+  /// — disambiguates [HomeHeroState.noBudgetEverCreated] from
+  /// [HomeHeroState.noBudgetFeatured] when [budgetProgress] is `null`.
+  /// Defaults to `true` until the stream's first emission so the hero never
+  /// flashes the "never created one" copy/insight for a user who actually
+  /// has budgets, just because that stream landed a beat later than the
+  /// others.
+  final bool hasAnyBudget;
+
+  /// The AI card's resolved insight, or `null` for its "con chips" default
+  /// variant (`WatchHomeAiInsight`).
+  final HomeAiInsight? aiInsight;
+
+  /// Scheduled-payment occurrences pending confirmation
+  /// (`WatchPendingScheduledPaymentCount`) — feeds `QuickAccessRow`'s badge.
+  final int pendingScheduledCount;
+
+  /// Captures waiting in the review inbox (`WatchPendingCaptureCount`) —
+  /// feeds the bell's badge (`r1eRC`). A count, never a promotion: none of
+  /// these has touched a balance.
+  final int pendingCaptureCount;
+
+  /// Which arrow the "Ayúdame a presupuestar" chip shows: `true` for the
+  /// straight arrow (direct nav to the new-budget form), `false` for the
+  /// diagonal one (opens the chat instead). Resolved once per `HomeCubit`
+  /// `start()` from `CheckAiAccess` — a hint for the icon only, never a
+  /// gate: `_HomePageState._onCreateBudgetOrAskAi` re-checks access fresh at
+  /// tap time and is the one that actually decides where the tap goes, so a
+  /// stale read here only shows the "wrong" arrow for one frame at worst,
+  /// never sends the tap anywhere this field did not predict. Defaults to
+  /// `true` (the direct-nav arrow) until resolved, matching Nivel 0's
+  /// unconditional fallback.
+  final bool budgetChipIsDirectNav;
+
   MonthSpending? get spending => snapshot?.spending;
 
   /// The hero's "con presupuesto" progress, if any (HU-03, `aOhoY`). Its
@@ -82,11 +123,19 @@ class HomeState extends Equatable {
   /// stepped to since (HU-05).
   BudgetWithProgress? get budgetProgress => snapshot?.budgetProgress;
 
+  /// The hero's resolved business state (`HomeHeroStateResolver`), one of the
+  /// 7 `HomeHeroState` members — pure derivation, kept out of [copyWith] on
+  /// purpose so there is only one source of truth for it.
+  HomeHeroState get heroState => HomeHeroStateResolver.resolve(
+        featuredBudget: budgetProgress,
+        hasAnyBudget: hasAnyBudget,
+      );
+
   List<TransactionWithDetails> get recentActivity =>
       snapshot?.recentActivity ?? const [];
 
-  /// The active accounts with balances for the "Mis cuentas" strip (bugfix
-  /// item 8). Empty until the first snapshot lands.
+  /// The active accounts with balances (HU-01) — feeds the header's wallet
+  /// button → "Tu dinero" sheet. Empty until the first snapshot lands.
   List<AccountWithBalance> get accounts => snapshot?.accounts ?? const [];
 
   bool get isLoading => status == HomeStatus.loading;
@@ -105,6 +154,12 @@ class HomeState extends Equatable {
     bool updateUser = false,
     String? pendingUndoId,
     bool clearPendingUndo = false,
+    bool? hasAnyBudget,
+    HomeAiInsight? aiInsight,
+    bool clearAiInsight = false,
+    int? pendingScheduledCount,
+    int? pendingCaptureCount,
+    bool? budgetChipIsDirectNav,
   }) =>
       HomeState(
         status: status ?? this.status,
@@ -117,6 +172,13 @@ class HomeState extends Equatable {
         user: updateUser ? user : this.user,
         pendingUndoId:
             clearPendingUndo ? null : (pendingUndoId ?? this.pendingUndoId),
+        hasAnyBudget: hasAnyBudget ?? this.hasAnyBudget,
+        aiInsight: clearAiInsight ? null : (aiInsight ?? this.aiInsight),
+        pendingScheduledCount:
+            pendingScheduledCount ?? this.pendingScheduledCount,
+        pendingCaptureCount: pendingCaptureCount ?? this.pendingCaptureCount,
+        budgetChipIsDirectNav:
+            budgetChipIsDirectNav ?? this.budgetChipIsDirectNav,
       );
 
   @override
@@ -128,5 +190,10 @@ class HomeState extends Equatable {
         failure,
         user,
         pendingUndoId,
+        hasAnyBudget,
+        aiInsight,
+        pendingScheduledCount,
+        pendingCaptureCount,
+        budgetChipIsDirectNav,
       ];
 }

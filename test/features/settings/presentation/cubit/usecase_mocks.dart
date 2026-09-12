@@ -1,6 +1,8 @@
 import 'package:billetudo/features/budgets/domain/usecases/get_active_budgets.dart';
+import 'package:billetudo/features/settings/domain/usecases/clear_ai_consent.dart';
 import 'package:billetudo/features/settings/domain/usecases/clear_featured_budget.dart';
 import 'package:billetudo/features/settings/domain/usecases/get_app_settings.dart';
+import 'package:billetudo/features/settings/domain/usecases/set_ai_notes_access_enabled.dart';
 import 'package:billetudo/features/settings/domain/usecases/set_featured_budget.dart';
 import 'package:billetudo/features/settings/domain/usecases/set_quick_access_order.dart';
 import 'package:billetudo/features/settings/domain/usecases/set_zero_based_enabled.dart';
@@ -26,3 +28,8 @@ class MockWatchHelpEnabled extends Mock implements WatchHelpEnabled {}
 class MockSetTutorialsEnabled extends Mock implements SetTutorialsEnabled {}
 
 class MockSetQuickAccessOrder extends Mock implements SetQuickAccessOrder {}
+
+class MockSetAiNotesAccessEnabled extends Mock
+    implements SetAiNotesAccessEnabled {}
+
+class MockClearAiConsent extends Mock implements ClearAiConsent {}

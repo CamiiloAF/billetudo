@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Variante oscura de los colores del widget (HU-10). Misma réplica de tokens
+  que `values/colors.xml`, tema oscuro. Ver la nota de duplicación allí.
+-->
+<resources>
+    <!-- $surface (dark) -->
+    <color name="widget_surface">#FF1E1E2E</color>
+    <!-- $border (dark) -->
+    <color name="widget_border">#FF2A2A3D</color>
+    <!-- $primary (dark) -->
+    <color name="widget_primary">#FF6D4FE0</color>
+    <!-- $on-primary (dark) -->
+    <color name="widget_on_primary">#FFFFFFFF</color>
+    <!-- $text-primary (dark) -->
+    <color name="widget_text_primary">#FFF4F3FA</color>
+    <!-- $text-secondary (dark) -->
+    <color name="widget_text_secondary">#FF9A98B5</color>
+</resources>

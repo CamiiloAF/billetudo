@@ -12,7 +12,7 @@ import '../year_nav_button.dart';
 /// The hero's month picker (HU-04, `k7kv4`/`iGwrg`): a year stepper (`‹ 2026
 /// ›`) over a 3×4 grid of [MonthCell]s. Opens from `MonthSelectorChip` when
 /// no budget is featured (the featured-budget case navigates its own period
-/// window instead, via `HeroPeriodStepper`).
+/// window instead, via the hero's Period Pill).
 ///
 /// Any month strictly after the real current month is disabled — the app
 /// has no data for the future — so [MonthPickerSheet] computes that floor

@@ -1,4 +1,5 @@
 import 'package:billetudo/core/database/app_database.dart' as db;
+import 'package:billetudo/features/ai/domain/entities/ai_consent.dart';
 import 'package:billetudo/features/settings/data/datasources/app_settings_local_datasource.dart';
 import 'package:billetudo/features/settings/data/repositories/app_settings_repository_impl.dart';
 import 'package:billetudo/features/settings/domain/entities/app_settings.dart';
@@ -161,6 +162,178 @@ void main() {
       final result = await repository.getSettings();
 
       expect(result.getRight().toNullable()!.onboardingCompleted, isTrue);
+    });
+  });
+
+  group('AI notes access and consent version', () {
+    Future<AppSettings> read() async =>
+        (await repository.getSettings()).getRight().toNullable()!;
+
+    test('notes access is off by default — nobody has to opt out', () async {
+      expect((await read()).aiNotesAccessEnabled, isFalse);
+    });
+
+    test('round-trips the opt-in through the singleton row', () async {
+      await repository.setAiNotesAccessEnabled(enabled: true);
+      expect((await read()).aiNotesAccessEnabled, isTrue);
+
+      await repository.setAiNotesAccessEnabled(enabled: false);
+      expect((await read()).aiNotesAccessEnabled, isFalse);
+    });
+
+    test('stamps the consent version alongside the timestamp, in one write',
+        () async {
+      await repository.markAiConsentAccepted();
+
+      final row = await database.select(database.appSettings).getSingle();
+      expect(row.aiConsentAcceptedAt, isNotNull);
+      expect(row.aiConsentVersion, currentAiConsentVersion);
+
+      final settings = await read();
+      expect(settings.aiConsentVersion, currentAiConsentVersion);
+      expect(settings.hasAcceptedAiConsent, isTrue);
+    });
+
+    test(
+        'a NULL version reads as 0, so an unversioned acceptance is not '
+        'treated as consent to the current copy', () async {
+      await repository.markAiConsentAccepted();
+      await database.customStatement(
+        'UPDATE app_settings SET ai_consent_version = NULL',
+      );
+
+      final settings = await read();
+
+      expect(settings.aiConsentVersion, 0);
+      expect(settings.aiConsentAcceptedAt, isNotNull);
+      expect(settings.hasAcceptedAiConsent, isFalse);
+    });
+
+    test('turning notes access on does not touch the consent columns',
+        () async {
+      await repository.markAiConsentAccepted();
+      final before = await database.select(database.appSettings).getSingle();
+
+      await repository.setAiNotesAccessEnabled(enabled: true);
+      final after = await database.select(database.appSettings).getSingle();
+
+      expect(after.aiConsentAcceptedAt, before.aiConsentAcceptedAt);
+      expect(after.aiConsentVersion, before.aiConsentVersion);
+      expect(after.aiNotesAccessEnabled, isTrue);
+    });
+
+    test(
+        'withdrawing the consent (RGPD art. 7.3) clears both consent columns '
+        'AND turns the notes opt-in off — leaving it on would be a permission '
+        'the person believes they just cancelled', () async {
+      await repository.markAiConsentAccepted();
+      await repository.setAiNotesAccessEnabled(enabled: true);
+      expect((await read()).aiNotesAccessEnabled, isTrue);
+
+      await repository.clearAiConsent();
+
+      final row = await database.select(database.appSettings).getSingle();
+      expect(row.aiConsentAcceptedAt, isNull);
+      expect(row.aiConsentVersion, isNull);
+      expect(row.aiNotesAccessEnabled, isFalse);
+
+      final settings = await read();
+      expect(settings.hasAcceptedAiConsent, isFalse);
+      expect(settings.aiNotesAccessEnabled, isFalse);
+    });
+
+    test('withdrawing bumps updatedAt, like every other write', () async {
+      await repository.markAiConsentAccepted();
+      final before = await database.select(database.appSettings).getSingle();
+      await Future<void>.delayed(const Duration(milliseconds: 2));
+
+      await repository.clearAiConsent();
+
+      final after = await database.select(database.appSettings).getSingle();
+      expect(after.updatedAt, greaterThan(before.updatedAt));
+    });
+
+    test(
+        'withdrawing is idempotent and safe on a row that never consented: '
+        'the gate simply stays closed', () async {
+      await repository.clearAiConsent();
+      await repository.clearAiConsent();
+
+      final settings = await read();
+      expect(settings.hasAcceptedAiConsent, isFalse);
+      expect(settings.aiNotesAccessEnabled, isFalse);
+    });
+
+    test(
+        're-accepting after a withdrawal grants consent again, with the notes '
+        'opt-in still off — it is not silently restored', () async {
+      await repository.markAiConsentAccepted();
+      await repository.setAiNotesAccessEnabled(enabled: true);
+      await repository.clearAiConsent();
+
+      await repository.markAiConsentAccepted();
+
+      final settings = await read();
+      expect(settings.hasAcceptedAiConsent, isTrue);
+      expect(settings.aiNotesAccessEnabled, isFalse);
+    });
+
+    test(
+        'the withdrawal is persisted, not held in memory: a brand-new '
+        'repository over the same database reads the gate as closed', () async {
+      await repository.markAiConsentAccepted();
+      await repository.clearAiConsent();
+
+      final reopened = AppSettingsRepositoryImpl(
+        AppSettingsLocalDatasource(database),
+      );
+      final settings = (await reopened.getSettings()).getRight().toNullable()!;
+
+      expect(settings.hasAcceptedAiConsent, isFalse);
+    });
+  });
+
+  group('markLegalAccepted', () {
+    Future<AppSettings> read() async =>
+        (await repository.getSettings()).getRight().toNullable()!;
+
+    test('is not accepted by default', () async {
+      final settings = await read();
+      expect(settings.legalAcceptedAt, isNull);
+      expect(settings.legalAcceptedVersion, 0);
+    });
+
+    test('stamps the version alongside the timestamp, in one write', () async {
+      await repository.markLegalAccepted(version: 3);
+
+      final row = await database.select(database.appSettings).getSingle();
+      expect(row.legalAcceptedAt, isNotNull);
+      expect(row.legalAcceptedVersion, 3);
+
+      final settings = await read();
+      expect(settings.legalAcceptedVersion, 3);
+      expect(settings.legalAcceptedAt, isNotNull);
+    });
+
+    test('accepting again moves the timestamp/version forward', () async {
+      await repository.markLegalAccepted(version: 1);
+      await repository.markLegalAccepted(version: 2);
+
+      final settings = await read();
+      expect(settings.legalAcceptedVersion, 2);
+    });
+
+    test(
+        'a NULL version reads as 0, so an installation from before this '
+        'column existed is asked to accept once', () async {
+      await repository.markLegalAccepted(version: 1);
+      await database.customStatement(
+        'UPDATE app_settings SET legal_accepted_version = NULL',
+      );
+
+      final settings = await read();
+
+      expect(settings.legalAcceptedVersion, 0);
     });
   });
 }

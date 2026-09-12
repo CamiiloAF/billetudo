@@ -11,6 +11,7 @@ class AppSettingsState extends Equatable {
     this.settings = const AppSettings.defaults(),
     this.activeBudgets = const [],
     this.showHelpOnSectionEntry = true,
+    this.cloudTranscriptionEnabled = false,
     this.isLoaded = true,
   });
 
@@ -30,6 +31,16 @@ class AppSettingsState extends Equatable {
   /// repository backs which column.
   final bool showHelpOnSectionEntry;
 
+  /// "Transcribir mi voz en la nube" — the reversal the cloud consent sheet
+  /// (`kJG43`) promises. Lives outside [settings] for the same reason
+  /// [showHelpOnSectionEntry] does, plus a stronger one: it is backed by
+  /// `CloudTranscriptionConsentStore`, which is deliberately **per device and
+  /// never synced**, because the consent names a specific vendor (Google on
+  /// Android, Apple on iOS) and syncing it would hand audio to a company
+  /// nobody agreed to. Only `granted` renders as on: "never asked" and
+  /// "declined" both mean nothing may leave the phone.
+  final bool cloudTranscriptionEnabled;
+
   /// Whether [settings] already reflects the first real value emitted by
   /// `GetAppSettings`'s stream, as opposed to the in-memory default this
   /// state starts with before that stream has emitted at least once.
@@ -45,6 +56,18 @@ class AppSettingsState extends Equatable {
 
   bool get zeroBasedEnabled => settings.zeroBasedEnabled;
 
+  /// Whether the assistant may read the free-text `note` of the user's
+  /// records (`AppSettings.aiNotesAccessEnabled`). Opt-in: `false` until the
+  /// user confirms it in Ajustes.
+  bool get aiNotesAccessEnabled => settings.aiNotesAccessEnabled;
+
+  /// Whether the AI assistant's data-sharing consent is currently granted
+  /// against this build's copy (`AppSettings.hasAcceptedAiConsent`). Ajustes
+  /// only offers "Retirar el consentimiento" while this is `true`: there is
+  /// nothing to withdraw otherwise, and showing the action anyway would
+  /// suggest a permission that was never given.
+  bool get hasAcceptedAiConsent => settings.hasAcceptedAiConsent;
+
   /// The manually-featured budget id, or `null` for "Automático"
   /// (`design-system/billetudo/pages/ajustes.md`, "Presupuesto destacado").
   String? get featuredBudgetId => settings.featuredBudgetId;
@@ -59,6 +82,7 @@ class AppSettingsState extends Equatable {
     AppSettings? settings,
     List<BudgetWithProgress>? activeBudgets,
     bool? showHelpOnSectionEntry,
+    bool? cloudTranscriptionEnabled,
     bool? isLoaded,
   }) =>
       AppSettingsState(
@@ -66,10 +90,17 @@ class AppSettingsState extends Equatable {
         activeBudgets: activeBudgets ?? this.activeBudgets,
         showHelpOnSectionEntry:
             showHelpOnSectionEntry ?? this.showHelpOnSectionEntry,
+        cloudTranscriptionEnabled:
+            cloudTranscriptionEnabled ?? this.cloudTranscriptionEnabled,
         isLoaded: isLoaded ?? this.isLoaded,
       );
 
   @override
-  List<Object?> get props =>
-      [settings, activeBudgets, showHelpOnSectionEntry, isLoaded];
+  List<Object?> get props => [
+        settings,
+        activeBudgets,
+        showHelpOnSectionEntry,
+        cloudTranscriptionEnabled,
+        isLoaded,
+      ];
 }

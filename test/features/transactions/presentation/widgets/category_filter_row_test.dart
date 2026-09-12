@@ -5,6 +5,7 @@ import 'package:billetudo/features/categories/domain/entities/category.dart';
 import 'package:billetudo/features/transactions/presentation/widgets/sheets/category_filter_row.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 void main() {
   final category = Category(
@@ -24,7 +25,22 @@ void main() {
         home: Scaffold(body: child),
       );
 
-  testWidgets('no muestra ícono de check en ningún estado (q0CTl/NZbsD)',
+  testWidgets('no seleccionada: no muestra ícono de check (q0CTl/NZbsD)',
+      (tester) async {
+    await tester.pumpWidget(
+      appWith(
+        CategoryFilterRow(
+          category: category,
+          selected: false,
+          onToggleSelected: () {},
+        ),
+      ),
+    );
+
+    expect(find.byIcon(LucideIcons.check), findsNothing);
+  });
+
+  testWidgets('seleccionada: muestra ícono de check como señal de multi-select',
       (tester) async {
     await tester.pumpWidget(
       appWith(
@@ -36,7 +52,7 @@ void main() {
       ),
     );
 
-    expect(find.byIcon(Icons.check), findsNothing);
+    expect(find.byIcon(LucideIcons.check), findsOneWidget);
   });
 
   testWidgets('seleccionada: adopta el fill/stroke primary-soft/primary',

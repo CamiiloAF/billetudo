@@ -1,30 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/quick_access_item.dart';
+import 'quick_access_chip_with_badge.dart';
+import 'quick_access_row_chip.dart';
 import 'quick_access_settings_button.dart';
 
-/// HU-05b: chrome row of navigation shortcuts (Pagos programados, Deudas,
-/// Gráficas e informes) shown right below the Hero Card in every Home state
-/// (loading/ready/empty/failure). Purely a navigation aid to sections
+/// HU-05b: chrome row of navigation shortcuts (Pagos programados, Cuentas,
+/// Deudas, Gráficas, Metas) shown right below the Hero Card in every Home
+/// state (loading/ready/empty/failure). Purely a navigation aid to sections
 /// otherwise buried in "Más" — no selected/active chip. The order renders
 /// [order] as given — the user's persisted pick from Ajustes ▸ "Orden del
 /// acceso rápido" (`AppSettings.quickAccessOrder`), never a fixed sequence
-/// hardcoded here. Metas is not here anymore: it recovered its own
-/// bottom-nav tab. Cuentas is not here either: the "Mis cuentas" strip right
-/// below already covers that shortcut. Closing the strip is
-/// [QuickAccessSettingsButton], the way back to that Ajustes screen — shaped
-/// as a circle, not a fourth pill, because it configures the row instead of
-/// navigating anywhere, and pinned outside the scroll view so it stays
-/// reachable no matter how wide the chips get.
+/// hardcoded here.
+///
+/// Cuentas and Metas joined the row in the Home hero redesign
+/// (`design-system/billetudo/pages/inicio.md`): the "Mis cuentas" strip that
+/// used to cover the Cuentas shortcut is gone from Home (its atajo is now the
+/// header's wallet button → "Tu dinero" sheet), so Cuentas needed a seat
+/// here; Metas joined at the same time to round the row out to 5. Pagos
+/// programados renders with a pending-occurrences badge
+/// ([QuickAccessChipWithBadge]) whenever [pendingScheduledCount] is
+/// positive — never a badge showing zero.
 class QuickAccessRow extends StatelessWidget {
   const QuickAccessRow({
     required this.order,
+    required this.pendingScheduledCount,
     required this.onOpenScheduledPayments,
+    required this.onOpenAccounts,
     required this.onOpenDebts,
     required this.onOpenReports,
+    required this.onOpenGoals,
     required this.onCustomize,
     super.key,
   });
@@ -34,9 +41,15 @@ class QuickAccessRow extends StatelessWidget {
   /// upstream by `AppSettingsRepositoryImpl`.
   final List<QuickAccessItem> order;
 
+  /// Scheduled-payment occurrences pending confirmation — the "Pagos
+  /// programados" chip's badge count. `0` renders the plain chip instead.
+  final int pendingScheduledCount;
+
   final VoidCallback onOpenScheduledPayments;
+  final VoidCallback onOpenAccounts;
   final VoidCallback onOpenDebts;
   final VoidCallback onOpenReports;
+  final VoidCallback onOpenGoals;
 
   /// Opens Ajustes ▸ "Orden del acceso rápido", where [order] is picked. Not a
   /// destination like the chips above — see [QuickAccessSettingsButton].
@@ -60,56 +73,35 @@ class QuickAccessRow extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        // The gear sits OUTSIDE the scroll view, pinned to the trailing edge.
-        // Inside it, it never showed: the three chips measure ~507pt against a
-        // 390pt phone, so the button rendered past the fold and no golden even
-        // changed when it was added — an entry point nobody could find.
-        Row(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    for (final item in order) ...[
-                      QuickAccessChip(
-                        icon: _iconFor(item),
-                        label: _labelFor(l10n, item),
-                        onTap: _onTapFor(item),
-                        key: ValueKey(item),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                  ],
+        // The gear is the 6th item of the scroll, after the 5 category
+        // chips — Pencil node `u4f7l` ("Quick Access Chip A · Ajustes"):
+        // same chrome ($surface fill, $border stroke, 44pt tap target) but
+        // circular and without a visible label, since it configures the row
+        // instead of navigating into a section.
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              for (final item in order) ...[
+                QuickAccessRowChip(
+                  key: ValueKey(item),
+                  item: item,
+                  pendingScheduledCount: pendingScheduledCount,
+                  onOpenScheduledPayments: onOpenScheduledPayments,
+                  onOpenAccounts: onOpenAccounts,
+                  onOpenDebts: onOpenDebts,
+                  onOpenReports: onOpenReports,
+                  onOpenGoals: onOpenGoals,
                 ),
-              ),
-            ),
-            QuickAccessSettingsButton(onTap: onCustomize),
-          ],
+                const SizedBox(width: 8),
+              ],
+              QuickAccessSettingsButton(onTap: onCustomize),
+            ],
+          ),
         ),
       ],
     );
   }
-
-  IconData _iconFor(QuickAccessItem item) => switch (item) {
-        QuickAccessItem.scheduledPayments => LucideIcons.calendarClock,
-        QuickAccessItem.debts => LucideIcons.handCoins,
-        QuickAccessItem.reports => LucideIcons.chartColumn,
-      };
-
-  String _labelFor(AppLocalizations l10n, QuickAccessItem item) =>
-      switch (item) {
-        QuickAccessItem.scheduledPayments =>
-          l10n.homeQuickAccessScheduledPayments,
-        QuickAccessItem.debts => l10n.moreDebts,
-        QuickAccessItem.reports => l10n.moreReports,
-      };
-
-  VoidCallback _onTapFor(QuickAccessItem item) => switch (item) {
-        QuickAccessItem.scheduledPayments => onOpenScheduledPayments,
-        QuickAccessItem.debts => onOpenDebts,
-        QuickAccessItem.reports => onOpenReports,
-      };
 }
 
 /// One pill of [QuickAccessRow]: icon + label, purely navigational (no

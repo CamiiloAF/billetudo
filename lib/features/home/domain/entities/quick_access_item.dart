@@ -8,22 +8,37 @@
 /// are not stable across releases if a new item is inserted in the middle,
 /// names are.
 ///
-/// Cuentas is deliberately not a member: `QuickAccessRow` never included it
-/// (the "Mis cuentas" strip right below Home's hero card already covers that
-/// shortcut), so there is nothing to reorder for it.
+/// `accounts` and `goals` joined the row in the Home hero redesign
+/// (`design-system/billetudo/pages/inicio.md`): the "Mis cuentas" strip that
+/// used to cover the Cuentas shortcut was removed from Home (its atajo is now
+/// the header's wallet button → "Tu dinero" sheet), so Cuentas needed a seat
+/// here like every other destination; Metas joined at the same time to round
+/// the row out to 5.
+///
+/// A persisted value with only the original 3 names (from before this change)
+/// is not a valid permutation of the now-5-member enum: [isValidOrder]
+/// rejects it and `AppSettingsRepositoryImpl` falls back to [defaultOrder] —
+/// the documented "malformed" path, not a crash. There is no migration that
+/// upgrades an old 3-item order in place; the fallback is the intended
+/// backward-compat behavior (criterion: "mantener compatibilidad hacia atrás
+/// con datos persistidos de 3 items").
 enum QuickAccessItem {
   scheduledPayments,
   debts,
-  reports;
+  reports,
+  accounts,
+  goals;
 
   /// Today's fixed order, kept as the default for every installation that
-  /// predates the reorder feature and as the fallback whenever the persisted
-  /// value is missing or malformed (see
+  /// predates the reorder feature (or the 3→5 expansion above) and as the
+  /// fallback whenever the persisted value is missing or malformed (see
   /// `AppSettingsRepositoryImpl._toQuickAccessOrder`).
   static const List<QuickAccessItem> defaultOrder = [
     QuickAccessItem.scheduledPayments,
+    QuickAccessItem.accounts,
     QuickAccessItem.debts,
     QuickAccessItem.reports,
+    QuickAccessItem.goals,
   ];
 
   /// Whether [items] is an exact permutation of [values]: same length, no

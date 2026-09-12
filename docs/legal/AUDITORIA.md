@@ -1,6 +1,46 @@
 # Auditoría de tratamiento de datos — billetudo
 
-**Fecha:** 2026-08-07 · **Actualizada:** 2026-08-17 (revisión de vigencia: esquema
+**Fecha:** 2026-08-07 · **Actualizada:** 2026-09-10 (re-auditoría de §13
+contra `dev`: el PR #28, `feat/capture-native`, se fusionó a `dev` **antes**
+de esta rama de documentación absorber ese cambio, así que la pasada del
+2026-09-09 de abajo quedó desactualizada el mismo día que se escribió.
+**Corregido:** el servicio nativo Android de lectura de notificaciones
+bancarias y la capa `data`/`domain` de `lib/features/capture/` **ya existen**
+en `dev` — no son código hipotético en otra rama. Lo que sigue sin existir es
+la capa `presentation`/UI de esa feature, y toda la de voz y recordatorios
+locales. Ver §13 y §10 para el detalle corregido línea por línea; no se
+cambió la versión de `declaraciones-tiendas.md` ni de
+`politica-de-privacidad.md` por esto, solo se corrigió la descripción del
+estado técnico) · 2026-09-09 (auditoría de la
+**superficie de captura de Fase 2**: el esquema ya está aplicado y las
+dependencias de voz y notificaciones locales ya están descomentadas; en esa
+fecha se creía que **ningún código de feature existía todavía** en `lib/` ni
+en `android/`, pero eso ya no era cierto contra `dev` — ver la corrección del
+2026-09-10 arriba. Evidencia
+archivo por archivo, tabla por tabla y columna por columna en la nueva **§13**.
+`politica-de-privacidad.md` sube a **v1.8** —redactada, **no publicada**— y
+`declaraciones-tiendas.md` a **v1.8**, con §7 convertida en el juego de
+respuestas del envío) · 2026-09-01 (re-verificación contra el
+código del PR del asistente de IA antes de mezclar `feat/ai-assistant` a
+`main`: **B4 y B5 se cierran** — la sección de IA en Ajustes y el interruptor
+de notas ya están cableados de extremo a extremo, con evidencia nueva abajo.
+Se reconfirma que el **mecanismo de reporte in-app sigue sin UI** — punto 32,
+sin cambios desde el 25 de agosto — y se documenta un hallazgo nuevo, no
+bloqueante: el texto de `aiConsentBody` no menciona el interruptor de notas.
+`politica-de-privacidad.md` sube a **v1.7** y `declaraciones-tiendas.md` a
+**v1.7** por esto)
+· 2026-08-28 (revisión del **alcance real
+de lo que el asistente envía**: cinco campos `name` de texto libre viajan hoy y
+la documentación decía lo contrario; la búsqueda local por nota **sí** está
+implementada y no amplía el alcance; el **interruptor opt-in de notas NO
+existe** todavía; **no hay sección de IA en Ajustes** — §10.4 y puntos 34-38)
+· 2026-08-25, segunda pasada (mecanismo
+de reporte in-app `ai_reports`: **existe en datos, no en el cliente** §10.3 y
+punto 32; la tabla local `AiMessages` ya existe y `schemaVersion` está en 30)
+· 2026-08-25 (auditoría del **asistente
+con IA de Fase 4**: diseñado y especificado, **NO implementado** §10.3;
+correcciones a §2.4 y §10; tres desfases de vigencia detectados §0.7)
+· 2026-08-17 (revisión de vigencia: esquema
 en `schemaVersion` 28 y dos columnas nuevas §1.1; estado real de B1 y B3 §0;
 **Fase 2 especificada pero NO implementada** §10.2 y
 [`checklist-fase-2.md`](checklist-fase-2.md))
@@ -32,6 +72,86 @@ documentos públicos.
 ---
 
 ## 0. Bloqueantes encontrados (leer primero)
+
+### B4 — ✅ RESUELTO (2026-09-01): no había sección de IA en Ajustes
+
+> **Estado: cerrado.** `lib/features/settings/presentation/pages/settings_page.dart`
+> ya incluye `const AiSettingsSection()`. Esa sección (`ai_settings_section.dart`)
+> muestra el interruptor de notas y un enlace para retirar el consentimiento
+> general del asistente (`AiConsentWithdrawField` → `AppSettingsCubit.clearAiConsent`
+> → `AppSettingsLocalDatasource.clearAiConsent`), ambos condicionados a que el
+> consentimiento general ya esté aceptado. La política §17.1 y la Guideline
+> 5.1.2(i) de Apple ya tienen un lugar real en el binario que las cumple.
+
+La política §17.1 promete que el consentimiento del asistente se puede retirar
+desde Ajustes, y la Guideline 5.1.2(i) de Apple lo exige. Al 2026-08-28,
+`settings_page.dart` no tenía ninguna entrada de IA. El hallazgo se conserva
+como evidencia del bloqueante real. Detalle en §10.4 (hallazgo 5).
+
+### B5 — ✅ RESUELTO (2026-09-01): el interruptor opt-in de notas ya está cableado de extremo a extremo
+
+> **Estado: cerrado.** Verificado capa por capa:
+> - **Dominio:** `AppSettings.aiNotesAccessEnabled` (`lib/features/settings/domain/entities/app_settings.dart`),
+>   con default `false` y una nota de doc explícita: "not a single note travels
+>   in any payload" mientras sea `false`.
+> - **Backend:** `supabase/functions/_shared/ai/prompt.ts` construye el prompt
+>   con `NOTES_WITHHELD_SECTION` o `NOTES_VISIBLE_SECTION` según
+>   `PromptContext.notesAccessEnabled`, que viaja en el `ChatRequest`.
+> - **UI:** `AiSettingsSection` renderiza `AiNotesAccessField` solo mientras el
+>   consentimiento general está activo; encenderlo exige confirmar
+>   `AiNotesAccessSheet` (nombra a Google Gemini explícitamente); apagarlo
+>   aplica sin preguntar (`ai_settings_section.dart:_onChanged`).
+> - **Retiro de consentimiento (RGPD art. 7.3):** `AppSettingsLocalDatasource.clearAiConsent`
+>   pone `aiConsentAcceptedAt`, `aiConsentVersion` y `aiNotesAccessEnabled` en
+>   su estado inicial **en una sola escritura**, evitando el permiso huérfano
+>   que el propio código documenta como riesgo ya reportado en vivo
+>   ("withdrawing consent left this row visible and interactive").
+> - **Bug real, ya corregido, que afectaba esta misma columna:** hasta el
+>   commit `299c3f4d` (2026-09-01), `AppSettingsLocalDatasource._write()`
+>   ejecutaba un `INSERT ... insertOrIgnore` incondicional después de cada
+>   `UPDATE`, y ese insert reseteaba silenciosamente cualquier columna con
+>   `clientDefault` ausente del write en curso — incluida
+>   `aiNotesAccessEnabled` cuando se guardaba *otra* preferencia. Confirmado en
+>   dispositivo real con PowerSync y Postgres reales. El fix (`SELECT` de
+>   existencia real antes de decidir INSERT vs UPDATE) ya está en el código
+>   auditado.
+
+`AppSettings.aiNotesAccessEnabled` y `aiConsentVersion` existían solo en el
+esquema al 2026-08-28; el hallazgo se conserva como evidencia. Detalle en
+§10.4 (hallazgos 4 y 4-bis).
+
+### B7 — RESUELTO (2026-09-02): el mecanismo de reporte in-app del asistente ya tiene UI
+
+Cerrado. Documentado el 2026-08-25 (punto 32 de §10.4) y reconfirmado abierto
+el 2026-09-01; la capa `presentation/` que faltaba ya existe: el menú
+contextual sobre un mensaje del asistente (`AiMessageCopyMenu`) ahora ofrece
+"Reportar" junto a "Copiar", que abre `AiReportSheet` (5 motivos cerrados,
+comentario opcional, aviso de privacidad fijo fuera del scroll, imposible de
+confirmar sin verlo) orquestada por `AiReportCubit`.
+
+**Verificado en dispositivo real, no solo en tests**: un reporte real quedó
+guardado en `ai_reports` (proyecto dev) con `reason`, `reported_text`,
+`comment`, `conversation_id`, `client_version` y `status: pending` correctos.
+
+`declaraciones-tiendas.md` §8.6 (precondición 4) actualizada en el mismo
+sentido. Quedan dos precondiciones abiertas de §8.6 antes de poder activar
+`ai_feature_flags.ai_assistant_open_to_all`: facturación de la API de Gemini
+(confirmado 2026-09-03: la key activa no tiene ningún proyecto de facturación
+habilitado) y las declaraciones de tienda re-declaradas en las consolas.
+
+### B8 — BAJO (nuevo, 2026-09-01): el texto de consentimiento in-app no menciona el interruptor de notas
+
+`l10n.aiConsentBody` (`lib/core/l10n/arb/app_es.arb`) dice: *"Tu mensaje y un
+resumen de tus finanzas (sin notas ni datos de identificación bancaria) se
+envían a Google para generar la respuesta."* Eso sigue siendo **cierto** —el
+interruptor de notas viene apagado por defecto, así que en el momento de
+aceptar el consentimiento general, ninguna nota viaja todavía—, pero no
+informa que existe un interruptor separado que puede cambiar eso más adelante.
+No es una declaración falsa (por eso no es un bloqueante), es una oportunidad
+de consentimiento más informado que no se tomó. `[VERIFICAR: decisión de quien
+mantiene el código sobre si ampliar `aiConsentBody` y si eso ameritaría subir
+`currentAiConsentVersion` — no es una corrección que le corresponda a este
+documento legal decidir]`.
 
 ### B1 — ✅ RESUELTO (2026-08-08): el borrado de cuenta fallaba para usuarios con presupuestos por periodo o metas con montos rápidos
 
@@ -250,6 +370,18 @@ en el sandbox temporal hasta que el sistema operativo los purgue.
 Está dentro del sandbox de la app, así que no es una fuga hacia otras apps. Se
 declara tal cual en la política; conviene borrarlos igual.
 
+### 0.7 — Desfases de vigencia detectados el 2026-08-25
+
+Tres cosas que los documentos afirman y que ya no coinciden con el árbol. Ninguna
+es un bloqueante, pero las tres hacen que un documento diga algo falso, que es
+justamente lo que esta auditoría existe para evitar.
+
+| Qué dice el documento | Qué dice el código hoy | Acción |
+|---|---|---|
+| `politica-de-privacidad.md` v1.4 §4.3: *"El correo… **no se muestra en ninguna pantalla de la app**"* | **Sí se muestra.** `lib/features/settings/presentation/widgets/settings_session_card.dart:78-81` pinta `user.email` en la tarjeta de sesión de Ajustes (commit `a735609`, *"correo en Session Card"*) | ✅ **Corregido en la v1.5.** También se ajustó la nota equivalente de `declaraciones-tiendas.md` §1.2, que repetía *"No se muestra en la app"* |
+| `AUDITORIA.md` §1.1 y `declaraciones-tiendas.md`: `schemaVersion` **28** | `app_database.dart:886` está en **29** (siguen siendo **20 tablas**: el cambio no añadió ninguna) | Sin impacto en las declaraciones: no hay tipo de dato nuevo. Anotado para que el próximo repaso no lo cite como 28 |
+| `declaraciones-tiendas.md`: versión de la app `0.0.5+8` | `pubspec.yaml:4` está en **`0.0.5+9`** | `[VERIFICAR: contra qué build exacto se envía, y re-verificar §1.1/§1.3 sobre ese binario]` |
+
 ---
 
 ## 1. Qué datos existen y dónde viven
@@ -412,8 +544,27 @@ paquete `http` está declarado solo por el tipo `ClientException`
 | 7 | Sentry ingest (`ingest.us.sentry.io`) | `bootstrap.dart:46-52` |
 | 8 | Google / Apple (identidad) | `google_auth_datasource.dart`, `apple_auth_datasource.dart` |
 
-**Solo existe una Edge Function** en todo el proyecto: `delete-account`
-(confirmado con `list_edge_functions` contra producción).
+**Ya no es una sola.** El 2026-08-25, durante esta misma auditoría, apareció en
+la rama `feat/ai-assistant` una **segunda Edge Function: `ai-chat`**
+(`supabase/functions/ai-chat/index.ts` + `_shared/ai/*`), el primer endpoint del
+proyecto que envía datos del usuario a un **proveedor externo de modelos de
+lenguaje**.
+
+| # | Destino | Origen en código | Estado |
+|---|---|---|---|
+| 9 | Edge Function `ai-chat` → `generativelanguage.googleapis.com` (API de Gemini, modelo `gemini-2.5-flash`) | `supabase/functions/ai-chat/index.ts`, `_shared/ai/gemini.ts:29` | **Backend en el repo; sin llamador todavía** — `lib/features/ai/` existe pero está **vacía**, así que ningún binario lo invoca |
+
+Esa fila 9 es la que rompe, cuando el cliente exista, la afirmación de la
+política v1.4 (*"no enviamos tus datos a ningún modelo de lenguaje"*) y la
+viñeta "sin IA" de `declaraciones-tiendas.md` §1.3. Ver §10.3.
+
+> **Actualización 2026-08-28.** El cliente **ya existe** en la rama
+> `feat/ai-assistant`: `lib/features/ai/` tiene las tres capas y
+> `AiRemoteDatasource` invoca la función `ai-chat`
+> (`lib/features/ai/data/datasources/ai_remote_datasource.dart`). Sigue sin
+> haber binario publicado con la feature, pero la frase "sin llamador todavía"
+> de la tabla de arriba dejó de ser cierta. El alcance exacto de lo que ese
+> llamador envía está auditado en **§10.4**.
 
 ---
 
@@ -739,17 +890,53 @@ Onboarding, 4 pantallas (`lib/features/onboarding/`):
 
 ## 10. Features NO implementadas (no declarar como existentes)
 
+> ⚠️ **Corrección (2026-09-10): el párrafo siguiente ya no es exacto para
+> `lib/features/capture/`.** Desde el PR #28 (`feat/capture-native`, ya en
+> `dev`) esa carpeta tiene 21 archivos (capa `data`/`domain`) y el servicio
+> nativo Android de lectura de notificaciones bancarias existe y está
+> declarado en `AndroidManifest.xml`. Lo que sigue siendo cierto: no hay
+> capa `presentation` ni ruta que lo exponga al usuario, así que no es
+> alcanzable desde la app, y captura por voz, OCR, anuncios, suscripciones,
+> analítica, notificaciones push y el asistente de IA siguen sin ningún
+> código. Detalle completo, corregido línea por línea, en **[§13](#13-fase-2--superficie-de-captura-auditoría-del-2026-09-09)**.
+> `lib/features/improvement/` sigue vacía (0 archivos).
+
 `lib/features/capture/` y `lib/features/improvement/` **están vacías** (0
-archivos). Confirmado también en `docs/marketing/plan-fichas-de-tienda.md:44-45`.
+archivos) — **cierto solo hasta el 2026-09-09, ver la corrección arriba**.
+Confirmado también en `docs/marketing/plan-fichas-de-tienda.md:44-45`
+(re-verificar esa referencia si se cita este párrafo).
 
-No existen hoy: IA/coach, captura por voz, OCR de recibos, lectura de
-notificaciones bancarias, anuncios, suscripciones, analítica, notificaciones push.
+No existen hoy en el código: captura por voz, OCR de recibos, lectura de
+notificaciones bancarias (**ver corrección arriba: el servicio nativo sí
+existe, sin UI que lo exponga**), anuncios, suscripciones, analítica,
+notificaciones push **ni el asistente con IA**.
 
-La política los menciona **solo** en la sección "Lo que hoy no hacemos", dejando
-claro que no están activos y que su activación exigirá actualizar la política
-— nunca como funcionalidad presente.
+**Matiz importante sobre la IA (actualizado el 2026-08-25).** Sigue siendo cierto
+que no hay una línea de IA en `lib/` ni en `supabase/functions/`, pero la
+afirmación *"no existe IA/coach"* ya no puede usarse como si nada estuviera en
+marcha: el asistente está **diseñado, aprobado y especificado** en
+`docs/requirements/fase-4/21-asistente-ia.md`, y la política de privacidad **v1.5**
+ya lo describe para poder publicarse **antes** de que la feature se active. La
+auditoría de ese diseño está en §10.3.
 
-### 10.2 Fase 2 (captura sin fricción): especificada, NO implementada
+La política menciona las funciones no implementadas **solo** en la sección "Lo
+que hoy no hacemos", dejando claro que no están activas y que su activación
+exigirá actualizar la política — nunca como funcionalidad presente. La v1.5
+cambió ahí la negación absoluta de IA (*"No hay inteligencia artificial"*, v1.4
+§17) por una acotación verificable: la IA se limita al asistente opcional de la
+nueva §17, y fuera de él ningún dato va a un modelo de lenguaje.
+
+### 10.2 Fase 2 (captura sin fricción): parcialmente abierta — LEER §13
+
+> ⚠️ **Esta subsección quedó desactualizada el 2026-09-09.** Su conclusión
+> operativa (*"las respuestas de §1.2 y §2.2 siguen siendo exactas"*) **sigue
+> siendo cierta para el binario de hoy**, pero su tabla de evidencia **ya no lo
+> es**: el esquema de Fase 2 está aplicado (`schemaVersion` 34) y varias
+> dependencias están descomentadas. La evidencia vigente, re-verificada línea por
+> línea, está en **[§13](#13-fase-2--superficie-de-captura-auditoría-del-2026-09-09)**.
+> Se conserva lo de abajo como registro de lo que se verificó el 2026-08-17.
+
+### 10.2 (registro histórico, 2026-08-17) Fase 2: especificada, NO implementada
 
 El 2026-08-17 se escribieron los requerimientos de Fase 2 —captura por voz
 (`docs/requirements/fase-2/17-captura-voz.md`), OCR de recibos
@@ -783,6 +970,230 @@ es publicar con las declaraciones viejas. `docs/requirements/README.md`
 ("Bloqueante de publicación") y las cuatro HU de privacidad de Fase 2
 (`17-captura-voz.md` HU-06/HU-07, `18-captura-ocr.md` HU-09,
 `19-notificaciones-bancarias.md` HU-08) apuntan a estos mismos archivos.
+
+### 10.3 Fase 4 (asistente con IA): diseñado y especificado, NO implementado
+
+El 2026-08-25 se aprobó el diseño de la **Fase A del asistente financiero con
+IA**, se escribió su requisito (`docs/requirements/fase-4/21-asistente-ia.md`) y
+**el backend aterrizó en la rama durante esta auditoría**. El cliente todavía
+no. Ese desfase es exactamente el estado que hay que declarar bien: lo que se
+declara ante las tiendas es el **binario**, y ningún binario tiene la feature.
+
+> **El árbol se mueve mientras se audita.** Cuando empezó esta revisión,
+> `supabase/functions/` tenía una sola función; horas después tenía dos. Nada de
+> lo de abajo debe citarse sin re-verificarlo contra el árbol del día.
+
+**Estado real, pieza por pieza** (rama `feat/ai-assistant`, 2026-08-25):
+
+| Pieza | Estado | Evidencia |
+|---|---|---|
+| Edge Function `ai-chat` | ✅ **Existe** | `supabase/functions/ai-chat/index.ts` (538 líneas) + `_shared/ai/{gemini,tools,prompt,validate,factory,provider,types}.ts` |
+| Proveedor y modelo | ✅ Gemini, `gemini-2.5-flash` por defecto | `_shared/ai/factory.ts` (`AI_PROVIDER`, `AI_MODEL`, `GEMINI_API_KEY`); endpoint `generativelanguage.googleapis.com/v1beta/models` (`gemini.ts:29`) |
+| Tablas de control | ✅ **Tres**, no dos | `20260825120000_ai_assistant_access_and_usage.sql`: `ai_access`, `ai_feature_flags` (interruptor global, sin `user_id`) y `ai_usage_log` |
+| Tabla de moderación `ai_reports` | ✅ Existe, **aplicada en dev, no en prod** | `20260825140000_ai_reports.sql`. Es la **única tabla del servidor con contenido de conversación** (`reported_text`), y solo se escribe cuando la persona reporta un mensaje a mano. Ver el bloque de abajo |
+| Borrado de cuenta | ✅ Cubierto **en la misma migración** que las crea | La migración reescribe `delete_account_data` con `delete from ai_usage_log` y `delete from ai_access`, más FK `on delete cascade` a `auth.users`. Rompe la racha de cuatro reincidencias de B1 |
+| Gate de acceso | ✅ En servidor, falla cerrado | `ai_access_state()` es `SECURITY DEFINER` con `revoke execute` para `anon`/`authenticated`; la app solo puede llamar al wrapper `my_ai_access_state()`, que resuelve sobre `auth.uid()`. `readAccessState` lanza si no puede leer |
+| Cupo | ✅ Diario, en servidor | `ai_access.daily_message_limit` (por defecto **30/día** UTC), contado sobre `ai_usage_log` con `outcome = 'ok'` |
+| Interruptor de apertura | ✅ Apagado, con la precondición legal escrita en el SQL | `ai_feature_flags.ai_assistant_open_to_all = false`, y la cabecera de la migración exige política v1.5 publicada + declaraciones rehechas + key con facturación |
+| Cliente (Flutter) | ⚠️ **Parcial y en movimiento** | Al cierre de esta revisión `lib/features/ai/` tiene **solo la capa `domain/`** (entidades, dos repositorios y 12 casos de uso). No hay `data/` ni `presentation/`, y **ningún archivo de `lib/` menciona `ai_reports`**. La fila de abajo la escribí cuando la carpeta estaba vacía; se movió el mismo día |
+| Tabla local de conversación | ✅ Existe | `AiMessages` en `lib/core/database/app_database.dart:899`, respaldada por `Table.localOnly('ai_messages', ...)` (comentario en :878). El `@DriftDatabase` la lista en :961 y `schemaVersion` está en **30** (:968) |
+| Consentimiento in-app (HU-02) | ❌ No existe | Sin cliente no hay pantalla. **Bloqueante de Apple 5.1.2(i)** |
+| Reporte in-app de contenido de IA (HU-09) | ⚠️ **Backend sí, cliente no** | La tabla, las policies y el borrado con la cuenta existen (`20260825140000_ai_reports.sql`, dev). No hay UI que escriba en ella: `grep ai_reports lib/` no devuelve nada. **Play mira el binario**, así que el bloqueante sigue abierto |
+
+**Lo que el código confirma de las promesas de la política** (leído, no asumido):
+
+- **El broker no persiste contenido.** `ai-chat/index.ts` no lee ninguna tabla
+  financiera y solo escribe `ai_usage_log` con metadatos (`recordUsage`). El
+  propio archivo lo dice en su cabecera: *"If a future change starts persisting
+  transcripts 'just for debugging', the policy becomes false the same day."*
+- **`ai_usage_log` es insuficiente para reconstruir una conversación**: guarda
+  `conversation_id`, proveedor, modelo, `outcome`, `error_code`, tokens,
+  `tool_rounds`, `proposals_count`, `latency_ms`, `client_version` y `usage_day`.
+  Nada de texto.
+- **Las propuestas nunca se ejecutan en el servidor**: las herramientas
+  `propose_*` se validan (`validate.ts`) y se devuelven como `proposals[]` para
+  que el cliente pinte una tarjeta.
+
+**`ai_reports`: la única excepción a "el servidor no guarda contenido"**
+(`supabase/migrations/20260825140000_ai_reports.sql`, aplicada en dev). Existe
+porque la *AI-Generated Content policy* de Play obliga a reportar **sin salir de
+la app**, lo que descarta el `mailto:` y fuerza un servidor propio. Lo
+verificado, columna por columna:
+
+- Guarda `user_id` (FK a `auth.users` con `on delete cascade`), `created_at`,
+  `conversation_id`, `reason`, `reported_text`, `comment`, `client_version` y
+  `status`.
+- **`reported_text` es contenido de conversación**: el mensaje del asistente que
+  la persona eligió reportar. Nada más de la conversación llega ahí, y nada
+  llega solo: se escribe únicamente al confirmar el reporte.
+- **`reason` tiene `check` con lista cerrada** (`offensive`, `wrong`, `harmful`,
+  `privacy`, `other`), deliberadamente, para no ofrecer un campo libre que
+  invite a pegar datos personales. `comment` sí es libre, y es opcional.
+- **RLS con `insert` + `select` de las propias filas, y nada más.** No hay
+  policy de `update` ni de `delete`: **la persona no puede rectificar ni suprimir
+  su reporte desde la app**, y tampoco puede tocar `status`. Eso es una
+  limitación real del derecho de rectificación y por eso quedó escrita en la
+  política §11, con el canal de contacto como salida.
+- **Entra en `delete_account_data` en la misma migración que la crea** (línea
+  `delete from ai_reports where user_id = p_user_id;`). Segunda vez seguida que
+  una tabla nueva no repite el bug B1.
+- **Dependencia de producto, no solo de código:** la UI tiene que mostrar el
+  aviso **antes de enviar**. Sin ese aviso, la política §17.5 se vuelve falsa el
+  día que la pantalla exista.
+
+**Tres hallazgos que cambian lo que los documentos podían decir:**
+
+1. **El transcript se reenvía en cada turno.** El servidor es sin estado, así
+   que el cliente manda la conversación completa (tope de 40 mensajes) en cada
+   mensaje. El historial **no se almacena** en ningún servidor, pero **sí pasa**
+   por Google cada vez. La política v1.5 §17.2 lo dice con esas palabras; una
+   redacción que solo dijera "tu historial se queda en el teléfono" habría sido
+   engañosa.
+2. **El tope de detalle son 50 filas, no 60**, y hay **cinco** herramientas de
+   lectura, no una (`tools.ts`: `get_transactions`, `get_category_breakdown`,
+   `compare_periods`, `get_budget_detail`, `get_goal_detail`), con un máximo de
+   **3 rondas** por turno (`AI_MAX_TOOL_ROUNDS`). Corregido en la política y en
+   las declaraciones.
+3. **La minimización de datos NO la puede garantizar el servidor.**
+   `validate.ts` comprueba que `snapshot` sea un objeto y nada más: no valida
+   qué campos trae. Toda la promesa de "las notas, el banco y los `last4` no
+   salen" depende **exclusivamente del cliente**, que aún no existe. Es el
+   riesgo estructural de esta feature y por eso HU-08 exige un test de lista
+   blanca.
+
+**Detalle menor pero real:** `ai_access.notes` es una columna de texto libre
+sobre una persona usuaria, escrita por el administrador. No es dato financiero,
+pero sí dato personal sujeto a acceso y rectificación como cualquier otro.
+
+**Qué se auditó del diseño, contra lo que los documentos prometen:**
+
+| Afirmación que la política v1.5 hace | En qué se apoya | Riesgo de que deje de ser cierta |
+|---|---|---|
+| "Las notas libres no salen del teléfono" | Construcción del snapshot (HU-08) | **Alto si no hay test.** Es una exclusión por omisión: alguien agrega un campo y nadie se entera. Por eso HU-08 exige una lista blanca con test de contrato |
+| "El banco y los últimos 4 dígitos no salen" | Misma construcción | Igual que arriba. Sostiene la respuesta *User payment info = no compartido* de Play |
+| "El nombre de la contraparte de una deuda no sale" | Del bloque de deudas solo salen totales por moneda y dirección | Medio: basta con que alguien "enriquezca" el bloque de deudas |
+| "Nuestro servidor no guarda el contenido" | `ai-chat` es un broker sin estado; `ai_usage_log` guarda solo metadatos | Medio: un log de depuración añadido para diagnosticar un incidente convierte esto en falso sin cambiar ninguna tabla |
+| "El historial vive solo en tu teléfono" | Tabla `Table.localOnly` en `powersync_schema.dart` | Bajo, pero binario: si alguien la declara como tabla normal, sincroniza entera |
+| "Google no usa tu contenido para entrenar" | Términos de la API de Gemini, **solo en el servicio de pago** | **Alto.** Con key gratuita esta frase es falsa. Ver la precondición dura de abajo |
+| "Todo lo del servidor se borra al borrar la cuenta" | `delete_account_data` **ya extendido** en la misma migración que crea las tablas, más `on delete cascade` a `auth.users` | **Bajo, por primera vez.** El patrón que reincidió cuatro veces (B1) aquí se rompió: la cobertura llegó con la tabla, no después. Falta ejecutar `select * from delete_account_data_coverage_gaps();` en dev y prod tras aplicar |
+
+**Precondición dura, la más importante de esta auditoría.** Los términos de la
+API de Gemini distinguen dos regímenes: en las *Unpaid Services*, Google usa el
+contenido enviado y las respuestas para **proveer, mejorar y desarrollar** sus
+productos, y **revisores humanos pueden leerlo** (los propios términos advierten
+"no envíes información sensible, confidencial o personal"); en las *Paid
+Services*, no se usa para mejorar productos y solo se registra por un tiempo
+limitado para detectar abusos y por obligaciones legales. La política v1.5 §17
+está escrita para el **segundo** régimen. Por lo tanto:
+
+> **Con key de la capa gratuita, la feature no se abre a nadie más que al
+> desarrollador.** Abrirla en ese estado convertiría §17 en una declaración
+> falsa ante el usuario y ante ambas tiendas. La key de pago no es una mejora de
+> cuota: es la condición que hace verdadero el documento.
+
+**`[VERIFICAR]` abiertos de esta feature** (ninguno resoluble en el código hoy):
+
+- `[VERIFICAR: contratación del tier de pago de la API de Gemini antes de abrir la feature a terceros]`
+- `[VERIFICAR: región de procesamiento de la API de Gemini —hoy la política dice "Estados Unidos y otros países donde Google opera"; si se fija una región concreta al contratar, precisar §8 de la política]`
+- `[VERIFICAR: campos exactos del bloque de pagos programados del snapshot (el diseño dice "los que vencen en los próximos 30 días" sin enumerar columnas) — la política debe listar lo que realmente se envía]`
+- `[VERIFICAR: acuerdo de tratamiento de datos con Google para la API de Gemini, en los mismos términos que el de Supabase; sin él, el veto de distribución en el EEE se refuerza]`
+- `[VERIFICAR: plazo de purga de ai_usage_log — hoy solo se promete que se borra con la cuenta, no que caduque antes]`
+- `[VERIFICAR: si declarar IA generativa mueve la clasificación por edad en Play (IARC) o en App Store]`
+- `[VERIFICAR: dónde y cómo se registra el consentimiento de HU-02 —versión del texto aceptado y fecha— para poder demostrarlo si una autoridad lo pide]`
+- `[VERIFICAR: en el dashboard de PowerSync, que las sync rules NO seleccionen ai_access, ai_usage_log ni ai_feature_flags]` — la publicación `powersync` es `FOR ALL TABLES`, así que las tres quedan dentro de ella por defecto. Si una sync rule las tomara, el registro de uso bajaría al dispositivo. Es la única parte del contrato que no vive en el repo, y el `README.md` de `supabase/functions/` ya lo lista como paso posterior a la migración.
+- `[VERIFICAR: ejecutar delete_account_data_coverage_gaps() en dev y prod tras aplicar la migración de IA — cero filas]`
+
+---
+
+### 10.4 Revisión 2026-08-28 — alcance real de los datos que envía el asistente
+
+Auditoría puntual pedida por la decisión de producto sobre las notas. Todo lo de
+abajo se verificó contra la rama `feat/ai-assistant` con cambios sin commitear
+en el working tree.
+
+**Hallazgo 1 — la política v1.5 §17.3 y las declaraciones v1.5 §8.1 declaraban
+de menos.** Decían que ninguna palabra libre del usuario viajaba más allá del
+chat, y que del bloque de deudas "solo salen totales". Ambas afirmaciones son
+falsas. Hoy viajan **cinco campos `name` de texto libre**, en el resumen de cada
+turno:
+
+| Campo del usuario | Clase del snapshot | Archivo |
+|---|---|---|
+| `Accounts.name` | `SnapshotAccount.name` | `lib/features/ai/domain/entities/financial_snapshot.dart` |
+| `Categories.name` | `SnapshotCategoryLine.name` | mismo archivo |
+| `Budgets.name` | `SnapshotBudget.name` | mismo archivo |
+| `Goals.name` | `SnapshotGoal.name` | mismo archivo |
+| `Debts.name` | `SnapshotDebt.name` | mismo archivo |
+
+Los llena `lib/features/ai/domain/usecases/build_financial_snapshot.dart`, y las
+herramientas de lectura los repiten (`resolve_ai_tool_call.dart`:
+`_getBudgetDetail`, `_getGoalDetail`, `_getDebtDetail`, `linkedDebtName`,
+`linkedGoalName`, y `accountName`/`categoryName` en `_transactionItem`). Un
+sexto nombre es derivado: `SnapshotUpcoming.name` = `"categoría · cuenta"`.
+
+**Corrección adicional:** la tabla `Debts` **no tiene** columna `counterparty`
+(`lib/core/database/app_database.dart`). El nombre de la contraparte se escribe
+en `Debts.name`, que es justamente el campo que viaja. Cualquier documento que
+diga "no se envía el nombre de la contraparte" es falso y contrastable.
+
+**Hallazgo 2 — la búsqueda local por nota está implementada y NO amplía el
+alcance de lo enviado.** `resolve_ai_tool_call.dart` `_findScheduledPayments`:
+recibe un `query` (palabras que el usuario ya escribió en su mensaje), lo compara
+en el dispositivo contra `ScheduledPayments.note` más los nombres de categoría y
+cuenta (`_matchesQuery`), y devuelve solo campos estructurados
+(`_scheduledPaymentItem`). Lo mismo hace `get_transactions` con `searchText`:
+el match es local y `_transactionItem` no emite `note`. Conclusión de
+declaración: procesamiento **on-device**, sin tipo de dato nuevo en Play ni en
+Apple.
+
+**Hallazgo 3 — cuatro columnas `note` son las afectadas por el interruptor
+opt-in**, y son las únicas: `Transactions.note`, `GoalContributions.note`,
+`DebtEntries.note`, `ScheduledPayments.note` (`app_database.dart`).
+
+**Hallazgo 4 — el interruptor opt-in existe SOLO en el esquema; no está
+cableado.** Estado al momento de escribir esta revisión (el árbol se movió
+durante la auditoría, igual que el 2026-08-25):
+
+| Pieza | Estado | Evidencia |
+|---|---|---|
+| Columna `AppSettings.aiNotesAccessEnabled`, `boolean` con `clientDefault(() => false)` | ✅ Existe | `lib/core/database/app_database.dart` |
+| Backfill a `0` de las filas preexistentes en la misma subida de `schemaVersion` | ✅ Existe | misma migración, `app_database.dart` |
+| Espejo en PowerSync | ✅ Existe | `lib/core/database/powersync_schema.dart` |
+| Entidad de dominio `AppSettings` | ❌ No expone el campo | `lib/features/settings/domain/entities/app_settings.dart` |
+| Lectura del flag al construir el snapshot / resolver herramientas | ❌ No existe | ninguna referencia fuera de `lib/core/database/` |
+| Interruptor en la UI de Ajustes | ❌ No existe | ver hallazgo 5 |
+
+Es decir: **hoy el flag no cambia el comportamiento**, porque nadie lo lee. Con
+él en `false` y sin lector, el efecto observable coincide con el estado por
+defecto que documenta la política (las notas no salen), pero la política §17.7 no
+se puede publicar hasta que exista el interruptor y su lector.
+`[VERIFICAR: cablear aiNotesAccessEnabled (dominio + snapshot + herramientas + UI) antes de publicar la política v1.6 §17.7 y la §8.7 de declaraciones-tiendas]`
+
+**Hallazgo 4-bis — `AppSettings.aiConsentVersion`, y por qué importa para esta
+política.** La misma subida de esquema añade una columna que versiona el
+consentimiento del asistente (`app_database.dart`). Su documentación es explícita
+sobre el motivo: sin ella, ampliar el alcance de lo que se envía dejaría a todo
+el que ya pulsó "Acepto" con un consentimiento válido para un texto que nunca
+vio. Eso es exactamente lo que hace el interruptor de notas, y es lo que la
+Guideline 5.1.2(i) de Apple y el requisito de consentimiento **informado** del
+RGPD/Ley 1581 no permiten. La comparación (`aiConsentVersion >= versión actual`)
+**todavía no está implementada** en dominio ni presentación.
+`[VERIFICAR: implementar la comparación de aiConsentVersion y subir la versión del texto al publicar el consentimiento nuevo]`
+
+**Hallazgo 5 — bloqueante independiente: no hay sección de IA en Ajustes.**
+`[VERIFICAR: añadir la sección de IA en Ajustes con retiro de consentimiento antes de enviar a tiendas]`
+`lib/features/settings/presentation/pages/settings_page.dart` no tiene ninguna
+entrada de IA. La política §17.1 promete que el permiso se puede retirar desde
+Ajustes y la Guideline 5.1.2(i) de Apple lo exige. Hoy esa promesa no se puede
+cumplir en la app, y además no hay dónde poner el interruptor de notas.
+
+**Hallazgo 6 — el texto de consentimiento vigente es inexacto.**
+`aiConsentBody` (`lib/core/l10n/arb/app_es.arb`) dice "un resumen de tus
+finanzas (sin notas ni datos de identificación bancaria)". La parte de "datos de
+identificación bancaria" es cierta (`institution` y `last4` están fuera por
+construcción); la de "sin notas" será cierta solo por defecto en cuanto exista
+el interruptor, y el texto omite que sí viajan los cinco `name`.
+`[VERIFICAR: reescribir aiConsentBody y su equivalente en inglés antes de abrir la beta a terceros]`
 
 ---
 
@@ -968,36 +1379,142 @@ leyendo el código.
     editar**. Todo el texto que trataba esto como una decisión previa se
     reescribió en `declaraciones-tiendas.md` §0 y §5.
 
-### Fase 2 — bloqueantes de declaración (abiertos, no resolubles en el código)
+### Fase 2 — bloqueantes de declaración (actualizado el 2026-09-09)
 
-Estos **no** afectan a la publicación de hoy: la app no tiene ninguna de esas
-capacidades (§10.2). Se listan aquí para que no se pierdan cuando Fase 2 se
-implemente. El detalle está en [`checklist-fase-2.md`](checklist-fase-2.md).
+Estos **no** afectan a la publicación del binario de hoy —que no tiene ninguna de
+esas capacidades (§13)— pero **sí bloquean el primer build de captura**, incluido
+uno de TestFlight o Internal Testing. Detalle en
+[`checklist-fase-2.md`](checklist-fase-2.md) y en `declaraciones-tiendas.md` §7.
 
-23. `[VERIFICAR: qué hace la app cuando el reconocimiento de voz on-device NO está disponible]` —
-    **el más urgente de todos.** `17-captura-voz.md` HU-06 lo deja sin decidir.
-    Si la app degrada al reconocimiento en la nube del sistema operativo, el
-    audio del usuario **sale del dispositivo** hacia Apple o Google aunque no se
-    guarde nada. *No guardar no es no transmitir.* Hasta que esa decisión exista,
-    **no se puede escribir** ni la sección de voz de la política ni la respuesta
-    de "Audio" en Data Safety / App Privacy. Es un bloqueante de declaración,
-    no de implementación, y no lo resuelve este documento.
-24. `[VERIFICAR: si Play exige una declaración de uso específica —formulario y/o video— para BIND_NOTIFICATION_LISTENER_SERVICE al momento del envío]` —
-    la política pública "Permissions and APIs that Access Sensitive Information"
-    consultada el 2026-08-17 **no lista** el acceso a notificaciones entre sus
-    permisos con formulario de declaración (sí SMS/Call Log, ubicación,
-    accesibilidad, VPN, alarmas exactas). No se afirma que no exista: no se
-    encontró documentada. Play Protect sí lo trata como señal de alto riesgo
-    cuando se combina con SMS o accesibilidad. Hay que revisarlo en la consola
-    antes de subir el build.
-25. `[VERIFICAR: alcance final de galería en OCR]` — si el flujo termina usando
-    el **Photo Picker** de Android no hace falta `READ_MEDIA_IMAGES` ni el
-    formulario de permisos de fotos y video de Play; si usa el picker antiguo,
-    sí. Determina una respuesta de tienda, así que se decide antes de declarar.
-26. `[VERIFICAR: incluir PendingCaptures y TransactionAttachments en delete_account_data, en la misma migración que las crea]` —
-    es exactamente el bug B1, que ya reincidió cuatro veces. Con las tablas
-    sincronizando, dejarlas fuera del RPC vuelve a hacer falsa la promesa de
-    borrado total.
+23. ✅ **RESUELTO (2026-09-09)** — `[VERIFICAR: qué hace la app cuando el
+    reconocimiento de voz on-device NO está disponible]`. **Decidido:** se usa
+    reconocimiento on-device cuando la plataforma lo soporta y **se degrada al
+    servicio en la nube de Apple o Google cuando no**. Ni el audio ni la
+    transcripción se guardan. Consecuencias ya escritas: política v1.8 §7, §8 y
+    §18.1 nombran a Apple y a Google como responsables independientes de ese
+    audio, y `declaraciones-tiendas.md` §7.5 fija la casilla de Audio.
+    **Queda un residuo, menor:** en iOS el aviso lo da el sistema; en Android no
+    hay equivalente. `[VERIFICAR: decisión de producto sobre si Android muestra
+    un aviso propio cuando el reconocimiento cae a la nube. Afecta solo al copy]`
+24. `[VERIFICAR: si Play exige una declaración de uso específica —formulario y/o
+    video— para BIND_NOTIFICATION_LISTENER_SERVICE al momento del envío]` —
+    **re-verificado el 2026-09-09** contra las páginas vigentes
+    ["Permissions and APIs that Access Sensitive Information"](https://support.google.com/googleplay/android-developer/answer/16558241)
+    y su [preview](https://support.google.com/googleplay/android-developer/answer/16909972):
+    **el acceso a notificaciones sigue sin aparecer** entre los permisos con
+    formulario propio. Los que sí lo tienen: SMS/Call Log, ubicación en segundo
+    plano, All Files Access, `QUERY_ALL_PACKAGES`, `REQUEST_INSTALL_PACKAGES`,
+    accesibilidad, Health Connect, alarmas exactas y full-screen intent. No se
+    afirma que el requisito no exista: no se encontró documentado. La
+    justificación y el guion de video están listos igualmente en
+    [`declaracion-permiso-notificaciones.md`](declaracion-permiso-notificaciones.md).
+25. `[VERIFICAR: alcance final de galería en OCR]` — **sigue abierto y sigue sin
+    aplicar**: OCR no entra en este envío (`google_mlkit_text_recognition`
+    comentado, `pubspec.yaml:94`).
+26. ✅ **RESUELTO en el repo (2026-09-09)** — `[VERIFICAR: incluir
+    PendingCaptures en delete_account_data en la misma migración que la crea]`.
+    `supabase/migrations/20260909000000_fase2_capture_schema.sql:153-154` borra
+    `pending_captures` y `merchant_category_learning`, en el orden correcto
+    respecto de sus claves foráneas, **en la misma migración que crea las
+    tablas**. Es la primera vez que no se repite el bug B1.
+    `[VERIFICAR: que esa migración esté APLICADA en dev y en prod, no solo
+    commiteada. No se pudo comprobar desde este worktree]`
+27. `[VERIFICAR: que la lista de apps de banco instaladas se resuelva con un
+    <queries> explícito y NO con QUERY_ALL_PACKAGES]` — **hallazgo nuevo del
+    2026-09-09.** `QUERY_ALL_PACKAGES` sí tiene formulario de declaración
+    obligatorio en Play y sería desproporcionado para un catálogo cerrado de
+    cuatro apps. Lo verifica quien implemente HU-02.
+28. `[VERIFICAR: modo de programación de los recordatorios locales]` — si se usa
+    alarma exacta (`SCHEDULE_EXACT_ALARM` / `USE_EXACT_ALARM`) aparece otro
+    formulario de declaración en Play. Un recordatorio de "faltan 3 días" no la
+    necesita.
+29. `[VERIFICAR: dónde se persiste la lista de emisores activos]` —
+    `AppSettings` no tiene ninguna columna para eso y no se creó tabla nueva. Si
+    terminara sincronizando, es una fila más de Data Safety.
+30. `[VERIFICAR: si las capturas pendientes entran en la copia completa de
+    Import/Export]` — decisión de producto. Hay que decirlo en la política en
+    cualquiera de los dos casos.
+31. `[VERIFICAR: si las capturas pendientes no despachadas caducan solas, y en
+    cuántos días]` — `19-notificaciones-bancarias.md` HU-10 lo deja abierto. La
+    fila de conservación de la política v1.8 §9 está marcada en consecuencia.
+32. `[VERIFICAR: privacy manifests de los plugins nuevos]` —
+    `speech_to_text`, `flutter_local_notifications`, `timezone`,
+    `permission_handler` y `flutter_timezone` pueden traer su propio
+    `PrivacyInfo.xcprivacy` o usar *required reason APIs*. Auditar al integrar y
+    actualizar `ios/Runner/PrivacyInfo.xcprivacy`.
+33. `[VERIFICAR: reabrir la condición de "no publicar sola"]` — el proyecto se
+    autoimpuso que el release **público** con avisos bancarios lleve voz **y**
+    OCR funcionando. Este envío lleva voz, no OCR. Para TestFlight / Internal
+    Testing es aceptable; para un release público hay que reabrir la decisión de
+    forma explícita, no con una nota.
+
+### Fase 4 (asistente con IA) — bloqueantes de declaración
+
+Como los de Fase 2, **no** afectan a la publicación de hoy: la app no tiene
+ninguna capacidad de IA (§10.3). Se listan para que no se pierdan.
+
+27. `[VERIFICAR: key del tier de pago de la API de Gemini antes de abrir la feature a terceros]` —
+    **el más importante.** Con la capa gratuita, Google usa el contenido para
+    mejorar sus productos y puede haber revisión humana; la política v1.5 §17
+    promete lo contrario. Es la precondición que hace verdadero el documento, no
+    una optimización de cuota.
+28. ✅ **Cerrado en el código el 2026-08-25:** `ai_access` y `ai_usage_log`
+    entraron a `delete_account_data` **en la misma migración que las crea**
+    (`20260825120000_ai_assistant_access_and_usage.sql`), con `on delete
+    cascade` a `auth.users` como refuerzo. Es la primera vez que una tabla nueva
+    no repite el bug B1, y `ai_reports` la repitió bien después. En **dev**,
+    `delete_account_data_coverage_gaps()` devuelve **cero filas** con las tres
+    tablas del asistente más `ai_reports` (reportado por quien aplicó la
+    migración; no re-ejecutado en esta pasada). Queda el paso operativo en
+    producción: `[VERIFICAR: aplicar las migraciones del asistente en prod y correr delete_account_data_coverage_gaps() ahí]`.
+29. `[VERIFICAR: acuerdo de tratamiento de datos con Google para la API de Gemini]` —
+    se suma a los DPA pendientes de Sentry y PowerSync que hoy sostienen el veto
+    de distribución en el EEE (`declaraciones-tiendas.md` §0.1).
+30. `[VERIFICAR: región de procesamiento de la API de Gemini]` — determina la
+    precisión de la sección 8 de la política.
+31. `[VERIFICAR: campos exactos del snapshot en la implementación, contra la lista publicada en la política §17.2]` —
+    la política enumera lo que sale; si el código envía un campo más, la política
+    queda falsa. Se cierra con el test de lista blanca de HU-08.
+32. ⚠️ **Parcialmente cerrado el 2026-08-25:** el mecanismo in-app de reporte de
+    contenido generado por IA ya existe **del lado de datos**
+    (`20260825140000_ai_reports.sql`: tabla, RLS de `insert`+`select`, razones
+    cerradas y borrado con la cuenta), pero **no del lado del cliente**: ningún
+    archivo de `lib/` la menciona. Play evalúa el binario, así que sigue siendo
+    bloqueante. Quedan dos verificaciones:
+    `[VERIFICAR: aplicar 20260825140000_ai_reports.sql en prod]` y
+    `[VERIFICAR: que la UI de reporte muestre el aviso previo de que el mensaje reportado se guarda en el servidor — sin él, la política §17.5 es falsa]`.
+33. `[VERIFICAR: alcance de la redacción de Sentry sobre reported_text y comment]` —
+    si un fallo en el envío del reporte arrastra el texto reportado a un evento
+    de Sentry, ese contenido llega a un tercero que la política §17.5 no nombra
+    para este flujo.
+
+### Añadidos el 2026-08-28 (revisión §10.4)
+
+34. `[VERIFICAR: cablear aiNotesAccessEnabled de extremo a extremo antes de publicar la política v1.6 §17.7 y la §8.7 de declaraciones-tiendas]` —
+    la columna existe (`app_database.dart`, `powersync_schema.dart`) pero nadie
+    la lee. Si el binario sale sin el cableado completo, hay que retirar §17.7 de
+    la política y §8.7 de las declaraciones antes de publicar, no dejarlas "por
+    si acaso".
+34-bis. `[VERIFICAR: implementar la comparación de aiConsentVersion y subir la versión al publicar el texto de consentimiento nuevo]` —
+    la columna ya existe; sin la comparación, quien aceptó el consentimiento
+    anterior nunca vería el aviso del interruptor de notas.
+35. `[VERIFICAR: añadir la sección de IA en Ajustes, con retiro de consentimiento y el interruptor de notas]` —
+    `settings_page.dart` no tiene ninguna entrada de IA. Sin ella, la política
+    §17.1 ("puedes retirar ese permiso desde Ajustes") es falsa y la Guideline
+    5.1.2(i) de Apple queda incumplida. Bloqueante de envío por sí solo.
+36. `[VERIFICAR: reescribir aiConsentBody y su equivalente en inglés]` — el texto
+    vigente dice "sin notas ni datos de identificación bancaria" y omite que sí
+    viajan cinco campos `name` de texto libre. La propuesta de redacción está en
+    el reporte de la revisión del 2026-08-28.
+37. `[VERIFICAR: extender el test de lista blanca del snapshot a los dos estados del interruptor]` —
+    apagado (ni una nota en el payload) y encendido (notas sí; `institution` y
+    `last4` siguen fuera). Sin el caso "apagado" en verde, la §17.7 de la
+    política no es defendible.
+38. `[VERIFICAR: revisión legal humana de la política v1.6 §12, §17.3 y §17.7]` —
+    el interruptor introduce una transferencia de datos de **terceros** (personas
+    nombradas en las notas) decidida por el usuario. Encaja mal en el esquema
+    responsable/encargado del RGPD y de la Ley 1581, y merece una lectura de
+    abogado antes de publicar.
 
 ---
 
@@ -1010,3 +1527,151 @@ implemente. El detalle está en [`checklist-fase-2.md`](checklist-fase-2.md).
 - El contenido exacto de los formularios de tienda al momento del envío: cambian
   seguido. `declaraciones-tiendas.md` documenta el porqué de cada respuesta, así
   que si el formulario cambia se puede recomponer sin re-auditar.
+
+---
+
+## 13. Fase 2 — superficie de captura (auditoría del 2026-09-09)
+
+**Alcance de esta pasada:** el esquema de Fase 2 y las dependencias, contra el
+worktree `docs/legal-fase2` en el commit `299e7aaa`. En esa fecha **no** se
+auditó código de feature porque no existía: se estaba construyendo en otras
+ramas.
+
+> **Actualización (2026-09-10):** `dev` absorbió desde entonces el PR #28
+> (`feat/capture-native`), que **sí** trae código de feature real: el servicio
+> nativo Android de escucha de notificaciones bancarias
+> (`android/app/src/main/kotlin/com/billetudo/app/capture/`, 8 archivos, más el
+> `<service>` y el `<queries>` correspondientes en `AndroidManifest.xml`) y la
+> capa `data`/`domain` de `lib/features/capture/` (21 archivos, cableada en DI).
+> Ver §13.1/§13.2, corregidos contra `dev` en esta misma fecha. **Lo que
+> todavía no existe** es la capa `presentation` (ninguna pantalla ni ajuste
+> llama a los casos de uso de captura, ninguna ruta la expone) ni la voz/los
+> recordatorios locales — ver el detalle abajo.
+
+> **La distinción que sostiene todo lo demás:** el **esquema** de Fase 2 está
+> aplicado, y las **dependencias** de voz y notificaciones locales están
+> descomentadas. La feature de **notificaciones bancarias** ya tiene servicio
+> nativo y capa de datos/dominio en `dev`, pero **sin UI ni ruta que la
+> exponga al usuario** — no es alcanzable desde la app. La feature de **voz** y
+> la de **recordatorios locales** siguen sin ningún código propio. Se declara
+> el binario, así que las respuestas vigentes de `declaraciones-tiendas.md` §1
+> y §2 **no cambian todavía** (nada de esto es alcanzable por el usuario ni
+> pide un permiso en runtime); §7 es lo que entra en vigor con el primer build
+> que exponga la captura al usuario.
+
+### 13.1 Qué SÍ está en el árbol (verificado)
+
+| Qué | Dónde | Nota |
+|---|---|---|
+| `schemaVersion` **34** | `lib/core/database/app_database.dart:1297` | Sube desde 33 |
+| Tabla **`PendingCaptures`** | `app_database.dart:987-1056` | Con `_SyncColumns`: **sincroniza** |
+| Tabla **`MerchantCategoryLearning`** | `app_database.dart:1067-1085` | Con `_SyncColumns`: **sincroniza** |
+| `enum CaptureStatus { pending, confirmed, discarded }` | `app_database.dart:137` | Texto, paridad con Postgres |
+| `Accounts.cardLast4` | `app_database.dart:259` | Distinta de `Accounts.last4`: esta identifica la **tarjeta**, aquélla la **cuenta** |
+| `ScheduledPayments.reminderLeadDays` | `app_database.dart:590` | Nullable = sin recordatorio |
+| Espejo en Postgres, RLS y `delete_account_data` | `supabase/migrations/20260909000000_fase2_capture_schema.sql` | RLS `user_id = auth.uid()` en ambas tablas; borrado en `:153-154` |
+| `speech_to_text: ^7.4.0` | `pubspec.yaml:90` | **Descomentado**, sin uso en `lib/` todavía |
+| `flutter_local_notifications: ^22.3.0` + `timezone: ^0.11.1` | `pubspec.yaml:102-103` | **Descomentados**, sin uso en `lib/` todavía |
+| `permission_handler: ^12.0.1` | `pubspec.yaml:113` | **Descomentado**, sin uso en `lib/` todavía. **Nota (2026-09-10): la versión real es `^12.0.1`, no `^13.0.2`** — el comentario adyacente en `pubspec.yaml:107-112` registra que la 13.x/`permission_handler_android` 14.1.0 rompe el build de Android (`Unresolved reference: compilerOptions`) |
+| Servicio nativo Android de notificaciones bancarias | `android/app/src/main/kotlin/com/billetudo/app/capture/` (8 archivos) + `<service>`/`<queries>` en `AndroidManifest.xml` | **Nuevo desde el 2026-09-10** (PR #28, `feat/capture-native`, ya en `dev`). Ver §13.2 |
+| Capa `data`/`domain` de captura en Flutter | `lib/features/capture/` (21 archivos), cableada en `lib/core/di/injection.config.dart` | **Nuevo desde el 2026-09-10.** Sin capa `presentation` — ver §13.2 |
+
+### 13.2 Qué SÍ y qué NO está en el árbol, corregido contra `dev` (2026-09-10)
+
+**Corrección sobre la pasada del 2026-09-09:** la fila "servicio nativo
+Android" y la fila "código de captura" de esta tabla estaban desactualizadas
+en cuanto se hizo esta auditoría — `dev` ya llevaba fusionado el PR #28 con el
+servicio real. Quedan así:
+
+| Qué exigiría el envío | Estado real (2026-09-10, contra `dev`) | Evidencia |
+|---|---|---|
+| Código de captura (data/domain) | **Existe** — notificaciones bancarias (Android) | `lib/features/capture/`: 21 archivos (datasources, repos, entidades, 8 casos de uso), sin `.gitkeep` |
+| Código de captura (presentation/UI) | **No existe** | Ninguna página, cubit ni ruta bajo `lib/features/capture/`; `grep -rln "capture" lib/features/ lib/core/router lib/main.dart` (excluyendo coincidencias de "captured"/"screenshot" de otras features) no encuentra ninguna pantalla ni ruta que la exponga |
+| Uso de los plugins de voz/notificaciones locales (`speech_to_text`, `flutter_local_notifications`, `permission_handler`) | **Ninguno** | `grep -rl "speech_to_text\|flutter_local_notifications\|permission_handler" lib/` no devuelve nada — siguen sin usarse, a diferencia del servicio nativo de abajo, que no depende de estos paquetes |
+| Servicio nativo Android (notificaciones bancarias) | **Existe** | `android/app/src/main/kotlin/com/billetudo/app/capture/`: `BilletudoNotificationListenerService.kt`, `CaptureChannelHandler.kt`, `CaptureSettings.kt`, `IssuerFilter.kt`, `IssuerRules.kt`, `NotificationAmountParser.kt`, `NotificationRuleEngine.kt`, `PendingCaptureBuffer.kt` (8 archivos, más `MainActivity.kt` — 9 en total) |
+| Permisos Android (`uses-permission`) | **Ninguno** | `android/app/src/main/AndroidManifest.xml` sigue sin **ningún** `uses-permission`; solo el `<queries>` de `PROCESS_TEXT` (boilerplate del engine) y el nuevo `<queries>` con los 3 paquetes del catálogo de bancos (ver fila siguiente) |
+| `<service>` de `NotificationListenerService` | **Existe** | `AndroidManifest.xml`: `<service android:name=".capture.BilletudoNotificationListenerService" android:exported="false" android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">`. **No es un `uses-permission`**: el acceso se concede como *special app access* en Ajustes del sistema, no en el diálogo de permisos en runtime — por eso la fila anterior sigue en "Ninguno" sin contradecir esta |
+| Visibilidad de paquetes del catálogo de bancos | **Existe, y coincide con el catálogo** | `<queries>` en `AndroidManifest.xml` declara exactamente `com.nequi.MobileApp`, `com.nu.production`, `com.google.android.apps.walletnfcrel` (3 paquetes) — los mismos 3 de `assets/capture/issuer_rules.json`. **No** usa `QUERY_ALL_PACKAGES` |
+| Permisos iOS | **Ninguno** | `ios/Runner/Info.plist` sigue sin **ninguna** clave `*UsageDescription` — esta feature es Android-only |
+| OCR | **Fuera de alcance** | `google_mlkit_text_recognition` sigue comentado, `pubspec.yaml:94` |
+| Widget | **No existe** | Sin `AppWidgetProvider` en `android/`, sin extensión WidgetKit en `ios/`; `lib/features/improvement/` sigue solo con `.gitkeep` |
+| Preferencia de emisores activos | **Vive en `SharedPreferences` nativas, no en `AppSettings`/Drift** | `CaptureSettings.kt` (`android/.../capture/CaptureSettings.kt`) guarda el set de emisores habilitados en `SharedPreferences` propias del proceso del servicio — a propósito, porque el servicio no puede abrir la base Drift/PowerSync-managed. `AppSettings` sigue sin ninguna columna de captura. **No hay UI Flutter que escriba esa preferencia todavía** (no hay capa `presentation`), así que por defecto está vacía y el servicio no captura nada aunque el usuario conceda el acceso a notificaciones |
+
+### 13.3 La retención cero es demostrable, no es una promesa
+
+Es el punto que sostiene la frase central de la política v1.8 §18.2, así que se
+verificó de forma directa en las dos mitades del esquema:
+
+- **Drift:** `PendingCaptures` (`app_database.dart:987-1056`) tiene 13 columnas
+  propias y **ninguna** es texto crudo de la notificación. No hay `rawText`,
+  `title`, `bigText` ni equivalente. El propio doc-comment de la clase
+  (`:972-982`) lo declara decisión no negociable y explica por qué:
+  *"the literal body of a notification can carry OTPs, names, and anything else
+  the bank chose to put in it, and it would then be synced to Postgres and kept
+  in backups."*
+- **Postgres:** el `create table` (`20260909000000_fase2_capture_schema.sql:29-50`)
+  es el espejo exacto. Tampoco hay columna de texto crudo. Aunque alguien la
+  añadiera solo del lado del cliente, no tendría dónde sincronizar.
+- **`merchantRaw` no es una puerta trasera.** El comentario de la columna
+  (`app_database.dart:1015-1019`) acota su contenido a *"ONLY the fragment
+  identified as the merchant"*. La regla de negocio equivalente para la `note` de
+  la transacción está en `19-notificaciones-bancarias.md` HU-03, y es explícita
+  en prohibir el atajo de "tomar el mensaje y quitarle el monto".
+
+**Por eso la política puede escribir** *"el contenido de las notificaciones no se
+envía a ningún servidor porque no se guarda en ninguna parte"*: es una propiedad
+del esquema, comprobable por cualquiera que lo lea. **Y por eso mismo la frase se
+cae entera** si alguien añade una columna de texto crudo: las dos decisiones
+—retención cero y sync— se revisan juntas o no se revisan.
+
+### 13.4 Qué sale del dispositivo, exactamente
+
+`PendingCaptures` y `MerchantCategoryLearning` llevan `_SyncColumns`, así que
+sincronizan como el resto del esquema. Con sesión iniciada salen del dispositivo:
+
+| Campo | Qué revela |
+|---|---|
+| `amountMinor`, `currency`, `entryType`, `postedAt` | Datos financieros. Ya cubiertos por *Financial info* |
+| `merchantRaw` | El comercio… **o el nombre completo de una persona** en una transferencia recibida |
+| `accountHint`, `Accounts.cardLast4` | Últimos 4 dígitos de la tarjeta |
+| `sourcePackage` | **Qué apps de banco tiene instaladas el usuario.** Fila nueva de Data Safety (*App activity → Installed apps*) |
+| `sourceRuleId`, `status`, `transactionId`, `duplicateOfTransactionId` | Metadatos internos |
+| `merchantKey`, `categoryId`, `hitCount` | El aprendizaje comercio→categoría |
+
+**El caso del nombre de un tercero está confirmado con notificaciones reales:** Nu
+envía *"Te llegó dinero de DANIELA TORO VALENCIA"*; Nequi lo enmascara. Ese
+nombre es exactamente lo que el parser extrae como comercio, así que se guarda y
+sincroniza. Es dato personal de una persona que no es usuaria de billetudo y que
+no dio ningún consentimiento a la app. Declarado en la política v1.8 §4.6 y §12,
+y en `declaraciones-tiendas.md` §7.3 (*Personal info → Name*).
+
+### 13.5 Bloqueantes abiertos de esta superficie
+
+- ⛔ **B9 — `sentry_redaction.dart` no cubre nada de Fase 2.**
+  `lib/core/crash/sentry_redaction.dart` solo tiene reglas para mensajes de error
+  de Postgres (claves duplicadas, filas rechazadas, parámetros de consulta). No
+  hay ninguna regla para transcripciones, texto de notificaciones ni contenido de
+  una captura. Un crash que filtre a Sentry lo que la política promete que no se
+  transmite **vuelve falsa esa promesa**. Es bloqueante del primer build de
+  captura, incluido TestFlight.
+- ⛔ **B10 — no existe el borrado local ("borrar todas las capturas y lo
+  aprendido").** La política v1.8 §18.4 lo describe y `19-notificaciones-bancarias.md`
+  HU-08 lo exige como no negociable. No hay código.
+- ⛔ **B11 — no existe la pantalla de transparencia.** Misma HU-08, misma
+  situación. La política la describe.
+- ✅ **B12 — RESUELTO (2026-09-10): visibilidad de paquetes.** Ver el punto 27
+  de §11: la lista de apps de banco instaladas **no** se resolvió con
+  `QUERY_ALL_PACKAGES`. `AndroidManifest.xml` declara un `<queries>` explícito
+  con los 3 paquetes exactos del catálogo (`com.nequi.MobileApp`,
+  `com.nu.production`, `com.google.android.apps.walletnfcrel`), que coinciden
+  uno a uno con `assets/capture/issuer_rules.json`. Sigue pendiente que, si se
+  añade un emisor nuevo al catálogo, se añada también su línea en el
+  `<queries>` — no es automático.
+
+Los tres primeros (B9-B11) tienen la misma forma: **la política v1.8 describe un
+comportamiento que el código todavía no tiene**. Eso es correcto mientras la
+política **no se publique** —se redacta antes justamente para poder publicarla
+antes de que la función llegue al usuario— y se vuelve una declaración falsa en
+el instante en que se despliegue sin ellos. Por eso la v1.8 lleva una marca de
+"no desplegar" en su cabecera y el checklist tiene una fase de publicación
+separada.

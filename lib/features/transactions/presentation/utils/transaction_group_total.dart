@@ -66,3 +66,14 @@ TransactionGroupTotal? transactionGroupTotalFor(
   }
   return sumTransactionGroup(items);
 }
+
+/// Bugfix (issue #7 item 5): the whole filtered period's total, not just one
+/// date group's — same exclusive-type/currency gate as
+/// [transactionGroupTotalFor] (only `items` differs: every match in the
+/// active filter, not one day's). Shown once, near the list, alongside each
+/// day's own total rather than replacing it.
+TransactionGroupTotal? transactionPeriodTotalFor(
+  TransactionFilter filter,
+  List<TransactionWithDetails> items,
+) =>
+    transactionGroupTotalFor(filter, items);

@@ -8,6 +8,7 @@ import '../../../../core/error/result.dart';
 import '../../../categories/domain/entities/category.dart' show CategoryKind;
 import '../../../categories/domain/entities/category_node.dart';
 import '../../../categories/domain/usecases/watch_categories.dart';
+import '../../domain/entities/transaction.dart' show TransactionType;
 
 enum CategoryFilterStatus { loading, ready, failure }
 
@@ -20,9 +21,11 @@ class CategoryFilterState extends Equatable {
     this.incomeNodes = const <CategoryNode>[],
     Set<String> selected = const <String>{},
     Set<String> expandedRootIds = const <String>{},
+    Set<TransactionType> activeTypes = const <TransactionType>{},
     this.failure,
   })  : selected = Set.unmodifiable(selected),
-        expandedRootIds = Set.unmodifiable(expandedRootIds);
+        expandedRootIds = Set.unmodifiable(expandedRootIds),
+        activeTypes = Set.unmodifiable(activeTypes);
 
   final CategoryFilterStatus status;
   final List<CategoryNode> expenseNodes;
@@ -35,9 +38,23 @@ class CategoryFilterState extends Equatable {
   /// Purely a UI concern: never persisted, always starts collapsed.
   final Set<String> expandedRootIds;
 
+  /// Bugfix item 2: the Tipo chip's active selection, passed in so this sheet
+  /// only offers categories of a type the user could actually be filtering
+  /// for — an income-only or expense-only selection hides the other tree.
+  /// Empty means "no type filter", i.e. both trees stay visible.
+  final Set<TransactionType> activeTypes;
+
   final Failure? failure;
 
   bool isExpanded(String rootId) => expandedRootIds.contains(rootId);
+
+  /// Whether the expense tree should render, given [activeTypes].
+  bool get showsExpenseTree =>
+      activeTypes.isEmpty || activeTypes.contains(TransactionType.expense);
+
+  /// Whether the income tree should render, given [activeTypes].
+  bool get showsIncomeTree =>
+      activeTypes.isEmpty || activeTypes.contains(TransactionType.income);
 
   CategoryFilterState copyWith({
     CategoryFilterStatus? status,
@@ -45,6 +62,7 @@ class CategoryFilterState extends Equatable {
     List<CategoryNode>? incomeNodes,
     Set<String>? selected,
     Set<String>? expandedRootIds,
+    Set<TransactionType>? activeTypes,
     Failure? failure,
   }) =>
       CategoryFilterState(
@@ -53,12 +71,20 @@ class CategoryFilterState extends Equatable {
         incomeNodes: incomeNodes ?? this.incomeNodes,
         selected: selected ?? this.selected,
         expandedRootIds: expandedRootIds ?? this.expandedRootIds,
+        activeTypes: activeTypes ?? this.activeTypes,
         failure: failure,
       );
 
   @override
-  List<Object?> get props =>
-      [status, expenseNodes, incomeNodes, selected, expandedRootIds, failure];
+  List<Object?> get props => [
+        status,
+        expenseNodes,
+        incomeNodes,
+        selected,
+        expandedRootIds,
+        activeTypes,
+        failure,
+      ];
 }
 
 /// Drives the category filter sheet: the symmetric root/subcategory toggle of
@@ -72,9 +98,13 @@ class CategoryFilterCubit extends Cubit<CategoryFilterState> {
   StreamSubscription<Result<List<CategoryNode>>>? _expenseSubscription;
   StreamSubscription<Result<List<CategoryNode>>>? _incomeSubscription;
 
-  Future<void> start(Set<String> initialSelected) async {
+  Future<void> start(
+    Set<String> initialSelected, {
+    Set<TransactionType> activeTypes = const <TransactionType>{},
+  }) async {
     await _cancelSubscriptions();
-    emit(CategoryFilterState(selected: initialSelected));
+    emit(CategoryFilterState(
+        selected: initialSelected, activeTypes: activeTypes));
     _expenseSubscription =
         _watchCategories(CategoryKind.expense).listen((result) {
       if (isClosed) {
@@ -150,11 +180,16 @@ class CategoryFilterCubit extends Cubit<CategoryFilterState> {
     emit(state.copyWith(expandedRootIds: next));
   }
 
-  /// The header's "Todas": selects every root and subcategory across both
-  /// trees.
+  /// The header's "Todas": selects every root and subcategory across the
+  /// tree(s) currently visible (bugfix item 2 — a hidden tree, e.g. income
+  /// while filtering "solo gastos", is left untouched instead of being
+  /// selected behind the scenes).
   void selectAll() {
     final next = <String>{};
-    for (final node in [...state.expenseNodes, ...state.incomeNodes]) {
+    for (final node in [
+      if (state.showsExpenseTree) ...state.expenseNodes,
+      if (state.showsIncomeTree) ...state.incomeNodes,
+    ]) {
       next.add(node.root.id);
       next.addAll(node.subcategories.map((category) => category.id));
     }

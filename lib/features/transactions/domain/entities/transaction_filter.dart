@@ -58,6 +58,31 @@ class TransactionFilter extends Equatable {
   bool get hasTagFilter => tagIds.isNotEmpty;
   bool get hasBudgetPeriodFilter => budgetPeriod != null;
 
+  /// HU-06b: unlike the other dimensions, [datePeriod] is never "empty" —
+  /// its default is always the current month
+  /// ([DatePeriodFilter.thisMonth]). "Active" here means "not that default",
+  /// which is what flips the Fecha chip/badge on.
+  bool get hasDateFilter => datePeriod != DatePeriodFilter.thisMonth();
+
+  /// Whether the active period can be stepped back/forward (`PeriodStepper`'s
+  /// condition, Adición 2026-09-10 `u6sSAc`/`w9Eszi`). A custom range has no
+  /// "previous"/"next" window — only its chip should show, never the nav
+  /// bar.
+  bool get hasNavigablePeriod =>
+      (hasDateFilter && !datePeriod.isCustomRange) || hasBudgetPeriodFilter;
+
+  /// Issue #7: sum of dimensions with an active filter, used for the
+  /// unified filters sheet's badge. [searchText] and [sortOrder] are
+  /// deliberately excluded — they are not filters shown in that sheet.
+  int get activeFilterCount => <bool>[
+        hasAccountFilter,
+        hasBudgetPeriodFilter,
+        hasDateFilter,
+        hasTypeFilter,
+        hasCategoryFilter,
+        hasTagFilter,
+      ].where((isActive) => isActive).length;
+
   TransactionFilter copyWith({
     String? searchText,
     Set<String>? accountIds,

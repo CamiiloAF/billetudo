@@ -11,6 +11,7 @@ import 'scheduled_category_icon_wrap.dart';
 import 'scheduled_debt_chip.dart';
 import 'scheduled_finished_chip.dart';
 import 'scheduled_manual_mode_chip.dart';
+import 'scheduled_reminder_chip.dart';
 
 /// `tit0W` geometry: 18 of corner radius, 14 of padding and 12 between the two
 /// axes — the card is slightly tighter and rounder than the generic
@@ -49,6 +50,7 @@ class ScheduledCard extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final payment = entry.scheduledPayment;
+    final reminder = payment.reminder;
     final isTransfer = payment.isTransfer;
     final title = ScheduledPaymentFormat.templateName(
       note: payment.note,
@@ -170,6 +172,23 @@ class ScheduledCard extends StatelessWidget {
                   ),
                 ],
               ),
+              // `tit0W/v5a9Gq` "Aviso Row": the reminder chip gets its **own**
+              // row, not a slot next to the frequency chip. Measured in the
+              // frame: with the real copy ("Te avisamos una semana antes") it
+              // does not fit beside the cadence chip and the countdown in
+              // 350px. It also coexists with the manual-mode chip instead of
+              // replacing it — they say different things (how the payment
+              // behaves vs. when we warn about it) and the design keeps both.
+              //
+              // Absent when there is no reminder: the missing chip *is* the
+              // "sin recordatorio" signal, there is no negative chip.
+              if (!isFinished && reminder != null) ...[
+                const SizedBox(height: _cardGap),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: ScheduledReminderChip(reminder: reminder),
+                ),
+              ],
             ],
           ),
         ),

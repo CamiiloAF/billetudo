@@ -8,6 +8,8 @@ import '../../../../core/utils/money_formatter.dart';
 import '../../domain/entities/transaction.dart';
 import '../cubit/transaction_form_state.dart';
 import 'numeric_keypad.dart';
+import 'transaction_amount_assumption_hint.dart';
+import 'voice_dictate_pill.dart';
 
 /// The `Zona Fija` of the transaction form (`transacciones.md`): the amount is
 /// the most important datum on the screen, so it is anchored to the bottom and
@@ -38,6 +40,8 @@ class TransactionAmountFixedZone extends StatelessWidget {
     required this.onBackspace,
     this.entryFractionDigits = -1,
     this.onBackspaceLongPress,
+    this.onDictate,
+    this.amountSpokenText,
     this.errorText,
     super.key,
   });
@@ -65,6 +69,20 @@ class TransactionAmountFixedZone extends StatelessWidget {
 
   /// Long-pressing backspace clears the whole amount (item 5).
   final VoidCallback? onBackspaceLongPress;
+
+  /// The secondary voice trigger (`E1vEe7`): the "Dictar" pill in the header
+  /// of the expanded zone. `null` leaves the zone exactly as it was — the
+  /// component is the same one, with one optional button, not a second
+  /// widget.
+  final VoidCallback? onDictate;
+
+  /// The dictated words the amount was inferred from
+  /// (`TransactionFormState.amountSpokenText`), when — and only when — the
+  /// parser guessed the magnitude. Non-null switches the expanded zone to
+  /// `Va8F7`, the sibling component that carries the "Supusimos…" pill; null
+  /// leaves it exactly as `E1vEe7`. Same zone, one optional block, not a
+  /// second widget.
+  final String? amountSpokenText;
 
   /// Set when the amount failed validation (HU-01 criterion 8: a movement
   /// needs a positive amount). Shown as a message anchored above the zone so
@@ -120,6 +138,8 @@ class TransactionAmountFixedZone extends StatelessWidget {
                       onEquals: onEquals,
                       onBackspace: onBackspace,
                       onBackspaceLongPress: onBackspaceLongPress,
+                      onDictate: onDictate,
+                      amountSpokenText: amountSpokenText,
                     )
                   : TransactionAmountCollapsedBar(
                       key: const ValueKey('collapsed'),
@@ -166,6 +186,8 @@ class TransactionAmountExpandedZone extends StatelessWidget {
     required this.onBackspace,
     this.entryFractionDigits = -1,
     this.onBackspaceLongPress,
+    this.onDictate,
+    this.amountSpokenText,
     super.key,
   });
 
@@ -185,11 +207,19 @@ class TransactionAmountExpandedZone extends StatelessWidget {
   /// Long-pressing backspace clears the whole amount (item 5).
   final VoidCallback? onBackspaceLongPress;
 
+  /// See [TransactionAmountFixedZone.onDictate].
+  final VoidCallback? onDictate;
+
+  /// See [TransactionAmountFixedZone.amountSpokenText].
+  final String? amountSpokenText;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
+    final onDictate = this.onDictate;
+    final amountSpokenText = this.amountSpokenText;
     const money = MoneyFormatter();
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -208,6 +238,10 @@ class TransactionAmountExpandedZone extends StatelessWidget {
                   ),
                 ),
               ),
+              if (onDictate != null) ...[
+                VoiceDictatePill(onPressed: onDictate),
+                const SizedBox(width: 4),
+              ],
               IconButton(
                 onPressed: onCollapse,
                 tooltip: l10n.transactionFormCollapseAmount,
@@ -238,6 +272,20 @@ class TransactionAmountExpandedZone extends StatelessWidget {
             ),
           ),
         ),
+        // `Va8F7`'s Amount Block: the pill sits under the value, inside the
+        // same 8pt rhythm, and the zone reverts to `E1vEe7` the moment the
+        // amount stops being a guess.
+        if (amountSpokenText != null) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: TransactionAmountAssumptionHint(
+              amountMinor: amountMinor,
+              currency: currency,
+              spokenText: amountSpokenText,
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
         NumericKeypad(
           onDigit: onDigit,
           onDecimal: onDecimal,

@@ -38,6 +38,8 @@ class TransactionFormState extends Equatable {
     this.note = '',
     this.tagIds = const <String>{},
     this.source = TransactionSource.manual,
+    this.amountIsUncertain = false,
+    this.amountSpokenText,
     this.focusedField = TransactionFormFocusedField.none,
     this.calcOperator,
     this.calcOperand,
@@ -86,6 +88,28 @@ class TransactionFormState extends Equatable {
   /// Capture origin. Read-only in the form: HU-04 never lets an edit rewrite
   /// it.
   final TransactionSource source;
+
+  /// Only ever true for a voice capture whose amount came out of the
+  /// magnitude-elision heuristic ("gasté veinte" -> 20.000, see
+  /// `ParseSpokenTransaction`). The amount is prefilled but explicitly
+  /// unconfirmed, so the form asks the user to check it instead of presenting
+  /// a guess as a fact. Never persisted: it is a property of this editing
+  /// session, not of the transaction.
+  final bool amountIsUncertain;
+
+  /// The dictated words [amountMinor] was inferred from ("veinte"), so the
+  /// assumption can be shown next to the amount as a quote instead of an
+  /// unexplained warning. Only read while [amountIsUncertain] is true — it is
+  /// deliberately not cleared when the flag drops, because nothing renders it
+  /// then and clearing it would mean special-casing `copyWith`'s null
+  /// semantics for a value that is already invisible.
+  final String? amountSpokenText;
+
+  /// Whether the "Supusimos X por «...»" hint has everything it needs: an
+  /// amount the parser guessed *and* the words it guessed from. Without the
+  /// quote the hint would be an unexplained doubt, so it stays hidden.
+  bool get showsAmountAssumption =>
+      amountIsUncertain && (amountSpokenText?.trim().isNotEmpty ?? false);
 
   final TransactionFormFocusedField focusedField;
 
@@ -170,6 +194,8 @@ class TransactionFormState extends Equatable {
     String? note,
     Set<String>? tagIds,
     TransactionSource? source,
+    bool? amountIsUncertain,
+    String? amountSpokenText,
     TransactionFormFocusedField? focusedField,
     CalcOperator? calcOperator,
     int? calcOperand,
@@ -207,6 +233,8 @@ class TransactionFormState extends Equatable {
         note: note ?? this.note,
         tagIds: tagIds ?? this.tagIds,
         source: source ?? this.source,
+        amountIsUncertain: amountIsUncertain ?? this.amountIsUncertain,
+        amountSpokenText: amountSpokenText ?? this.amountSpokenText,
         focusedField: focusedField ?? this.focusedField,
         calcOperator: clearCalc ? null : (calcOperator ?? this.calcOperator),
         calcOperand: clearCalc ? null : (calcOperand ?? this.calcOperand),
@@ -238,6 +266,8 @@ class TransactionFormState extends Equatable {
         note,
         tagIds,
         source,
+        amountIsUncertain,
+        amountSpokenText,
         focusedField,
         calcOperator,
         calcOperand,

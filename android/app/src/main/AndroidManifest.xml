@@ -1,4 +1,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Recordatorios de vencimiento (HU-08, pagos programados) y avisos
+         locales. Se piden en contexto, cuando el usuario configura su primer
+         recordatorio, nunca al arrancar. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Android borra todas las alarmas programadas al reiniciar. El receptor
+         de flutter_local_notifications las reprograma con este permiso, y la
+         app además reconcilia el set completo de recordatorios en cada
+         arranque (GenerateDueScheduledPayments -> SyncScheduledPaymentReminders),
+         que es la garantía real de que un reinicio no deja a nadie sin aviso. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- Captura por voz (docs/requirements/fase-2/17-captura-voz.md, HU-07).
+         Se pide en runtime, en el momento de dictar: nunca en el arranque ni
+         en el onboarding. El audio no se guarda ni se sincroniza. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
         android:label="@string/app_name"
         android:name="${applicationName}"
@@ -25,6 +39,63 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!--
+            Widget de captura rápida
+            (docs/requirements/fase-2/20-widget-captura-rapida.md).
+            `exported="false"`: el único que lo dispara es el sistema de
+            widgets; sus toques abren MainActivity con un intent explícito,
+            no con un deep link público.
+        -->
+        <receiver
+            android:name=".widget.QuickCaptureWidgetProvider"
+            android:label="@string/widget_quick_capture_name"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/quick_capture_widget_info" />
+        </receiver>
+        <!--
+            Configuration activity del widget (HU-03,
+            docs/requirements/fase-2/20-widget-captura-rapida.md): el sistema
+            la abre al añadir el widget (`android:configure` en
+            quick_capture_widget_info.xml) y el usuario puede reabrirla
+            después. `exported="true"` es obligatorio para este tipo de
+            actividad — sin él el launcher no puede lanzarla — pero solo el
+            propio sistema de widgets la invoca en la práctica.
+        -->
+        <activity
+            android:name=".widget.QuickCaptureWidgetConfigureActivity"
+            android:exported="true"
+            android:theme="@style/NormalTheme">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+        <!-- Bank-notification capture (Fase 2, Android only).
+             This <service> introduces the FIRST sensitive permission of the
+             app and changes the permission list shown in the store: it
+             requires a use declaration and an updated Data Safety form before
+             publishing (docs/requirements/fase-2/19-notificaciones-bancarias.md,
+             HU-08).
+
+             exported="false" plus the system signature permission: only
+             Android itself can bind this service.
+             The service receives EVERY notification on the device; filtering
+             by packageName happens in IssuerFilter, BEFORE any content is
+             read. -->
+        <service
+            android:name=".capture.BilletudoNotificationListenerService"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
@@ -41,5 +112,36 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Android 11+ exige declarar el servicio de reconocimiento para
+             poder resolverlo; sin esto `SpeechRecognizer` no encuentra ningún
+             proveedor y la captura por voz queda muda sin explicación. -->
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
+        </intent>
+
+        <!-- CLOSED issuer catalog (HU-02). Since Android 11 an app cannot see
+             which other packages are installed unless it declares them here;
+             without this list getInstalledIssuerApps reports them as "not
+             installed" with no visible error.
+
+             DO NOT replace this with QUERY_ALL_PACKAGES. That permission is
+             sensitive, forces a declaration form in Google Play and is one of
+             the most rejected ones. Listing exactly the catalogued
+             packages needs no declaration at all AND matches what the feature
+             promises the user ("we only look at banks"): the system literally
+             does not let this app see anything else. Adding an issuer means
+             adding one line here, never widening the query.
+
+             These three packages were confirmed on a real device and must
+             match issuer_rules.json EXACTLY (mind Nequi's capitals and
+             "walletnfcrel", not "wallet").
+
+             Bancolombia is deliberately absent: it does not send push
+             notifications, only SMS, and an SMS arrives as a notification of
+             the MESSAGING app. Listening to it would mean reading the sender
+             of every message the user gets. See issuer_rules.json. -->
+        <package android:name="com.nequi.MobileApp" />
+        <package android:name="com.nu.production" />
+        <package android:name="com.google.android.apps.walletnfcrel" />
     </queries>
 </manifest>

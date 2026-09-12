@@ -67,8 +67,7 @@ class ScheduledPaymentEditableAmountField extends StatefulWidget {
 class _ScheduledPaymentEditableAmountFieldState
     extends State<ScheduledPaymentEditableAmountField> {
   bool _expanded = false;
-  late CalculatorAmountBuffer _buffer =
-      CalculatorAmountBuffer(amountMinor: widget.amountMinor);
+  late CalculatorAmountBuffer _buffer = _freshBuffer(widget.amountMinor);
 
   /// The last value this widget itself reported via `widget.onChanged`, so an
   /// incoming `widget.amountMinor` that merely echoes back a local edit is
@@ -83,11 +82,27 @@ class _ScheduledPaymentEditableAmountFieldState
     if (widget.amountMinor != oldWidget.amountMinor &&
         widget.amountMinor != _lastEmitted) {
       setState(() {
-        _buffer = CalculatorAmountBuffer(amountMinor: widget.amountMinor);
+        _buffer = _freshBuffer(widget.amountMinor);
         _expanded = false;
       });
     }
   }
+
+  /// A buffer preloaded with an external amount (initial value, or a reset
+  /// from `didUpdateWidget`) that hasn't been touched by the calculator yet.
+  ///
+  /// Marked `justEvaluated: true` rather than `startNewOperand: true`: both
+  /// make the *next digit press* replace the preloaded amount instead of
+  /// appending to it (`digitPressed`'s `_startFreshOperandIfNeeded` clears
+  /// on either flag), but only `justEvaluated` keeps backspace deleting the
+  /// preloaded amount digit-by-digit — the same behaviour already covered by
+  /// `calculator_amount_buffer_test.dart`'s "tras evaluar con =, backspace
+  /// edita el resultado" case. `startNewOperand` instead makes the *first*
+  /// backspace press wipe the whole amount to 0 (`backspacePressed`'s
+  /// `startNewOperand` branch), which would be a second, backspace-shaped
+  /// version of this same bug.
+  static CalculatorAmountBuffer _freshBuffer(int amountMinor) =>
+      CalculatorAmountBuffer(amountMinor: amountMinor, justEvaluated: true);
 
   void _apply(CalculatorAmountBuffer next) {
     setState(() => _buffer = next);
@@ -95,7 +110,17 @@ class _ScheduledPaymentEditableAmountFieldState
     widget.onChanged(next.amountMinor);
   }
 
-  void _expand() => setState(() => _expanded = true);
+  // Dismissing the system keyboard before expanding is the actual fix for
+  // `docs/dev-runs/` HU-05 overflow: on a real device (unlike a mocked
+  // `flutter test` TextInput channel), the on-screen keyboard stays up from
+  // whatever text field had focus (e.g. Nota) until something else claims
+  // focus. Without this, the software keyboard's inset and this calculator's
+  // own expanded height (header + big value + `NumericKeypad`) briefly
+  // compete for the same space and the fixed body `Column` overflows.
+  void _expand() {
+    FocusScope.of(context).unfocus();
+    setState(() => _expanded = true);
+  }
 
   void _collapse() => setState(() => _expanded = false);
 

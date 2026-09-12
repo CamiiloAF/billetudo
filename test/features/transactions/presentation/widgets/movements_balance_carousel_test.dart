@@ -63,9 +63,11 @@ void main() {
   }) async {
     final cubit =
         BalanceCarouselCubit(_InMemoryCarouselPrefs(collapsed: collapsed));
-    if (collapsed) {
-      await cubit.collapse();
-    }
+    // Mirrors production (`app_router.dart` calls `.load()` on entry): the
+    // cubit's constructor always starts from `BalanceCarouselState`'s own
+    // default (collapsed), so the persisted preference only takes effect
+    // once `load()` reads it back.
+    await cubit.load();
     await tester.pumpAppWidget(
       BlocProvider<BalanceCarouselCubit>.value(
         value: cubit,
@@ -220,6 +222,9 @@ void main() {
     );
     final cubit =
         BalanceCarouselCubit(_InMemoryCarouselPrefs(collapsed: false));
+    // See the note in `pumpCarousel`: the cubit only reflects the persisted
+    // preference after `load()`.
+    await cubit.load();
 
     await tester.pumpAppWidget(
       BlocProvider<BalanceCarouselCubit>.value(
@@ -290,6 +295,9 @@ void main() {
       );
       final cubit =
           BalanceCarouselCubit(_InMemoryCarouselPrefs(collapsed: false));
+      // See the note in `pumpCarousel`: the cubit only reflects the persisted
+      // preference after `load()`.
+      await cubit.load();
 
       await tester.pumpAppWidget(
         BlocProvider<BalanceCarouselCubit>.value(
@@ -318,9 +326,13 @@ void main() {
     'the dots',
     (tester) async {
       // Open expanded on the third card (index 2) of three accounts.
-      final cubit =
-          BalanceCarouselCubit(_InMemoryCarouselPrefs(collapsed: false))
-            ..pageChanged(2);
+      final cubit = BalanceCarouselCubit(
+        _InMemoryCarouselPrefs(collapsed: false),
+      );
+      // See the note in `pumpCarousel`: the cubit only reflects the
+      // persisted preference after `load()`.
+      await cubit.load();
+      cubit.pageChanged(2);
       await tester.pumpAppWidget(
         BlocProvider<BalanceCarouselCubit>.value(
           value: cubit,
@@ -357,10 +369,26 @@ void main() {
   );
 
   group('BalanceCarouselCubit', () {
-    test('pageChanged records the active card and keeps collapse', () {
+    test('starts collapsed before load() reads any persisted preference', () {
       final cubit =
-          BalanceCarouselCubit(_InMemoryCarouselPrefs(collapsed: false))
-            ..pageChanged(2);
+          BalanceCarouselCubit(_InMemoryCarouselPrefs(collapsed: false));
+
+      // `BalanceCarouselState`'s own default is collapsed: the carousel is
+      // born collapsed on a fresh install (no preference saved yet), even
+      // though this datasource stub would report `false` once `load()` runs.
+      expect(cubit.state.collapsed, isTrue);
+    });
+
+    test('pageChanged records the active card and keeps collapse', () async {
+      final cubit = BalanceCarouselCubit(
+        _InMemoryCarouselPrefs(collapsed: false),
+      );
+      // Fix the initial state explicitly instead of relying on
+      // `BalanceCarouselState`'s own default (collapsed): this test is about
+      // `pageChanged` preserving whatever collapse value the cubit already
+      // had, not about what that default happens to be.
+      await cubit.load();
+      cubit.pageChanged(2);
 
       expect(cubit.state.currentPage, 2);
       expect(cubit.state.collapsed, isFalse);

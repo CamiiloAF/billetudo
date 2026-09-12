@@ -24,6 +24,7 @@ class ScheduledPaymentDateField extends StatelessWidget {
     this.placeholder,
     this.onCleared,
     this.minDate,
+    this.errorText,
     super.key,
   });
 
@@ -37,6 +38,11 @@ class ScheduledPaymentDateField extends StatelessWidget {
   /// be dated before the debt was created (HU-03, fix 4a-i).
   final DateTime? minDate;
 
+  /// When set, switches [TransactionFormFieldButton] to its error state
+  /// (`$expense` border + message below it) — same pattern as Cuenta/
+  /// Categoría in this same form.
+  final String? errorText;
+
   @override
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context).toString();
@@ -49,6 +55,7 @@ class ScheduledPaymentDateField extends StatelessWidget {
       hasValue: date != null,
       inlineIcon:
           onCleared != null ? LucideIcons.infinity : LucideIcons.calendar,
+      errorText: errorText,
       onCleared: onCleared,
       onTap: () async {
         // Drop the system keyboard before opening the picker so it does not

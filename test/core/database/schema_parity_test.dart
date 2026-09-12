@@ -40,6 +40,25 @@ const _postgresOnlyTables = <String>{
   // Global read-only catalog of suggested categories. Fetched over REST, never
   // synced, and it has no `user_id` nor sync columns.
   'category_seeds',
+
+  // Server-side control plane for the AI assistant. These are decisions the
+  // server makes *about* a user, not data belonging to one, so the device must
+  // never be able to write them: `ai_access` gates the feature and `ai_usage_log`
+  // is what a quota will be counted from in Fase B — syncing either would put
+  // both under the user's control. `ai_feature_flags` is a global catalog with
+  // no `user_id` at all.
+  //
+  // The Edge Function reaches them with the service role; the app only ever
+  // reads its own row, through the `my_ai_access_state()` RPC.
+  'ai_access',
+  'ai_feature_flags',
+  'ai_usage_log',
+
+  // In-app reports of AI-generated content (required by Play's AI-Generated
+  // Content policy). Insert-only from the device and never read back into the
+  // local database, so there is nothing to sync: RLS lets a user create and
+  // re-read their own rows, and nothing else.
+  'ai_reports',
 };
 
 /// Columns kept in Postgres for backwards compatibility with older clients
@@ -64,13 +83,25 @@ Map<String, Set<String>> _readPostgresSnapshot() {
   };
 }
 
+/// The synced half of `powerSyncSchema`.
+///
+/// A `Table.localOnly` never reaches Postgres by design, so it has no
+/// counterpart to compare against and must not be read as a missing table.
+/// Filtering on the flag rather than on a hardcoded name list is deliberate:
+/// the next local-only table added is then covered for free, instead of failing
+/// this test and tempting whoever added it to add an exception here.
+///
+/// The exclusion is safe precisely because it is not an exception: a local-only
+/// table has no upload queue, so it cannot cause the PGRST204 stall this file
+/// exists to prevent.
 Map<String, Set<String>> _readClientSchema() {
   return {
     for (final table in powerSyncSchema.tables)
-      table.name: {
-        _implicitColumn,
-        ...table.columns.map((column) => column.name),
-      },
+      if (!table.localOnly)
+        table.name: {
+          _implicitColumn,
+          ...table.columns.map((column) => column.name),
+        },
   };
 }
 

@@ -20,6 +20,7 @@ class ScheduledPaymentSummary extends Equatable {
     this.pendingOccurrenceCount = 0,
     this.nextAwaitingDate,
     this.lastPaymentDate,
+    this.projectedDate,
   });
 
   final ScheduledPayment scheduledPayment;
@@ -47,9 +48,49 @@ class ScheduledPaymentSummary extends Equatable {
   /// is awaiting, in which case [nextPaymentDate] falls back to the cursor.
   final DateTime? nextAwaitingDate;
 
-  /// The date the card shows as "próximo pago": the nearest awaiting
-  /// occurrence's effective date when one exists, else the template cursor.
-  DateTime get nextPaymentDate => nextAwaitingDate ?? scheduledPayment.nextDate;
+  /// One of this template's real future cadence dates, mathematically
+  /// projected by `ProjectUpcomingOccurrences` (2026-09 fix) instead of the
+  /// raw `nextDate` cursor — the same self-healing math Presupuestos' "Pagos
+  /// programados del período" already used, adopted here so both screens
+  /// agree on a template's upcoming dates instead of this one trusting a
+  /// cursor that only advances on catch-up/resolution. `GetScheduledPayments`
+  /// emits one [ScheduledPaymentSummary] per projected date when more than
+  /// one falls inside its forward window, so this — not [nextAwaitingDate] —
+  /// is what makes those rows distinct copies of the same template. Null for
+  /// the row that instead carries [nextAwaitingDate], for the "Terminados"
+  /// filter (which never projects), and for the rare template whose horizon
+  /// falls entirely outside the projection window (falls back to the raw
+  /// cursor via [nextPaymentDate]).
+  final DateTime? projectedDate;
+
+  /// The date the card shows as "próximo pago": a real awaiting occurrence's
+  /// effective date first (a materialized obligation always outranks a
+  /// mere projection), then this row's own projected date, else the
+  /// template's raw cursor as a last resort.
+  DateTime get nextPaymentDate =>
+      nextAwaitingDate ?? projectedDate ?? scheduledPayment.nextDate;
+
+  /// A copy of this summary standing for one specific projected future date
+  /// of the same template — used by `GetScheduledPayments` to turn one
+  /// template into several rows when its forward window holds more than one
+  /// upcoming cadence date.
+  ScheduledPaymentSummary withProjectedDate(DateTime date) =>
+      ScheduledPaymentSummary(
+        scheduledPayment: scheduledPayment,
+        accountName: accountName,
+        categoryName: categoryName,
+        categoryIcon: categoryIcon,
+        categoryColor: categoryColor,
+        transferAccountName: transferAccountName,
+        pendingOccurrenceCount: pendingOccurrenceCount,
+        // Deliberately dropped: this copy stands for a *different*, later
+        // cadence date than whatever occurrence [nextAwaitingDate] refers to
+        // — keeping it here would make every copy's `nextPaymentDate` read
+        // the same awaiting date regardless of [projectedDate] (the getter
+        // favors `nextAwaitingDate` first).
+        lastPaymentDate: lastPaymentDate,
+        projectedDate: date,
+      );
 
   /// The effective date of the last occurrence this template actually
   /// generated (`confirmed` in the ledger), for the "Terminados" filter's
@@ -75,5 +116,6 @@ class ScheduledPaymentSummary extends Equatable {
         pendingOccurrenceCount,
         nextAwaitingDate,
         lastPaymentDate,
+        projectedDate,
       ];
 }

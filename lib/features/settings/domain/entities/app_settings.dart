@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../ai/domain/entities/ai_consent.dart';
 import '../../../home/domain/entities/quick_access_item.dart';
 
 /// How [AppSettings.featuredBudgetId] is resolved for the Home hero card
@@ -31,6 +32,11 @@ class AppSettings extends Equatable {
     this.featuredBudgetId,
     this.featuredBudgetMode = FeaturedBudgetMode.automatic,
     this.quickAccessOrder = QuickAccessItem.defaultOrder,
+    this.aiConsentAcceptedAt,
+    this.aiConsentVersion = 0,
+    this.aiNotesAccessEnabled = false,
+    this.legalAcceptedAt,
+    this.legalAcceptedVersion = 0,
   });
 
   /// Sensible default before the singleton row has been read.
@@ -40,7 +46,12 @@ class AppSettings extends Equatable {
         onboardingCompleted = false,
         featuredBudgetId = null,
         featuredBudgetMode = FeaturedBudgetMode.automatic,
-        quickAccessOrder = QuickAccessItem.defaultOrder;
+        quickAccessOrder = QuickAccessItem.defaultOrder,
+        aiConsentAcceptedAt = null,
+        aiConsentVersion = 0,
+        aiNotesAccessEnabled = false,
+        legalAcceptedAt = null,
+        legalAcceptedVersion = 0;
 
   /// Whether "Modo sobres" (zero-based budgeting) is on (HU-06).
   final bool zeroBasedEnabled;
@@ -74,6 +85,44 @@ class AppSettings extends Equatable {
   /// [QuickAccessItem.defaultOrder], today's fixed order.
   final List<QuickAccessItem> quickAccessOrder;
 
+  /// When the user consented to the AI assistant sending their message and a
+  /// snapshot of their finances to a third-party model (Apple 5.1.2(i);
+  /// privacy policy §17). `null` = not asked yet, or asked and not yet
+  /// accepted — the assistant's composer stays gated until this is set.
+  final DateTime? aiConsentAcceptedAt;
+
+  /// Which version of the consent copy was accepted
+  /// (`AppSettings.aiConsentVersion`). `0` means "accepted before the column
+  /// existed, or never accepted" — the Drift column is nullable and is read as
+  /// `0` in `data/` rather than backfilled.
+  final int aiConsentVersion;
+
+  /// Whether the user explicitly let the assistant read the free-text `note`
+  /// of their records. **Off by default**: with this `false` — the state of
+  /// anyone who has done nothing — not a single note travels in any payload,
+  /// which is the behavior every version before this opt-in had.
+  final bool aiNotesAccessEnabled;
+
+  /// When the person last accepted the legal terms (privacy policy + terms
+  /// of use) — one joint timestamp, alongside [legalAcceptedVersion]'s
+  /// "which version". `null` = not accepted yet on this installation.
+  final DateTime? legalAcceptedAt;
+
+  /// Which joint legal-package version was accepted, alongside
+  /// [legalAcceptedAt]. `0` means "accepted before the column existed, or
+  /// never accepted" — the Drift column is nullable and is read as `0` in
+  /// `data/` rather than backfilled, same convention as [aiConsentVersion].
+  final int legalAcceptedVersion;
+
+  /// Consent counts as granted only when it was given AND given against copy
+  /// at least as current as this build's ([currentAiConsentVersion]). A lower
+  /// stored version re-shows the consent screen even though the timestamp is
+  /// set: the person consented to a narrower disclosure than what the app now
+  /// does (Apple 5.1.2(i) — consent has to be informed).
+  bool get hasAcceptedAiConsent =>
+      aiConsentAcceptedAt != null &&
+      aiConsentVersion >= currentAiConsentVersion;
+
   AppSettings copyWith({
     bool? zeroBasedEnabled,
     bool? categoriesSeeded,
@@ -81,6 +130,11 @@ class AppSettings extends Equatable {
     String? featuredBudgetId,
     FeaturedBudgetMode? featuredBudgetMode,
     List<QuickAccessItem>? quickAccessOrder,
+    DateTime? aiConsentAcceptedAt,
+    int? aiConsentVersion,
+    bool? aiNotesAccessEnabled,
+    DateTime? legalAcceptedAt,
+    int? legalAcceptedVersion,
   }) =>
       AppSettings(
         zeroBasedEnabled: zeroBasedEnabled ?? this.zeroBasedEnabled,
@@ -89,6 +143,11 @@ class AppSettings extends Equatable {
         featuredBudgetId: featuredBudgetId ?? this.featuredBudgetId,
         featuredBudgetMode: featuredBudgetMode ?? this.featuredBudgetMode,
         quickAccessOrder: quickAccessOrder ?? this.quickAccessOrder,
+        aiConsentAcceptedAt: aiConsentAcceptedAt ?? this.aiConsentAcceptedAt,
+        aiConsentVersion: aiConsentVersion ?? this.aiConsentVersion,
+        aiNotesAccessEnabled: aiNotesAccessEnabled ?? this.aiNotesAccessEnabled,
+        legalAcceptedAt: legalAcceptedAt ?? this.legalAcceptedAt,
+        legalAcceptedVersion: legalAcceptedVersion ?? this.legalAcceptedVersion,
       );
 
   @override
@@ -99,5 +158,10 @@ class AppSettings extends Equatable {
         featuredBudgetId,
         featuredBudgetMode,
         quickAccessOrder,
+        aiConsentAcceptedAt,
+        aiConsentVersion,
+        aiNotesAccessEnabled,
+        legalAcceptedAt,
+        legalAcceptedVersion,
       ];
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -15,6 +16,19 @@ import '../../../theme/app_theme.dart';
 /// inert twins and the one violet "Iniciar sesión") differ in weight, not in
 /// colour. No sync action is ever violet — in this screen violet means *the
 /// cloud*.
+///
+/// [compact] is an optional parametrization for the Home "Tu cuenta" sheet's
+/// sync block (`design-system/billetudo/pages/inicio.md` § "El bloque de
+/// sync"), which the user explicitly required to reuse this exact component
+/// rather than a parallel one. Absent (`compact: false`, the default), the
+/// component renders exactly as it does across `sincronizacion.md`'s ~20
+/// uses: unchanged padding/gap, [cta] rendered, no [trailingChevron]. With
+/// `compact: true`: tighter padding/corner radius, [cta] dropped entirely
+/// (the sheet's whole block is tappable instead, toward "Estado de
+/// sincronización" — the real CTA lives on that full screen), and
+/// [trailingChevron] draws a chevron so the block still has a visible
+/// boundary (without it, and without a CTA, a borderless "sincronizado"
+/// state read as loose text with no affordance at all).
 class SyncHero extends StatelessWidget {
   const SyncHero({
     required this.icon,
@@ -24,10 +38,12 @@ class SyncHero extends StatelessWidget {
     required this.kicker,
     required this.body,
     required this.timeRow,
-    required this.cta,
+    this.cta,
     this.kickerColor,
     this.caption,
     this.attention = false,
+    this.compact = false,
+    this.trailingChevron = false,
     super.key,
   });
 
@@ -46,7 +62,10 @@ class SyncHero extends StatelessWidget {
   final String body;
 
   final Widget timeRow;
-  final Widget cta;
+
+  /// `null` only in [compact] mode — every full-screen use still supplies
+  /// one.
+  final Widget? cta;
 
   /// `$amber-text` in the attention states, `$text-secondary` elsewhere.
   final Color? kickerColor;
@@ -58,17 +77,28 @@ class SyncHero extends StatelessWidget {
   /// Paints the `$amber-soft`, border-less treatment.
   final bool attention;
 
+  /// Tighter padding/corner radius and no [cta] — see class doc.
+  final bool compact;
+
+  /// Only meaningful with [compact]: draws a trailing chevron so the block
+  /// keeps a visible boundary once its CTA is gone.
+  final bool trailingChevron;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final theme = Theme.of(context);
+    final padding = compact ? 14.0 : 20.0;
+    final gap = compact ? 10.0 : 12.0;
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
         color: attention ? colors.amberSoft : colors.surface,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        borderRadius: BorderRadius.circular(
+          compact ? AppTheme.radiusMedium : AppTheme.radiusLarge,
+        ),
         border: attention ? null : Border.all(color: colors.border),
       ),
       child: Column(
@@ -113,9 +143,14 @@ class SyncHero extends StatelessWidget {
                   ],
                 ),
               ),
+              if (compact && trailingChevron) ...[
+                const SizedBox(width: 8),
+                Icon(LucideIcons.chevronRight,
+                    size: 18, color: colors.textSecondary),
+              ],
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: gap),
           Text(
             body,
             style: theme.textTheme.bodySmall?.copyWith(
@@ -125,12 +160,14 @@ class SyncHero extends StatelessWidget {
               color: colors.textSecondary,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: gap),
           timeRow,
-          const SizedBox(height: 12),
-          SizedBox(width: double.infinity, child: cta),
+          if (cta case final cta?) ...[
+            SizedBox(height: gap),
+            SizedBox(width: double.infinity, child: cta),
+          ],
           if (caption case final caption?) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: gap),
             Text(
               caption,
               textAlign: TextAlign.center,

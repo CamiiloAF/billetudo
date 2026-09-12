@@ -7,6 +7,7 @@ import '../../../../../core/di/injection.dart';
 import '../../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/bottom_sheet_base.dart';
+import '../../../domain/entities/transaction.dart' show TransactionType;
 import '../../cubit/category_filter_cubit.dart';
 import 'category_filter_header_action.dart';
 import 'category_filter_node.dart';
@@ -15,20 +16,29 @@ import 'category_filter_node.dart';
 /// expense), with the symmetric root/subcategory toggle. Only takes effect on
 /// "Aplicar".
 class CategoryFilterSheet extends StatelessWidget {
-  const CategoryFilterSheet({required this.initialSelected, super.key});
+  const CategoryFilterSheet({
+    required this.initialSelected,
+    this.activeTypes = const <TransactionType>{},
+    super.key,
+  });
 
   final Set<String> initialSelected;
+
+  /// Bugfix item 2: the Tipo chip's active selection — narrows which tree(s)
+  /// this sheet offers. Empty (no type filter) shows both, same as before.
+  final Set<TransactionType> activeTypes;
 
   static Future<Set<String>?> show(
     BuildContext context, {
     required Set<String> initialSelected,
+    Set<TransactionType> activeTypes = const <TransactionType>{},
   }) =>
       BottomSheetBase.show<Set<String>>(
         context,
         builder: (context) => BlocProvider(
           create: (context) {
             final cubit = getIt<CategoryFilterCubit>();
-            unawaited(cubit.start(initialSelected));
+            unawaited(cubit.start(initialSelected, activeTypes: activeTypes));
             return cubit;
           },
           child: const CategoryFilterSheetBody(),
@@ -87,8 +97,8 @@ class CategoryFilterSheetBody extends StatelessWidget {
                 shrinkWrap: true,
                 children: [
                   for (final node in [
-                    ...state.expenseNodes,
-                    ...state.incomeNodes,
+                    if (state.showsExpenseTree) ...state.expenseNodes,
+                    if (state.showsIncomeTree) ...state.incomeNodes,
                   ])
                     CategoryFilterNode(
                       node: node,

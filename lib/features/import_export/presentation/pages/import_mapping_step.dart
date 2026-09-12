@@ -5,6 +5,7 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/bottom_sheet_base.dart';
 import '../../../../core/widgets/neutral_button.dart';
+import '../../../../core/widgets/privacy_note_strip.dart';
 import '../../domain/entities/column_mapping.dart';
 import '../../domain/entities/csv_dialect.dart';
 import '../../domain/entities/csv_vocabulary.dart';
@@ -17,7 +18,6 @@ import '../widgets/column_mapping_row.dart';
 import '../widgets/import_format_field.dart';
 import '../widgets/import_live_preview_card.dart';
 import '../widgets/import_mapping_mode_toggle.dart';
-import '../widgets/privacy_note_strip.dart';
 import '../widgets/sheets/import_date_format_sheet.dart';
 import '../widgets/sheets/import_decimal_format_sheet.dart';
 import '../widgets/sheets/import_field_picker_sheet.dart';
@@ -66,7 +66,8 @@ class ImportMappingStep extends StatelessWidget {
   final void Function(DateComponentOrder order, DateSeparatorChar separator)
       onDateFormatChanged;
   final ValueChanged<DecimalConvention> onDecimalConventionChanged;
-  final void Function(int columnIndex, TypeColumnValues values) onTypeColumnChanged;
+  final void Function(int columnIndex, TypeColumnValues values)
+      onTypeColumnChanged;
   final VoidCallback onAmountSignModeChanged;
   final VoidCallback onConfirm;
 
@@ -112,7 +113,8 @@ class ImportMappingStep extends StatelessWidget {
         ),
         Expanded(
           child: mappingMode == ImportMappingMode.automatic
-              ? AutomaticMappingSummary(sample: sample, dialect: dialect, mapping: mapping)
+              ? AutomaticMappingSummary(
+                  sample: sample, dialect: dialect, mapping: mapping)
               : ListView(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 140),
                   children: [
@@ -134,9 +136,10 @@ class ImportMappingStep extends StatelessWidget {
                     ImportFormatField(
                       icon: LucideIcons.hash,
                       label: l10n.importExportFormatDecimalLabel,
-                      value: dialect.decimalConvention == DecimalConvention.comma
-                          ? l10n.importExportDecimalComma
-                          : l10n.importExportDecimalDot,
+                      value:
+                          dialect.decimalConvention == DecimalConvention.comma
+                              ? l10n.importExportDecimalComma
+                              : l10n.importExportDecimalDot,
                       onTap: () => _pickDecimalFormat(context),
                     ),
                     const SizedBox(height: 8),
@@ -159,7 +162,9 @@ class ImportMappingStep extends StatelessWidget {
                           ?.copyWith(fontSize: 13, fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 8),
-                    for (var index = 0; index < sample.headers.length; index++) ...[
+                    for (var index = 0;
+                        index < sample.headers.length;
+                        index++) ...[
                       if (index > 0) const SizedBox(height: 12),
                       Builder(
                         builder: (context) {
@@ -243,8 +248,8 @@ class ImportMappingStep extends StatelessWidget {
     }
     final normalizedHeaders = sample.headers.map(normalizeForMatching).toList();
     for (final vocabulary in CsvVocabulary.all) {
-      final label =
-          normalizeForMatching(vocabulary.transactionHeaders[TransactionCsvColumn.type]!);
+      final label = normalizeForMatching(
+          vocabulary.transactionHeaders[TransactionCsvColumn.type]!);
       final index = normalizedHeaders.indexOf(label);
       if (index != -1) {
         return index;
@@ -316,7 +321,8 @@ class ImportMappingStep extends StatelessWidget {
     );
   }
 
-  String _fieldLabel(AppLocalizations l10n, ImportField field) => switch (field) {
+  String _fieldLabel(AppLocalizations l10n, ImportField field) =>
+      switch (field) {
         ImportField.id => l10n.importExportFieldId,
         ImportField.date => l10n.importExportFieldDate,
         ImportField.amount => l10n.importExportFieldAmount,

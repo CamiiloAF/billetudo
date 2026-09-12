@@ -40,8 +40,14 @@ import 'support/patrol_app.dart';
 /// "Bad state: No element" (0 `TextFormField`s in the whole tree), not a
 /// simple "widget not found" — verified against a real emulator run.
 Future<void> _createCashAccount(PatrolIntegrationTester $, String name) async {
-  final context = $.tester.element(find.byType(Scaffold).first);
-  GoRouter.of(context).go(AppRoutes.accounts);
+  // Regression: a `BuildContext` captured once and reused across both `go()`
+  // calls goes stale — the first navigation away from Home can deactivate
+  // the `Scaffold` it was captured from (its `Element` is torn down once
+  // Home leaves the widget tree), so the second `GoRouter.of(context)` below
+  // throws "Looking up a deactivated widget's ancestor is unsafe". Each
+  // navigation re-reads a fresh, still-mounted `Scaffold`'s context instead.
+  GoRouter.of($.tester.element(find.byType(Scaffold).first))
+      .go(AppRoutes.accounts);
   await $.tester.pumpAndSettle();
   await $.tester.tap(find.byTooltip('Agregar cuenta'));
   await $.tester.pumpAndSettle();
@@ -51,7 +57,7 @@ Future<void> _createCashAccount(PatrolIntegrationTester $, String name) async {
   await $.tester.pumpAndSettle();
   await $.tester.tap(find.byTooltip('Guardar'));
   await $.tester.pumpAndSettle();
-  GoRouter.of(context).go(AppRoutes.home);
+  GoRouter.of($.tester.element(find.byType(Scaffold).first)).go(AppRoutes.home);
   await $.tester.pumpAndSettle();
 }
 

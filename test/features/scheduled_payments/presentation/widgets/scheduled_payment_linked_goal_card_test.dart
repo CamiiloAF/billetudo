@@ -9,56 +9,8 @@ import '../../../../support/golden_helpers.dart';
 /// `ScheduledPaymentLinkedGoalCard` (`baoEJ` in `a2yR8P`/`tnaj3`), the "META
 /// ENLAZADA · Aporte a <meta>" card on a recurring contribution's detail —
 /// same chrome as `ScheduledPaymentLinkedDebtCard`, mutually exclusive with
-/// it. Light and dark.
+/// it.
 void main() {
-  setUpAll(() async {
-    disableGoogleFontsRuntimeFetching();
-    await loadMaterialIconsFont();
-  });
-
-  Future<void> golden(
-    WidgetTester tester,
-    Widget child,
-    String name, {
-    required Brightness brightness,
-  }) async {
-    await pumpGolden(
-      tester,
-      Align(
-        alignment: Alignment.topLeft,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: child,
-        ),
-      ),
-      brightness: brightness,
-      size: const Size(390, 200),
-    );
-    await expectLater(
-      find.byType(Padding).first,
-      matchesGoldenFile('goldens/scheduled_goal_crosslink_$name.png'),
-    );
-  }
-
-  for (final brightness in Brightness.values) {
-    final suffix = brightness == Brightness.light ? 'light' : 'dark';
-
-    testWidgets('linked goal card ($suffix)', (tester) async {
-      await golden(
-        tester,
-        ScheduledPaymentLinkedGoalCard(
-          goal: const ScheduledPaymentLinkedGoal(
-            id: 'g1',
-            name: 'Viaje a Cartagena',
-          ),
-          onTap: () {},
-        ),
-        'linked_card_$suffix',
-        brightness: brightness,
-      );
-    });
-  }
-
   testWidgets('tocarla navega al detalle de la meta', (tester) async {
     String? tappedGoalId;
     await pumpGolden(

@@ -29,11 +29,20 @@ import '../../../../core/sync/domain/repositories/sync_quarantine_repository.dar
 /// `ps_sync_state`, `ps_stream_subscriptions`), so nothing is left to upload.
 /// The database stays open and queryable, just empty.
 ///
-/// `clearLocal` keeps its default `true`: this project declares no
-/// `Table.localOnly` in `core/database/powersync_schema.dart`, so the flag has
-/// nothing to spare today — and the user explicitly asked for *everything* on
-/// this device to go. If a local-only table is ever added, revisit this
-/// deliberately instead of inheriting the default.
+/// `clearLocal` keeps its default `true`, and since schemaVersion 30 that is a
+/// deliberate decision rather than an empty one. The project now declares one
+/// local-only table in `core/database/powersync_schema.dart` — `ai_messages`,
+/// the AI assistant's chat history, which never reaches Postgres — and
+/// `clearLocal` is precisely the flag that decides its fate:
+/// `disconnectAndClear({bool clearLocal = true})` runs
+/// `select powersync_clear(?)` with `clearLocal ? 1 : 0`, and its own doc says
+/// "To preserve data in local-only tables, set `clearLocal` to false". Left at
+/// `true`, the chat history is wiped along with everything else — which is
+/// what both callers must do: HU-06 asks for *everything* on this device to
+/// go, and after HU-07 the conversation would be the last surviving trace of
+/// an account whose cloud copy is already gone (and the only copy that ever
+/// existed of it, since it was never synced). Do not flip this to `false`
+/// without re-reading both flows.
 ///
 /// `disconnectAndClear` only reaches the PowerSync-managed SQLite file. Three
 /// sync diagnostics stores live deliberately outside of it, as plain JSON

@@ -6,8 +6,9 @@ import '../../../../core/widgets/page_header_circle_button.dart';
 /// One of the `−` / `+` controls of the custom-threshold sheet.
 ///
 /// Reuses the system's stepper affordance — the same 44pt `$muted` circle the
-/// period pill's chevrons use (`PeriodStepperChevron`, `QLn6w/KVIaU`), dimmed
-/// to 40% at the bounds — instead of a bare Material icon button.
+/// shared `PeriodStepper`'s chevrons use (`core/widgets/period_stepper_chevron
+/// .dart`, `vBgce/Xroj5`), dimmed to 40% at the bounds — instead of a bare
+/// Material icon button.
 class BudgetThresholdStepperButton extends StatelessWidget {
   const BudgetThresholdStepperButton({
     required this.icon,

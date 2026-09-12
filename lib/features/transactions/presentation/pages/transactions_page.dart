@@ -9,31 +9,31 @@ import '../../../../core/preferences/balance_carousel_cubit.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_fab.dart';
 import '../../../../core/widgets/page_header_circle_button.dart';
+import '../../../../core/widgets/period_stepper.dart';
 import '../../../../core/widgets/root_tab_header.dart';
-import '../../../accounts/domain/entities/account.dart';
-import '../../../accounts/domain/entities/account_with_balance.dart';
+import '../../../../core/widgets/scroll_aware_fab.dart';
+import '../../../../core/widgets/scroll_aware_fab_visibility.dart';
 import '../../../accounts/presentation/utils/show_account_gate_if_needed.dart';
 import '../../../accounts/presentation/widgets/account_gate_copy.dart';
-import '../../../accounts/presentation/widgets/account_type_avatar.dart';
+import '../../../capture/presentation/cubit/capture_review_item.dart';
+import '../../../capture/presentation/utils/start_voice_capture_flow.dart';
+import '../../../capture/presentation/widgets/pending_captures_list_slot.dart';
 import '../../../categories/presentation/utils/category_appearance.dart';
 import '../../domain/entities/budget_period_option.dart';
-import '../../domain/entities/date_period_filter.dart';
 import '../../domain/entities/transaction_filter.dart';
 import '../cubit/transactions_list_cubit.dart';
 import '../cubit/transactions_list_state.dart';
 import '../utils/date_period_label.dart';
+import '../utils/date_period_navigation.dart';
+import '../utils/open_unified_filters_sheet.dart';
 import '../utils/transaction_amount_presentation.dart';
 import '../utils/transaction_date_grouping.dart';
 import '../utils/transaction_group_total.dart';
 import '../utils/transaction_sort_label.dart';
+import '../widgets/account_filter_chip_row.dart';
 import '../widgets/filter_chip_pill.dart';
+import '../widgets/filters_button.dart';
 import '../widgets/movements_balance_carousel.dart';
-import '../widgets/sheets/account_filter_sheet.dart';
-import '../widgets/sheets/budget_period_filter_sheet.dart';
-import '../widgets/sheets/category_filter_sheet.dart';
-import '../widgets/sheets/date_filter_sheet.dart';
-import '../widgets/sheets/tag_filter_sheet.dart';
-import '../widgets/sheets/type_filter_sheet.dart';
 import '../widgets/skeleton_row.dart';
 import '../widgets/transaction_group_header.dart';
 import '../widgets/transaction_row.dart';
@@ -45,11 +45,15 @@ import '../widgets/transactions_sort_button.dart';
 /// The transaction list (HU-06/`B3GGa`/`xAk6Y`): search, every combinable
 /// filter, and the delete/"Deshacer" flow (HU-05). A root destination of the
 /// Tab Bar, so its header carries no back button and no trailing action.
-class TransactionsPage extends StatelessWidget {
+/// GitHub issue #26: `StatefulWidget` only to own the scroll-aware FAB state
+/// ([ScrollAwareFabVisibility]) that [TransactionsListView] below feeds via
+/// its own [ScrollController] — same pattern already used by `HomePage`.
+class TransactionsPage extends StatefulWidget {
   const TransactionsPage({
     required this.onAddTransaction,
     required this.onOpenTransaction,
     required this.onOpenAccount,
+    this.onDispatchCapture,
     this.linkMode,
     this.onBackToReports,
     super.key,
@@ -85,6 +89,11 @@ class TransactionsPage extends StatelessWidget {
   /// (the deleted transaction's id, or `null`).
   final Future<String?> Function(String id) onOpenTransaction;
 
+  /// Opens the pre-filled transaction form for a capture pinned at the top of
+  /// the list (HU-04/HU-05). `null` hides the block entirely — link mode is
+  /// there to pick an EXISTING movement, and a capture is not one.
+  final ValueChanged<CaptureReviewItem>? onDispatchCapture;
+
   /// Opens an account's detail page: fired when a balance carousel card is
   /// tapped (Mejora #2).
   final void Function(String accountId) onOpenAccount;
@@ -97,13 +106,20 @@ class TransactionsPage extends StatelessWidget {
   /// null only when no account is shown.
   /// HU-02/HU-03 of `15-gate-cuenta.md`: without any active account the FAB
   /// opens the bridge sheet instead of a form that could not save anyway.
+
+  @override
+  State<TransactionsPage> createState() => _TransactionsPageState();
+}
+
+class _TransactionsPageState extends State<TransactionsPage>
+    with ScrollAwareFabVisibility<TransactionsPage> {
   Future<void> _addTransaction(BuildContext context) async {
     final canProceed = await showAccountGateIfNeeded(
       context,
       AccountGateSurface.movement,
     );
     if (canProceed && context.mounted) {
-      onAddTransaction(_preselectedAccountId(context));
+      widget.onAddTransaction(_preselectedAccountId(context));
     }
   }
 
@@ -125,7 +141,7 @@ class TransactionsPage extends StatelessWidget {
   /// is an ancestor of that provider, so reading from there throws
   /// `ProviderNotFoundError` instead of silently doing nothing.
   Future<void> _openTransaction(BuildContext context, String id) async {
-    final deletedId = await onOpenTransaction(id);
+    final deletedId = await widget.onOpenTransaction(id);
     if (deletedId != null && context.mounted) {
       context.read<TransactionsListCubit>().notifyExternalDelete(deletedId);
     }
@@ -135,7 +151,8 @@ class TransactionsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    final linkMode = this.linkMode;
+    final linkMode = widget.linkMode;
+    final onBackToReports = widget.onBackToReports;
     // Same source of truth as the leading button below: when the user
     // arrived here from Gráficas' drill-down, the system back
     // gesture/button must also return there instead of falling through to
@@ -151,18 +168,27 @@ class TransactionsPage extends StatelessWidget {
       canPop: !interceptSystemBack,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop && interceptSystemBack) {
-          onBackToReports?.call();
+          onBackToReports();
         }
       },
       child: Scaffold(
-        // Link mode hides the FAB: the task there is to pick an existing
-        // movement, not to create one (`g0x859`).
+        // Link mode hides the FAB entirely: the task there is to pick an
+        // existing movement, not to create one (`g0x859`). Otherwise it is
+        // scroll-aware (GH-26), same pattern as `HomePage`'s own FAB.
         floatingActionButton: linkMode != null
             ? null
-            : AppFab(
-                icon: LucideIcons.plus,
-                tooltip: l10n.transactionsAdd,
-                onPressed: () => unawaited(_addTransaction(context)),
+            : ScrollAwareFab(
+                visible: fabVisible,
+                child: AppFab(
+                  icon: LucideIcons.plus,
+                  tooltip: l10n.transactionsAdd,
+                  onPressed: () => unawaited(_addTransaction(context)),
+                  // Same primary voice trigger as `HomePage`'s FAB: tap and
+                  // hold are two different actions on the same button, both
+                  // of which end on the same form.
+                  onLongPress: () => unawaited(startVoiceCaptureFlow(context)),
+                  longPressHint: l10n.captureVoiceFabLongPressHint,
+                ),
               ),
         body: SafeArea(
           child: BlocConsumer<TransactionsListCubit, TransactionsListState>(
@@ -207,7 +233,26 @@ class TransactionsPage extends StatelessWidget {
                   ? linkMode.onLinkTransaction
                   : (String id) => _openTransaction(context, id);
               final showCarousel = linkMode == null;
+              // `PeriodStepper` inputs (Cierre 2026-09-11, `vBgce`): the
+              // active period is either a Presupuesto window or a Fecha
+              // period — never both, per the sheet's mutual-exclusion
+              // contract — so exactly one of these resolves.
+              final budgetPeriod = state.filter.budgetPeriod;
+              final activePeriod = budgetPeriod ?? state.filter.datePeriod;
+              final hasPreviousPeriod = budgetPeriod != null
+                  ? budgetPeriod.hasPrevious
+                  : datePeriodHasPrevious(activePeriod);
+              final hasNextPeriod = budgetPeriod != null
+                  ? budgetPeriod.hasNext
+                  : datePeriodHasNext(activePeriod, DateTime.now());
+              final budgetOption = budgetPeriod == null
+                  ? null
+                  : _findBudgetOption(
+                      state.budgetOptions,
+                      budgetPeriod.budgetId!,
+                    );
               return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   RootTabHeader(
                     title: l10n.transactionsTitle,
@@ -235,6 +280,42 @@ class TransactionsPage extends StatelessWidget {
                   TransactionsSearchRow(state: state),
                   const SizedBox(height: 8),
                   TransactionsFilterBar(state: state),
+                  // Period Stepper (Adición 2026-09-10, migrado al
+                  // componente compartido `vBgce` el 2026-09-11): only while
+                  // the active period is not the default "este mes sin
+                  // presupuesto" — the common case renders nothing here, at
+                  // zero space cost.
+                  if (state.filter.hasNavigablePeriod) ...[
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: PeriodStepper(
+                        previousLabel: l10n.transactionsPeriodNavPreviousLabel,
+                        nextLabel: l10n.transactionsPeriodNavNextLabel,
+                        label: datePeriodLabel(activePeriod),
+                        contextIcon: budgetOption == null
+                            ? null
+                            : CategoryAppearance.iconForOrPlaceholder(
+                                budgetOption.icon,
+                              ),
+                        contextLabel: budgetOption?.name,
+                        onPrevious: hasPreviousPeriod
+                            ? () => unawaited(
+                                  context
+                                      .read<TransactionsListCubit>()
+                                      .stepPeriod(-1),
+                                )
+                            : null,
+                        onNext: hasNextPeriod
+                            ? () => unawaited(
+                                  context
+                                      .read<TransactionsListCubit>()
+                                      .stepPeriod(1),
+                                )
+                            : null,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 8),
                   if (linkMode != null)
                     TransactionsLinkBanner(linkMode: linkMode),
@@ -245,31 +326,75 @@ class TransactionsPage extends StatelessWidget {
                       TransactionsListStatus.failure => TransactionsErrorView(
                           onRetry: context.read<TransactionsListCubit>().start,
                         ),
-                      // Empty period: the carousel is pinned above the message
-                      // (there is nothing to scroll here) so the balances stay
-                      // visible when there are accounts but no movements yet.
+                      // Empty period: the carousel is pinned above the
+                      // message, which centers in whatever space is left in
+                      // the viewport, same as the plain `Expanded` this
+                      // replaced.
+                      //
+                      // A pending capture is not a `Transaction`, so it never
+                      // shows up in `state.items` — this branch fires just as
+                      // easily for someone with zero real movements but one
+                      // bank notification waiting (the ghost block's own
+                      // reason to exist). Without the slot here, that capture
+                      // would be unreachable from Movimientos: this branch
+                      // renders instead of `TransactionsListView`, which is
+                      // the block's only other home.
+                      //
+                      // The slot can now render one or more pending-capture
+                      // cards instead of nothing, so the carousel + slot no
+                      // longer reliably leave enough room for the message.
+                      // `SliverFillRemaining(hasScrollBody: false)` forces its
+                      // child to exactly the leftover viewport space — if that
+                      // space is smaller than the message's natural size
+                      // (icon + text), it overflows anyway; `Center` only
+                      // centers, it does not shrink. `SliverLayoutBuilder` +
+                      // `ConstrainedBox(minHeight:)` instead asks for the
+                      // leftover space as a *minimum* — still centered when
+                      // there's room to spare — but lets the content grow
+                      // past it, so the whole `CustomScrollView` scrolls
+                      // instead of overflowing when there is not.
                       TransactionsListStatus.ready when state.items.isEmpty =>
-                        Column(
-                          children: [
+                        CustomScrollView(
+                          slivers: [
                             if (showCarousel)
-                              MovementsBalanceCarousel(
-                                state: state,
-                                onOpenAccount: onOpenAccount,
+                              SliverToBoxAdapter(
+                                child: MovementsBalanceCarousel(
+                                  state: state,
+                                  onOpenAccount: widget.onOpenAccount,
+                                ),
                               ),
-                            Expanded(
-                              child: TransactionsEmptyState(
-                                message: _isUnfiltered(state.filter)
-                                    ? l10n.transactionsEmptyMessage
-                                    : l10n.transactionsEmptyPeriodMessage,
+                            SliverToBoxAdapter(
+                              child: PendingCapturesListSlot(
+                                filter: state.filter,
+                                onTap: widget.onDispatchCapture,
                               ),
+                            ),
+                            SliverLayoutBuilder(
+                              builder: (context, constraints) {
+                                return SliverToBoxAdapter(
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      minHeight:
+                                          constraints.remainingPaintExtent,
+                                    ),
+                                    child: TransactionsEmptyState(
+                                      message: _isUnfiltered(state.filter)
+                                          ? l10n.transactionsEmptyMessage
+                                          : l10n.transactionsEmptyPeriodMessage,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
                       TransactionsListStatus.ready => TransactionsListView(
                           state: state,
                           onOpenTransaction: onRowTap,
-                          onOpenAccount: onOpenAccount,
+                          onOpenAccount: widget.onOpenAccount,
+                          onDispatchCapture: widget.onDispatchCapture,
                           showCarousel: showCarousel,
+                          scrollController: fabScrollController,
                         ),
                     },
                   ),
@@ -283,6 +408,21 @@ class TransactionsPage extends StatelessWidget {
   }
 }
 
+/// Resolves the active `filter.budgetPeriod`'s name/icon for the
+/// `PeriodStepper`'s `Context Row` — same list `TransactionsListState
+/// .budgetOptions` already keeps for the Presupuesto chip.
+BudgetPeriodOption? _findBudgetOption(
+  List<BudgetPeriodOption> options,
+  String budgetId,
+) {
+  for (final option in options) {
+    if (option.budgetId == budgetId) {
+      return option;
+    }
+  }
+  return null;
+}
+
 /// Whether HU-06's search/filters are all at their untouched default (the
 /// current month with no other filter): only then does an empty list read as
 /// "no movements yet" instead of "nothing in this period".
@@ -293,18 +433,44 @@ bool _isUnfiltered(TransactionFilter filter) =>
     !filter.hasTypeFilter &&
     !filter.hasTagFilter &&
     !filter.hasBudgetPeriodFilter &&
-    !_hasDateFilter(filter.datePeriod);
-
-/// HU-06b's date filter has no bare "no filter" state (it always defaults to
-/// "this month"), so "active" here means "not the untouched default".
-bool _hasDateFilter(DatePeriodFilter period) =>
-    period != DatePeriodFilter.thisMonth();
+    !filter.hasDateFilter;
 
 /// The search field + sort button row (`B3GGa`/`xAk6Y`).
-class TransactionsSearchRow extends StatelessWidget {
+///
+/// Bugfix item 3: a trailing "x" clears the field once it has text, inside
+/// the input — same clear affordance other text fields in the app already
+/// use. `StatefulWidget` only to own the `TextEditingController` that drives
+/// it; the search text itself still lives in [TransactionsListCubit].
+class TransactionsSearchRow extends StatefulWidget {
   const TransactionsSearchRow({required this.state, super.key});
 
   final TransactionsListState state;
+
+  @override
+  State<TransactionsSearchRow> createState() => _TransactionsSearchRowState();
+}
+
+class _TransactionsSearchRowState extends State<TransactionsSearchRow> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.state.filter.searchText);
+
+  @override
+  void didUpdateWidget(covariant TransactionsSearchRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Keeps the field in sync with a search text cleared/changed from
+    // outside this row (e.g. `start()` resetting the filter) without
+    // clobbering the user's own typing/cursor position on every rebuild.
+    final filterText = widget.state.filter.searchText;
+    if (filterText != _controller.text) {
+      _controller.text = filterText;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -317,31 +483,60 @@ class TransactionsSearchRow extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                isDense: true,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                prefixIcon: Icon(
-                  LucideIcons.search,
-                  size: 20,
-                  color: colors.textSecondary,
-                ),
-                hintText: l10n.transactionsSearchHint,
-                hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+            child: ValueListenableBuilder<TextEditingValue>(
+              valueListenable: _controller,
+              builder: (context, value, _) {
+                return TextField(
+                  controller: _controller,
+                  decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    prefixIcon: Icon(
+                      LucideIcons.search,
+                      size: 20,
                       color: colors.textSecondary,
                     ),
-              ),
-              onChanged: cubit.searchChanged,
+                    suffixIcon: value.text.isEmpty
+                        ? null
+                        : IconButton(
+                            icon: Icon(
+                              LucideIcons.x,
+                              size: 18,
+                              color: colors.textSecondary,
+                            ),
+                            tooltip: l10n.commonClear,
+                            onPressed: () {
+                              _controller.clear();
+                              unawaited(cubit.searchChanged(''));
+                            },
+                          ),
+                    hintText: l10n.transactionsSearchHint,
+                    hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: colors.textSecondary,
+                        ),
+                  ),
+                  onChanged: cubit.searchChanged,
+                );
+              },
             ),
           ),
           const SizedBox(width: 8),
           TransactionsSortButton(
-            sortOrder: state.filter.sortOrder,
+            sortOrder: widget.state.filter.sortOrder,
             onSelect: (sortOrder) => cubit.updateFilter(
-              state.filter.copyWith(sortOrder: sortOrder),
+              widget.state.filter.copyWith(sortOrder: sortOrder),
+            ),
+          ),
+          const SizedBox(width: 8),
+          FiltersButton(
+            activeCount: widget.state.filter.activeFilterCount,
+            onTap: () => unawaited(
+              openUnifiedFiltersSheet(context, widget.state),
             ),
           ),
         ],
@@ -350,9 +545,19 @@ class TransactionsSearchRow extends StatelessWidget {
   }
 }
 
-/// The row of filter chips: account, category, type, date and tag
-/// (HU-06/HU-06a/HU-06b/HU-07). Every chip adopts the same active style
-/// (`primary-soft`/`primary`) the instant its own dimension has a filter.
+/// GitHub issue #7's redesign: the account filter is now its own row of
+/// chips (`AccountFilterChipRow`) — the "Filtros" button that opens the
+/// single unified sheet for Presupuesto/Fecha/Tipo/Categoría/Etiqueta
+/// (`UnifiedFiltersSheet`) moved into `TransactionsSearchRow`, next to the
+/// sort button (`nMKtn`'s `Search Row`).
+///
+/// Adición 2026-09-10: a Chip Fecha (`pofWv`/`vUtHH` in `O2xuVc`/`ufP4y`)
+/// joins the account chips — a **new** chip, not a restoration (the previous
+/// per-dimension Fecha sheet was retired in issue #7's redesign and this row
+/// never had a standalone Fecha chip of its own). It reflects the active
+/// Fecha/Presupuesto period and, tapped, opens the very same
+/// `UnifiedFiltersSheet` as `FiltersButton` — there is no standalone Fecha
+/// sheet left in production to open instead.
 class TransactionsFilterBar extends StatelessWidget {
   const TransactionsFilterBar({required this.state, super.key});
 
@@ -360,217 +565,41 @@ class TransactionsFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final cubit = context.read<TransactionsListCubit>();
     final filter = state.filter;
+    final dateActive = filter.hasDateFilter || filter.hasBudgetPeriodFilter;
+    final activePeriod = filter.budgetPeriod ?? filter.datePeriod;
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          FilterChipPill(
-            label: _accountChipLabel(l10n, filter, state.accounts),
-            // The Account Chip has no neutral/unset look: HU-06a's 3 states
-            // ("N cuentas" / one account / "Todas" as a stand-in for "no
-            // filter") are all rendered in the same active pill (`s8uIq`).
-            active: true,
-            leadingIcon: _accountChipIcon(filter, state.accounts),
-            trailingIcon: LucideIcons.chevronDown,
-            onTap: () async {
-              final selected = await AccountFilterSheet.show(
-                context,
-                initialSelected: filter.accountIds,
-              );
-              if (selected != null) {
-                await cubit.updateFilter(filter.copyWith(accountIds: selected));
-              }
-            },
+          AccountFilterChipRow(
+            accounts: state.accounts,
+            selected: filter.accountIds,
+            onChanged: (accountIds) => unawaited(
+              cubit.updateFilter(filter.copyWith(accountIds: accountIds)),
+            ),
           ),
-          const SizedBox(width: 8),
-          FilterChipPill(
-            // HU-06b: there is always a real date filter active (defaults to
-            // "Este mes"), so the Chip Fecha never renders as unset — always
-            // its own `calendar` icon plus the current period's label.
-            label: datePeriodLabel(filter.datePeriod),
-            active: true,
-            leadingIcon: LucideIcons.calendar,
-            onTap: () async {
-              final applied = await DateFilterSheet.show(
-                context,
-                initial: filter.datePeriod,
-              );
-              // Null means the sheet was dismissed without "Aplicar" — keep
-              // the current filter.
-              if (applied != null) {
-                await cubit.updateFilter(
-                  filter.copyWith(datePeriod: applied),
-                );
-              }
-            },
-          ),
-          const SizedBox(width: 8),
-          FilterChipPill(
-            label: l10n.transactionsFilterCategories,
-            active: filter.hasCategoryFilter,
-            onTap: () async {
-              final selected = await CategoryFilterSheet.show(
-                context,
-                initialSelected: filter.categoryIds,
-              );
-              if (selected != null) {
-                await cubit
-                    .updateFilter(filter.copyWith(categoryIds: selected));
-              }
-            },
-          ),
-          const SizedBox(width: 8),
-          FilterChipPill(
-            label: l10n.transactionsFilterType,
-            active: filter.hasTypeFilter,
-            onTap: () async {
-              final selected = await TypeFilterSheet.show(
-                context,
-                initialSelected: filter.types,
-              );
-              if (selected != null) {
-                await cubit.updateFilter(filter.copyWith(types: selected));
-              }
-            },
-          ),
-          const SizedBox(width: 8),
-          FilterChipPill(
-            label: l10n.transactionsFilterTag,
-            active: filter.hasTagFilter,
-            onTap: () async {
-              final selected = await TagFilterSheet.show(
-                context,
-                initialSelected: filter.tagIds,
-              );
-              if (selected != null) {
-                await cubit.updateFilter(filter.copyWith(tagIds: selected));
-              }
-            },
-          ),
-          const SizedBox(width: 8),
-          FilterChipPill(
-            label: _budgetChipLabel(l10n, filter, state.budgetOptions),
-            active: filter.hasBudgetPeriodFilter,
-            leadingIcon: _budgetChipIcon(filter, state.budgetOptions),
-            onTap: () async {
-              final result = await BudgetPeriodFilterSheet.show(
-                context,
-                initialBudgetId: filter.budgetPeriod?.budgetId,
-              );
-              // Null means the sheet was dismissed without "Aplicar" — keep
-              // the current filter. A non-null result always replaces it,
-              // including back to `null` when the user cleared it.
-              if (result != null) {
-                await cubit.updateFilter(
-                  filter.copyWith(
-                    budgetPeriod: result.window,
-                    clearBudgetPeriod: result.window == null,
-                  ),
-                );
-              }
-            },
-          ),
+          // Bugfix 2026-09-11: this chip must be genuinely conditional — the
+          // design (`pages/transacciones.md` § "Chip Fecha condicional")
+          // says it never renders in the default state, but it used to
+          // always be in the tree and just fall back to
+          // `transactionsChipDateDefaultLabel` ("Este mes") instead of
+          // disappearing, showing a redundant chip for the common case.
+          if (dateActive) ...[
+            const SizedBox(width: 8),
+            FilterChipPill(
+              label: datePeriodLabel(activePeriod),
+              active: true,
+              leadingIcon: LucideIcons.calendar,
+              onTap: () => unawaited(openUnifiedFiltersSheet(context, state)),
+            ),
+          ],
         ],
       ),
     );
-  }
-
-  /// The Presupuesto Chip's label: the chosen budget's own name once
-  /// selected, or the generic dimension label when there is no filter — the
-  /// same neutral/active split as the Category/Type/Tag chips, unlike the
-  /// Account Chip's always-active "Todas" or the Date Chip's always-active
-  /// default.
-  static String _budgetChipLabel(
-    AppLocalizations l10n,
-    TransactionFilter filter,
-    List<BudgetPeriodOption> budgetOptions,
-  ) {
-    final budgetId = filter.budgetPeriod?.budgetId;
-    if (budgetId == null) {
-      return l10n.transactionsFilterBudget;
-    }
-    final selected = _selectedBudgetOption(budgetId, budgetOptions);
-    return selected?.name ?? l10n.transactionsFilterBudget;
-  }
-
-  /// The Presupuesto Chip's leading icon: the selected budget's own icon, or
-  /// none while unset (`FilterChipPill` simply omits it).
-  static IconData? _budgetChipIcon(
-    TransactionFilter filter,
-    List<BudgetPeriodOption> budgetOptions,
-  ) {
-    final budgetId = filter.budgetPeriod?.budgetId;
-    if (budgetId == null) {
-      return null;
-    }
-    final selected = _selectedBudgetOption(budgetId, budgetOptions);
-    return CategoryAppearance.iconForOrPlaceholder(selected?.icon);
-  }
-
-  static BudgetPeriodOption? _selectedBudgetOption(
-    String budgetId,
-    List<BudgetPeriodOption> budgetOptions,
-  ) {
-    for (final option in budgetOptions) {
-      if (option.budgetId == budgetId) {
-        return option;
-      }
-    }
-    return null;
-  }
-
-  /// The Account Chip's label across HU-06a's 3 states: the account's own
-  /// name when exactly one is selected, a count for 2+, and "Todas" (not
-  /// "Cuentas") when there is no filter — `s8uIq` treats "no filter" as the
-  /// same active "Todas" state, never as an unset 4th look.
-  static String _accountChipLabel(
-    AppLocalizations l10n,
-    TransactionFilter filter,
-    List<AccountWithBalance> accounts,
-  ) {
-    if (!filter.hasAccountFilter) {
-      return l10n.accountFilterSelectAll;
-    }
-    final selected = _singleSelectedAccount(filter, accounts);
-    if (selected != null) {
-      return selected.name;
-    }
-    return l10n.transactionsFilterAccountsSelected(filter.accountIds.length);
-  }
-
-  /// The Account Chip's leading icon across its 3 states: the selected
-  /// account's own type icon for exactly one, a generic `layers` for 2+, and
-  /// a generic `wallet` for "Todas" (`s8uIq`/`XlXA8`).
-  static IconData _accountChipIcon(
-    TransactionFilter filter,
-    List<AccountWithBalance> accounts,
-  ) {
-    if (!filter.hasAccountFilter) {
-      return LucideIcons.wallet;
-    }
-    final selected = _singleSelectedAccount(filter, accounts);
-    return selected?.type.icon ?? LucideIcons.layers;
-  }
-
-  static Account? _singleSelectedAccount(
-    TransactionFilter filter,
-    List<AccountWithBalance> accounts,
-  ) {
-    if (filter.accountIds.length != 1) {
-      return null;
-    }
-    final id = filter.accountIds.first;
-    for (final entry in accounts) {
-      if (entry.account.id == id) {
-        return entry.account;
-      }
-    }
-    return null;
   }
 }
 
@@ -599,7 +628,9 @@ class TransactionsListView extends StatelessWidget {
     required this.state,
     required this.onOpenTransaction,
     required this.onOpenAccount,
+    this.onDispatchCapture,
     this.showCarousel = true,
+    this.scrollController,
     super.key,
   });
 
@@ -610,9 +641,19 @@ class TransactionsListView extends StatelessWidget {
   /// account's detail page (Mejora #2).
   final ValueChanged<String> onOpenAccount;
 
+  /// Opens the pre-filled transaction form for a pending capture pinned at
+  /// the top of the list (HU-04/HU-05). Supplied by the router, the only
+  /// layer allowed to know about both features. `null` hides the block.
+  final ValueChanged<CaptureReviewItem>? onDispatchCapture;
+
   /// The balance carousel is the list's first scrollable item, but link mode
   /// drops it to keep the focus on picking a movement (`g0x859`).
   final bool showCarousel;
+
+  /// GH-26: drives [TransactionsPage]'s scroll-aware FAB — attached to
+  /// whichever of the two lists below actually renders, so scrolling either
+  /// one hides/shows the FAB the same way `HomePage`'s own list does.
+  final ScrollController? scrollController;
 
   @override
   Widget build(BuildContext context) {
@@ -630,6 +671,7 @@ class TransactionsListView extends StatelessWidget {
     // for context since the date headers are gone.
     if (transactionSortIsByAmount(sortOrder)) {
       return ListView(
+        controller: scrollController,
         padding: const EdgeInsets.only(bottom: 28),
         children: [
           if (showCarousel)
@@ -637,6 +679,11 @@ class TransactionsListView extends StatelessWidget {
               state: state,
               onOpenAccount: onOpenAccount,
             ),
+          TransactionsPeriodTotalRow(state: state),
+          PendingCapturesListSlot(
+            filter: state.filter,
+            onTap: onDispatchCapture,
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
             child: Align(
@@ -669,10 +716,21 @@ class TransactionsListView extends StatelessWidget {
     // The carousel occupies index 0 when shown; link mode drops it, so the
     // group indices shift back by one.
     final carouselSlots = showCarousel ? 1 : 0;
+    // Bugfix (issue #7 item 5): one more slot for the period's aggregate
+    // total, right after the carousel — `null` (mixed types/currencies, or
+    // no exclusive income/expense filter active) means no slot at all, same
+    // rule as each day's own total (`transactionGroupTotalFor`).
+    final periodTotal = transactionPeriodTotalFor(state.filter, state.items);
+    final totalSlots = periodTotal == null ? 0 : 1;
+    // The captures block is always a slot, even when it renders nothing: it
+    // watches its own stream, so whether it has content is not knowable here
+    // without duplicating that subscription.
+    final leadingSlots = carouselSlots + totalSlots + 1;
 
     return ListView.builder(
+      controller: scrollController,
       padding: const EdgeInsets.only(bottom: 28),
-      itemCount: groups.length + carouselSlots,
+      itemCount: groups.length + leadingSlots,
       itemBuilder: (context, index) {
         if (showCarousel && index == 0) {
           return MovementsBalanceCarousel(
@@ -680,7 +738,19 @@ class TransactionsListView extends StatelessWidget {
             onOpenAccount: onOpenAccount,
           );
         }
-        final groupIndex = index - carouselSlots;
+        if (totalSlots == 1 && index == carouselSlots) {
+          return TransactionsPeriodTotalRow(state: state);
+        }
+        // Pending captures go ALL TOGETHER before the first day group, never
+        // interleaved chronologically — and therefore outside every daily
+        // total. They are not money.
+        if (index == carouselSlots + totalSlots) {
+          return PendingCapturesListSlot(
+            filter: state.filter,
+            onTap: onDispatchCapture,
+          );
+        }
+        final groupIndex = index - leadingSlots;
         final group = groups[groupIndex];
         final groupTotal = transactionGroupTotalFor(state.filter, group.items);
         return Padding(
@@ -711,6 +781,38 @@ class TransactionsListView extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// Bugfix (issue #7 item 5): the filtered period's aggregate total (e.g. "el
+/// total ganado en todo el período" while "solo ingresos" is active) — reuses
+/// `TransactionGroupHeader`'s own left-label/right-total row, the pattern
+/// already used for a single day's total, instead of a new component.
+/// Renders nothing when [transactionPeriodTotalFor] has nothing to show
+/// (mixed types, transfers, or a mixed-currency period).
+class TransactionsPeriodTotalRow extends StatelessWidget {
+  const TransactionsPeriodTotalRow({required this.state, super.key});
+
+  final TransactionsListState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final total = transactionPeriodTotalFor(state.filter, state.items);
+    if (total == null) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+      child: TransactionGroupHeader(
+        label: l10n.transactionsPeriodTotalLabel,
+        totalLabel: signedAmountLabel(
+          amountMinor: total.amountMinor,
+          currencyCode: total.currency,
+          type: total.type,
+        ),
+      ),
     );
   }
 }

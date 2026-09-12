@@ -25,4 +25,18 @@ const ownedTables = [
   'budget_categories',
   'budget_period_overrides',
   'app_settings',
+  // Fase 1 tables that also carry `_SyncColumns.userId` but were missed when
+  // this list was first written (data-integrity bug: rows created while
+  // signed out never got claimed on login). Added 2026-09-10.
+  'goal_contributions',
+  'goal_quick_amounts',
+  'debt_entries',
+  'scheduled_payment_occurrences',
+  'scheduled_payment_tags',
+  'import_batches',
+  'tutorial_views',
+  // Fase 2. Both are written before the user ever signs in (a capture can land
+  // while the app is still anonymous), so they must be claimed like the rest.
+  'pending_captures',
+  'merchant_category_learning',
 ];

@@ -188,4 +188,85 @@ void main() {
       expect(copy.sortOrder, TransactionSortOrder.amountDesc);
     });
   });
+
+  group('hasDateFilter', () {
+    test('es falso con el default (este mes)', () {
+      final filter = TransactionFilter();
+
+      expect(filter.hasDateFilter, isFalse);
+    });
+
+    test('es verdadero con un rango personalizado', () {
+      final filter = TransactionFilter(
+        datePeriod: DatePeriodFilter.custom(
+          start: DateTime(2026, 1, 1),
+          end: DateTime(2026, 1, 15),
+        ),
+      );
+
+      expect(filter.hasDateFilter, isTrue);
+    });
+
+    test('es verdadero con otra granularidad (ej. semana)', () {
+      final filter = TransactionFilter(
+        datePeriod: DatePeriodFilter.granular(
+          DateGranularity.week,
+          DateTime(2026, 1, 5),
+        ),
+      );
+
+      expect(filter.hasDateFilter, isTrue);
+    });
+  });
+
+  group('activeFilterCount (issue #7, badge del botón Filtros)', () {
+    test('es cero sin ningún filtro activo', () {
+      final filter = TransactionFilter();
+
+      expect(filter.activeFilterCount, 0);
+    });
+
+    test('cuenta cada dimensión activa una sola vez', () {
+      final filter = TransactionFilter(
+        accountIds: const {'acc-1'},
+        categoryIds: const {'cat-1'},
+        types: const {TransactionType.expense},
+        tagIds: const {'tag-1'},
+        datePeriod: DatePeriodFilter.custom(
+          start: DateTime(2026, 1, 1),
+          end: DateTime(2026, 1, 15),
+        ),
+      );
+
+      // cuenta + categoría + tipo + etiqueta + fecha no-default = 5.
+      expect(filter.activeFilterCount, 5);
+    });
+
+    test('presupuesto y fecha no-default suman independientemente', () {
+      final window = DatePeriodFilter.budget(
+        budgetId: 'budget-1',
+        start: DateTime(2026, 7, 1),
+        endExclusive: DateTime(2026, 8, 1),
+      );
+
+      final filter = TransactionFilter(
+        budgetPeriod: window,
+        datePeriod: DatePeriodFilter.custom(
+          start: DateTime(2026, 1, 1),
+          end: DateTime(2026, 1, 15),
+        ),
+      );
+
+      expect(filter.activeFilterCount, 2);
+    });
+
+    test('searchText y sortOrder no suman al conteo', () {
+      final filter = TransactionFilter(
+        searchText: 'café',
+        sortOrder: TransactionSortOrder.amountDesc,
+      );
+
+      expect(filter.activeFilterCount, 0);
+    });
+  });
 }

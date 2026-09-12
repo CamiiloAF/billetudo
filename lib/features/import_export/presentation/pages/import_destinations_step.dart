@@ -4,13 +4,13 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/neutral_button.dart';
+import '../../../../core/widgets/privacy_note_strip.dart';
 import '../../domain/entities/import_destination.dart';
 import '../../domain/entities/import_entry_type.dart';
 import '../../domain/entities/import_preview.dart';
 import '../../domain/entities/import_preview_row.dart';
 import '../../domain/entities/named_entity.dart';
 import '../../domain/utils/text_normalizer.dart';
-import '../widgets/privacy_note_strip.dart';
 import '../widgets/unresolved_destination_row.dart';
 
 /// One unresolved name found in the CSV (HU-06 "resolución de destinos").
@@ -71,13 +71,18 @@ class ImportDestinationsStep extends StatelessWidget {
   final Map<String, ImportDestination> categoryOverrides;
   final Map<String, ImportDestination> subcategoryOverrides;
   final Map<String, ImportDestination> tagOverrides;
-  final void Function(String key, ImportDestination destination) onAccountOverride;
-  final void Function(String key, ImportDestination destination) onCategoryOverride;
-  final void Function(String key, ImportDestination destination) onSubcategoryOverride;
+  final void Function(String key, ImportDestination destination)
+      onAccountOverride;
+  final void Function(String key, ImportDestination destination)
+      onCategoryOverride;
+  final void Function(String key, ImportDestination destination)
+      onSubcategoryOverride;
   final void Function(String key, ImportDestination destination) onTagOverride;
   final Future<List<NamedEntity>> Function() loadExistingAccounts;
-  final Future<List<NamedEntity>> Function({required bool isExpense}) loadExistingRootCategories;
-  final Future<List<NamedEntity>> Function(String parentId) loadExistingSubcategories;
+  final Future<List<NamedEntity>> Function({required bool isExpense})
+      loadExistingRootCategories;
+  final Future<List<NamedEntity>> Function(String parentId)
+      loadExistingSubcategories;
   final Future<List<NamedEntity>> Function() loadExistingTags;
   final VoidCallback onConfirm;
 
@@ -92,7 +97,8 @@ class ImportDestinationsStep extends StatelessWidget {
     final byKey = <String, UnresolvedDestination>{};
     for (final row in preview.rows) {
       final isExpense = row.type != ImportEntryType.income;
-      _add(byKey, row.accountDestination, DestinationKind.account, LucideIcons.landmark, isExpense);
+      _add(byKey, row.accountDestination, DestinationKind.account,
+          LucideIcons.landmark, isExpense);
       _add(
         byKey,
         row.transferAccountDestination,
@@ -115,7 +121,8 @@ class ImportDestinationsStep extends StatelessWidget {
         isExpense,
       );
       for (final tagDestination in row.tagDestinations) {
-        _add(byKey, tagDestination, DestinationKind.tag, LucideIcons.tag, isExpense);
+        _add(byKey, tagDestination, DestinationKind.tag, LucideIcons.tag,
+            isExpense);
       }
     }
     return byKey.values.toList();
@@ -222,11 +229,15 @@ class ImportDestinationsStep extends StatelessWidget {
     // and subcategories together under one "Categorías" header, then tags —
     // never a flat list, so the user reads what they're resolving in
     // context instead of a shuffled bag of names.
-    final accounts = unresolved.where((d) => d.kind == DestinationKind.account).toList();
+    final accounts =
+        unresolved.where((d) => d.kind == DestinationKind.account).toList();
     final categories = unresolved
-        .where((d) => d.kind == DestinationKind.category || d.kind == DestinationKind.subcategory)
+        .where((d) =>
+            d.kind == DestinationKind.category ||
+            d.kind == DestinationKind.subcategory)
         .toList();
-    final tags = unresolved.where((d) => d.kind == DestinationKind.tag).toList();
+    final tags =
+        unresolved.where((d) => d.kind == DestinationKind.tag).toList();
 
     return Column(
       children: [
@@ -274,7 +285,8 @@ class ImportDestinationsStep extends StatelessWidget {
                         ? onCategoryOverride
                         : onSubcategoryOverride,
                     loadExisting: categories[i].kind == DestinationKind.category
-                        ? () => loadExistingRootCategories(isExpense: categories[i].isExpense)
+                        ? () => loadExistingRootCategories(
+                            isExpense: categories[i].isExpense)
                         : () => loadExistingSubcategories(''),
                   ),
                 ],
@@ -300,7 +312,8 @@ class ImportDestinationsStep extends StatelessWidget {
                 ],
                 const SizedBox(height: 14),
               ],
-              PrivacyNoteStrip(text: l10n.importExportDestinationsNewAccountsNote),
+              PrivacyNoteStrip(
+                  text: l10n.importExportDestinationsNewAccountsNote),
             ],
           ),
         ),

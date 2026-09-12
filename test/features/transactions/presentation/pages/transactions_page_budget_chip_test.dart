@@ -4,7 +4,7 @@ import 'package:billetudo/features/transactions/domain/entities/transaction_filt
 import 'package:billetudo/features/transactions/presentation/cubit/transactions_list_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/transactions_list_state.dart';
 import 'package:billetudo/features/transactions/presentation/pages/transactions_page.dart';
-import 'package:billetudo/features/transactions/presentation/widgets/filter_chip_pill.dart';
+import 'package:billetudo/features/transactions/presentation/widgets/filters_button.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,10 +15,9 @@ import '../../../categories/presentation/widgets/pump_widget.dart';
 class MockTransactionsListCubit extends MockCubit<TransactionsListState>
     implements TransactionsListCubit {}
 
-/// The 6th filter chip, "Presupuesto" (criterios 1/3): coexists with the
-/// always-active Fecha chip, but — unlike it — has a genuine neutral state
-/// when no budget is chosen, and switches to the active `primary-soft` look
-/// with the selected budget's name once one is applied.
+/// GitHub issue #7: the "Filtros" button replaces the individual chips for
+/// Presupuesto/Fecha/Tipo/Categoría/Etiqueta, with a numeric badge summing
+/// every active dimension (`TransactionFilter.activeFilterCount`).
 void main() {
   late MockTransactionsListCubit listCubit;
 
@@ -45,12 +44,11 @@ void main() {
     );
   }
 
-  FilterChipPill budgetChip(WidgetTester tester) => tester.widgetList<FilterChipPill>(
-        find.byType(FilterChipPill),
-      ).firstWhere((chip) => chip.label == 'Presupuesto' || chip.label == 'Comida');
+  FiltersButton filtersButton(WidgetTester tester) =>
+      tester.widget<FiltersButton>(find.byType(FiltersButton));
 
-  testWidgets('sin presupuesto aplicado, el chip queda neutro con el label '
-      'genérico', (tester) async {
+  testWidgets('sin filtros activos, el botón Filtros no muestra badge',
+      (tester) async {
     await pump(
       tester,
       TransactionsListState(
@@ -59,13 +57,11 @@ void main() {
       ),
     );
 
-    final chip = budgetChip(tester);
-    expect(chip.label, 'Presupuesto');
-    expect(chip.active, isFalse);
+    expect(filtersButton(tester).activeCount, 0);
   });
 
-  testWidgets('con un presupuesto aplicado, el chip queda activo con su '
-      'nombre', (tester) async {
+  testWidgets('con un presupuesto aplicado, el botón Filtros muestra badge 1',
+      (tester) async {
     await pump(
       tester,
       TransactionsListState(
@@ -81,13 +77,12 @@ void main() {
       ),
     );
 
-    final chip = budgetChip(tester);
-    expect(chip.label, 'Comida');
-    expect(chip.active, isTrue);
+    expect(filtersButton(tester).activeCount, 1);
   });
 
-  testWidgets('el chip Fecha se mantiene activo e independiente del chip '
-      'Presupuesto', (tester) async {
+  testWidgets(
+      'con presupuesto + categorías + etiqueta, el badge suma cada '
+      'dimensión activa una sola vez', (tester) async {
     await pump(
       tester,
       TransactionsListState(
@@ -99,13 +94,12 @@ void main() {
             start: DateTime(2026, 7),
             endExclusive: DateTime(2026, 8),
           ),
+          categoryIds: const {'cat-1', 'cat-2'},
+          tagIds: const {'tag-1'},
         ),
       ),
     );
 
-    final dateChip = tester
-        .widgetList<FilterChipPill>(find.byType(FilterChipPill))
-        .firstWhere((chip) => chip.label == 'Este mes' || chip.label.contains('2026'));
-    expect(dateChip.active, isTrue);
+    expect(filtersButton(tester).activeCount, 3);
   });
 }

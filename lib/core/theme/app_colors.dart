@@ -41,6 +41,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.background,
     required this.surface,
     required this.muted,
+    required this.mutedStrong,
     required this.border,
     required this.skeleton,
     required this.textPrimary,
@@ -57,6 +58,9 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.track,
     required this.trackOverlay,
     required this.monthChipBg,
+    required this.onPrimaryWarn,
+    required this.onPrimaryAlert,
+    required this.onPrimaryScheduled,
   });
 
   final Color primary;
@@ -113,6 +117,19 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color background;
   final Color surface;
   final Color muted;
+
+  /// `$muted-strong`: [muted] calibrated for a *tappable* fill against
+  /// `$surface`, not a plain background wash. Same hex as [muted] in light
+  /// (`#EEECFB`, zero visual change — the user had already approved light);
+  /// in dark it diverges (`#6E68AB` vs. `#26243B`) because plain [muted] on
+  /// `$surface` dark measured ~1.09:1, far under WCAG 1.4.11's 3:1 floor for
+  /// a component boundary. `#6E68AB` is the same violet-gray family as
+  /// [muted] (same hue, lighter), not the saturated [primary] — that read as
+  /// a solid action button in review and was rejected, along with an earlier
+  /// `stroke`-based fix the user rejected as "looks cheap". Gives ~3.30:1
+  /// against `$surface` dark. First use: `AiQuestionChip`
+  /// (`design-system/billetudo/pages/inicio.md` § "Card de IA").
+  final Color mutedStrong;
   final Color border;
 
   /// Placeholder fill for skeleton loaders only (never borders/dividers). In
@@ -167,6 +184,31 @@ class AppColors extends ThemeExtension<AppColors> {
   /// gradient without a themed surface color underneath.
   final Color monthChipBg;
 
+  /// `$on-primary-warn` (`#FFD27A`), fixed in both themes: a warm tint
+  /// legible against the Home hero's violet gradient, used only for the
+  /// projected scheduled-payment segment of the hero's progress bar and its
+  /// `Hero Note` icon (`design-system/billetudo/pages/inicio.md` § "Hero
+  /// compacto"). `$amber` is nearly invisible on this gradient (1.15:1), and
+  /// neither warm tint clears 4.5:1 for small text on it, so text stays on
+  /// `$on-primary` solid — only bars/icons (3:1 graphic-object floor) use
+  /// this token.
+  final Color onPrimaryWarn;
+
+  /// `$on-primary-alert` (`#FFCFC4`), fixed in both themes: same rationale as
+  /// [onPrimaryWarn], for the hero's real-overspend state (bar fill, `State
+  /// Icon`, `State Amount`). `$expense` is nearly invisible on the gradient
+  /// (1.01:1).
+  final Color onPrimaryAlert;
+
+  /// `$on-primary-scheduled` (`#D6CCFC`), fixed in both themes: issue #11 —
+  /// the hero's scheduled segment used to render only in the
+  /// projected-overspend-risk state ([onPrimaryWarn]); it now always renders
+  /// when there is a scheduled amount, same pattern as Budgets, so it needs a
+  /// distinct color for the no-risk case. `$primary-light` (Budgets' own
+  /// no-risk token) fails contrast on this gradient (1.78:1/2.44:1); this
+  /// token clears the 3:1 graphic-object floor (3.22:1/4.40:1).
+  final Color onPrimaryScheduled;
+
   /// Light theme — values from `billetudo.pen` (MASTER.md).
   static const AppColors light = AppColors(
     primary: Color(0xFF6C5CE7),
@@ -196,6 +238,7 @@ class AppColors extends ThemeExtension<AppColors> {
     background: Color(0xFFF4F3FA),
     surface: Color(0xFFFFFFFF),
     muted: Color(0xFFEEECFB),
+    mutedStrong: Color(0xFFEEECFB),
     border: Color(0xFFECEBF3),
     skeleton: Color(0xFFECEBF3),
     textPrimary: Color(0xFF1C1B29),
@@ -212,6 +255,9 @@ class AppColors extends ThemeExtension<AppColors> {
     track: Color(0xFFEEECFB),
     trackOverlay: Color(0x33FFFFFF),
     monthChipBg: Color(0x40000000),
+    onPrimaryWarn: Color(0xFFFFD27A),
+    onPrimaryAlert: Color(0xFFFFCFC4),
+    onPrimaryScheduled: Color(0xFFD6CCFC),
   );
 
   /// Dark theme — values from `billetudo.pen` (MASTER.md).
@@ -243,6 +289,7 @@ class AppColors extends ThemeExtension<AppColors> {
     background: Color(0xFF14141F),
     surface: Color(0xFF1E1E2E),
     muted: Color(0xFF26243B),
+    mutedStrong: Color(0xFF6E68AB),
     border: Color(0xFF2A2A3D),
     skeleton: Color(0xFF45455F),
     textPrimary: Color(0xFFF4F3FA),
@@ -259,6 +306,9 @@ class AppColors extends ThemeExtension<AppColors> {
     track: Color(0xFF2A2A3D),
     trackOverlay: Color(0x33FFFFFF),
     monthChipBg: Color(0x40000000),
+    onPrimaryWarn: Color(0xFFFFD27A),
+    onPrimaryAlert: Color(0xFFFFCFC4),
+    onPrimaryScheduled: Color(0xFFD6CCFC),
   );
 
   @override
@@ -290,6 +340,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? background,
     Color? surface,
     Color? muted,
+    Color? mutedStrong,
     Color? border,
     Color? skeleton,
     Color? textPrimary,
@@ -306,6 +357,9 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? track,
     Color? trackOverlay,
     Color? monthChipBg,
+    Color? onPrimaryWarn,
+    Color? onPrimaryAlert,
+    Color? onPrimaryScheduled,
   }) {
     return AppColors(
       primary: primary ?? this.primary,
@@ -335,6 +389,7 @@ class AppColors extends ThemeExtension<AppColors> {
       background: background ?? this.background,
       surface: surface ?? this.surface,
       muted: muted ?? this.muted,
+      mutedStrong: mutedStrong ?? this.mutedStrong,
       border: border ?? this.border,
       skeleton: skeleton ?? this.skeleton,
       textPrimary: textPrimary ?? this.textPrimary,
@@ -351,6 +406,9 @@ class AppColors extends ThemeExtension<AppColors> {
       track: track ?? this.track,
       trackOverlay: trackOverlay ?? this.trackOverlay,
       monthChipBg: monthChipBg ?? this.monthChipBg,
+      onPrimaryWarn: onPrimaryWarn ?? this.onPrimaryWarn,
+      onPrimaryAlert: onPrimaryAlert ?? this.onPrimaryAlert,
+      onPrimaryScheduled: onPrimaryScheduled ?? this.onPrimaryScheduled,
     );
   }
 
@@ -386,6 +444,7 @@ class AppColors extends ThemeExtension<AppColors> {
       background: Color.lerp(background, other.background, t)!,
       surface: Color.lerp(surface, other.surface, t)!,
       muted: Color.lerp(muted, other.muted, t)!,
+      mutedStrong: Color.lerp(mutedStrong, other.mutedStrong, t)!,
       border: Color.lerp(border, other.border, t)!,
       skeleton: Color.lerp(skeleton, other.skeleton, t)!,
       textPrimary: Color.lerp(textPrimary, other.textPrimary, t)!,
@@ -403,6 +462,10 @@ class AppColors extends ThemeExtension<AppColors> {
       track: Color.lerp(track, other.track, t)!,
       trackOverlay: Color.lerp(trackOverlay, other.trackOverlay, t)!,
       monthChipBg: Color.lerp(monthChipBg, other.monthChipBg, t)!,
+      onPrimaryWarn: Color.lerp(onPrimaryWarn, other.onPrimaryWarn, t)!,
+      onPrimaryAlert: Color.lerp(onPrimaryAlert, other.onPrimaryAlert, t)!,
+      onPrimaryScheduled:
+          Color.lerp(onPrimaryScheduled, other.onPrimaryScheduled, t)!,
     );
   }
 }

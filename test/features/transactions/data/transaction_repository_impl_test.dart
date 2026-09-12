@@ -483,7 +483,7 @@ void main() {
       expect(emissions.last, isNot(contains(untagged.id)));
     });
 
-    group('chip Presupuesto — intersección AND con el chip Fecha', () {
+    group('chip Presupuesto — sustituye al chip Fecha, sin intersección', () {
       test(
           'el filtro de presupuesto acota a su ventana, sin que el chip '
           'Fecha (más amplio) lo estreche (HU-06)', () async {
@@ -497,8 +497,8 @@ void main() {
               TransactionFilter(
                 // El chip Fecha sigue en su default (mes en curso real); se
                 // amplía aquí a un rango que cubre de sobra la ventana del
-                // presupuesto, para que la intersección la deje intacta y la
-                // prueba aísle el efecto del chip Presupuesto solo.
+                // presupuesto, para que quede claro que su valor es
+                // irrelevante: el chip Presupuesto lo sustituye por completo.
                 datePeriod: DatePeriodFilter.custom(
                   start: DateTime(2026, 1, 1),
                   end: DateTime(2026, 12, 31),
@@ -519,17 +519,22 @@ void main() {
       });
 
       test(
-          'con ambos chips activos, solo pasan las transacciones dentro de '
-          'la intersección de las dos ventanas', () async {
+          'con el chip Fecha activo y el de Presupuesto también, la ventana '
+          'del presupuesto manda entera — incluso fuera del rango de Fecha '
+          '(regresión: presupuesto 25 ago-25 sep no debe recortarse al mes '
+          'calendario)', () async {
         // Fecha: julio completo. Presupuesto: 15 jul - 15 ago (una ventana
-        // corrida que se solapa parcialmente con julio).
-        final overlap = await createTransaction(
+        // corrida que se extiende más allá de julio).
+        final insideJuly = await createTransaction(
           expenseDraft(date: DateTime(2026, 7, 20)),
         );
         // Dentro de julio (Fecha) pero fuera del presupuesto (antes del 15).
         await createTransaction(expenseDraft(date: DateTime(2026, 7, 5)));
-        // Dentro del presupuesto pero fuera de julio (Fecha).
-        await createTransaction(expenseDraft(date: DateTime(2026, 8, 1)));
+        // Fuera de julio (Fecha) pero dentro del presupuesto: debe aparecer,
+        // porque Presupuesto sustituye a Fecha, no la intersecta.
+        final insideAugust = await createTransaction(
+          expenseDraft(date: DateTime(2026, 8, 1)),
+        );
 
         final result = await repository
             .watchTransactions(
@@ -545,14 +550,14 @@ void main() {
             .first;
 
         expect(
-          result.getRight().toNullable()!.map((t) => t.transaction.id),
-          [overlap.id],
+          result.getRight().toNullable()!.map((t) => t.transaction.id).toSet(),
+          {insideJuly.id, insideAugust.id},
         );
       });
 
       test(
-          'una intersección vacía (ventanas que no se tocan) devuelve una '
-          'lista vacía, no un error', () async {
+          'una transacción fuera de la ventana del presupuesto no aparece, '
+          'aunque el chip Fecha (ignorado) sí la cubriría', () async {
         await createTransaction(expenseDraft(date: DateTime(2026, 7, 10)));
 
         final result = await repository
@@ -575,8 +580,7 @@ void main() {
   });
 
   group('watchRecentTransactions (Home HU-05)', () {
-    test('no aplica ningún filtro de fecha: cruza meses libremente',
-        () async {
+    test('no aplica ningún filtro de fecha: cruza meses libremente', () async {
       final august = await createTransaction(
         expenseDraft(date: DateTime(2026, 8, 1)),
       );
@@ -607,7 +611,8 @@ void main() {
       );
     });
 
-    test('excluye transacciones borradas (deletedAt), igual que watchTransactions',
+    test(
+        'excluye transacciones borradas (deletedAt), igual que watchTransactions',
         () async {
       final visible = await createTransaction(expenseDraft());
       final trashed = await createTransaction(

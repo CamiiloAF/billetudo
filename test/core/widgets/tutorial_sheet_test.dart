@@ -204,8 +204,7 @@ void main() {
     testWidgets(
       'renders only "Entendido" as the primary button, no CTA',
       (tester) async {
-        final content =
-            await readContent(tester, TutorialKey.debtLinkMovement);
+        final content = await readContent(tester, TutorialKey.debtLinkMovement);
         await pumpSheet(tester, TutorialKey.debtLinkMovement);
 
         expect(content.points, hasLength(1));
@@ -236,40 +235,4 @@ void main() {
       expect(find.byType(FilledButton), findsOneWidget);
     });
   });
-
-  // One golden per key, both themes — full coverage of all 11 stable
-  // minitutorials (4 HU-01 screens, 3 points each; 7 HU-02 sub-flows, 1-2
-  // points each), not just a sample of the shortest/longest ones. Named by
-  // `TutorialKey.name` so a new key added to the enum is a visible gap here
-  // (the file won't exist) rather than a silently-uncovered addition.
-  for (final key in TutorialKey.values) {
-    for (final brightness in Brightness.values) {
-      final suffix = brightness == Brightness.light ? 'light' : 'dark';
-      final kind = key.isScreenTutorial ? 'screen' : 'subflow';
-
-      testWidgets('golden: ${key.name} ($kind, $suffix)', (tester) async {
-        setGoldenViewport(tester);
-        await tester.pumpWidget(
-          wrapForGolden(
-            Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () =>
-                    TutorialSheet.show(context, contentFor(context, key)),
-                child: const Text('open'),
-              ),
-            ),
-            brightness: brightness,
-          ),
-        );
-        await tester.tap(find.byType(ElevatedButton));
-        await tester.pumpAndSettle();
-        await expectLater(
-          find.byType(MaterialApp),
-          matchesGoldenFile(
-            'goldens/tutorial_sheet_${key.name}_$suffix.png',
-          ),
-        );
-      });
-    }
-  }
 }

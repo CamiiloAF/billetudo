@@ -17,9 +17,10 @@ class BalanceCarouselPreferenceDatasource {
 
   final SharedPreferencesAsync _prefs;
 
-  /// Defaults to expanded (`false`) when nothing has been saved yet — the
-  /// approved design opens the carousel expanded on first launch.
-  Future<bool> readCollapsed() async => await _prefs.getBool(_key) ?? false;
+  /// Defaults to collapsed (`true`) when nothing has been saved yet —
+  /// changed 2026-09-11 at the user's request; the carousel used to open
+  /// expanded on first launch.
+  Future<bool> readCollapsed() async => await _prefs.getBool(_key) ?? true;
 
   Future<void> writeCollapsed({required bool collapsed}) =>
       _prefs.setBool(_key, collapsed);

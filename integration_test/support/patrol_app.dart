@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:billetudo/app.dart';
@@ -28,11 +29,24 @@ PowerSyncDatabase? _previousPowerSyncDatabase;
 /// Every scenario starts against a fresh, real SQLite file on the
 /// device/simulator — not a mock — so each `patrolTest` gets its own "clean
 /// install" without needing a separate app reinstall per test.
+///
+/// Must also delete the `-wal`/`-shm` sidecar files PowerSync's underlying
+/// `sqlite_async` connection leaves behind (WAL journal mode): deleting only
+/// the main `billetudo.sqlite` file and leaving a populated `-wal` behind
+/// resurrects the previous scenario's rows on the next open (SQLite replays
+/// the stale WAL frames into the fresh empty main file). Found via a real
+/// failure: after the previous `patrolTest` in this same process accepted
+/// the legal terms, the next one's `LegalAcceptanceCubit.load()` still read
+/// `AppSettings.legalAcceptedVersion` as already set, so
+/// `LegalAcceptanceSheet` never appeared — even though the main db file had
+/// just been deleted and reopened empty.
 Future<void> resetLocalDatabase() async {
   final dir = await getApplicationDocumentsDirectory();
-  final file = File(p.join(dir.path, 'billetudo.sqlite'));
-  if (file.existsSync()) {
-    file.deleteSync();
+  for (final suffix in ['', '-wal', '-shm', '-journal']) {
+    final file = File(p.join(dir.path, 'billetudo.sqlite$suffix'));
+    if (file.existsSync()) {
+      file.deleteSync();
+    }
   }
 }
 
@@ -51,8 +65,21 @@ Future<void> resetLocalDatabase() async {
 /// `bootstrap.dart`): `configureDependencies()` builds `AppDatabase` and
 /// `SupabaseClient` synchronously off of them (see `register_module.dart`),
 /// so both must complete first or the DI graph throws.
-Future<void> startApp(PatrolIntegrationTester $) async {
+/// [beforeFirstFrame], when given, runs after `getIt` is ready (so
+/// `getIt<AppDatabase>()` and friends work) but before the widget tree is
+/// pumped — the only window some scenarios need. `capture_widget_shortcut_
+/// patrol_test.dart` uses it to seed an account so a cold-start shortcut
+/// lands straight on the movement form instead of the account gate bridge
+/// (`docs/requirements/fase-1/15-gate-cuenta.md`), which would otherwise
+/// intercept the very first frame — `CaptureShortcutCubit.start()` (called
+/// from `BilletudoApp`'s `initState`-time field) races that first pump, so
+/// seeding after `startApp` returns is already too late.
+Future<void> startApp(
+  PatrolIntegrationTester $, {
+  FutureOr<void> Function()? beforeFirstFrame,
+}) async {
   await _prepareCleanBoot($);
+  await beforeFirstFrame?.call();
   await $.pumpWidgetAndSettle(const BilletudoApp());
 }
 

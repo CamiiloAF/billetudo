@@ -1,6 +1,8 @@
 import 'package:billetudo/app.dart';
 import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/error/result.dart';
+import 'package:billetudo/core/legal/presentation/cubit/legal_reacceptance_cubit.dart';
+import 'package:billetudo/core/legal/presentation/cubit/legal_reacceptance_state.dart';
 import 'package:billetudo/core/sync/domain/entities/sync_state.dart';
 import 'package:billetudo/core/sync/domain/entities/sync_status_snapshot.dart';
 import 'package:billetudo/core/sync/domain/repositories/sync_status_repository.dart';
@@ -9,6 +11,9 @@ import 'package:billetudo/core/sync/domain/usecases/watch_sync_status_details.da
 import 'package:billetudo/core/theme/theme_mode_cubit.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
+import 'package:billetudo/features/ai/domain/entities/ai_access.dart';
+import 'package:billetudo/features/ai/domain/usecases/check_ai_access.dart';
+import 'package:billetudo/features/ai/domain/usecases/get_conversation_for_insight.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_provider.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_session.dart';
 import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
@@ -24,7 +29,15 @@ import 'package:billetudo/features/budgets/domain/entities/budget_with_progress.
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_by_id.dart';
 import 'package:billetudo/features/budgets/domain/usecases/get_budget_progress.dart';
 import 'package:billetudo/features/budgets/domain/usecases/watch_featured_budget_progress.dart';
+import 'package:billetudo/features/capture/domain/usecases/watch_pending_capture_count.dart';
+import 'package:billetudo/features/capture/presentation/cubit/capture_shortcut_cubit.dart';
+import 'package:billetudo/features/capture/presentation/cubit/capture_shortcut_state.dart';
+import 'package:billetudo/features/home/domain/usecases/dismiss_home_insight.dart';
+import 'package:billetudo/features/home/domain/usecases/record_home_insight_shown.dart';
+import 'package:billetudo/features/home/domain/usecases/watch_has_any_budget.dart';
+import 'package:billetudo/features/home/domain/usecases/watch_home_ai_insight.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_month_transactions.dart';
+import 'package:billetudo/features/home/domain/usecases/watch_pending_scheduled_payment_count.dart';
 import 'package:billetudo/features/home/domain/usecases/watch_recent_transactions.dart';
 import 'package:billetudo/features/home/presentation/cubit/home_cubit.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
@@ -41,6 +54,9 @@ class MockWatchAccounts extends Mock implements WatchAccounts {}
 
 class MockThemeModeCubit extends MockCubit<ThemeMode>
     implements ThemeModeCubit {}
+
+class MockCaptureShortcutCubit extends MockCubit<CaptureShortcutState>
+    implements CaptureShortcutCubit {}
 
 class MockWatchMonthTransactions extends Mock
     implements WatchMonthTransactions {}
@@ -61,8 +77,31 @@ class MockGetBudgetById extends Mock implements GetBudgetById {}
 
 class MockGetBudgetProgress extends Mock implements GetBudgetProgress {}
 
+class MockWatchHasAnyBudget extends Mock implements WatchHasAnyBudget {}
+
+class MockWatchHomeAiInsight extends Mock implements WatchHomeAiInsight {}
+
+class MockWatchPendingScheduledPaymentCount extends Mock
+    implements WatchPendingScheduledPaymentCount {}
+
+class MockWatchPendingCaptureCount extends Mock
+    implements WatchPendingCaptureCount {}
+
+class MockCheckAiAccess extends Mock implements CheckAiAccess {}
+
+class MockGetConversationForInsight extends Mock
+    implements GetConversationForInsight {}
+
+class MockDismissHomeInsight extends Mock implements DismissHomeInsight {}
+
+class MockRecordHomeInsightShown extends Mock
+    implements RecordHomeInsightShown {}
+
 class MockAppSettingsCubit extends MockCubit<AppSettingsState>
     implements AppSettingsCubit {}
+
+class MockLegalReacceptanceCubit extends MockCubit<LegalReacceptanceState>
+    implements LegalReacceptanceCubit {}
 
 class MockSignOut extends Mock implements SignOut {}
 
@@ -117,6 +156,21 @@ void main() {
     return cubit;
   }
 
+  // Igual que el anterior: `BilletudoApp` resuelve el cubit de los atajos del
+  // widget de la pantalla de inicio desde `getIt`, y el real habla por un
+  // canal de plataforma que no existe bajo `flutter test`.
+  CaptureShortcutCubit fakeCaptureShortcutCubit() {
+    final cubit = MockCaptureShortcutCubit();
+    when(() => cubit.state).thenReturn(const CaptureShortcutState());
+    whenListen(
+      cubit,
+      const Stream<CaptureShortcutState>.empty(),
+      initialState: const CaptureShortcutState(),
+    );
+    when(cubit.start).thenAnswer((_) async {});
+    return cubit;
+  }
+
   setUp(() {
     final watchAccounts = MockWatchAccounts();
     final watchMonthTransactions = MockWatchMonthTransactions();
@@ -127,6 +181,15 @@ void main() {
     final watchFeaturedBudgetProgress = MockWatchFeaturedBudgetProgress();
     final getBudgetById = MockGetBudgetById();
     final getBudgetProgress = MockGetBudgetProgress();
+    final watchHasAnyBudget = MockWatchHasAnyBudget();
+    final watchHomeAiInsight = MockWatchHomeAiInsight();
+    final watchPendingScheduledPaymentCount =
+        MockWatchPendingScheduledPaymentCount();
+    final watchPendingCaptureCount = MockWatchPendingCaptureCount();
+    final checkAiAccess = MockCheckAiAccess();
+    final getConversationForInsight = MockGetConversationForInsight();
+    final dismissHomeInsight = MockDismissHomeInsight();
+    final recordHomeInsightShown = MockRecordHomeInsightShown();
     when(watchAccounts.call).thenAnswer(
       (_) => const Stream<Result<List<AccountWithBalance>>>.empty(),
     );
@@ -146,6 +209,19 @@ void main() {
     when(watchFeaturedBudgetProgress.call).thenAnswer(
       (_) => const Stream<Result<BudgetWithProgress?>>.empty(),
     );
+    when(watchHasAnyBudget.call)
+        .thenAnswer((_) => const Stream<Result<bool>>.empty());
+    when(watchPendingScheduledPaymentCount.call)
+        .thenAnswer((_) => const Stream<Result<int>>.empty());
+    when(watchPendingCaptureCount.call)
+        .thenAnswer((_) => const Stream<Result<int>>.empty());
+    // Home arranca resolviendo el acceso al asistente. Este test es de HU-06
+    // (cerrar sesión), no de IA: `denied` es la respuesta neutra — y el
+    // fail-closed por defecto de `AiAccess` — así que la card de IA no se
+    // dibuja y el recorrido "Más" → hoja → snackbar queda igual. Sin el stub,
+    // el mock devuelve `null` donde el cubit espera un Future.
+    when(checkAiAccess.call)
+        .thenAnswer((_) async => const Right(AiAccess.denied));
 
     signOutWithChoice = MockSignOutWithLocalDataChoice();
 
@@ -161,6 +237,14 @@ void main() {
           watchFeaturedBudgetProgress,
           getBudgetById,
           getBudgetProgress,
+          watchHasAnyBudget,
+          watchHomeAiInsight,
+          watchPendingScheduledPaymentCount,
+          watchPendingCaptureCount,
+          checkAiAccess,
+          getConversationForInsight,
+          dismissHomeInsight,
+          recordHomeInsightShown,
         ),
       )
       ..registerFactory<AuthCubit>(
@@ -173,6 +257,7 @@ void main() {
       )
       ..registerFactory<SignOutWithLocalDataChoice>(() => signOutWithChoice)
       ..registerFactory<ThemeModeCubit>(fakeThemeModeCubit)
+      ..registerFactory<CaptureShortcutCubit>(fakeCaptureShortcutCubit)
       // La rama `/inicio` resuelve `AppSettingsCubit` desde `getIt` para el
       // orden del acceso rápido; sin registrarlo, Home no llega a construirse.
       ..registerFactory<AppSettingsCubit>(() {
@@ -184,6 +269,20 @@ void main() {
           initialState: const AppSettingsState(),
         );
         when(cubit.start).thenAnswer((_) async {});
+        return cubit;
+      })
+      // `LegalReacceptanceGate` wraps the shell and resolves this from
+      // `getIt` on its very first frame — a stub that never finds anything
+      // to show keeps this test about sign-out's own snackbars.
+      ..registerLazySingleton<LegalReacceptanceCubit>(() {
+        final cubit = MockLegalReacceptanceCubit();
+        when(() => cubit.state).thenReturn(const LegalReacceptanceState());
+        whenListen(
+          cubit,
+          const Stream<LegalReacceptanceState>.empty(),
+          initialState: const LegalReacceptanceState(),
+        );
+        when(cubit.checkOnLaunch).thenAnswer((_) async {});
         return cubit;
       });
   });

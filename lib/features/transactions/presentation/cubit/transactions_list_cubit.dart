@@ -13,9 +13,11 @@ import '../../domain/entities/date_period_filter.dart';
 import '../../domain/entities/transaction_filter.dart';
 import '../../domain/entities/transaction_with_details.dart';
 import '../../domain/usecases/delete_transaction.dart';
+import '../../domain/usecases/get_budget_period_at.dart';
 import '../../domain/usecases/restore_transaction.dart';
 import '../../domain/usecases/watch_budget_period_options.dart';
 import '../../domain/usecases/watch_transactions.dart';
+import '../utils/date_period_navigation.dart';
 import 'transactions_list_state.dart';
 
 /// Drives the transaction list: search, every combinable filter of HU-06,
@@ -37,6 +39,7 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
     this._restoreTransaction,
     this._watchAccounts,
     this._watchBudgetPeriodOptions,
+    this._getBudgetPeriodAt,
     this._accountFilterPreferences,
     this._getCategorySubtreeIds,
   ) : super(TransactionsListState());
@@ -46,6 +49,7 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
   final RestoreTransaction _restoreTransaction;
   final WatchAccounts _watchAccounts;
   final WatchBudgetPeriodOptions _watchBudgetPeriodOptions;
+  final GetBudgetPeriodAt _getBudgetPeriodAt;
   final AccountFilterPreferenceDatasource _accountFilterPreferences;
   final GetCategorySubtreeIds _getCategorySubtreeIds;
 
@@ -168,8 +172,7 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
     if (budgetId == null) {
       return;
     }
-    final stillActive =
-        options.any((option) => option.budgetId == budgetId);
+    final stillActive = options.any((option) => option.budgetId == budgetId);
     if (!stillActive) {
       unawaited(
         updateFilter(state.filter.copyWith(clearBudgetPeriod: true)),
@@ -272,6 +275,54 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
     if (accountIdsChanged) {
       unawaited(_accountFilterPreferences.writeAccountIds(filter.accountIds));
     }
+  }
+
+  /// `PeriodStepper`'s Prev/Next (`design-system/billetudo/pages/
+  /// transacciones.md` § "Period Nav Bar en la pantalla principal"),
+  /// `direction` `-1`/`1`: steps whichever period dimension is active —
+  /// `filter.budgetPeriod` when a Presupuesto filter is applied (via
+  /// [GetBudgetPeriodAt], which respects the budget's own bounds), otherwise
+  /// `filter.datePeriod` (a granular Fecha period; a no-op on a custom range,
+  /// which has no granularity to step). Ignores the tap outright when
+  /// stepping in [direction] would go out of bounds, rather than clamping —
+  /// there is nothing meaningful to clamp to beyond the edge already shown.
+  Future<void> stepPeriod(int direction) async {
+    final filter = state.filter;
+    final budgetPeriod = filter.budgetPeriod;
+    if (budgetPeriod != null) {
+      if (direction < 0 ? !budgetPeriod.hasPrevious : !budgetPeriod.hasNext) {
+        return;
+      }
+      final result = await _getBudgetPeriodAt(
+        budgetId: budgetPeriod.budgetId!,
+        index: budgetPeriod.index + direction,
+      );
+      if (isClosed) {
+        return;
+      }
+      switch (result) {
+        case Left():
+          // The budget disappeared between the tap and the read (archived/
+          // deleted); `_pruneStaleBudgetPeriodFilter` already handles that
+          // case reactively via the budgets stream, so this simply no-ops
+          // rather than surfacing a list-wide error for a stepper tap.
+          return;
+        case Right(value: final nextPeriod):
+          await updateFilter(filter.copyWith(budgetPeriod: nextPeriod));
+      }
+      return;
+    }
+
+    final datePeriod = filter.datePeriod;
+    if (datePeriod.isCustomRange) {
+      return;
+    }
+    if (direction > 0 && !datePeriodHasNext(datePeriod, DateTime.now())) {
+      return;
+    }
+    await updateFilter(
+      filter.copyWith(datePeriod: datePeriod.stepped(direction)),
+    );
   }
 
   void _subscribe() {

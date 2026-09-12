@@ -30,6 +30,7 @@ class TutorialContent extends Equatable {
     required this.points,
     required this.iconName,
     this.ctaLabel,
+    this.ctaIconName = 'plus',
   });
 
   /// Which of the 12 tutorials this content is for — drives "seen" tracking.
@@ -55,10 +56,16 @@ class TutorialContent extends Equatable {
   /// `false`) and MUST be `null` there.
   final String? ctaLabel;
 
+  /// Lucide icon name shown on the CTA. Every HU-01 tutorial's CTA creates
+  /// something, so `plus` is the default; the voice-gesture one starts a
+  /// dictation instead, and a `+` there would describe the wrong action.
+  final String ctaIconName;
+
   /// Whether this sheet shows the HU-01 primary CTA (`ctaLabel` is set) in
   /// addition to "Entendido".
   bool get hasNavigationCta => ctaLabel != null;
 
   @override
-  List<Object?> get props => [key, title, points, iconName, ctaLabel];
+  List<Object?> get props =>
+      [key, title, points, iconName, ctaLabel, ctaIconName];
 }

@@ -52,6 +52,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonClear => 'Clear';
 
   @override
+  String get commonClearAll => 'Clear all';
+
+  @override
   String get commonConfirm => 'Confirm';
 
   @override
@@ -387,7 +390,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'We couldn\'t read the number saved on this device. We\'ll leave it exactly as it is — to change it, type it again.';
 
   @override
-  String get accountFormLast4Label => 'Last 4 digits';
+  String get accountFormLast4Label => 'Account\'s last 4 digits';
 
   @override
   String get accountFormLast4Hint => 'E.g. 4321';
@@ -689,7 +692,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionsTitle => 'Transactions';
 
   @override
-  String get transactionsSearchHint => 'Search by note or category';
+  String get transactionsSearchHint => 'Search by note';
+
+  @override
+  String get transactionsPeriodTotalLabel => 'Period total';
 
   @override
   String get transactionsLoading => 'Loading transactions';
@@ -1128,6 +1134,43 @@ class AppLocalizationsEn extends AppLocalizations {
       'You don\'t have any active budgets';
 
   @override
+  String get transactionsUnifiedFiltersTitle => 'Filters';
+
+  @override
+  String get transactionsFiltersButtonLabel => 'Filters';
+
+  @override
+  String get transactionsPeriodNavPreviousLabel => 'Previous period';
+
+  @override
+  String get transactionsPeriodNavNextLabel => 'Next period';
+
+  @override
+  String get transactionsFilterSectionBudget => 'BUDGET';
+
+  @override
+  String get transactionsFilterBudgetNone => 'None';
+
+  @override
+  String get transactionsFilterSectionDate => 'DATE';
+
+  @override
+  String get transactionsFilterDateLockedByBudget =>
+      'You can\'t filter by date with an active budget';
+
+  @override
+  String get transactionsFilterSectionType => 'TYPE';
+
+  @override
+  String get transactionsFilterSectionCategory => 'CATEGORY';
+
+  @override
+  String get transactionsFilterSectionTag => 'TAG';
+
+  @override
+  String get transactionsFilterTagEmpty => 'You don\'t have any tags yet';
+
+  @override
   String get dateFilterWeek => 'Week';
 
   @override
@@ -1181,11 +1224,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navMore => 'More';
 
   @override
-  String get homeGreeting => 'Welcome back';
+  String get homeGreeting => 'Hi 👋';
 
   @override
   String homeGreetingNamed(String name) {
-    return 'Welcome back, $name';
+    return 'Hi, $name 👋';
   }
 
   @override
@@ -1312,6 +1355,173 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeNotificationsSheetMessage => 'Notifications are coming soon.';
+
+  @override
+  String get homeAccountAvatarNoAccount => 'No cloud backup';
+
+  @override
+  String get homeWalletTooltip => 'Your money';
+
+  @override
+  String get homeHeroOverspentKicker => 'Over by';
+
+  @override
+  String get homeHeroRemainingKicker => 'You have left';
+
+  @override
+  String homeHeroMetaDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days left',
+      one: '$count day left',
+      zero: 'Last day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeHeroRiskNote(String amount) {
+    return 'Could exceed by $amount';
+  }
+
+  @override
+  String get homeHeroNoBudgetEverCreatedNote => 'No active budget this month';
+
+  @override
+  String get homeHeroNoBudgetFeaturedNote => 'No budget featured this month';
+
+  @override
+  String get homeAiCardTitle => 'Ask Billetudo';
+
+  @override
+  String get homeAiCardSubtitle => 'Understand your money in seconds';
+
+  @override
+  String get homeAiChipMonthProgress => 'How am I doing this month?';
+
+  @override
+  String get homeAiChipGoalsSaved => 'How much have I saved toward my goals?';
+
+  @override
+  String get homeAiChipBiggestSpend => 'Where did most of my money go?';
+
+  @override
+  String get homeAiChipBudgetHelp => 'Help me budget';
+
+  @override
+  String get homeAiInsightCreateBudgetKicker => 'New to Billetudo';
+
+  @override
+  String get homeAiInsightCreateBudgetTitle => 'Budget so you don\'t overspend';
+
+  @override
+  String get homeAiInsightCreateBudgetMeta =>
+      'You\'ll see what\'s left of your month';
+
+  @override
+  String get homeAiInsightProjectionKicker => 'Budget projection';
+
+  @override
+  String get homeAiInsightProjectionTitle =>
+      'You could exceed your budget this month';
+
+  @override
+  String homeAiInsightProjectionMeta(String amount) {
+    return 'With your scheduled payments you could exceed by $amount';
+  }
+
+  @override
+  String get homeAiInsightAverageKicker => 'Compared to your average';
+
+  @override
+  String homeAiInsightAverageTitleUp(int percent) {
+    return 'You\'re $percent% above your average this month';
+  }
+
+  @override
+  String homeAiInsightAverageTitleDown(int percent) {
+    return 'You\'re $percent% below your average this month';
+  }
+
+  @override
+  String get homeAiInsightAverageMeta => 'Compared to the last 3 months';
+
+  @override
+  String homeAiInsightQueueCounter(int position, int total) {
+    return '$position of $total';
+  }
+
+  @override
+  String get homeAiInsightContinueChip => 'Continue the conversation';
+
+  @override
+  String get homeAiInsightProjectionChip => 'Adjust my budget';
+
+  @override
+  String get homeAiInsightProjectionQuestion =>
+      'How can I avoid going over my projected budget this month?';
+
+  @override
+  String get homeAiInsightAverageUpChip => 'Understand this increase';
+
+  @override
+  String get homeAiInsightAverageUpQuestion =>
+      'Why did I spend more this month than my recent average?';
+
+  @override
+  String get homeAiInsightAverageDownChip => 'See this saving';
+
+  @override
+  String get homeAiInsightAverageDownQuestion =>
+      'What did I do differently this month to spend less than my average?';
+
+  @override
+  String get homeAiInsightDismiss => 'Not now';
+
+  @override
+  String get homeAiBetaSheetTitle => 'Conversation in beta';
+
+  @override
+  String get homeAiBetaSheetMessage =>
+      'You don\'t have access to chat with Billetudo yet. Keep exploring the app while it opens up to more people.';
+
+  @override
+  String get homeBalancesSheetTitle => 'Your money';
+
+  @override
+  String get homeBalancesSheetTotalLabel => 'YOUR MONEY';
+
+  @override
+  String get homeBalancesSheetExcludesNote =>
+      'Does not include credit cards or investments';
+
+  @override
+  String homeBalancesSheetCurrencyCount(String currency, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count accounts',
+      one: '1 account',
+    );
+    return '$currency · $_temp0';
+  }
+
+  @override
+  String get homeAccountSheetSyncedPill => 'Synced';
+
+  @override
+  String get homeAccountSheetOfflinePill => 'No connection';
+
+  @override
+  String get homeAccountSheetNoAccountTitle => 'Back up your data';
+
+  @override
+  String get homeAccountSheetNoAccountBody =>
+      'That way you won\'t lose them if you switch phones';
+
+  @override
+  String get homeAccountSheetActivateBackup => 'Activate backup';
 
   @override
   String get homeExitConfirmTitle => 'Leave Billetudo?';
@@ -1951,6 +2161,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authGoogleLoading => 'Connecting to Google…';
 
   @override
+  String get authAppleLoading => 'Connecting to Apple…';
+
+  @override
   String get authGoogleErrorSnackbar => 'We couldn\'t sign you in with Google';
 
   @override
@@ -2184,6 +2397,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsQuickAccessOrderHint =>
       'Press and hold to drag and reorder';
+
+  @override
+  String get settingsWidgetTitle => 'Quick-capture widget';
+
+  @override
+  String get settingsWidgetSubtitle =>
+      'Add it to your home screen to log an expense or income in one tap, without opening the app. Press and hold your home screen, tap Widgets and look for Billetudo.';
 
   @override
   String get settingsDeleteAccount => 'Delete account';
@@ -5499,10 +5719,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your data lives on your phone. Cloud backup is optional.';
 
   @override
-  String get onboardingWelcomeCaption =>
-      'We already set up some categories for you.';
-
-  @override
   String get onboardingWelcomeCta => 'Get started';
 
   @override
@@ -5851,4 +6067,1158 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tutorialBudgetFeaturedChoicePoint2Body =>
       'Open a budget and use its ⋮ menu to feature it or remove it. It\'s reversible whenever you want.';
+
+  @override
+  String get aiChatTitle => 'Billetudo';
+
+  @override
+  String get aiChatHistoryTooltip => 'History';
+
+  @override
+  String get aiChatNewConversationTooltip => 'New conversation';
+
+  @override
+  String get aiChatBetaBadge => 'Beta';
+
+  @override
+  String get aiChatDisclaimer =>
+      'AI-generated answers. This is not financial advice.';
+
+  @override
+  String get aiChatComposerHint => 'Message Billetudo…';
+
+  @override
+  String get aiChatEmptyTitle => 'Where should we start?';
+
+  @override
+  String get aiChatEmptySubtitle => 'Pick a question or write what you need.';
+
+  @override
+  String get aiChatSuggestionMonthProgress => 'How am I doing this month?';
+
+  @override
+  String get aiChatSuggestionBuildBudget => 'Help me build a budget';
+
+  @override
+  String get aiChatSuggestionGoalsSaved => 'How much have I saved in my goals?';
+
+  @override
+  String get aiChatSuggestionBiggestSpend => 'Where did most of my money go?';
+
+  @override
+  String get aiChatErrorTitle => 'I couldn\'t reply';
+
+  @override
+  String get aiChatErrorBody => 'We couldn\'t send your message. Try again.';
+
+  @override
+  String get aiChatMessageFailed => 'Couldn\'t be sent. Try again.';
+
+  @override
+  String get aiChatCopyMessage => 'Copy';
+
+  @override
+  String get aiSignedOutTitle => 'Assistant';
+
+  @override
+  String get aiSignedOutHeadline => 'Sign in to use the assistant';
+
+  @override
+  String get aiSignedOutBody =>
+      'The assistant needs your session to connect and reply. Sign in to start chatting.';
+
+  @override
+  String get aiConsentTitle => 'Before you start';
+
+  @override
+  String get aiConsentHeadline => 'Billetudo uses a Google model to answer you';
+
+  @override
+  String get aiConsentBody =>
+      'Your message and a summary of your finances (no notes or bank-identifying data) are sent to Google to generate the reply. Your account is never shared, and nothing is executed without you confirming it.';
+
+  @override
+  String get aiConsentAccept => 'Accept and continue';
+
+  @override
+  String get aiConsentDecline => 'No, thanks';
+
+  @override
+  String get aiConsentViewHistory => 'View my past conversations';
+
+  @override
+  String get aiConversationReadTitle => 'Saved conversation';
+
+  @override
+  String get aiConversationReadBannerMessage =>
+      'You\'re viewing a saved conversation. To write a new message, reactivate the assistant.';
+
+  @override
+  String get aiConversationReadReactivateCta => 'Reactivate assistant';
+
+  @override
+  String get aiConversationReadErrorTitle =>
+      'We couldn\'t load this conversation';
+
+  @override
+  String get aiHistoryTitle => 'History';
+
+  @override
+  String get aiHistoryDeleteAllTooltip => 'Delete all';
+
+  @override
+  String get aiHistoryDeleteAllConfirm => 'Delete all';
+
+  @override
+  String get aiHistoryDeleteOneSheetMessage =>
+      'This conversation will be permanently deleted from your history. This cannot be undone.';
+
+  @override
+  String get aiHistoryDeleteAllSheetMessage =>
+      'All your conversations with Billetudo will be permanently deleted. This cannot be undone.';
+
+  @override
+  String get aiHistoryEmptyMessage =>
+      'You don\'t have any conversations with Billetudo yet';
+
+  @override
+  String get aiHistoryEmptyCta => 'New conversation';
+
+  @override
+  String get aiHistoryErrorTitle => 'We couldn\'t load your history';
+
+  @override
+  String get aiHistoryRowDelete => 'Delete';
+
+  @override
+  String get aiHistoryRowUntitled => 'Untitled conversation';
+
+  @override
+  String get aiHistoryRowYesterday => 'Yesterday';
+
+  @override
+  String get aiProposalKickerPending => 'Suggestion';
+
+  @override
+  String get aiProposalKickerConfirmed => 'Confirmed';
+
+  @override
+  String get aiProposalKickerDismissed => 'Dismissed';
+
+  @override
+  String get aiProposalKickerFailed => 'Couldn\'t be saved';
+
+  @override
+  String get aiProposalFootnotePending => 'Nothing is saved until you confirm.';
+
+  @override
+  String get aiProposalFootnoteConfirmedTransaction =>
+      'Applied to your transactions.';
+
+  @override
+  String get aiProposalFootnoteConfirmedBudget => 'Your budget is now created.';
+
+  @override
+  String get aiProposalFootnoteConfirmedGoal => 'Your goal is now created.';
+
+  @override
+  String get aiProposalFootnoteConfirmedCategory =>
+      'Your category is now created.';
+
+  @override
+  String get aiProposalFootnoteDismissed => 'No changes were saved.';
+
+  @override
+  String get aiProposalFootnoteFailed =>
+      'There was a problem saving this. Your data is still safe on your device.';
+
+  @override
+  String get aiProposalActionDiscard => 'Discard';
+
+  @override
+  String get aiProposalActionConfirm => 'Confirm';
+
+  @override
+  String get aiProposalActionRetry => 'Retry';
+
+  @override
+  String get aiProposalConfirmedRowTransaction =>
+      'It\'s already in your transactions';
+
+  @override
+  String get aiProposalConfirmedRowBudget => 'Budget created';
+
+  @override
+  String get aiProposalConfirmedRowGoal => 'Goal created';
+
+  @override
+  String get aiProposalConfirmedRowCategory => 'Category created';
+
+  @override
+  String get aiProposalUnsupported =>
+      'This app version can\'t act on this suggestion yet.';
+
+  @override
+  String get aiProposalAmount => 'Amount';
+
+  @override
+  String get aiProposalPeriod => 'Period';
+
+  @override
+  String get aiProposalCategory => 'Category';
+
+  @override
+  String get aiProposalScopeAllCategories => 'All categories';
+
+  @override
+  String aiProposalScopeSomeCategories(num count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString categories',
+      one: '1 category',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get aiProposalGoalTarget => 'Target amount';
+
+  @override
+  String get aiProposalGoalDate => 'Target date';
+
+  @override
+  String get aiProposalGoalNoDate => 'No deadline';
+
+  @override
+  String get aiProposalCategoryType => 'Type';
+
+  @override
+  String get aiProposalCategoryScope => 'Placement';
+
+  @override
+  String get aiProposalCategoryScopeRoot => 'Main category';
+
+  @override
+  String get aiProposalCategoryScopeSub => 'Subcategory';
+
+  @override
+  String get aiProposalTransactionType => 'Type';
+
+  @override
+  String get aiProposalTransactionDate => 'Date';
+
+  @override
+  String get aiProposalTransactionAccount => 'Account';
+
+  @override
+  String get aiProposalTransactionAccountUnknown => 'Selected account';
+
+  @override
+  String get aiProposalTransactionDebt => 'Debt';
+
+  @override
+  String get aiProposalDebtUnknown => 'Selected debt';
+
+  @override
+  String get aiProposalDebtLinkExplainer =>
+      'No new movement is created and no money moves: the movement already hit your account. This only makes it count towards the debt\'s balance.';
+
+  @override
+  String get aiProposalFootnoteConfirmedDebtLink =>
+      'The movement now counts towards your debt.';
+
+  @override
+  String get aiProposalConfirmedRowDebtLink => 'Attributed to the debt';
+
+  @override
+  String get aiMessageActionReport => 'Report';
+
+  @override
+  String get aiReportSheetTitle => 'Report message';
+
+  @override
+  String get aiReportSheetMessage =>
+      'Tell us what\'s wrong with this response. It helps us improve Billetudo.';
+
+  @override
+  String get aiReportReasonOffensive => 'Offensive';
+
+  @override
+  String get aiReportReasonWrong => 'Incorrect';
+
+  @override
+  String get aiReportReasonHarmful => 'Harmful';
+
+  @override
+  String get aiReportReasonPrivacy => 'Privacy';
+
+  @override
+  String get aiReportReasonOther => 'Other';
+
+  @override
+  String get aiReportCommentLabel => 'Comment (optional)';
+
+  @override
+  String get aiReportCommentHint => 'Tell us more…';
+
+  @override
+  String get aiReportPrivacyNote =>
+      'We\'ll send this message to our team to review it. The rest of your conversation stays only on your device.';
+
+  @override
+  String get aiReportSubmit => 'Send';
+
+  @override
+  String get aiReportSuccessMessage => 'Thanks, we\'ll review this message.';
+
+  @override
+  String get aiReportErrorUnauthenticated =>
+      'You need to sign in to report a message.';
+
+  @override
+  String get aiReportErrorGeneric =>
+      'We couldn\'t send your report. Try again.';
+
+  @override
+  String get settingsAiSection => 'AI assistant';
+
+  @override
+  String get settingsCloudTranscription => 'Transcribe my voice in the cloud';
+
+  @override
+  String settingsCloudTranscriptionSubtitle(String vendor) {
+    return 'When this phone can\'t turn speech into text on its own, the audio is sent to $vendor just to transcribe it. billetudo doesn\'t store or sync it.';
+  }
+
+  @override
+  String get settingsAiNotesAccess => 'Let the assistant read my notes';
+
+  @override
+  String get settingsAiNotesAccessSubtitle =>
+      'Even when it\'s off, the assistant still searches your records: the search runs on your device and only structured data travels, never the text of your notes.';
+
+  @override
+  String get settingsAiNotesAccessSheetTitle =>
+      'Let the assistant read your notes?';
+
+  @override
+  String get settingsAiNotesAccessSheetMessage =>
+      'Your notes are free text: they often hold people\'s names and details of your life. If you turn this on, the note travels to Google Gemini along with your question so the assistant understands what you call things: finding “the power bill” when the note says “electricity invoice”. You can turn it off whenever you want.';
+
+  @override
+  String get settingsAiNotesAccessSheetConfirm => 'Turn on';
+
+  @override
+  String get settingsPrivacyPolicy => 'Privacy policy';
+
+  @override
+  String get settingsPrivacyPolicySubtitle =>
+      'What data we keep, what is shared and with whom';
+
+  @override
+  String get settingsTermsOfUse => 'Terms of use';
+
+  @override
+  String get settingsTermsOfUseSubtitle => 'The rules for using Billetudo';
+
+  @override
+  String get settingsAiConsentWithdraw => 'Withdraw AI consent';
+
+  @override
+  String get settingsAiConsentWithdrawSubtitle =>
+      'You stop sharing data with the assistant. You can turn it back on whenever you want.';
+
+  @override
+  String get settingsAiConsentWithdrawSheetTitle => 'Withdraw your consent?';
+
+  @override
+  String get settingsAiConsentWithdrawSheetMessage =>
+      'The assistant stops being available and nothing else is sent to Google Gemini. \"Let the assistant read my notes\" is turned off too. Your records and your saved conversations stay on your device. You can turn it back on whenever you want.';
+
+  @override
+  String get settingsAiConsentWithdrawSheetConfirm => 'Withdraw';
+
+  @override
+  String get legalAcceptanceSheetTitle => 'Your privacy matters to us';
+
+  @override
+  String get legalAcceptanceSheetMessage =>
+      'Before you save anything, see how we take care of your information.';
+
+  @override
+  String get legalAcceptanceSheetDeclaration =>
+      'By accepting you confirm you read the Terms of use and the Privacy policy.';
+
+  @override
+  String get legalAcceptanceSheetAccept => 'I accept the terms and the policy';
+
+  @override
+  String get legalAcceptanceSheetDecline => 'Not now';
+
+  @override
+  String legalViewerMeta(int version, String date) {
+    return 'Version $version · Updated on $date';
+  }
+
+  @override
+  String get legalReacceptanceBothTitle =>
+      'We updated the Terms of use and the Privacy policy';
+
+  @override
+  String get legalReacceptanceBothMessage =>
+      'They changed since the last time you accepted them. Take a look to keep using Billetudo.';
+
+  @override
+  String get legalReacceptanceBothAccept => 'I accept the terms and the policy';
+
+  @override
+  String get legalReacceptanceSingleTermsTitle => 'We updated the Terms of use';
+
+  @override
+  String get legalReacceptanceSingleTermsMessage =>
+      'They changed since the last time you accepted them. Take a look to keep using Billetudo.';
+
+  @override
+  String get legalReacceptanceSingleTermsAccept => 'I accept the new terms';
+
+  @override
+  String get legalReacceptanceSinglePrivacyTitle =>
+      'We updated the Privacy policy';
+
+  @override
+  String get legalReacceptanceSinglePrivacyMessage =>
+      'It changed since the last time you accepted it. Take a look to keep using Billetudo.';
+
+  @override
+  String get legalReacceptanceSinglePrivacyAccept => 'I accept the new policy';
+
+  @override
+  String get legalReacceptanceDecline => 'I don\'t accept';
+
+  @override
+  String get legalReacceptanceFootnote =>
+      'Your data stays saved on this phone. Nothing gets deleted.';
+
+  @override
+  String get legalReacceptanceStep2Title =>
+      'Without accepting we can\'t continue';
+
+  @override
+  String get legalReacceptanceStep2Message =>
+      'Take the time you need. Everything you recorded is yours and you can download it whenever you want.';
+
+  @override
+  String get legalReacceptanceStep2Export => 'Export my data';
+
+  @override
+  String get legalReacceptanceStep2Back => 'Back to the terms';
+
+  @override
+  String get captureNoticesTitle => 'Notices';
+
+  @override
+  String get captureSectionTitle => 'Captures to confirm';
+
+  @override
+  String get captureSectionCaption =>
+      'They do not affect your balance yet. They are recorded only when you confirm them.';
+
+  @override
+  String get captureSectionCaptionCompact =>
+      'They do not affect your balance until you confirm.';
+
+  @override
+  String captureOverflowLabel(int count) {
+    return 'See the other $count captures';
+  }
+
+  @override
+  String get captureEmptyTitle => 'All caught up';
+
+  @override
+  String get captureEmptyDescription =>
+      'You have nothing to review. When your bank notifies you of a purchase, or a payment comes up, it will show up here.';
+
+  @override
+  String get captureNoIssuersTitle => 'We are not listening to any app yet';
+
+  @override
+  String get captureNoIssuersDescription =>
+      'Choose which bank apps you want us to read purchase notices from. Without that, nothing shows up here.';
+
+  @override
+  String get captureNoIssuersCta => 'Choose apps';
+
+  @override
+  String get captureNotBalancePill => 'Does not add to your balance';
+
+  @override
+  String captureIssuerLabel(String issuer) {
+    return 'Notice from $issuer';
+  }
+
+  @override
+  String get captureConfirmAction => 'Confirm';
+
+  @override
+  String get captureNoAccount => 'No account';
+
+  @override
+  String get captureNoMerchant => 'Movement without description';
+
+  @override
+  String captureSubtitle(String account, String when) {
+    return '$account · $when';
+  }
+
+  @override
+  String get captureDuplicatePill => 'Possible duplicate';
+
+  @override
+  String get captureDuplicateSameAction => 'It is the same one';
+
+  @override
+  String get captureDuplicateOtherAction => 'It is another purchase';
+
+  @override
+  String captureDuplicateExistingSubtitle(
+      String category, String account, String when) {
+    return '$category · $account · $when';
+  }
+
+  @override
+  String get captureGhostBlockTitle => 'Pending confirmation';
+
+  @override
+  String captureGhostBlockCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count proposals · do not add up',
+      one: '1 proposal · does not add up',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get captureDiscardedMessage => 'Capture discarded';
+
+  @override
+  String get captureBellTooltip => 'Notices';
+
+  @override
+  String get captureAccountCardLast4Label => 'Card\'s last 4 digits (optional)';
+
+  @override
+  String get captureAccountCardLast4Hint => 'E.g. 4321';
+
+  @override
+  String get captureAccountCardLast4Helper =>
+      'When your bank notifies you of a purchase, we use these 4 digits to suggest this account.';
+
+  @override
+  String get captureAccountCardLast4Error => 'It must be exactly 4 digits.';
+
+  @override
+  String get capturePermissionHeader => 'Your bank\'s alerts';
+
+  @override
+  String get capturePermissionTitle => 'Read your bank\'s alerts';
+
+  @override
+  String get capturePermissionBody =>
+      'When your bank notifies you of a purchase, the app proposes it with the amount and merchant already filled in. You confirm and it\'s recorded.';
+
+  @override
+  String get capturePermissionFactAppsTitle => 'Only the apps you pick';
+
+  @override
+  String get capturePermissionFactAppsDescription =>
+      'You decide which bank apps are read. Chats, email and everything else stays out.';
+
+  @override
+  String get capturePermissionFactDataTitle => 'Only amount, merchant and date';
+
+  @override
+  String get capturePermissionFactDataDescription =>
+      'The notification text is not stored anywhere, not even on your phone.';
+
+  @override
+  String get capturePermissionFactConfirmTitle =>
+      'Nothing is recorded without you';
+
+  @override
+  String get capturePermissionFactConfirmDescription =>
+      'Every detected purchase waits for your confirmation before touching your balances.';
+
+  @override
+  String get capturePermissionFactSyncTitle =>
+      'Backed up like any other movement';
+
+  @override
+  String get capturePermissionFactSyncDescription =>
+      'Those three fields travel to your account just like a movement you type by hand.';
+
+  @override
+  String get capturePermissionSystemWarning =>
+      'Android will warn you that the app can see all your notifications. That\'s the only way the system grants this permission; the app only reads the apps you turn on.';
+
+  @override
+  String get capturePermissionOpenSettingsCta => 'Go to Android Settings';
+
+  @override
+  String get capturePermissionDeclineCta => 'Not now, thanks';
+
+  @override
+  String get captureSeeHowItWorksCta => 'See how it works';
+
+  @override
+  String get captureDisabledTitle => 'Reading alerts is turned off';
+
+  @override
+  String get captureDisabledBody =>
+      'You can turn it on whenever you want. In the meantime everything stays the same: you record your movements as always and your balances don\'t change.';
+
+  @override
+  String get captureDisabledPendingNote =>
+      'The captures you already had are still in your inbox. You can review them even with this turned off.';
+
+  @override
+  String get captureDisabledOpenSettingsCta => 'Turn on in Android Settings';
+
+  @override
+  String get captureIssuersHeader => 'Apps that are read';
+
+  @override
+  String get captureIssuersScopeNote =>
+      'Only alerts from the apps you turn on here are read. The rest are never opened.';
+
+  @override
+  String get captureIssuersNoneActive => 'None active yet';
+
+  @override
+  String get captureIssuersTurnOffAll => 'Turn all off';
+
+  @override
+  String get captureIssuersClosedCatalogNote =>
+      'Don\'t see your bank? For now we only read alerts from these apps. The catalog will keep growing.';
+
+  @override
+  String get captureIssuersNoAppsTitle => 'You don\'t have any of these apps';
+
+  @override
+  String get captureIssuersNoAppsDescription =>
+      'For now we read alerts from Nu, Nequi and Google Wallet. When you install one, it\'ll show up here for you to turn on.';
+
+  @override
+  String get captureIssuersErrorTitle => 'We couldn\'t load your apps';
+
+  @override
+  String get captureIssuerNuDescription => 'Purchases with your Nu card';
+
+  @override
+  String get captureIssuerNequiDescription =>
+      'Purchases, transfers and top-ups';
+
+  @override
+  String get captureIssuerGoogleWalletDescription => 'Phone payments (NFC)';
+
+  @override
+  String get captureIssuerGenericDescription => 'Purchase alerts from this app';
+
+  @override
+  String get captureOfferMessage =>
+      'When your bank notifies you of a purchase, I\'ll leave it ready for you to confirm: amount, merchant and date already filled in.';
+
+  @override
+  String get captureOfferScopeNote =>
+      'It won\'t catch everything: cash sends no alert and some banks aren\'t on the list yet. This adds to recording by hand, it doesn\'t replace it.';
+
+  @override
+  String get captureOfferDismissCta => 'Not now';
+
+  @override
+  String get captureSettingsTitle => 'Your bank\'s alerts';
+
+  @override
+  String get captureSettingsSubtitleChecking => 'Checking status…';
+
+  @override
+  String get captureSettingsSubtitleOff => 'Off · turn it on whenever you want';
+
+  @override
+  String get captureSettingsSubtitleNoIssuers => 'On, but no apps picked yet';
+
+  @override
+  String captureIssuersActiveCount(int count, int total) {
+    return '$count of $total active';
+  }
+
+  @override
+  String captureSettingsSubtitleListening(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Listening to $count apps',
+      one: 'Listening to 1 app',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String captureBlockReviewAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Review the $count captures',
+      one: 'Review 1 capture',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get captureDuplicateVerdictSameAmount => 'Same amount';
+
+  @override
+  String captureDuplicateVerdictMinutesBefore(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutes before',
+      one: '1 minute before',
+      zero: 'Less than 1 minute before',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String captureDuplicateVerdictMinutesAfter(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutes after',
+      one: '1 minute after',
+      zero: 'Less than 1 minute after',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get captureDuplicateVerdictSameAccount => 'same account';
+
+  @override
+  String get captureDuplicateExistingKicker => 'Already recorded';
+
+  @override
+  String get captureDuplicateNoCategory => 'No category';
+
+  @override
+  String get captureDuplicateConsequenceCaption =>
+      'If you discard it, you can undo it · Reviewing saves nothing';
+
+  @override
+  String captureGroupedSourceLabel(String wallet, String bank) {
+    return 'One single payment · $wallet + $bank';
+  }
+
+  @override
+  String get captureIssuerUnknown => 'another app';
+
+  @override
+  String captureSuggestedCategoryLabel(String category) {
+    return 'Suggested: $category';
+  }
+
+  @override
+  String get captureVoiceListening => 'Listening…';
+
+  @override
+  String get captureVoicePreparing => 'Getting the microphone ready…';
+
+  @override
+  String get captureVoiceStopping => 'Saving what we heard…';
+
+  @override
+  String get captureVoiceHint => 'Try something like “spent twenty on lunch”';
+
+  @override
+  String get captureVoicePrivacyCaption =>
+      'The audio isn\'t stored. It\'s only used to fill in the form.';
+
+  @override
+  String get captureVoicePartialCaption =>
+      'When you\'re done we\'ll open the form with what we understood. You confirm.';
+
+  @override
+  String get captureVoiceCancel => 'Cancel';
+
+  @override
+  String get captureVoiceDone => 'Done';
+
+  @override
+  String get captureVoiceSoundLevelLabel => 'Microphone level';
+
+  @override
+  String get captureVoiceNoAmountTitle => 'We didn\'t catch the amount';
+
+  @override
+  String get captureVoiceNoAmountMessage =>
+      'Nothing is lost: what you said goes to the form as a note.';
+
+  @override
+  String get captureVoiceRetry => 'Try again';
+
+  @override
+  String get captureVoiceWriteByHand => 'Type it instead';
+
+  @override
+  String get captureVoicePermissionTitle => 'The microphone is off';
+
+  @override
+  String get captureVoicePermissionMessage =>
+      'We only use it while you dictate, to fill in the form for you. The audio isn\'t stored.';
+
+  @override
+  String get captureVoicePermissionFact1Title => 'Only while you dictate';
+
+  @override
+  String get captureVoicePermissionFact1Body =>
+      'The microphone turns off as soon as you finish the phrase or cancel.';
+
+  @override
+  String get captureVoicePermissionFact2Title => 'The audio isn\'t stored';
+
+  @override
+  String get captureVoicePermissionFact2Body =>
+      'It\'s used to understand the phrase and discarded right after. It\'s never backed up or synced.';
+
+  @override
+  String get captureVoicePermissionFact3Title => 'You can carry on without it';
+
+  @override
+  String get captureVoicePermissionFact3Body =>
+      'Typing a record by hand works exactly the same, with or without a microphone.';
+
+  @override
+  String get captureVoicePermissionOpenSettings => 'Open settings';
+
+  @override
+  String get captureVoicePermissionAllow => 'Turn on the microphone';
+
+  @override
+  String get captureVoiceUnavailableTitle => 'Dictation isn\'t available here';
+
+  @override
+  String get captureVoiceUnavailableMessage =>
+      'Your phone can\'t transcribe the app\'s language right now. Typing works exactly the same.';
+
+  @override
+  String get captureVoiceOnDeviceUnavailableMessage =>
+      'Your phone can\'t transcribe without sending the audio to the internet, and we won\'t do that without asking you first. Typing works exactly the same.';
+
+  @override
+  String get captureVoiceNoConnectionMessage =>
+      'Dictation needs a connection on this phone and there isn\'t one right now. Typing works exactly the same.';
+
+  @override
+  String get captureVoiceBusyMessage =>
+      'Another app is using the microphone. You can dictate again once you close it.';
+
+  @override
+  String get captureVoiceDictate => 'Dictate';
+
+  @override
+  String get captureVoiceDictateTooltip => 'Dictate the record';
+
+  @override
+  String get captureVoiceFabLongPressHint => 'Press and hold to dictate';
+
+  @override
+  String get captureVoiceVendorGoogle => 'Google';
+
+  @override
+  String get captureVoiceVendorApple => 'Apple';
+
+  @override
+  String captureVoiceCloudConsentTitle(String vendor) {
+    return 'To dictate, $vendor transcribes your voice';
+  }
+
+  @override
+  String captureVoiceCloudConsentMessage(String vendor) {
+    return 'This phone can\'t turn speech into text on its own. If you allow it, the audio is sent to $vendor just to transcribe it.';
+  }
+
+  @override
+  String get captureVoiceCloudConsentFact1Title => 'The audio leaves the phone';
+
+  @override
+  String captureVoiceCloudConsentFact1Body(String vendor) {
+    return '$vendor receives what you dictate and returns the text. That\'s the step this phone can\'t do by itself.';
+  }
+
+  @override
+  String get captureVoiceCloudConsentFact2Title => 'billetudo keeps nothing';
+
+  @override
+  String get captureVoiceCloudConsentFact2Body =>
+      'Neither the audio nor the transcription is saved, backed up or synced.';
+
+  @override
+  String get captureVoiceCloudConsentFact3Title => 'You confirm before saving';
+
+  @override
+  String get captureVoiceCloudConsentFact3Body =>
+      'What you dictate only fills the form. Nothing is recorded until you review it.';
+
+  @override
+  String get captureVoiceCloudConsentAllow => 'Allow and dictate';
+
+  @override
+  String get captureVoiceCloudConsentReversible =>
+      'You can change this decision whenever you want in Settings.';
+
+  @override
+  String get captureVoiceCloudConsentDeclinedMessage =>
+      'You chose not to have your voice transcribed in the cloud, and we respect that. You can change it in Settings. Typing it by hand works just like always.';
+
+  @override
+  String captureVoiceAmountAssumption(String amount, String spoken) {
+    return 'We assumed $amount from “$spoken”';
+  }
+
+  @override
+  String get tutorialVoiceCaptureTitle => 'Dictate an expense without typing';
+
+  @override
+  String get tutorialVoiceCapturePoint1Heading => 'Press and hold the + button';
+
+  @override
+  String get tutorialVoiceCapturePoint1Body =>
+      'On Home, keep your finger on the + button for a second and start talking.';
+
+  @override
+  String get tutorialVoiceCapturePoint2Heading =>
+      'Say the whole phrase at once';
+
+  @override
+  String get tutorialVoiceCapturePoint2Body =>
+      '“Spent twenty thousand on lunch with Nequi”. That gives us the amount, the category and the account.';
+
+  @override
+  String get tutorialVoiceCapturePoint3Heading => 'You always confirm';
+
+  @override
+  String get tutorialVoiceCapturePoint3Body =>
+      'The app fills in the form with what it understood. Nothing is recorded until you tap save.';
+
+  @override
+  String get tutorialVoiceCaptureCta => 'Try it now';
+
+  @override
+  String get notificationsChannelRemindersName => 'Payment reminders';
+
+  @override
+  String get notificationsChannelRemindersDescription =>
+      'Alerts for the scheduled payments you set up.';
+
+  @override
+  String get notificationsChannelCapturesName => 'Record movements';
+
+  @override
+  String get notificationsChannelCapturesDescription =>
+      'Nudges to record a movement when you asked for them.';
+
+  @override
+  String get notificationsChannelMilestonesName => 'Goal milestones';
+
+  @override
+  String get notificationsChannelMilestonesDescription =>
+      'Alerts when one of your goals reaches a milestone.';
+
+  @override
+  String remindersNotificationBodyToday(String amount, String account) {
+    return '$amount is paid today from $account';
+  }
+
+  @override
+  String remindersNotificationBodyTomorrow(String amount, String account) {
+    return '$amount is paid tomorrow from $account';
+  }
+
+  @override
+  String remindersNotificationBodyInDays(
+      int days, String amount, String account) {
+    return '$amount is paid in $days days from $account';
+  }
+
+  @override
+  String get remindersFieldSectionLabel => 'Reminder';
+
+  @override
+  String get remindersOptionNone => 'No reminder';
+
+  @override
+  String get remindersSheetCaption =>
+      'We\'ll send you a notification before the date arrives.';
+
+  @override
+  String get remindersOptionOnDueDate => 'On the payment day';
+
+  @override
+  String get remindersOptionOneDayBefore => '1 day before';
+
+  @override
+  String get remindersOptionThreeDaysBefore => '3 days before';
+
+  @override
+  String get remindersOptionOneWeekBefore => 'A week before';
+
+  @override
+  String get remindersPermissionNotice =>
+      'We saved your choice. To actually get the alert, turn on Billetudo notifications in your phone settings.';
+
+  @override
+  String get remindersChipOnDueDate => 'We\'ll remind you on the payment day';
+
+  @override
+  String get remindersChipOneDayBefore => 'We\'ll remind you 1 day before';
+
+  @override
+  String remindersChipDaysBefore(int days) {
+    return 'We\'ll remind you $days days before';
+  }
+
+  @override
+  String get remindersChipOneWeekBefore => 'We\'ll remind you a week before';
+
+  @override
+  String get notificationsSettingsPaymentReminders => 'Payment reminders';
+
+  @override
+  String get notificationsSettingsPaymentRemindersSubtitle =>
+      'We tell you before a scheduled payment is due, as far ahead as you chose for each one.';
+
+  @override
+  String get notificationsSettingsUpcomingCharges => 'Upcoming charges';
+
+  @override
+  String get notificationsSettingsUpcomingChargesSubtitle =>
+      'A heads-up when a payment you already scheduled is close.';
+
+  @override
+  String get notificationsSettingsPendingConfirmations => 'Payments to confirm';
+
+  @override
+  String get notificationsSettingsPendingConfirmationsSubtitle =>
+      'When a manual payment is waiting for your confirmation.';
+
+  @override
+  String get notificationsSettingsGoalMilestones => 'Goal milestones';
+
+  @override
+  String get notificationsSettingsGoalMilestonesSubtitle =>
+      'When you get halfway to a goal and when you complete it.';
+
+  @override
+  String insightGoalMilestoneTitle(String name, int percent) {
+    return '$name is at $percent%';
+  }
+
+  @override
+  String insightGoalCompletedTitle(String name) {
+    return 'You reached your goal $name!';
+  }
+
+  @override
+  String insightGoalMilestoneBody(String amount, String target) {
+    return 'You\'ve saved $amount of $target';
+  }
+
+  @override
+  String get settingsNotifications => 'Notifications';
+
+  @override
+  String get settingsNotificationsSubtitle =>
+      'Payment reminders, upcoming charges and goals';
+
+  @override
+  String get notificationsSettingsIntro =>
+      'You choose what we tell you about. Anything you turn off here stops arriving, and you can turn it back on whenever you want.';
+
+  @override
+  String get notificationsSettingsDeniedIntro =>
+      'When you allow notifications again, these settings stay exactly as you left them. Nothing is lost.';
+
+  @override
+  String get notificationsPermissionDeniedTitle =>
+      'Your phone has notifications turned off';
+
+  @override
+  String get notificationsPermissionDeniedBody =>
+      'While the permission is off, no alert reaches you even if you leave these on. You can turn it on from your phone settings.';
+
+  @override
+  String get notificationsPermissionDeniedCta => 'Open phone settings';
+
+  @override
+  String insightUpcomingChargeTitleToday(Object name) {
+    return '$name is charged today';
+  }
+
+  @override
+  String insightUpcomingChargeTitleTomorrow(Object name) {
+    return '$name is charged tomorrow';
+  }
+
+  @override
+  String insightUpcomingChargeTitleInDays(Object days, Object name) {
+    return '$name is charged in $days days';
+  }
+
+  @override
+  String insightUpcomingChargeSubtitle(Object amount) {
+    return '$amount · Scheduled payment';
+  }
+
+  @override
+  String insightPendingConfirmationTitleToday(Object name) {
+    return '$name was scheduled for today';
+  }
+
+  @override
+  String insightPendingConfirmationTitleYesterday(Object name) {
+    return '$name was scheduled for yesterday';
+  }
+
+  @override
+  String insightPendingConfirmationTitleDaysAgo(Object days, Object name) {
+    return '$name was scheduled $days days ago';
+  }
+
+  @override
+  String insightPendingConfirmationSubtitle(Object amount) {
+    return '$amount · Waiting for your confirmation';
+  }
+
+  @override
+  String get insightActionViewPayment => 'View payment';
+
+  @override
+  String get insightActionRemindLater => 'Remind me later';
+
+  @override
+  String get insightActionConfirmPayment => 'Confirm payment';
+
+  @override
+  String get insightActionNotYet => 'Not yet';
+
+  @override
+  String get insightActionViewGoal => 'View goal';
 }
