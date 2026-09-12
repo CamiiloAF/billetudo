@@ -150,17 +150,25 @@ class SpeechToTextRecognizer implements SpeechRecognizer {
           listenFor: _activeMaxDuration,
           pauseFor: _activePauseFor,
           cancelOnError: true,
-          // The plugin defaults to `ListenMode.confirmation` — built for a
-          // short yes/no-shaped utterance, with an aggressive on-device
-          // silence/no-match timeout on Android that can fire within a
-          // second or two of `listen()` starting, before the user has had
-          // time to speak at all ("no alcanzamos a captar el monto" on the
-          // very first frame). `dictation` is what the plugin itself
-          // documents as the mode for "longer spoken content, sentences or
-          // paragraphs" — exactly a spoken transaction like "gasté veinte
-          // mil en almuerzo" — and gives the recognizer a much more lenient
-          // window before it gives up on hearing anything.
-          listenMode: ListenMode.dictation,
+          // Reverted 2026-09-12: `ListenMode.dictation` was tried here
+          // (2026-09-11, purely from the plugin's own docs, never verified
+          // on a real device) to fix "no alcanzamos a captar el monto"
+          // firing almost instantly. On a real device it made things worse
+          // in a different way: `dictation` is built for continuous,
+          // multi-phrase speech — Android treats each pause as a phrase
+          // boundary *within the same session*, plays its own audio cue and
+          // clears the partial transcript to start the next phrase, instead
+          // of ending the session the way a single "gasté X en Y" utterance
+          // should. On device that showed up as the recognized text
+          // flashing and disappearing mid-session, a second mic sound, and
+          // the app looping back into "listening" instead of finishing —
+          // confirmed via real device logs and manual reproduction, not
+          // theorized. Left at `ListenMode.confirmation`, the plugin's own
+          // default (so no argument here) — built for one short utterance
+          // with one clean start/stop cycle, the actual shape of this
+          // feature. The original "no alcanzamos a captar el monto" symptom
+          // this tried to fix is handled instead by `VoiceCaptureCubit`'s
+          // own early-transient-error silent retry.
         ),
       );
       _hardStop?.cancel();
