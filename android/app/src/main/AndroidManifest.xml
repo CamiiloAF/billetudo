@@ -81,20 +81,24 @@
              publishing (docs/requirements/fase-2/19-notificaciones-bancarias.md,
              HU-08).
 
-             exported="false" plus the system signature permission: only
-             Android itself can bind this service.
+             exported="true" is required because Android binds the service
+             from the system process; the signature permission still prevents
+             third-party apps from binding it.
              The service receives EVERY notification on the device; filtering
              by packageName happens in IssuerFilter, BEFORE any content is
              read. -->
         <service
             android:name=".capture.BilletudoNotificationListenerService"
-            android:exported="false"
+            android:exported="true"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+        <receiver
+            android:name=".notifications.BilletudoScheduledReminderReceiver"
+            android:exported="false" />
 
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

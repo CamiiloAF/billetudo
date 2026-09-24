@@ -6,6 +6,9 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../features/auth/domain/usecases/wait_for_first_sync_before_seeding.dart';
+import '../features/capture/domain/entities/parsed_capture.dart';
+import '../features/capture/domain/usecases/drain_native_captures.dart';
+import '../features/capture/domain/usecases/ingest_parsed_captures.dart';
 import '../features/categories/domain/usecases/seed_default_categories.dart';
 import '../features/onboarding/domain/usecases/should_show_onboarding.dart';
 import '../features/scheduled_payments/domain/usecases/generate_due_scheduled_payments.dart';
@@ -222,6 +225,38 @@ Future<Widget Function()> _initApp(
     } else {
       unawaited(
         crash.recordFailure(failure, context: 'seedDefaultCategories'),
+      );
+    }
+  }
+
+  // The Android listener runs without a Flutter engine and buffers parsed
+  // captures until the app starts. Move them into Drift before mounting the
+  // app so the inbox and its badge see notifications received while closed.
+  final nativeCapturesResult = await getIt<DrainNativeCaptures>()();
+  if (nativeCapturesResult case Left(value: final failure)) {
+    unawaited(
+      crash.recordFailure(failure, context: 'drainNativeCaptures'),
+    );
+  } else {
+    final captures = [
+      for (final capture in nativeCapturesResult.getOrElse(
+        (_) => const [],
+      ))
+        ParsedCapture(
+          sourcePackage: capture.sourcePackage,
+          sourceRuleId: capture.ruleId,
+          postedAt: capture.postedAt,
+          amountMinor: capture.amountMinor,
+          currency: capture.currency,
+          entryType: capture.entryType,
+          merchantRaw: capture.merchantRaw,
+          accountHint: capture.accountHint,
+        ),
+    ];
+    final ingestionResult = await getIt<IngestParsedCaptures>()(captures);
+    if (ingestionResult case Left(value: final failure)) {
+      unawaited(
+        crash.recordFailure(failure, context: 'ingestParsedCaptures'),
       );
     }
   }

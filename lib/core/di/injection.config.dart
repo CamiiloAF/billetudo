@@ -2616,13 +2616,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i1051.WatchGoalMilestoneInsights>(),
           gh<_i173.NotificationPreferences>(),
         ));
-    gh.factory<_i414.DebtPaymentCubit>(() => _i414.DebtPaymentCubit(
-          gh<_i135.RegisterDebtCashEvent>(),
-          gh<_i62.RegisterDebtLedgerEvent>(),
-          gh<_i837.WatchAccounts>(),
-          gh<_i554.DebtPaymentTogglePreferenceDatasource>(),
-          gh<_i382.GetCategory>(),
-        ));
     gh.factory<_i166.NoticesCubit>(() => _i166.NoticesCubit(
           gh<_i593.WatchPendingCaptures>(),
           gh<_i739.WatchIssuerCatalog>(),
@@ -2631,6 +2624,15 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i382.GetCategory>(),
           gh<_i371.DiscardPendingCapture>(),
           gh<_i917.RestorePendingCapture>(),
+          gh<_i117.DrainNativeCaptures>(),
+          gh<_i954.IngestParsedCaptures>(),
+        ));
+    gh.factory<_i414.DebtPaymentCubit>(() => _i414.DebtPaymentCubit(
+          gh<_i135.RegisterDebtCashEvent>(),
+          gh<_i62.RegisterDebtLedgerEvent>(),
+          gh<_i837.WatchAccounts>(),
+          gh<_i554.DebtPaymentTogglePreferenceDatasource>(),
+          gh<_i382.GetCategory>(),
         ));
     gh.factory<_i117.ScheduledPaymentFormCubit>(
         () => _i117.ScheduledPaymentFormCubit(

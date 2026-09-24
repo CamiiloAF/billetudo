@@ -1,6 +1,7 @@
 package com.billetudo.app.capture
 
 import android.app.Notification
+import android.content.ComponentName
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 
@@ -42,6 +43,17 @@ class BilletudoNotificationListenerService : NotificationListenerService() {
     private val engine: NotificationRuleEngine by lazy { NotificationRuleEngine(ruleSet) }
     private val buffer: PendingCaptureBuffer by lazy { PendingCaptureBuffer(settings) }
 
+    override fun onListenerConnected() {
+        super.onListenerConnected()
+    }
+
+    override fun onListenerDisconnected() {
+        super.onListenerDisconnected()
+        requestRebind(
+            ComponentName(this, BilletudoNotificationListenerService::class.java),
+        )
+    }
+
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         val statusBarNotification = sbn ?: return
 
@@ -79,4 +91,5 @@ class BilletudoNotificationListenerService : NotificationListenerService() {
      * it announced, and a capture already parked stays parked.
      */
     override fun onNotificationRemoved(sbn: StatusBarNotification?) = Unit
+
 }

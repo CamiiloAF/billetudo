@@ -5,7 +5,8 @@ name: Release — Play Store AAB & App Store IPA
 #
 # Reactivado el 2026-08-07: los secrets (Play: GOOGLE_PLAY_SERVICE_ACCOUNT_KEY;
 # iOS: DIST_CERT_P12_BASE64, DIST_CERT_PASSWORD, PROVISIONING_PROFILE_BASE64,
-# APPSTORE_API_ISSUER_ID, APPSTORE_API_KEY_ID, APPSTORE_API_PRIVATE_KEY) ya
+# WIDGET_PROVISIONING_PROFILE_BASE64, APPSTORE_API_ISSUER_ID,
+# APPSTORE_API_KEY_ID, APPSTORE_API_PRIVATE_KEY) ya
 # están cargados y el pipeline ya se probó exitosamente antes.
 on:
   workflow_dispatch:
@@ -231,6 +232,8 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           echo "${{ secrets.PROVISIONING_PROFILE_BASE64 }}" | base64 -d \
             > ~/Library/MobileDevice/Provisioning\ Profiles/billetudo_appstore.mobileprovision
+          echo "${{ secrets.WIDGET_PROVISIONING_PROFILE_BASE64 }}" | base64 -d \
+            > ~/Library/MobileDevice/Provisioning\ Profiles/billetudo_widget_appstore.mobileprovision
 
       - name: Get dependencies
         run: flutter pub get
@@ -241,8 +244,8 @@ jobs:
       - name: Generate code (Drift + injectable)
         run: dart run build_runner build --force-jit
 
-      # El nombre del profile ("Billetudo App Store") debe coincidir con el que
-      # crees en el portal y con ios/ExportOptionsProd.plist.
+      # Los nombres de ambos perfiles deben coincidir con los creados en el
+      # portal y con ios/ExportOptionsProd.plist.
       #
       # La config "Release-prod" del target Runner (la única que
       # `flutter build ipa --flavor prod --release` usa) no declara NINGUNA
@@ -285,10 +288,18 @@ jobs:
                       '\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = "Billetudo App Store";\n'
                   )
                   settings = extra + settings
+              if name == "Release-prod" and "PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo.QuickCaptureWidget;\n" in settings:
+                  extra = (
+                      '\t\t\t\tCODE_SIGN_STYLE = Manual;\n'
+                      '\t\t\t\t"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";\n'
+                      '\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = "Billetudo QuickCaptureWidget App Store";\n'
+                  )
+                  settings = extra + settings
               return head + settings + tail
 
           new_content, count = entry_re.subn(inject, content)
           assert 'PROVISIONING_PROFILE_SPECIFIER = "Billetudo App Store"' in new_content, "no se insertó la firma manual"
+          assert 'PROVISIONING_PROFILE_SPECIFIER = "Billetudo QuickCaptureWidget App Store"' in new_content, "no se insertó la firma manual del widget"
           open(path, "w").write(new_content)
           print(f"XCBuildConfiguration entries scanned: {count}")
           PYEOF

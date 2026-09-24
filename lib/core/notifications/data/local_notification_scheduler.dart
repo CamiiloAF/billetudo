@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:injectable/injectable.dart';
@@ -41,7 +42,10 @@ class LocalNotificationScheduler implements NotificationScheduler {
   /// The Android drawable used as the status-bar icon. `@mipmap/ic_launcher`
   /// is what the project already ships; a dedicated monochrome drawable is a
   /// pending polish item, not a blocker.
-  static const String _androidIcon = '@mipmap/ic_launcher';
+  static const String _androidIcon = 'ic_launcher';
+
+  static const MethodChannel _nativeReminderChannel =
+      MethodChannel('com.billetudo.app/reminders');
 
   bool _initialized = false;
 
@@ -84,6 +88,9 @@ class LocalNotificationScheduler implements NotificationScheduler {
   FutureResult<bool> hasPermission() async {
     try {
       final status = await Permission.notification.status;
+      if (kDebugMode) {
+        debugPrint('BilletudoNotifications: permission=${status.name}');
+      }
       return Right(status.isGranted);
     } on Object catch (error, stackTrace) {
       return Left(
@@ -147,19 +154,37 @@ class LocalNotificationScheduler implements NotificationScheduler {
     }
 
     try {
-      await _plugin.zonedSchedule(
-        id: notification.id,
-        title: notification.title,
-        body: notification.body,
-        payload: notification.payload,
-        scheduledDate: scheduledDate,
-        notificationDetails: _detailsFor(notification.channel),
-        // Not `exactAllowWhileIdle`: an exact alarm needs
-        // SCHEDULE_EXACT_ALARM, which Google Play restricts to alarm/clock
-        // apps. A reminder that lands a few minutes late is fine; an app
-        // rejected from the store is not.
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      );
+      final details = _detailsFor(notification.channel);
+      if (Platform.isAndroid) {
+        await _nativeReminderChannel.invokeMethod<void>(
+          'schedule',
+          <String, Object?>{
+            'id': notification.id,
+            'channelId': notification.channel.id,
+            'channelName': _messages.channelName(notification.channel),
+            'channelDescription':
+                _messages.channelDescription(notification.channel),
+            'title': notification.title,
+            'body': notification.body,
+            'payload': notification.payload,
+            'fireAt': scheduledDate.millisecondsSinceEpoch,
+          },
+        );
+      } else {
+        await _plugin.zonedSchedule(
+          id: notification.id,
+          title: notification.title,
+          body: notification.body,
+          payload: notification.payload,
+          scheduledDate: scheduledDate,
+          notificationDetails: details,
+          // Not `exactAllowWhileIdle`: an exact alarm needs
+          // SCHEDULE_EXACT_ALARM, which Google Play restricts to alarm/clock
+          // apps. A reminder that lands a few minutes late is fine; an app
+          // rejected from the store is not.
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        );
+      }
       return const Right(unit);
     } on Object catch (error, stackTrace) {
       return Left(
@@ -175,7 +200,14 @@ class LocalNotificationScheduler implements NotificationScheduler {
   @override
   FutureResult<Unit> cancel(int id) async {
     try {
-      await _plugin.cancel(id: id);
+      if (Platform.isAndroid) {
+        await _nativeReminderChannel.invokeMethod<void>(
+          'cancel',
+          <String, Object?>{'id': id},
+        );
+      } else {
+        await _plugin.cancel(id: id);
+      }
       return const Right(unit);
     } on Object catch (error, stackTrace) {
       return Left(
@@ -191,6 +223,15 @@ class LocalNotificationScheduler implements NotificationScheduler {
   @override
   FutureResult<List<int>> pendingIds() async {
     try {
+      if (Platform.isAndroid) {
+        final ids = await _nativeReminderChannel.invokeMethod<List<Object?>>(
+          'pendingIds',
+        );
+        return Right([
+          for (final id in ids ?? const <Object?>[])
+            if (id is int) id,
+        ]);
+      }
       final pending = await _plugin.pendingNotificationRequests();
       return Right(pending.map((request) => request.id).toList());
     } on Object catch (error, stackTrace) {
@@ -230,7 +271,10 @@ class LocalNotificationScheduler implements NotificationScheduler {
         android: AndroidNotificationDetails(
           channel.id,
           _messages.channelName(channel),
+          icon: _androidIcon,
           channelDescription: _messages.channelDescription(channel),
+          importance: Importance.high,
+          priority: Priority.high,
         ),
         iOS: const DarwinNotificationDetails(),
       );
@@ -247,6 +291,7 @@ class LocalNotificationScheduler implements NotificationScheduler {
           channel.id,
           _messages.channelName(channel),
           description: _messages.channelDescription(channel),
+          importance: Importance.high,
         ),
       );
     }

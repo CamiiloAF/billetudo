@@ -2,6 +2,7 @@ package com.billetudo.app
 
 import android.content.Intent
 import com.billetudo.app.capture.CaptureChannelHandler
+import com.billetudo.app.notifications.ReminderChannelHandler
 import com.billetudo.app.widget.QuickCaptureWidgetBridge
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -29,6 +30,8 @@ class MainActivity : FlutterActivity() {
         // only door to the listener service; the service itself runs without
         // this engine.
         CaptureChannelHandler(applicationContext)
+            .register(flutterEngine.dartExecutor.binaryMessenger)
+        ReminderChannelHandler(applicationContext)
             .register(flutterEngine.dartExecutor.binaryMessenger)
     }
 

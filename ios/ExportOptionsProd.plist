@@ -16,12 +16,12 @@
   <string>Apple Distribution</string>
   <key>provisioningProfiles</key>
   <dict>
-    <!-- El VALOR debe ser el NOMBRE EXACTO del provisioning profile de App Store
-         que crees en developer.apple.com para com.camiloagudelo.billetudo. Si le
-         pones otro nombre, cámbialo aquí y en el paso "Force manual signing" del
-         release.yml. -->
+        <!-- Los valores deben coincidir con los nombres exactos de los perfiles de
+          App Store creados en developer.apple.com para cada App ID. -->
     <key>com.camiloagudelo.billetudo</key>
     <string>Billetudo App Store</string>
+        <key>com.camiloagudelo.billetudo.QuickCaptureWidget</key>
+        <string>Billetudo QuickCaptureWidget App Store</string>
   </dict>
 </dict>
 </plist>

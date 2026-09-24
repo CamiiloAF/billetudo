@@ -9,9 +9,12 @@ import '../../../accounts/domain/usecases/watch_accounts.dart';
 import '../../../categories/domain/usecases/get_category.dart';
 import '../../domain/entities/duplicate_candidate.dart';
 import '../../domain/entities/issuer_catalog_entry.dart';
+import '../../domain/entities/parsed_capture.dart';
 import '../../domain/entities/pending_capture.dart';
 import '../../domain/usecases/discard_pending_capture.dart';
+import '../../domain/usecases/drain_native_captures.dart';
 import '../../domain/usecases/find_duplicate_candidates.dart';
+import '../../domain/usecases/ingest_parsed_captures.dart';
 import '../../domain/usecases/restore_pending_capture.dart';
 import '../../domain/usecases/watch_issuer_catalog.dart';
 import '../../domain/usecases/watch_pending_captures.dart';
@@ -39,6 +42,8 @@ class NoticesCubit extends Cubit<NoticesState> {
     this._getCategory,
     this._discardPendingCapture,
     this._restorePendingCapture,
+    this._drainNativeCaptures,
+    this._ingestParsedCaptures,
   ) : super(const NoticesState());
 
   final WatchPendingCaptures _watchPendingCaptures;
@@ -48,6 +53,8 @@ class NoticesCubit extends Cubit<NoticesState> {
   final GetCategory _getCategory;
   final DiscardPendingCapture _discardPendingCapture;
   final RestorePendingCapture _restorePendingCapture;
+  final DrainNativeCaptures _drainNativeCaptures;
+  final IngestParsedCaptures _ingestParsedCaptures;
 
   StreamSubscription<Result<List<PendingCapture>>>? _capturesSub;
   StreamSubscription<Result<List<IssuerCatalogEntry>>>? _issuersSub;
@@ -75,9 +82,31 @@ class NoticesCubit extends Cubit<NoticesState> {
   final Set<String> _duplicatesInFlight = <String>{};
 
   void start() {
+    unawaited(_ingestBufferedCaptures());
     _capturesSub ??= _watchPendingCaptures().listen(_onCaptures);
     _issuersSub ??= _watchIssuerCatalog().listen(_onIssuers);
     _accountsSub ??= _watchAccounts().listen(_onAccounts);
+  }
+
+  Future<void> _ingestBufferedCaptures() async {
+    final drained = await _drainNativeCaptures();
+    if (drained case Left()) {
+      return;
+    }
+    final captures = drained.getOrElse((_) => const []);
+    await _ingestParsedCaptures([
+      for (final capture in captures)
+        ParsedCapture(
+          sourcePackage: capture.sourcePackage,
+          sourceRuleId: capture.ruleId,
+          postedAt: capture.postedAt,
+          amountMinor: capture.amountMinor,
+          currency: capture.currency,
+          entryType: capture.entryType,
+          merchantRaw: capture.merchantRaw,
+          accountHint: capture.accountHint,
+        ),
+    ]);
   }
 
   void _onCaptures(Result<List<PendingCapture>> result) {

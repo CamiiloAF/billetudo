@@ -39,7 +39,10 @@ class CaptureChannelHandler(private val context: Context) : MethodChannel.Method
                 settings.setEnabledIssuers(ids)
                 result.success(null)
             }
-            "drainPendingCaptures" -> result.success(buffer.drain())
+            "drainPendingCaptures" -> {
+                val captures = buffer.drain()
+                result.success(captures)
+            }
             "getInstalledIssuerApps" -> result.success(installedIssuerApps())
             "clearPendingCaptures" -> {
                 buffer.clear()
