@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -27,6 +28,7 @@ class NoticesPage extends StatelessWidget {
   const NoticesPage({
     required this.onDispatchCapture,
     required this.onChooseIssuers,
+    this.captureSupported,
     super.key,
   });
 
@@ -35,6 +37,7 @@ class NoticesPage extends StatelessWidget {
   /// its own, and a capture becomes a movement only through the same form
   /// and the same validation as a manual one.
   final ValueChanged<CaptureReviewItem> onDispatchCapture;
+  final bool? captureSupported;
 
   /// Opens the issuer catalog (HU-02) from the "sin emisores" empty state.
   final VoidCallback onChooseIssuers;
@@ -78,6 +81,8 @@ class NoticesPage extends StatelessWidget {
                     return NoticesEmptyView(
                       state: state,
                       onChooseIssuers: onChooseIssuers,
+                      captureSupported: captureSupported ??
+                          defaultTargetPlatform == TargetPlatform.android,
                     );
                   }
                   return NoticesContentView(
@@ -106,11 +111,13 @@ class NoticesEmptyView extends StatelessWidget {
   const NoticesEmptyView({
     required this.state,
     required this.onChooseIssuers,
+    required this.captureSupported,
     super.key,
   });
 
   final NoticesState state;
   final VoidCallback onChooseIssuers;
+  final bool captureSupported;
 
   @override
   Widget build(BuildContext context) {
@@ -119,24 +126,32 @@ class NoticesEmptyView extends StatelessWidget {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
-        child: state.isEmptyWithoutIssuers
+        child: !captureSupported
             ? EmptyState(
-                icon: LucideIcons.listChecks,
-                iconColor: colors.primaryOnSoft,
-                iconBackground: colors.primarySoft,
-                message: l10n.captureNoIssuersTitle,
-                description: l10n.captureNoIssuersDescription,
-                ctaLabel: l10n.captureNoIssuersCta,
-                ctaIcon: LucideIcons.listChecks,
-                onCta: onChooseIssuers,
-              )
-            : EmptyState(
                 icon: LucideIcons.checkCheck,
                 iconColor: colors.mint,
                 iconBackground: colors.mintSoft,
-                message: l10n.captureEmptyTitle,
-                description: l10n.captureEmptyDescription,
-              ),
+                message: l10n.captureNoticesEmptyTitle,
+                description: l10n.captureNoticesEmptyDescription,
+              )
+            : state.isEmptyWithoutIssuers
+                ? EmptyState(
+                    icon: LucideIcons.listChecks,
+                    iconColor: colors.primaryOnSoft,
+                    iconBackground: colors.primarySoft,
+                    message: l10n.captureNoIssuersTitle,
+                    description: l10n.captureNoIssuersDescription,
+                    ctaLabel: l10n.captureNoIssuersCta,
+                    ctaIcon: LucideIcons.listChecks,
+                    onCta: onChooseIssuers,
+                  )
+                : EmptyState(
+                    icon: LucideIcons.checkCheck,
+                    iconColor: colors.mint,
+                    iconBackground: colors.mintSoft,
+                    message: l10n.captureEmptyTitle,
+                    description: l10n.captureEmptyDescription,
+                  ),
       ),
     );
   }

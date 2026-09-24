@@ -6546,6 +6546,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'You have nothing to review. When your bank notifies you of a purchase, or a payment comes up, it will show up here.';
 
   @override
+  String get captureNoticesEmptyTitle => 'All clear';
+
+  @override
+  String get captureNoticesEmptyDescription => 'You have no pending notices.';
+
+  @override
   String get captureNoIssuersTitle => 'We are not listening to any app yet';
 
   @override

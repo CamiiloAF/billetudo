@@ -41,6 +41,7 @@ void main() {
         child: NoticesPage(
           onDispatchCapture: (_) {},
           onChooseIssuers: () {},
+          captureSupported: true,
         ),
       ),
       brightness: brightness,
@@ -149,4 +150,30 @@ void main() {
       );
     });
   }
+
+  testWidgets('sin captura bancaria: iOS no muestra el CTA de apps',
+      (tester) async {
+    when(() => cubit.state).thenReturn(
+      const NoticesState(
+        status: NoticesStatus.ready,
+        captures: [],
+        hasEnabledIssuers: false,
+      ),
+    );
+    await pumpGolden(
+      tester,
+      BlocProvider<NoticesCubit>.value(
+        value: cubit,
+        child: NoticesPage(
+          onDispatchCapture: (_) {},
+          onChooseIssuers: () {},
+          captureSupported: false,
+        ),
+      ),
+      brightness: Brightness.light,
+    );
+
+    expect(find.text('Elegir apps'), findsNothing);
+    expect(find.text('No tienes avisos pendientes.'), findsOneWidget);
+  });
 }

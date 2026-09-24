@@ -6560,6 +6560,12 @@ class AppLocalizationsEs extends AppLocalizations {
       'No tienes nada por revisar. Cuando tu banco te avise de una compra, o se acerque un pago, aparecerá aquí.';
 
   @override
+  String get captureNoticesEmptyTitle => 'Todo al día';
+
+  @override
+  String get captureNoticesEmptyDescription => 'No tienes avisos pendientes.';
+
+  @override
   String get captureNoIssuersTitle => 'Todavía no escuchamos ninguna app';
 
   @override

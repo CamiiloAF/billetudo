@@ -2336,6 +2336,8 @@
   "captureOverflowLabel": "See the other {count} captures",
   "captureEmptyTitle": "All caught up",
   "captureEmptyDescription": "You have nothing to review. When your bank notifies you of a purchase, or a payment comes up, it will show up here.",
+  "captureNoticesEmptyTitle": "All clear",
+  "captureNoticesEmptyDescription": "You have no pending notices.",
   "captureNoIssuersTitle": "We are not listening to any app yet",
   "captureNoIssuersDescription": "Choose which bank apps you want us to read purchase notices from. Without that, nothing shows up here.",
   "captureNoIssuersCta": "Choose apps",

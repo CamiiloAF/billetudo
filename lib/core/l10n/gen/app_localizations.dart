@@ -10707,6 +10707,18 @@ abstract class AppLocalizations {
   /// **'No tienes nada por revisar. Cuando tu banco te avise de una compra, o se acerque un pago, aparecerá aquí.'**
   String get captureEmptyDescription;
 
+  /// No description provided for @captureNoticesEmptyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo al día'**
+  String get captureNoticesEmptyTitle;
+
+  /// No description provided for @captureNoticesEmptyDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes avisos pendientes.'**
+  String get captureNoticesEmptyDescription;
+
   /// No description provided for @captureNoIssuersTitle.
   ///
   /// In es, this message translates to:
