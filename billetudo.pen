@@ -75946,6 +75946,49 @@
                 },
                 {
                   "type": "frame",
+                  "id": "v7Elj",
+                  "name": "Ver historial y detalles",
+                  "width": "fill_container",
+                  "height": 44,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "WAVxU",
+                      "name": "Icon",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "history",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
+                    },
+                    {
+                      "type": "text",
+                      "id": "L4S9Z",
+                      "name": "Label",
+                      "fill": "$primary-on-soft-strong",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Ver historial y detalles",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "A4tiYB",
+                      "name": "Chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-right",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
                   "id": "F8ChU",
                   "name": "Editable Rows",
                   "width": "fill_container",
@@ -76671,6 +76714,49 @@
                 },
                 {
                   "type": "frame",
+                  "id": "Y6LlwB",
+                  "name": "Ver historial y detalles",
+                  "width": "fill_container",
+                  "height": 44,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "hi9kM",
+                      "name": "Icon",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "history",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
+                    },
+                    {
+                      "type": "text",
+                      "id": "h15J1",
+                      "name": "Label",
+                      "fill": "$primary-on-soft-strong",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Ver historial y detalles",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "E8Loe1",
+                      "name": "Chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-right",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
                   "id": "UE9yn",
                   "name": "Editable Rows",
                   "width": "fill_container",
@@ -77000,6 +77086,49 @@
                       "icon": "pencil",
                       "library": "lucide",
                       "fill": "$text-secondary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "uZ8Bc",
+                  "name": "Ver historial y detalles",
+                  "width": "fill_container",
+                  "height": 44,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "g3ImDr",
+                      "name": "Icon",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "history",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
+                    },
+                    {
+                      "type": "text",
+                      "id": "C07HVU",
+                      "name": "Label",
+                      "fill": "$primary-on-soft-strong",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Ver historial y detalles",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "eel23",
+                      "name": "Chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-right",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
                     }
                   ]
                 },
@@ -77379,6 +77508,49 @@
                 },
                 {
                   "type": "frame",
+                  "id": "k58fUE",
+                  "name": "Ver historial y detalles",
+                  "width": "fill_container",
+                  "height": 44,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "h9qTv",
+                      "name": "Icon",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "history",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
+                    },
+                    {
+                      "type": "text",
+                      "id": "V7N47",
+                      "name": "Label",
+                      "fill": "$primary-on-soft-strong",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Ver historial y detalles",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "YKH3J",
+                      "name": "Chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-right",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
                   "id": "pcXM7",
                   "name": "Editable Rows",
                   "width": "fill_container",
@@ -77688,6 +77860,49 @@
                       "icon": "pencil",
                       "library": "lucide",
                       "fill": "$text-secondary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "p9loq",
+                  "name": "Ver historial y detalles",
+                  "width": "fill_container",
+                  "height": 44,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "p4s68g",
+                      "name": "Icon",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "history",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
+                    },
+                    {
+                      "type": "text",
+                      "id": "J74D5",
+                      "name": "Label",
+                      "fill": "$primary-on-soft-strong",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Ver historial y detalles",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "n1yHu",
+                      "name": "Chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-right",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
                     }
                   ]
                 },
@@ -83947,6 +84162,49 @@
                 },
                 {
                   "type": "frame",
+                  "id": "m9Thh4",
+                  "name": "Ver historial y detalles",
+                  "width": "fill_container",
+                  "height": 44,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "BrsVO",
+                      "name": "Icon",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "history",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Umgz6",
+                      "name": "Label",
+                      "fill": "$primary-on-soft-strong",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Ver historial y detalles",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "zJ6XR",
+                      "name": "Chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-right",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
                   "id": "NP2nZ",
                   "name": "Editable Rows",
                   "width": "fill_container",
@@ -84255,6 +84513,49 @@
                       "icon": "pencil",
                       "library": "lucide",
                       "fill": "$text-secondary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "zQpPy",
+                  "name": "Ver historial y detalles",
+                  "width": "fill_container",
+                  "height": 44,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "aphUV",
+                      "name": "Icon",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "history",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
+                    },
+                    {
+                      "type": "text",
+                      "id": "uRu6j",
+                      "name": "Label",
+                      "fill": "$primary-on-soft-strong",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Ver historial y detalles",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "LWyOr",
+                      "name": "Chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-right",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
                     }
                   ]
                 },
@@ -84589,6 +84890,49 @@
                       "icon": "pencil",
                       "library": "lucide",
                       "fill": "$text-secondary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "fAsoB",
+                  "name": "Ver historial y detalles",
+                  "width": "fill_container",
+                  "height": 44,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "Jz1Tf",
+                      "name": "Icon",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "history",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
+                    },
+                    {
+                      "type": "text",
+                      "id": "DBjvL",
+                      "name": "Label",
+                      "fill": "$primary-on-soft-strong",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Ver historial y detalles",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "CQttK",
+                      "name": "Chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-right",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
                     }
                   ]
                 },
@@ -84968,6 +85312,49 @@
                 },
                 {
                   "type": "frame",
+                  "id": "xbKp1",
+                  "name": "Ver historial y detalles",
+                  "width": "fill_container",
+                  "height": 44,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "c2BXh",
+                      "name": "Icon",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "history",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
+                    },
+                    {
+                      "type": "text",
+                      "id": "bjTBf",
+                      "name": "Label",
+                      "fill": "$primary-on-soft-strong",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Ver historial y detalles",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "vAnN8",
+                      "name": "Chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-right",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
                   "id": "uyANR",
                   "name": "Editable Rows",
                   "width": "fill_container",
@@ -85277,6 +85664,49 @@
                       "icon": "pencil",
                       "library": "lucide",
                       "fill": "$text-secondary"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "RdTOs",
+                  "name": "Ver historial y detalles",
+                  "width": "fill_container",
+                  "height": 44,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "QBEAI",
+                      "name": "Icon",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "history",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
+                    },
+                    {
+                      "type": "text",
+                      "id": "LzFV7",
+                      "name": "Label",
+                      "fill": "$primary-on-soft-strong",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Ver historial y detalles",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "u1z60B",
+                      "name": "Chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-right",
+                      "library": "lucide",
+                      "fill": "$primary-on-soft-strong"
                     }
                   ]
                 },
