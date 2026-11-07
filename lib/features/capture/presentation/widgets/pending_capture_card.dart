@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../cubit/capture_review_item.dart';
 import '../utils/capture_presentation.dart';
 import 'capture_card_shell.dart';
-import 'capture_discard_button.dart';
 import 'capture_guarantee_kicker.dart';
 
 /// `skjlg` — the ordinary pending-capture card of the Avisos centre
@@ -27,21 +27,13 @@ import 'capture_guarantee_kicker.dart';
 /// details drift silently before.
 class PendingCaptureCard extends StatelessWidget {
   const PendingCaptureCard(
-      {required this.item,
-      required this.onTap,
-      required this.onDiscard,
-      super.key});
+      {required this.item, required this.onTap, super.key});
 
   final CaptureReviewItem item;
 
   /// Opens the ordinary transaction form, pre-filled. Never a parallel
   /// "quick confirm" with rules of its own.
   final VoidCallback onTap;
-
-  /// Throws the capture away without dispatching it (HU-05), through the same
-  /// `DiscardPendingCapture` flow the duplicate card's "Es la misma" uses:
-  /// reversible from the page's undo snackbar.
-  final VoidCallback onDiscard;
 
   @override
   Widget build(BuildContext context) {
@@ -139,8 +131,8 @@ class PendingCaptureCard extends StatelessWidget {
               color: colors.textSecondary,
             ),
           ),
-          const SizedBox(width: 2),
-          CaptureDiscardButton(onPressed: onDiscard),
+          const SizedBox(width: 10),
+          Icon(LucideIcons.chevronRight, size: 16, color: colors.textSecondary),
         ],
       ),
     );

@@ -5293,6 +5293,8 @@
   "@captureDiscardedMessage": {},
   "captureDiscardAction": "Descartar captura",
   "@captureDiscardAction": {},
+  "captureDiscardSwipeLabel": "Descartar",
+  "@captureDiscardSwipeLabel": {},
   "captureBellTooltip": "Avisos",
   "@captureBellTooltip": {},
   "captureAccountCardLast4Label": "Últimos 4 dígitos de la tarjeta (opcional)",

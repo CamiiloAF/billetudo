@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../cubit/capture_review_item.dart';
 import '../cubit/notices_state.dart';
 import 'capture_block_action_row.dart';
+import 'capture_swipe_dismissible.dart';
 import 'duplicate_compare_card.dart';
 import 'grouped_capture_card.dart';
 import 'pending_capture_card.dart';
@@ -36,11 +37,12 @@ class CapturesSection extends StatelessWidget {
   /// grouped capture: the merged prefill still comes from a single item).
   final ValueChanged<CaptureReviewItem> onDispatch;
 
-  /// Throws a capture away without dispatching it (HU-05). The page turns the
-  /// cubit's `discardedId` into the undo snackbar; this section only wires the
-  /// button. Not offered on the possible-duplicate card, which already has its
-  /// own "Es la misma" discard with the compared transaction recorded.
-  final ValueChanged<CaptureReviewItem> onDiscard;
+  /// Throws a capture away without dispatching it (HU-05). Wired to the
+  /// swipe-to-discard gesture (approved design `IMs3M`/`bkNc1`); the page turns
+  /// the cubit's `discardedId` into the undo snackbar. Not offered on the
+  /// possible-duplicate card, which already has its own "Es la misma" discard
+  /// with the compared transaction recorded.
+  final Future<void> Function(CaptureReviewItem) onDiscard;
 
   /// "Es la misma" on a possible duplicate.
   final ValueChanged<CaptureReviewItem> onDiscardDuplicate;
@@ -91,16 +93,22 @@ class CapturesSection extends StatelessWidget {
               onDifferent: () => onDispatch(item),
             )
           else if (item.isGrouped)
-            GroupedCaptureCard(
-              item: item,
-              onTap: () => onDispatch(item),
+            CaptureSwipeDismissible(
+              captureId: item.capture.id,
               onDiscard: () => onDiscard(item),
+              child: GroupedCaptureCard(
+                item: item,
+                onTap: () => onDispatch(item),
+              ),
             )
           else
-            PendingCaptureCard(
-              item: item,
-              onTap: () => onDispatch(item),
+            CaptureSwipeDismissible(
+              captureId: item.capture.id,
               onDiscard: () => onDiscard(item),
+              child: PendingCaptureCard(
+                item: item,
+                onTap: () => onDispatch(item),
+              ),
             ),
         ],
         if (state.showCaptureBlockRow) ...[

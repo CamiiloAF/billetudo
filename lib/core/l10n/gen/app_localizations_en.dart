@@ -6618,6 +6618,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get captureDiscardAction => 'Discard capture';
 
   @override
+  String get captureDiscardSwipeLabel => 'Discard';
+
+  @override
   String get captureBellTooltip => 'Notices';
 
   @override

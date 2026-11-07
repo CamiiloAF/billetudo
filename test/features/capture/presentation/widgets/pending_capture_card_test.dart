@@ -38,20 +38,18 @@ void main() {
         issuerName: issuerName,
       );
 
-  testWidgets('carries the kicker, the issuer line and no confirm button',
+  testWidgets('carries the kicker and the issuer line, no button',
       (tester) async {
     await tester.pumpWidget(
       appWith(
-        PendingCaptureCard(item: itemWith(), onTap: () {}, onDiscard: () {}),
+        PendingCaptureCard(item: itemWith(), onTap: () {}),
       ),
     );
 
     expect(find.text('No suma a tu saldo'), findsOneWidget);
     expect(find.text('Aviso de Nu'), findsOneWidget);
     expect(find.text('Confirmar'), findsNothing);
-    // The trailing chevron is gone: the discard affordance owns that slot.
-    expect(find.byIcon(LucideIcons.chevronRight), findsNothing);
-    expect(find.byTooltip('Descartar captura'), findsOneWidget);
+    expect(find.byIcon(LucideIcons.chevronRight), findsOneWidget);
   });
 
   testWidgets('the whole card is the tap target', (tester) async {
@@ -61,7 +59,6 @@ void main() {
         PendingCaptureCard(
           item: itemWith(),
           onTap: () => taps++,
-          onDiscard: () {},
         ),
       ),
     );
@@ -74,7 +71,7 @@ void main() {
       (tester) async {
     await tester.pumpWidget(
       appWith(
-        PendingCaptureCard(item: itemWith(), onTap: () {}, onDiscard: () {}),
+        PendingCaptureCard(item: itemWith(), onTap: () {}),
       ),
     );
 
@@ -91,7 +88,6 @@ void main() {
         PendingCaptureCard(
           item: itemWith(entryType: TransactionType.income),
           onTap: () {},
-          onDiscard: () {},
         ),
       ),
     );
@@ -112,7 +108,6 @@ void main() {
                 'NORTE SAS SUCURSAL POBLADO',
           ),
           onTap: () {},
-          onDiscard: () {},
         ),
       ),
     );
@@ -132,7 +127,6 @@ void main() {
         PendingCaptureCard(
           item: itemWith(accountName: null),
           onTap: () {},
-          onDiscard: () {},
         ),
       ),
     );
@@ -147,7 +141,6 @@ void main() {
         PendingCaptureCard(
           item: itemWith(issuerName: null),
           onTap: () {},
-          onDiscard: () {},
         ),
       ),
     );

@@ -4,6 +4,7 @@ import 'package:billetudo/features/capture/presentation/cubit/capture_review_ite
 import 'package:billetudo/features/capture/presentation/cubit/notices_cubit.dart';
 import 'package:billetudo/features/capture/presentation/cubit/notices_state.dart';
 import 'package:billetudo/features/capture/presentation/pages/notices_page.dart';
+import 'package:billetudo/features/capture/presentation/widgets/pending_capture_card.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,9 +16,10 @@ import '../../capture_mocks.dart';
 class MockNoticesCubit extends MockCubit<NoticesState>
     implements NoticesCubit {}
 
-/// HU-05 on the Avisos centre: an ordinary capture can be thrown away from its
-/// card, with the same undoable flow the duplicate card's "Es la misma" uses —
-/// and the discard button must never dispatch the capture to the form.
+/// HU-05 in the Avisos centre, final design (`IMs3M`/`bkNc1`): a capture is
+/// discarded by swiping its card towards the start edge — the undoable
+/// `DiscardPendingCapture` flow — and the swipe must never dispatch the
+/// capture to the form.
 void main() {
   late MockNoticesCubit cubit;
 
@@ -60,13 +62,18 @@ void main() {
     );
   }
 
-  testWidgets('discarding from the card goes to the cubit, not to the form',
+  testWidgets('swiping the card discards through the cubit, never dispatch',
       (tester) async {
     var dispatched = 0;
     await pumpPage(tester, onDispatchCapture: (_) => dispatched++);
 
-    await tester.tap(find.byTooltip('Descartar captura'));
-    await tester.pump();
+    // The test viewport is 800 wide, so the card is ~760 wide and the 35%
+    // threshold is ~266px: drag well past it.
+    await tester.drag(
+      find.byType(PendingCaptureCard),
+      const Offset(-400, 0),
+    );
+    await tester.pumpAndSettle();
 
     verify(() => cubit.discard('capture-1')).called(1);
     expect(dispatched, 0);
@@ -77,7 +84,6 @@ void main() {
     final dispatched = <CaptureReviewItem>[];
     await pumpPage(tester, onDispatchCapture: dispatched.add);
 
-    // Tap the card body, away from the trailing discard button.
     await tester.tap(find.text('TIENDA D1'));
     await tester.pump();
 

@@ -2354,6 +2354,7 @@
   "captureGhostBlockCount": "{count, plural, =1{1 proposal · does not add up} other{{count} proposals · do not add up}}",
   "captureDiscardedMessage": "Capture discarded",
   "captureDiscardAction": "Discard capture",
+  "captureDiscardSwipeLabel": "Discard",
   "captureBellTooltip": "Notices",
   "captureAccountCardLast4Label": "Card's last 4 digits (optional)",
   "captureAccountCardLast4Hint": "E.g. 4321",

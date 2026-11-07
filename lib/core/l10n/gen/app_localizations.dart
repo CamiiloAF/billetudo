@@ -10816,6 +10816,12 @@ abstract class AppLocalizations {
   /// **'Descartar captura'**
   String get captureDiscardAction;
 
+  /// No description provided for @captureDiscardSwipeLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Descartar'**
+  String get captureDiscardSwipeLabel;
+
   /// No description provided for @captureBellTooltip.
   ///
   /// In es, this message translates to:

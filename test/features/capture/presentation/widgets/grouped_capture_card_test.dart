@@ -40,8 +40,7 @@ void main() {
   testWidgets('shows the merchant from the wallet leg and the source strip',
       (tester) async {
     await tester.pumpWidget(
-      appWith(GroupedCaptureCard(
-          item: groupedItem(), onTap: () {}, onDiscard: () {})),
+      appWith(GroupedCaptureCard(item: groupedItem(), onTap: () {})),
     );
 
     expect(find.text('CAFETERIA LA ESPIGA'), findsOneWidget);
@@ -53,22 +52,14 @@ void main() {
   });
 
   testWidgets(
-      'is tappable end to end and offers discard, unlike the duplicate card',
+      'is tappable end to end with a chevron, unlike the duplicate card',
       (tester) async {
     var taps = 0;
     await tester.pumpWidget(
-      appWith(
-        GroupedCaptureCard(
-          item: groupedItem(),
-          onTap: () => taps++,
-          onDiscard: () {},
-        ),
-      ),
+      appWith(GroupedCaptureCard(item: groupedItem(), onTap: () => taps++)),
     );
 
-    // The trailing chevron is gone: the discard affordance owns that slot.
-    expect(find.byIcon(LucideIcons.chevronRight), findsNothing);
-    expect(find.byTooltip('Descartar captura'), findsOneWidget);
+    expect(find.byIcon(LucideIcons.chevronRight), findsOneWidget);
     await tester.tap(find.byType(CaptureCardShell));
     expect(taps, 1);
   });
@@ -76,8 +67,7 @@ void main() {
   testWidgets('keeps the ordinary rail color, never the amber duplicate one',
       (tester) async {
     await tester.pumpWidget(
-      appWith(GroupedCaptureCard(
-          item: groupedItem(), onTap: () {}, onDiscard: () {})),
+      appWith(GroupedCaptureCard(item: groupedItem(), onTap: () {})),
     );
 
     final shell = tester.widget<CaptureCardShell>(
@@ -98,7 +88,6 @@ void main() {
             group: const CaptureGroupView(),
           ),
           onTap: () {},
-          onDiscard: () {},
         ),
       ),
     );
