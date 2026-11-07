@@ -27,13 +27,11 @@ jerarquía, topes por sección y presupuesto medido; siguen vigentes.
 
 ## Acción nueva: descartar con swipe (aprobada 2026-11-07)
 
-**Estado de los frames:** a la fecha de este cambio, la sección de referencia
-("CAPTURAS · Descartar con swipe — C", claro y oscuro) fue dibujada y aprobada en Pencil, pero
-**no quedó persistida en `billetudo.pen`**: la app tenía dos pestañas del mismo archivo y la que
-se guardó era una versión desincronizada (los frames que la otra sesión había commiteado no
-estaban en ese documento). Restaurar/crear la sección es un pendiente de tooling, no de diseño;
-los ids citados en este documento son provisionales. Los **goldens** del estado swipe
-(`capture_swipe_action_{light,dark}.png`) son la referencia determinista que ya vive en el repo.
+**Frames de referencia (2026-11-07):** claro `ZYeF4`, oscuro `l84dAP`
+("CAPTURAS · Descartar con swipe — C"). Recreados sobre el `.pen` restaurado desde HEAD (la
+primera versión se perdió por un documento desincronizado en Pencil). Los **goldens** del estado
+swipe (`capture_swipe_action_{light,dark}.png`) siguen siendo la referencia determinista del
+repo.
 Los componentes `skjlg` y `RSizy` **no cambian**: su estado en reposo es el aprobado y sigue
 siendo el único que existe en la tarjeta.
 
