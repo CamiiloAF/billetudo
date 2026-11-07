@@ -7028,7 +7028,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tutorialVoiceCapturePoint1Body =>
-      'En Inicio, deja el dedo un segundo sobre el botón + y empieza a hablar.';
+      'En Inicio o Movimientos, deja el dedo un segundo sobre el botón + y empieza a hablar.';
 
   @override
   String get tutorialVoiceCapturePoint2Heading => 'Di la frase de corrido';
@@ -7046,6 +7046,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tutorialVoiceCaptureCta => 'Probar ahora';
+
+  @override
+  String get tutorialVoiceCaptureSecondaryLabel => 'Hacerlo manual';
 
   @override
   String get notificationsChannelRemindersName => 'Recordatorios de pagos';

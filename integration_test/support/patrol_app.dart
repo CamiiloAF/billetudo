@@ -6,6 +6,7 @@ import 'package:billetudo/core/config/env.dart';
 import 'package:billetudo/core/database/database_connection.dart';
 import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/router/app_router.dart';
+import 'package:billetudo/features/capture/data/datasources/manual_movement_attempt_preference_datasource.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
@@ -121,6 +122,15 @@ Future<void> _prepareCleanBoot(PatrolIntegrationTester $) async {
   _previousPowerSyncDatabase = await openPowerSyncDatabase();
 
   configureDependencies();
+
+  // The voice-gesture minitutorial is offered on the 3rd manual `+` attempt,
+  // not on first visit (`17-captura-voz.md` HU-02), and its counter lives in
+  // SharedPreferences — which, unlike the Drift database, is not wiped per
+  // scenario. Seed it past the threshold so a scenario that happens to tap
+  // `+` three times is not interrupted by a modal sheet; the voice suite's
+  // own minitutorial scenario resets it to 0 to exercise the rule.
+  await getIt<ManualMovementAttemptPreferenceDatasource>().writeAttempts(99);
+
   // The app follows the device locale (app.dart no longer pins es-CO), but
   // these scenarios assert Spanish copy and es-CO money formatting. Pin the
   // locale so the suite is deterministic regardless of the device/emulator

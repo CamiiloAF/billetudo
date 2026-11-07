@@ -181,6 +181,56 @@ void main() {
     // just Presupuestos above, separately from the golden loop below so a
     // regression that drops a point fails a plain widget test too, not only
     // a pixel diff.
+    testWidgets(
+        'uses the per-tutorial secondary label when provided (the '
+        'voice-gesture sheet says "Hacerlo manual", not "Entendido")', (
+      tester,
+    ) async {
+      final content = await readContent(
+        tester,
+        TutorialKey.voiceCaptureGesture,
+      );
+      await pumpSheet(tester, TutorialKey.voiceCaptureGesture);
+
+      expect(content.secondaryLabel, isNotNull);
+      expect(content.secondaryLabel, isNotEmpty);
+      expect(find.text(content.secondaryLabel!), findsOneWidget);
+      expect(find.text('Entendido'), findsNothing);
+    });
+
+    testWidgets('tapping the custom secondary label resolves gotIt', (
+      tester,
+    ) async {
+      final content = await readContent(
+        tester,
+        TutorialKey.voiceCaptureGesture,
+      );
+      TutorialSheetResult? result;
+      await tester.pumpWidget(
+        wrapForGolden(
+          Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () async {
+                result = await TutorialSheet.show(
+                  context,
+                  contentFor(context, TutorialKey.voiceCaptureGesture),
+                );
+              },
+              child: const Text('open'),
+            ),
+          ),
+          brightness: Brightness.light,
+        ),
+      );
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(content.secondaryLabel!));
+      await tester.pumpAndSettle();
+
+      expect(result, TutorialSheetResult.gotIt);
+    });
+
     for (final key in TutorialKey.screenTutorials) {
       testWidgets('${key.name}: renders its 3 points and CTA', (
         tester,

@@ -11437,7 +11437,7 @@ abstract class AppLocalizations {
   /// No description provided for @tutorialVoiceCapturePoint1Body.
   ///
   /// In es, this message translates to:
-  /// **'En Inicio, deja el dedo un segundo sobre el botón + y empieza a hablar.'**
+  /// **'En Inicio o Movimientos, deja el dedo un segundo sobre el botón + y empieza a hablar.'**
   String get tutorialVoiceCapturePoint1Body;
 
   /// No description provided for @tutorialVoiceCapturePoint2Heading.
@@ -11469,6 +11469,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Probar ahora'**
   String get tutorialVoiceCaptureCta;
+
+  /// No description provided for @tutorialVoiceCaptureSecondaryLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Hacerlo manual'**
+  String get tutorialVoiceCaptureSecondaryLabel;
 
   /// No description provided for @notificationsChannelRemindersName.
   ///

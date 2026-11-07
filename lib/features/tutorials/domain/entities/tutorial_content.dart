@@ -31,6 +31,7 @@ class TutorialContent extends Equatable {
     required this.iconName,
     this.ctaLabel,
     this.ctaIconName = 'plus',
+    this.secondaryLabel,
   });
 
   /// Which of the 12 tutorials this content is for — drives "seen" tracking.
@@ -61,11 +62,20 @@ class TutorialContent extends Equatable {
   /// dictation instead, and a `+` there would describe the wrong action.
   final String ctaIconName;
 
+  /// Optional label for the sheet's secondary button (the one that just
+  /// closes it). `null` means the shared "Entendido".
+  ///
+  /// The voice-gesture tutorial uses it to say "Hacerlo manual": it is offered
+  /// on the third tap of the "+" button — an action the user took to add a
+  /// movement by hand — so dismissing it is not a plain close, it is the
+  /// action they came for.
+  final String? secondaryLabel;
+
   /// Whether this sheet shows the HU-01 primary CTA (`ctaLabel` is set) in
-  /// addition to "Entendido".
+  /// addition to the secondary button.
   bool get hasNavigationCta => ctaLabel != null;
 
   @override
   List<Object?> get props =>
-      [key, title, points, iconName, ctaLabel, ctaIconName];
+      [key, title, points, iconName, ctaLabel, ctaIconName, secondaryLabel];
 }

@@ -37,6 +37,7 @@ import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/router/app_router.dart';
 import 'package:billetudo/core/utils/money_formatter.dart';
+import 'package:billetudo/features/capture/data/datasources/manual_movement_attempt_preference_datasource.dart';
 import 'package:billetudo/features/capture/domain/entities/speech_recognition.dart';
 import 'package:billetudo/features/capture/domain/repositories/microphone_permission_gate.dart';
 import 'package:billetudo/features/capture/domain/repositories/speech_recognizer.dart';
@@ -261,14 +262,14 @@ void main() {
     'de escucha y, con una transcripción con monto, el formulario de '
     'movimiento se abre pre-llenado con el monto correcto',
     ($) async {
-      await startApp($);
+      // Seed before the first frame (`capture_widget_shortcut_patrol_test.dart`
+      // uses the same hook for the same reason): the account gate reads a Drift
+      // stream, and seeding after `startApp` races the first FAB gesture.
+      await startApp(
+        $,
+        beforeFirstFrame: () => _seedAccount(getIt<AppDatabase>(), 'Nu'),
+      );
       await _installFakeVoiceCapture('gasté veinte mil en almuerzo');
-      await _seedAccount(getIt<AppDatabase>(), 'Nu');
-      // First Home visit always auto-shows the HU-02 minitutorial
-      // (`TutorialAutoShow`/`TutorialKey.voiceCaptureGesture`) before
-      // anything else can be tapped — see this suite's minitutorial scenario
-      // below for that surface on its own.
-      await dismissAutoTutorialIfShown($);
 
       await $.tester.longPress(find.byTooltip('Agregar movimiento'));
       await $.tester.pumpAndSettle();
@@ -300,10 +301,11 @@ void main() {
     'y, al completar, dicta sobre el formulario ya abierto sin perder los '
     'campos ya tecleados',
     ($) async {
-      await startApp($);
+      await startApp(
+        $,
+        beforeFirstFrame: () => _seedAccount(getIt<AppDatabase>(), 'Nu'),
+      );
       await _installFakeVoiceCapture('gasté quince mil en cine');
-      await _seedAccount(getIt<AppDatabase>(), 'Nu');
-      await dismissAutoTutorialIfShown($);
 
       // Reaches the plain manual form directly through the router
       // (`push`, matching every sibling suite's own convention for a
@@ -352,10 +354,11 @@ void main() {
     'formulario marca el monto como supuesto; tocar o teclear el monto '
     'limpia la marca',
     ($) async {
-      await startApp($);
+      await startApp(
+        $,
+        beforeFirstFrame: () => _seedAccount(getIt<AppDatabase>(), 'Nu'),
+      );
       await _installFakeVoiceCapture('gasté veinte');
-      await _seedAccount(getIt<AppDatabase>(), 'Nu');
-      await dismissAutoTutorialIfShown($);
 
       await $.tester.longPress(find.byTooltip('Agregar movimiento'));
       await $.tester.pumpAndSettle();
@@ -385,35 +388,77 @@ void main() {
   );
 
   patrolTest(
-    'Minitutorial: la primera vez en Inicio, el coach mark de "mantén '
-    'presionado para dictar" se muestra antes de abrir la hoja de escucha, y '
-    'su CTA realiza el gesto real',
+    'Minitutorial: a la tercera vez que se toca "+" en Inicio aparece la '
+    'hoja del dictado (no en la primera), y su CTA realiza el gesto real',
     ($) async {
-      await startApp($);
+      await startApp(
+        $,
+        beforeFirstFrame: () => _seedAccount(getIt<AppDatabase>(), 'Nu'),
+      );
       await _installFakeVoiceCapture('gasté veinte mil en mercado');
-      await _seedAccount(getIt<AppDatabase>(), 'Nu');
+      // `startApp` seeds the counter past the threshold so unrelated
+      // scenarios never meet this modal; this one resets it to exercise the
+      // "3rd manual attempt" rule (`docs/requirements/fase-2/17-captura-voz.md`
+      // HU-02).
+      await getIt<ManualMovementAttemptPreferenceDatasource>().writeAttempts(0);
 
-      // No `dismissAutoTutorialIfShown` here on purpose: this scenario is
-      // about that exact auto-show (`TutorialKey.voiceCaptureGesture`,
-      // `docs/requirements/fase-2/17-captura-voz.md` HU-02), so it has to
-      // observe the sheet itself rather than dismiss it blindly.
+      // Attempts 1 and 2 open the normal manual form, with no tutorial.
+      for (var attempt = 1; attempt <= 2; attempt++) {
+        await $.tester.tap(find.byTooltip('Agregar movimiento'));
+        await $.tester.pumpAndSettle();
+        expect(find.byType(TransactionFormPage), findsOneWidget);
+        expect(find.text('Dicta un gasto sin teclear'), findsNothing);
+        GoRouter.of($.tester.element(find.byType(TransactionFormPage))).pop();
+        await $.tester.pumpAndSettle();
+      }
+
+      // Attempt 3 offers the tutorial instead of the form.
+      await $.tester.tap(find.byTooltip('Agregar movimiento'));
       await _pumpUntilFound($, find.text('Dicta un gasto sin teclear'));
-      // `_pumpUntilFound` only waits for the CTA to exist in the tree, not
-      // for the sheet's entrance slide-in to finish — tapping mid-animation
-      // hits whatever offset the button is passing through, which can still
-      // be below the viewport while it slides up, unrelated to whether the
-      // resting layout itself fits.
+      // `_pumpUntilFound` only waits for the text to exist in the tree, not
+      // for the sheet's entrance slide-in to finish; tapping mid-animation
+      // hits whatever offset the button is passing through.
       await $.tester.pumpAndSettle();
       expect(find.text('Probar ahora'), findsOneWidget);
+      expect(find.text('Hacerlo manual'), findsOneWidget);
 
       // The CTA performs the real gesture (`onCta: startVoiceCaptureFlow`),
-      // not just a navigation stub — the listening sheet opens straight from
-      // it, with no long-press needed.
+      // not a navigation stub: the listening sheet opens straight from it.
       await $.tester.tap(find.text('Probar ahora'));
       await $.tester.pumpAndSettle();
       await _finishListening($);
       expect(find.byType(TransactionFormPage), findsOneWidget);
       expect(find.text(_formatted(2000000)), findsOneWidget); // $20.000
+    },
+  );
+
+  patrolTest(
+    'Minitutorial: "Hacerlo manual" en la tercera vez abre el formulario '
+    'manual, que es la acción que el usuario estaba buscando',
+    ($) async {
+      await startApp(
+        $,
+        beforeFirstFrame: () => _seedAccount(getIt<AppDatabase>(), 'Nu'),
+      );
+      await getIt<ManualMovementAttemptPreferenceDatasource>().writeAttempts(0);
+
+      for (var attempt = 1; attempt <= 2; attempt++) {
+        await $.tester.tap(find.byTooltip('Agregar movimiento'));
+        await $.tester.pumpAndSettle();
+        GoRouter.of($.tester.element(find.byType(TransactionFormPage))).pop();
+        await $.tester.pumpAndSettle();
+      }
+
+      await $.tester.tap(find.byTooltip('Agregar movimiento'));
+      await _pumpUntilFound($, find.text('Dicta un gasto sin teclear'));
+      await $.tester.pumpAndSettle();
+
+      await $.tester.tap(find.text('Hacerlo manual'));
+      await $.tester.pumpAndSettle();
+
+      // The manual form the user asked for — not the listening sheet.
+      expect(find.byType(TransactionFormPage), findsOneWidget);
+      expect(find.text('Escuchando…'), findsNothing);
     },
   );
 }

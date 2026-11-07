@@ -7009,7 +7009,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tutorialVoiceCapturePoint1Body =>
-      'On Home, keep your finger on the + button for a second and start talking.';
+      'On Home or Movements, keep your finger on the + button for a second and start talking.';
 
   @override
   String get tutorialVoiceCapturePoint2Heading =>
@@ -7028,6 +7028,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tutorialVoiceCaptureCta => 'Try it now';
+
+  @override
+  String get tutorialVoiceCaptureSecondaryLabel => 'Do it manually';
 
   @override
   String get notificationsChannelRemindersName => 'Payment reminders';

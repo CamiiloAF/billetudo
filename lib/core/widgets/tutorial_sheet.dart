@@ -154,7 +154,7 @@ class TutorialSheet extends StatelessWidget {
               height: 44,
               child: Center(
                 child: Text(
-                  l10n.tutorialGotIt,
+                  content.secondaryLabel ?? l10n.tutorialGotIt,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -168,7 +168,7 @@ class TutorialSheet extends StatelessWidget {
           FilledButton(
             onPressed: () =>
                 Navigator.of(context).pop(TutorialSheetResult.gotIt),
-            child: Text(l10n.tutorialGotIt),
+            child: Text(content.secondaryLabel ?? l10n.tutorialGotIt),
           ),
       ],
     );

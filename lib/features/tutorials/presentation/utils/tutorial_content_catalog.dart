@@ -37,6 +37,9 @@ abstract final class TutorialContentCatalog {
           ],
           ctaLabel: l10n.tutorialVoiceCaptureCta,
           ctaIconName: 'mic',
+          // Offered on the third tap of "+", so the closing action is the
+          // manual form the user was after — not a bare "Entendido".
+          secondaryLabel: l10n.tutorialVoiceCaptureSecondaryLabel,
         ),
       TutorialKey.budgetsScreen => TutorialContent(
           key: key,
