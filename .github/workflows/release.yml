@@ -74,6 +74,16 @@ jobs:
           ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # ubuntu-latest pasó a traer JDK 25 por defecto y Gradle 8.14 no lo
+      # soporta ("Could not determine java version from '25.0.5'"): el AAB
+      # dejaba de compilar sin tocar una línea del proyecto. Se fija el JDK
+      # que el proyecto usa de verdad (jvmTarget 17).
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -278,9 +288,19 @@ jobs:
               re.S,
           )
 
+          SIGNING_KEYS = re.compile(
+              r'\t\t\t\t(CODE_SIGN_STYLE|"?CODE_SIGN_IDENTITY\[sdk=iphoneos\*\]"|PROVISIONING_PROFILE_SPECIFIER) = .*?;\n'
+          )
+
           def inject(m):
               head, settings, tail = m.group(1), m.group(2), m.group(3)
               name = m.group(4) or m.group(5)
+              if name != "Release-prod":
+                  return head + settings + tail
+              # Las claves de firma que ya existan (p. ej. CODE_SIGN_STYLE =
+              # Automatic en el target del widget) ganaban por aparecer
+              # después de las inyectadas; se eliminan antes de prepender.
+              settings = SIGNING_KEYS.sub('', settings)
               if name == "Release-prod" and "PRODUCT_BUNDLE_IDENTIFIER = com.camiloagudelo.billetudo;\n" in settings:
                   extra = (
                       '\t\t\t\tCODE_SIGN_STYLE = Manual;\n'

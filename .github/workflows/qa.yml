@@ -116,6 +116,16 @@ jobs:
         uses: actions/checkout@v4
         # Sin `ref:` — checkea el commit exacto al que apunta el tag qa-*.
 
+      # ubuntu-latest pasó a traer JDK 25 por defecto y Gradle 8.14 no lo
+      # soporta ("Could not determine java version from '25.0.5'"): el AAB
+      # dejaba de compilar sin tocar una línea del proyecto. Se fija el JDK
+      # que el proyecto usa de verdad (jvmTarget 17).
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
