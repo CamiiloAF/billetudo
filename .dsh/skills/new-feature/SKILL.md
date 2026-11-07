@@ -22,7 +22,7 @@ Objetivo: dejar creada la estructura minima y correcta de una feature nueva, sin
    - `meta` = el JSON del `.meta.json` (parseado, sin modificar).
    - `script` = el cuerpo del `.js` **sin modificar**.
    - `args` = `{ name: '<nombre>' }`, más cualquier detalle de dominio que el usuario haya dado (ej. campos especificos, relaciones con otras tablas).
-   - Si la tool `workflow` no está disponible, orquesta la misma secuencia con `subagent`: lee `.dsh/agents/feature-scaffolder.md` y lanza `subagent` con el rol completo + nombre/tareas de la feature; luego repite el ciclo por capa (domain → data → presentation) en el mismo orden y gate que el workflow.
+   - Si la tool `workflow` no está disponible, orquesta la misma secuencia con `subagent`: lee `.dsh/agents/feature-scaffolder.md` y lanza UN `subagent` (o `subagent_fork` si querés que herede este contexto y no re-lea el repo) con el rol completo + nombre/tareas de la feature; luego pide su reporte final y verificá `flutter analyze`. Es un solo agente, no un ciclo por capa.
 5. Cuando termine, revisa el resultado con el rol `finance-code-reviewer` (lee `.dsh/agents/finance-code-reviewer.md` y lanza `subagent` con rol completo + el diff/archivos creados; pídele reporte final) antes de reportar exito al usuario.
 6. Resume al usuario: archivos creados, y los pendientes tipicos (wiring en `lib/core/di/`, registrar el bloc/cubit en el arbol de widgets, tests, y si la feature toca dinero/anuncios/IA, sugerir tambien correr `/tier0-check`).
 

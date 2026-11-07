@@ -39,13 +39,28 @@ const FINDINGS_SCHEMA = {
   required: ['findings'],
 }
 
-const VERDICT_SCHEMA = {
+// Verificacion adversarial batcheada: UN agente verifica TODOS los hallazgos
+// (lee cada archivo una sola vez) en vez de un agente por hallazgo. Un hallazgo
+// sin veredicto se conserva, no se descarta en silencio.
+const VERIFY_BATCH_SCHEMA = {
   type: 'object',
   properties: {
-    refuted: { type: 'boolean' },
-    reason: { type: 'string' },
+    verdicts: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          file: { type: 'string' },
+          line: { type: 'number' },
+          summary: { type: 'string' },
+          refuted: { type: 'boolean' },
+          reason: { type: 'string' },
+        },
+        required: ['file', 'summary', 'refuted', 'reason'],
+      },
+    },
   },
-  required: ['refuted', 'reason'],
+  required: ['verdicts'],
 }
 
 // ---------------------------------------------------------------------------
@@ -93,21 +108,32 @@ if (!allFindings.length) {
   return { feature: featureName, confirmed: [], note: 'Sin hallazgos en la revision inicial.' }
 }
 
-log(`${allFindings.length} hallazgos preliminares, verificando cada uno...`)
+log(`${allFindings.length} hallazgos preliminares, verificando en UNA pasada...`)
 
-const verified = await parallel(
-  allFindings.map((f) => () =>
-    agent(
-      `Intenta refutar este hallazgo de revision de codigo en billetudo. Hallazgo: "${f.summary}" — ${f.detail} (archivo: ${f.file}, linea: ${f.line ?? 'N/A'}). Lee el archivo real y confirma si el problema existe de verdad o es un falso positivo. Si tienes dudas razonables, marca refuted=false (favorece reportar sobre ocultar).`,
-      { label: `verify:${f.file}`, phase: 'Verify', schema: VERDICT_SCHEMA },
-    ).then((v) => ({ ...f, verdict: requireResult(v, `verify:${f.file}`) })),
+const findingsList = allFindings
+  .map((f, i) => `${i + 1}. [${f.file}${f.line ? `:${f.line}` : ''}] ${f.summary} — ${f.detail || ''}`)
+  .join('\n')
+
+const batch = requireResult(
+  await agent(
+    `Eres un verificador de hallazgos de revision de codigo en billetudo. Verifica CADA uno de los ${allFindings.length} hallazgos de abajo leyendo el archivo REAL (no el diff, no la descripcion del hallazgo) y confirma si el problema existe de verdad o es un falso positivo. Agrupa por archivo: abre cada archivo UNA sola vez y verifica contra el todos los hallazgos que le correspondan. Si tienes dudas razonables, marca refuted=false (favorece reportar sobre ocultar). Devuelve verdicts: UN item por hallazgo (mismo file y summary que el original, mas refuted y reason), en cualquier orden.
+
+Hallazgos a verificar:
+${findingsList}`,
+    { label: 'verify-batch', phase: 'Verify', schema: VERIFY_BATCH_SCHEMA },
   ),
+  'verify-batch',
 )
 
-// Si una verificacion no devolvio veredicto, el hallazgo no se descarta en
-// silencio: se aborta para no reportar "sin hallazgos" por error.
-verified.forEach((v) => requireResult(v, 'verify'))
+const key = (x) => `${x.file}::${x.summary}`
+const byKey = new Map(batch.verdicts.map((v) => [key(v), v]))
+const missing = allFindings.filter((f) => !byKey.has(key(f))).length
+if (missing > 0) {
+  log(`[verify] ${missing}/${allFindings.length} hallazgos sin veredicto — se conservan por precaucion`)
+}
 
-const confirmed = verified.filter((v) => v.verdict && !v.verdict.refuted)
+const confirmed = allFindings
+  .map((f) => ({ ...f, verdict: byKey.get(key(f)) }))
+  .filter((v) => !v.verdict || !v.verdict.refuted)
 
 return { feature: featureName, totalRaised: allFindings.length, confirmed }

@@ -33,12 +33,11 @@ if (!SOURCE) {
 const SIZE_OVERRIDE = ['s', 'm', 'l'].includes(input.size) ? input.size : null
 
 const HARD_RULES = `
-HARD RULES — no las violes:
-1. NUNCA ejecutes git add/commit/push/merge/rebase/restore/reset ni gh pr *. El arbol queda SUCIO a proposito; el humano commitea.
-2. Solo puedes editar: lib/**, test/**, integration_test/**, y pubspec.yaml si el plan lo exige. NUNCA toques .claude/**, .dsh/**, CLAUDE.md, docs/** (excepto el UNICO archivo docs/dev-runs/<slug>.md que escribe el cierre), ni analysis_options.yaml.
-3. NO escribas archivos .md, reportes ni notas intermedias: toda tu salida va en el objeto estructurado que devuelves.
-4. CLAUDE.md en la raiz es el contrato (centavos, UUID, updatedAt, Clean Architecture, bloc/cubit). Tu playbook de rol esta en .dsh/agents/.
-5. Si el repo no es git todavia, no dependas de git diff: trabaja con las listas de archivos que te pasa el prompt.
+HARD RULES — no las violes (el contrato git/CLAUDE.md ya esta en tu playbook):
+1. NUNCA git add/commit/push/merge/rebase ni gh pr * (el humano commitea).
+2. Solo edita lib/**, test/**, integration_test/** y pubspec.yaml si el plan lo exige. NUNCA .claude/**, .dsh/**, CLAUDE.md, analysis_options.yaml ni docs/** (excepto el UNICO docs/dev-runs/<slug>.md del cierre).
+3. NO escribas .md/reportes/notas intermedias: tu salida va en el objeto estructurado que devuelves.
+4. Si el repo no es git todavia, no uses git diff: usa las listas de archivos del prompt.
 `
 
 // ---------------------------------------------------------------------------
@@ -199,13 +198,29 @@ const FINDINGS_SCHEMA = {
   required: ['findings'],
 }
 
-const VERDICT_SCHEMA = {
+// Verificacion adversarial batcheada: UN agente verifica TODOS los hallazgos
+// (lee cada archivo una sola vez) en vez de un agente por hallazgo. Ahorra
+// N-1 contextos frescos por corrida de tamano L sin perder el guard "favorece
+// reportar sobre ocultar": un hallazgo sin veredicto se conserva, no se descarta.
+const VERIFY_BATCH_SCHEMA = {
   type: 'object',
   properties: {
-    refuted: { type: 'boolean' },
-    reason: { type: 'string' },
+    verdicts: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          file: { type: 'string' },
+          line: { type: 'number' },
+          summary: { type: 'string' },
+          refuted: { type: 'boolean' },
+          reason: { type: 'string' },
+        },
+        required: ['file', 'summary', 'refuted', 'reason'],
+      },
+    },
   },
-  required: ['refuted', 'reason'],
+  required: ['verdicts'],
 }
 
 // ---------------------------------------------------------------------------
@@ -337,7 +352,7 @@ if (SIZE === 's') {
 // ---------------------------------------------------------------------------
 phase('Test')
 
-const qaPrompt = (note) =>
+const qaPrompt = (note, reverify = false) =>
   `Eres qa-automator cerrando la corrida "${SLUG}" de billetudo. Sigue tu playbook (.dsh/agents/qa-automator.md).
 
 ${HARD_RULES}
@@ -349,8 +364,8 @@ ARCHIVOS TOCADOS POR LOS IMPLEMENTADORES:
 ${allFilesChanged.join('\n') || '(ninguno reportado)'}
 
 TU TRABAJO:
-1. dart analyze y flutter test completos (gate determinista). Distingue fallos NUEVOS (newFailures, con archivo) de preexistentes (notes).
-2. Por cada criterio de aceptacion: ¿hay un test que fallaria sin el cambio? Si falta y es automatizable (unit > widget), ESCRIBELO y correlo. Drift se prueba con BD en memoria, cubits con bloc_test + mocktail.
+1. ${reverify ? 'Re-corre dart analyze + los tests que fallaron antes (archivos de newFailures) + el resto de la suite SIN goldens como red de regresion (`flutter test` sobre los *_test.dart excepto *_golden_test.dart). NO regeneres ni re-corras goldens salvo que el fix haya tocado UI — los goldens son la parte lenta y no cambian en un fix de logica.' : 'dart analyze y flutter test completos (gate determinista).'} Distingue fallos NUEVOS (newFailures, con archivo) de preexistentes (notes).
+2. ${reverify ? 'No re-escribas tests que ya existen; solo re-evalua la cobertura de los AC que queden en gap.' : 'Por cada criterio de aceptacion: ¿hay un test que fallaria sin el cambio? Si falta y es automatizable (unit > widget), ESCRIBELO y correlo. Drift se prueba con BD en memoria, cubits con bloc_test + mocktail.'}
 3. ${plan.needsUi ? 'Esta corrida SI toca UI: completa los golden tests de TODAS las paginas y sheets nuevos/tocados bajo presentation/pages/ y presentation/widgets/sheets/ (claro+oscuro, un caso por estado de negocio distinguible), siguiendo la seccion "Golden tests" de tu playbook. No lo dejes como manualCheck ni como gap de cobertura — es parte de esta etapa, no una verificacion aparte.' : 'Esta corrida no toca UI: sin goldens que generar.'}
 4. ${CFG.e2e ? 'Patrol e2e: verifica device con `adb devices` / `xcrun simctl list devices booted`. Si no hay ninguno booteado, NO marques skip todavia — intenta bootear uno tu mismo (`flutter emulators` para listar, `flutter emulators --launch <id>` para arrancar un Android, esperando a que quede listo) y reintenta. Escribe/extiende el Patrol e2e (integration_test/) para el flujo multi-pantalla de esta feature y correlo contra ese device, flavor `dev` (nunca `prod`). Marca e2e="skip" solo si, tras intentar bootear, sigue sin haber device disponible, o si el flujo no es multi-pantalla/determinista — y dilo explicito en notes, no en silencio.' : 'Tamano S: NO hagas e2e (e2e="skip").'}
 5. manualChecks: la lista CORTA de lo que solo un humano puede verificar (visual, gestos reales, datos reales) — la fidelidad contra Pencil NO va aqui, la cierra una fase aparte del workflow.
@@ -370,7 +385,7 @@ while ((!qa.testsGreen || !qa.analyzeClean) && qa.newFailures.length > 0 && fixR
   log(`[test] rojo (ronda ${fixRound}) — flutter-dev corrige ${qa.newFailures.length} fallos`)
   const fix = requireResult(
     await agent(
-      ROLE('flutter-dev') + `Eres flutter-dev en MODO FIX para "${SLUG}". Corrige SOLO estos fallos detectados por QA (no re-implementes nada mas), re-corre dart analyze y flutter test, deja verde:
+      ROLE('flutter-dev') + `Eres flutter-dev en MODO FIX para "${SLUG}". Corrige SOLO estos fallos detectados por QA (no re-implementes nada mas), re-corre dart analyze y solo los tests de los archivos corregidos (no la suite completa), deja verde:
 ${qa.newFailures.map((f) => `- ${f.file}: ${f.description}`).join('\n')}
 ${HARD_RULES}
 Devuelve {status, filesChanged, testResult, notes}.`,
@@ -380,7 +395,7 @@ Devuelve {status, filesChanged, testResult, notes}.`,
   )
   allFilesChanged.push(...fix.filesChanged)
   qa = requireResult(
-    await agent(ROLE('qa-automator') + qaPrompt(`Re-verificacion tras correcciones (ronda ${fixRound}). No re-escribas tests que ya existen; solo re-corre y reevalua.`), {
+    await agent(ROLE('qa-automator') + qaPrompt(`Re-verificacion tras correcciones (ronda ${fixRound}).`, true), {
       label: 'qa-automator',
       phase: 'Test',
       schema: QA_SCHEMA,
@@ -399,22 +414,24 @@ const filesList = [...new Set(allFilesChanged)].join('\n')
 // DSH no permite anidar workflows por nombre, asi que el workflow feature-review
 // (tamano L) se inlinea aca: mismas 4 dimensiones + verificacion adversarial.
 function buildReviewDimensions(featureName) {
+  const scope = `Revisa el codigo de la feature "${featureName}" bajo lib/features/${featureName}/ (y lib/core/database/app_database.dart solo si toca el esquema).`
+  const ask = 'Devuelve findings con archivo, linea aproximada y detalle; si no hay codigo aun (solo .gitkeep), devuelve findings: [].'
   return [
     {
       key: 'conventions',
-      prompt: `Lee CLAUDE.md en la raiz del repo. Luego revisa todo el codigo bajo lib/features/${featureName}/ (y lib/core/database/app_database.dart si esta feature toca el esquema). Busca violaciones de: dinero como double/float en vez de enteros en centavos; IDs autoincrement en vez de UUID; escrituras que no actualizan updatedAt; deletedAt usado incorrectamente (ni papelera ni sync real); comillas dobles, falta de comas finales, tipos de retorno implicitos, uso de print, o un gestor de estado distinto a bloc/cubit. Devuelve findings con archivo, linea aproximada y detalle. Si no hay codigo aun (solo .gitkeep), devuelve findings: [].`,
+      prompt: ROLE('finance-code-reviewer') + `${scope} ${ask}`,
     },
     {
       key: 'architecture',
-      prompt: `Lee CLAUDE.md en la raiz del repo, seccion de arquitectura Clean/feature-first. Revisa lib/features/${featureName}/ y verifica: domain/ tiene entidades puras (sin Drift/Supabase), interfaces de repositorio, y un caso de uso por accion; data/ mapea entre Drift y entidades sin exponer tipos generados de Drift fuera de esa capa; presentation/ (bloc/cubit) solo llama casos de uso, nunca repositorios ni DAOs directo. Reporta cualquier violacion de la direccion de dependencias. Si la feature no tiene codigo aun, devuelve findings: [].`,
+      prompt: `Lee CLAUDE.md, seccion de arquitectura Clean/feature-first. ${scope} Verifica: domain/ tiene entidades puras (sin Drift/Supabase), interfaces de repositorio y un caso de uso por accion; data/ mapea entre Drift y entidades sin exponer tipos generados de Drift fuera de data/; presentation/ (bloc/cubit) solo llama casos de uso, nunca repositorios ni DAOs directo. Reporta cada violacion de la direccion de dependencias. ${ask}`,
     },
     {
       key: 'ui-conventions',
-      prompt: `Revisa todo el codigo bajo lib/features/${featureName}/ buscando exactamente 3 violaciones (antes cubiertas por un plugin custom_lint retirado, ver docs/convenciones-de-codigo.md): (1) funciones o metodos (que no sean build ni un closure builder:) con tipo de retorno Widget/subclase de Widget — deben ser una clase StatelessWidget/StatefulWidget; (2) clases de widget cuyo nombre empieza con guion bajo (_) — deben ser publicas, en su propio archivo bajo presentation/widgets/ (las clases State como _FooState no aplican); (3) literales de texto pasados como argumento a un constructor de widget cuando ese argumento es user-facing (ej. Text('Hola'), Tooltip(message: '...')) en vez de venir de AppLocalizations — excepto parametros tecnicos (name, src, package, fontFamily, restorationId, debugLabel, routeName, initialRoute) y strings fuera de un constructor de widget (excepciones, logs). Devuelve findings con archivo, linea aproximada y cual de las 3 reglas viola. Si no hay codigo aun, devuelve findings: [].`,
+      prompt: ROLE('ui-convention-reviewer') + `${scope} ${ask}`,
     },
     {
       key: 'business-legal',
-      prompt: `Lee CLAUDE.md en la raiz del repo, secciones "Reglas de negocio" y "Requisitos legales" (y docs/Plan_Monetizacion_y_Tecnico.md si necesitas detalle). Revisa lib/features/${featureName}/ buscando: features de Nivel 0 bloqueadas por anuncio o pago; limites/cupos validados solo en cliente; recompensas de anuncio sin verificacion SSV; ads ambientales (banners/interstitials); tono que avergüence al usuario; features de IA/coach sin disclaimer "no es asesoria financiera"; borrado de cuenta que no borre datos reales en Supabase. Si nada de esto aplica a la feature, devuelve findings: [].`,
+      prompt: ROLE('compliance-reviewer') + `${scope} ${ask}`,
     },
   ]
 }
@@ -433,19 +450,32 @@ async function deepReview(featureName) {
     return []
   }
 
-  log(`${allFindings.length} hallazgos preliminares, verificando cada uno...`)
+  log(`${allFindings.length} hallazgos preliminares, verificando en UNA pasada...`)
 
-  const verified = await parallel(
-    allFindings.map((f) => () =>
-      agent(
-        `Intenta refutar este hallazgo de revision de codigo en billetudo. Hallazgo: "${f.summary}" — ${f.detail} (archivo: ${f.file}, linea: ${f.line ?? 'N/A'}). Lee el archivo real y confirma si el problema existe de verdad o es un falso positivo. Si tienes dudas razonables, marca refuted=false (favorece reportar sobre ocultar).`,
-        { label: `verify:${f.file}`, phase: 'Verify', schema: VERDICT_SCHEMA },
-      ).then((v) => ({ ...f, verdict: requireResult(v, `verify:${f.file}`) })),
+  const findingsList = allFindings
+    .map((f, i) => `${i + 1}. [${f.file}${f.line ? `:${f.line}` : ''}] ${f.summary} — ${f.detail || ''}`)
+    .join('\n')
+
+  const batch = requireResult(
+    await agent(
+      `Eres un verificador de hallazgos de revision de codigo en billetudo. Verifica CADA uno de los ${allFindings.length} hallazgos de abajo leyendo el archivo REAL (no el diff, no la descripcion del hallazgo) y confirma si el problema existe de verdad o es un falso positivo. Agrupa por archivo: abre cada archivo UNA sola vez y verifica contra el todos los hallazgos que le correspondan. Si tienes dudas razonables, marca refuted=false (favorece reportar sobre ocultar). Devuelve verdicts: UN item por hallazgo (mismo file y summary que el original, mas refuted y reason), en cualquier orden.
+
+Hallazgos a verificar:
+${findingsList}`,
+      { label: 'verify-batch', phase: 'Verify', schema: VERIFY_BATCH_SCHEMA },
     ),
+    'verify-batch',
   )
 
-  verified.forEach((v) => requireResult(v, 'verify'))
-  return verified.filter((v) => v.verdict && !v.verdict.refuted)
+  const key = (x) => `${x.file}::${x.summary}`
+  const byKey = new Map(batch.verdicts.map((v) => [key(v), v]))
+  const missing = allFindings.filter((f) => !byKey.has(key(f))).length
+  if (missing > 0) {
+    log(`[verify] ${missing}/${allFindings.length} hallazgos sin veredicto — se conservan por precaucion`)
+  }
+  return allFindings
+    .map((f) => ({ ...f, verdict: byKey.get(key(f)) }))
+    .filter((v) => !v.verdict || !v.verdict.refuted)
 }
 
 async function runReview(note) {
@@ -510,7 +540,7 @@ while (!review.approved && review.blockers.length > 0 && reviewRound < CFG.fixRo
   log(`[review] corrigiendo blockers (ronda ${reviewRound}/${CFG.fixRounds})`)
   const fix = requireResult(
     await agent(
-      ROLE('flutter-dev') + `Eres flutter-dev en MODO FIX (review) para "${SLUG}". Corrige SOLO estos blockers, re-corre dart analyze y flutter test, deja verde:
+      ROLE('flutter-dev') + `Eres flutter-dev en MODO FIX (review) para "${SLUG}". Corrige SOLO estos blockers, re-corre dart analyze y solo los tests de los archivos corregidos (no la suite completa), deja verde:
 ${review.blockers.map((b) => `- ${b.file}: ${b.description}`).join('\n')}
 ${HARD_RULES}
 Devuelve {status, filesChanged, testResult, notes}.`,

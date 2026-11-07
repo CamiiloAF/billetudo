@@ -52,14 +52,16 @@ editar directo.
 
 ## Delegación a subagentes (protocolo DSH)
 
-DSH **no** tiene un registro de agentes por proyecto ni `subagent_type`. Un subagente
-arranca con contexto vacío y solo ve el prompt que le pasás. Por eso:
+DSH **no** tiene un registro de agentes por proyecto ni `subagent_type`. Elige la tool según el caso:
+
+- **`subagent`** — contexto **fresco**: solo ve el `prompt` que le pasás. Es la opción por defecto para trabajo independiente y paralelo (varios a la vez, scopes disjuntos).
+- **`subagent_fork`** — hereda **esta conversación** (los turnos ya completados). Úsalo para fixes chicos secuenciales o continuaciones que ya dependen del contexto acumulado: evita que el hijo re-lea todo el repo y pague el costo de reconstruir el estado.
+- **`spawn_teammate` + tablero compartido** — Agent Teams para varios **escritores a la vez** (`team_task_create` con `write_scopes` disjuntos, `spawn_teammate` con `context: fresh|fork`, `wait_agent` para esperar). El Lead revisa el diff final y corre la verificación.
+
+Reglas para cualquier hijo:
 
 1. Leé el rol: `.dsh/agents/<rol>.md`.
-2. Llamá la tool `subagent` con `description` corta y un `prompt` que sea:
-   **contenido del rol + tarea concreta + formato de salida esperado**.
-   (El rol ya incluye el "Contrato del subagente DSH": reporte final, no commits, no
-   archivos de reporte.)
+2. Un `subagent` recibe `prompt` = **contenido del rol + tarea concreta + formato de salida esperado**. (El rol ya incluye el "Contrato del subagente DSH": reporte final, no commits, no archivos de reporte.)
 3. Si necesitás varios en paralelo, lanzalos juntos y seguí trabajando.
 4. **El Lead revisa el diff final y corre los tests.** Ningún subagente commitea.
 
@@ -94,7 +96,7 @@ Los scripts viven en `.dsh/workflows/`:
 
 - `feature-dev.js` + `feature-dev.meta.json` — pipeline completo (Plan → Build → Test →
   Review → Fidelity → Close), con fix loops y verificación adversarial.
-- `feature-scaffold.js` + `feature-scaffold.meta.json` — boilerplate capa por capa.
+- `feature-scaffold.js` + `feature-scaffold.meta.json` — boilerplate Clean Architecture en un solo agente.
 - `feature-review.js` + `feature-review.meta.json` — revisión multi-dimensión con
   verificación adversarial de cada hallazgo.
 
