@@ -24,12 +24,6 @@ class AiCardChips extends StatelessWidget {
   final ValueChanged<String?> onAskQuestion;
   final VoidCallback onCreateBudget;
 
-  /// Caps each chip's width in the scroll row so a long label wraps to a
-  /// 2nd line instead of growing indefinitely wide. This is `tMqvn`'s (AI
-  /// Question Chip) own authored default width in Pencil (`billetudo.pen`,
-  /// verified via `Get('tMqvn')`) — not an invented Flutter constant.
-  static const double _chipMaxWidth = 314;
-
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
