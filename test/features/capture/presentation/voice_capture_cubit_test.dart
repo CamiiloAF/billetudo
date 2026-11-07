@@ -134,6 +134,24 @@ void main() {
       await cubit.close();
     });
 
+    test(
+        'the explainer wins over a recognizer that has not been prepared yet '
+        '(permission is checked before the recognizer, not after)', () async {
+      gate.status = MicrophonePermissionStatus.denied;
+      // What `GetVoiceCaptureAvailability` reports while the permission is
+      // missing: no recognizer initialized, so it must not read as
+      // "dictation unavailable here".
+      recognizer.availability =
+          const SpeechRecognizerAvailability.unavailable();
+      final cubit = buildCubit();
+      await startAndSettle(cubit);
+
+      expect(cubit.state.status, VoiceCaptureStatus.permissionNeeded);
+      expect(cubit.state.isPermissionAskable, isTrue);
+      expect(recognizer.prepareCalls, 0);
+      await cubit.close();
+    });
+
     test('an unsupported locale never falls back to another language',
         () async {
       recognizer.availability = const SpeechRecognizerAvailability(

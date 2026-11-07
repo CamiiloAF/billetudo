@@ -94,6 +94,20 @@ class SpeechRecognizerAvailability extends Equatable {
         isLocaleSupported = false,
         route = SpeechRecognitionRoute.unknown;
 
+  /// No recognizer was initialized yet because the microphone permission is
+  /// still missing.
+  ///
+  /// `speech_to_text` asks for the microphone itself the moment it is
+  /// initialized on Android, and for speech recognition on iOS. Preparing it
+  /// before the app's own explainer + permission request would therefore pop a
+  /// system dialog the user was never prepared for (and, on Android, hand the
+  /// permission answer to the plugin instead of to the app's gate). So the
+  /// availability check stops at the permission and reports this placeholder.
+  const SpeechRecognizerAvailability.unprepared()
+      : isAvailable = false,
+        isLocaleSupported = false,
+        route = SpeechRecognitionRoute.unknown;
+
   /// Whether the platform recognizer initialized at all.
   final bool isAvailable;
 

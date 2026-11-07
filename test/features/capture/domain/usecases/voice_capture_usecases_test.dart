@@ -76,6 +76,51 @@ void main() {
       final availability = result.getOrElse((_) => throw StateError('Left'));
       expect(availability.canListen, isFalse);
     });
+
+    test(
+        'no inicializa el reconocedor mientras falte el micrófono: en Android '
+        'la inicialización del plugin pide el permiso por su cuenta', () async {
+      gate.status = MicrophonePermissionStatus.denied;
+
+      final result = await GetVoiceCaptureAvailability(recognizer, gate)(
+        localeId: 'es_CO',
+      );
+
+      final availability = result.getOrElse((_) => throw StateError('Left'));
+      expect(availability.hasPermission, isFalse);
+      expect(availability.canListen, isFalse);
+      expect(
+        recognizer.prepareCalls,
+        0,
+        reason: 'preparar antes del permiso dispara el diálogo del sistema '
+            'antes del explicador (Android: speech_to_text pide RECORD_AUDIO '
+            'en initialize) y deja la foto del permiso ya vieja',
+      );
+      expect(gate.requestCalls, 0, reason: 'consultar no pide permiso');
+    });
+
+    test('con el micrófono concedido sí prepara el reconocedor', () async {
+      gate.status = MicrophonePermissionStatus.granted;
+
+      await GetVoiceCaptureAvailability(recognizer, gate)(localeId: 'es_CO');
+
+      expect(recognizer.prepareCalls, 1);
+    });
+
+    test(
+        'knownPermission concedido prepara aunque la lectura del OS siga '
+        'atrasada tras aceptar el diálogo', () async {
+      gate.currentLag = MicrophonePermissionStatus.denied;
+
+      final result = await GetVoiceCaptureAvailability(recognizer, gate)(
+        localeId: 'es_CO',
+        knownPermission: MicrophonePermissionStatus.granted,
+      );
+
+      final availability = result.getOrElse((_) => throw StateError('Left'));
+      expect(availability.canListen, isTrue);
+      expect(recognizer.prepareCalls, 1);
+    });
   });
 
   group('StartVoiceCapture', () {

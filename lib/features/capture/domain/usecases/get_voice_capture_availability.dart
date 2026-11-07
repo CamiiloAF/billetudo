@@ -13,6 +13,25 @@ import '../repositories/speech_recognizer.dart';
 /// screen and the privacy copy all read the same
 /// [VoiceCaptureAvailability.audioStaysOnDevice] instead of each assuming
 /// recognition is local.
+///
+/// **The microphone is asked for first, and the recognizer is not touched
+/// until it is granted.** That order is load-bearing:
+/// - On Android, `speech_to_text`'s `initialize()` requests `RECORD_AUDIO`
+///   itself (`initializeIfPermitted` → `ActivityCompat.requestPermissions`)
+///   when it is missing. Preparing first would pop the system dialog before
+///   the app's explainer (HU-07), and the permission answer would then belong
+///   to the plugin rather than to [MicrophonePermissionGate], leaving the
+///   availability snapshot below already stale the moment it was built — the
+///   reported "inicializa, pide el permiso, lo acepto y me manda a ajustes".
+/// - On iOS, `initialize()` requests speech-recognition authorization
+///   (`SFSpeechRecognizer.requestAuthorization`), which would also jump ahead
+///   of the explainer.
+///
+/// So while the permission is missing this returns
+/// [SpeechRecognizerAvailability.unprepared] and lets the sheet show the
+/// explainer; once the user grants it, the session starts through
+/// `StartVoiceCapture`, which prepares the recognizer after checking the
+/// permission again.
 @injectable
 class GetVoiceCaptureAvailability {
   const GetVoiceCaptureAvailability(this._recognizer, this._permissionGate);
@@ -37,6 +56,18 @@ class GetVoiceCaptureAvailability {
     MicrophonePermissionStatus? knownPermission,
   }) async {
     final permission = knownPermission ?? await _permissionGate.current();
+    if (permission != MicrophonePermissionStatus.granted) {
+      // See the class doc: preparing here would let the platform prompt on
+      // its own, before the app's explainer. Nothing about the recognizer is
+      // known yet, and the caller only needs the permission to decide between
+      // the explainer and the listening session.
+      return Right(
+        VoiceCaptureAvailability(
+          recognizer: const SpeechRecognizerAvailability.unprepared(),
+          permission: permission,
+        ),
+      );
+    }
     final recognizer = await _recognizer.prepare(localeId: localeId);
     return recognizer.map(
       (availability) => VoiceCaptureAvailability(

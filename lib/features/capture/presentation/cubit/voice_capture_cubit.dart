@@ -172,10 +172,16 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
       return;
     }
     final resolved = availability.fold((_) => null, (value) => value);
-    if (resolved == null || !resolved.recognizer.isAvailable) {
+    if (resolved == null) {
       _emitUnavailable(VoiceCaptureUnavailableReason.recognizer);
       return;
     }
+    // Permission before recognizer: while the microphone is missing,
+    // `GetVoiceCaptureAvailability` deliberately does not initialize the
+    // plugin (that would let the platform ask for the permission on its own —
+    // Android's `speech_to_text` does exactly that — before the explainer).
+    // So the explainer branch must come first, and an unprepared recognizer
+    // here only means "not known yet", not "unavailable".
     if (!resolved.hasPermission) {
       emit(
         state.copyWith(
@@ -183,6 +189,10 @@ class VoiceCaptureCubit extends Cubit<VoiceCaptureState> {
           permission: resolved.permission,
         ),
       );
+      return;
+    }
+    if (!resolved.recognizer.isAvailable) {
+      _emitUnavailable(VoiceCaptureUnavailableReason.recognizer);
       return;
     }
     if (!resolved.recognizer.isLocaleSupported) {

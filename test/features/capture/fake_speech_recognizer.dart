@@ -24,6 +24,7 @@ class FakeSpeechRecognizer implements SpeechRecognizer {
   final StreamController<SpeechRecognitionUpdate> controller =
       StreamController<SpeechRecognitionUpdate>.broadcast();
 
+  int prepareCalls = 0;
   int startCalls = 0;
   int stopCalls = 0;
   int cancelCalls = 0;
@@ -47,6 +48,7 @@ class FakeSpeechRecognizer implements SpeechRecognizer {
   Future<Result<SpeechRecognizerAvailability>> prepare({
     required String localeId,
   }) async {
+    prepareCalls++;
     final failure = prepareFailure;
     return failure != null ? Left(failure) : Right(availability);
   }
