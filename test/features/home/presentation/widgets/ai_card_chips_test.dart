@@ -1,3 +1,4 @@
+import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/features/home/presentation/widgets/ai_card_chips.dart';
 import 'package:billetudo/features/home/presentation/widgets/ai_question_chip.dart';
 import 'package:flutter/material.dart';
@@ -5,44 +6,53 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'pump_widget.dart';
 
-/// Issue #22's "regla de altura dinámica por fila"
-/// (`design-system/billetudo/pages/inicio.md`): the 4 suggested-question
-/// chips prefer 1 line (44px), but `IntrinsicHeight` + `CrossAxisAlignment
-/// .stretch` make every chip in the row share the tallest chip's height —
-/// never mixed heights — even though `AiQuestionChip.maxLines` is now 2 and
-/// each chip's own label can wrap independently.
+/// The Home AI card's no-insight variant. The 4 suggested-question chips were
+/// removed by product request (2026-11-07): the card is now its compact header
+/// (orb + copy + chevron) and the whole body opens the assistant. These tests
+/// pin that removal, because the old chip tests no longer describe the card.
 void main() {
-  testWidgets(
-      'los 4 chips comparten la misma altura, aunque solo alguno '
-      'necesite 2 líneas', (tester) async {
-    await tester.pumpHomeWidget(
-      AiCardChips(
+  Widget chips({ValueChanged<String?>? onAskQuestion}) => AiCardChips(
         budgetChipIsDirectNav: false,
-        onAskQuestion: (_) {},
+        onAskQuestion: onAskQuestion ?? (_) {},
         onCreateBudget: () {},
-      ),
+      );
+
+  testWidgets('ya no renderiza la fila de chips: solo el header',
+      (tester) async {
+    await tester.pumpHomeWidget(chips());
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(AiCardChips)),
     );
 
-    final chipFinder = find.byType(AiQuestionChip);
-    expect(chipFinder, findsNWidgets(4));
+    expect(find.byType(AiQuestionChip), findsNothing);
+    expect(find.text(l10n.homeAiCardTitle), findsOneWidget);
+    expect(find.text(l10n.homeAiCardSubtitle), findsOneWidget);
+  });
 
-    final heights = chipFinder
-        .evaluate()
-        .map((element) => tester.getSize(find.byWidget(element.widget)).height)
-        .toSet();
+  testWidgets('tocar el cuerpo invoca onAskQuestion(null), no una pregunta',
+      (tester) async {
+    String? asked = 'not-called';
+    var called = false;
+    await tester.pumpHomeWidget(
+      chips(onAskQuestion: (question) {
+        asked = question;
+        called = true;
+      }),
+    );
 
-    expect(heights.length, 1);
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(AiCardChips)),
+    );
+    await tester.tap(find.text(l10n.homeAiCardTitle));
+    await tester.pump();
+
+    expect(called, isTrue);
+    expect(asked, isNull);
   });
 
   testWidgets('renderiza sin excepción en tema oscuro', (tester) async {
-    await tester.pumpHomeWidget(
-      AiCardChips(
-        budgetChipIsDirectNav: false,
-        onAskQuestion: (_) {},
-        onCreateBudget: () {},
-      ),
-      brightness: Brightness.dark,
-    );
+    await tester.pumpHomeWidget(chips(), brightness: Brightness.dark);
 
     expect(tester.takeException(), isNull);
   });

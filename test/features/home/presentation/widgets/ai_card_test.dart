@@ -9,9 +9,10 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'pump_widget.dart';
 
 /// Criterio 10: la card de IA resuelve 4 variantes desde `HomeAiInsight?`
-/// (chips / insight sin cola / insight con cola / insight forzado
-/// "crea un presupuesto"). Criterio 11: el chip/CTA "Ayúdame a presupuestar"
-/// nunca llama a `onAskQuestion` — siempre navega directo.
+/// (sin insight / insight sin cola / insight con cola / insight forzado
+/// "crea un presupuesto"). La variante sin insight dejó de mostrar la fila de
+/// chips sugeridos (pedido de producto, 2026-11-07): es una card compacta
+/// (orb + copia + chevron).
 void main() {
   Widget card({
     HomeAiInsight? insight,
@@ -32,89 +33,16 @@ void main() {
         onContinueInsightConversation: onContinueInsightConversation ?? (_) {},
       );
 
-  group('sin insight: variante "con chips" (default, sin importar acceso)', () {
-    testWidgets('muestra 4 AiQuestionChip, el 4to "Ayúdame a presupuestar"',
-        (tester) async {
+  group('sin insight: card compacta (sin fila de chips)', () {
+    testWidgets('no renderiza la fila de chips: solo el header', (tester) async {
       await tester.pumpHomeWidget(card());
       final l10n = AppLocalizations.of(tester.element(find.byType(AiCard)));
 
-      expect(find.byType(AiQuestionChip), findsNWidgets(4));
-      expect(find.text(l10n.homeAiChipBudgetHelp), findsOneWidget);
-    });
-
-    testWidgets(
-        'criterio 11: tocar el chip "Ayúdame a presupuestar" invoca '
-        'onCreateBudget directo, nunca onAskQuestion', (tester) async {
-      // The 4th chip sits past the fold of the chips' horizontal scroller at
-      // the default 800×600 test surface — widen it so the tap actually
-      // lands on the chip instead of empty space off to its right.
-      tester.view.physicalSize = const Size(1400, 800);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-
-      var createBudgetTapped = 0;
-      var askQuestionTapped = 0;
-      await tester.pumpHomeWidget(
-        card(
-          onCreateBudget: () => createBudgetTapped++,
-          onAskQuestion: (_) => askQuestionTapped++,
-        ),
-      );
-      final l10n = AppLocalizations.of(tester.element(find.byType(AiCard)));
-
-      await tester.tap(find.text(l10n.homeAiChipBudgetHelp));
-      await tester.pump();
-
-      expect(createBudgetTapped, 1);
-      expect(askQuestionTapped, 0);
-    });
-
-    testWidgets(
-        'el chip "Ayúdame a presupuestar" muestra la flecha recta con '
-        'budgetChipIsDirectNav=true (va a presupuestos) y la diagonal con '
-        'false (va al chat) — dogfooding fix', (tester) async {
-      await tester.pumpHomeWidget(card());
-
-      final straightChip = tester.widget<AiQuestionChip>(
-        find.byType(AiQuestionChip).last,
-      );
-      expect(straightChip.isDirectNav, isTrue);
-
-      await tester.pumpHomeWidget(card(budgetChipIsDirectNav: false));
-
-      final diagonalChip = tester.widget<AiQuestionChip>(
-        find.byType(AiQuestionChip).last,
-      );
-      expect(diagonalChip.isDirectNav, isFalse);
-    });
-
-    testWidgets('los 4 chips quedan forzados al mismo alto fijo',
-        (tester) async {
-      tester.view.physicalSize = const Size(1400, 800);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-
-      await tester.pumpHomeWidget(card());
-
-      final heights = tester
-          .widgetList<AiQuestionChip>(find.byType(AiQuestionChip))
-          .map((chip) => tester.getSize(find.byWidget(chip)).height)
-          .toSet();
-
-      expect(heights.length, 1);
-    });
-
-    testWidgets(
-        'tocar un chip de conversación invoca onAskQuestion con su '
-        'propia pregunta', (tester) async {
-      String? asked;
-      await tester.pumpHomeWidget(card(onAskQuestion: (q) => asked = q));
-      final l10n = AppLocalizations.of(tester.element(find.byType(AiCard)));
-
-      await tester.tap(find.text(l10n.homeAiChipMonthProgress));
-      await tester.pump();
-
-      expect(asked, l10n.homeAiChipMonthProgress);
+      // Pedido de producto (2026-11-07): los 4 chips sugeridos ya no viven en
+      // la card; la variante sin insight queda como card compacta.
+      expect(find.byType(AiQuestionChip), findsNothing);
+      expect(find.text(l10n.homeAiCardTitle), findsOneWidget);
+      expect(find.text(l10n.homeAiCardSubtitle), findsOneWidget);
     });
 
     testWidgets('tocar el cuerpo de la card invoca onAskQuestion(null)',
