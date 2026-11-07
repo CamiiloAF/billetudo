@@ -188,6 +188,11 @@ class NoticesContentView extends StatelessWidget {
           CapturesSection(
             state: state,
             onDispatch: onDispatchCapture,
+            // Same flow as the duplicate card's "Es la misma", without a
+            // compared transaction to record: `DiscardPendingCapture` only
+            // moves the row to `discarded`, so the page's undo snackbar
+            // restores it for as long as the window lasts.
+            onDiscard: (item) => cubit.discard(item.id),
             onDiscardDuplicate: (item) => cubit.discard(
               item.id,
               duplicateOfTransactionId: item.duplicate?.transactionId,

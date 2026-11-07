@@ -38,22 +38,32 @@ void main() {
         issuerName: issuerName,
       );
 
-  testWidgets('carries the kicker and the issuer line, no button',
+  testWidgets('carries the kicker, the issuer line and no confirm button',
       (tester) async {
     await tester.pumpWidget(
-      appWith(PendingCaptureCard(item: itemWith(), onTap: () {})),
+      appWith(
+        PendingCaptureCard(item: itemWith(), onTap: () {}, onDiscard: () {}),
+      ),
     );
 
     expect(find.text('No suma a tu saldo'), findsOneWidget);
     expect(find.text('Aviso de Nu'), findsOneWidget);
     expect(find.text('Confirmar'), findsNothing);
-    expect(find.byIcon(LucideIcons.chevronRight), findsOneWidget);
+    // The trailing chevron is gone: the discard affordance owns that slot.
+    expect(find.byIcon(LucideIcons.chevronRight), findsNothing);
+    expect(find.byTooltip('Descartar captura'), findsOneWidget);
   });
 
   testWidgets('the whole card is the tap target', (tester) async {
     var taps = 0;
     await tester.pumpWidget(
-      appWith(PendingCaptureCard(item: itemWith(), onTap: () => taps++)),
+      appWith(
+        PendingCaptureCard(
+          item: itemWith(),
+          onTap: () => taps++,
+          onDiscard: () {},
+        ),
+      ),
     );
 
     await tester.tap(find.byType(CaptureCardShell));
@@ -63,7 +73,9 @@ void main() {
   testWidgets('the amount is attenuated and an expense carries no minus sign',
       (tester) async {
     await tester.pumpWidget(
-      appWith(PendingCaptureCard(item: itemWith(), onTap: () {})),
+      appWith(
+        PendingCaptureCard(item: itemWith(), onTap: () {}, onDiscard: () {}),
+      ),
     );
 
     final amount = tester.widget<Text>(find.text(r'$58.470'));
@@ -79,6 +91,7 @@ void main() {
         PendingCaptureCard(
           item: itemWith(entryType: TransactionType.income),
           onTap: () {},
+          onDiscard: () {},
         ),
       ),
     );
@@ -99,6 +112,7 @@ void main() {
                 'NORTE SAS SUCURSAL POBLADO',
           ),
           onTap: () {},
+          onDiscard: () {},
         ),
       ),
     );
@@ -115,7 +129,11 @@ void main() {
       (tester) async {
     await tester.pumpWidget(
       appWith(
-        PendingCaptureCard(item: itemWith(accountName: null), onTap: () {}),
+        PendingCaptureCard(
+          item: itemWith(accountName: null),
+          onTap: () {},
+          onDiscard: () {},
+        ),
       ),
     );
 
@@ -126,7 +144,11 @@ void main() {
       (tester) async {
     await tester.pumpWidget(
       appWith(
-        PendingCaptureCard(item: itemWith(issuerName: null), onTap: () {}),
+        PendingCaptureCard(
+          item: itemWith(issuerName: null),
+          onTap: () {},
+          onDiscard: () {},
+        ),
       ),
     );
 

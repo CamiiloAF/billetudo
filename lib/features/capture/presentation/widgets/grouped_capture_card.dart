@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../cubit/capture_review_item.dart';
 import '../utils/capture_presentation.dart';
 import 'capture_card_shell.dart';
+import 'capture_discard_button.dart';
 import 'capture_guarantee_kicker.dart';
 
 /// `RSizy` — a capture grouped with its wallet/bank counterpart (HU-07,
@@ -27,13 +28,20 @@ import 'capture_guarantee_kicker.dart';
 /// never invents a field neither notification actually sent.
 class GroupedCaptureCard extends StatelessWidget {
   const GroupedCaptureCard(
-      {required this.item, required this.onTap, super.key});
+      {required this.item,
+      required this.onTap,
+      required this.onDiscard,
+      super.key});
 
   final CaptureReviewItem item;
 
   /// Opens the pre-filled transaction form, exactly as an ordinary capture
   /// would. Never writes a `Transaction` on its own.
   final VoidCallback onTap;
+
+  /// Discards the grouped capture (both legs stay untouched in the database;
+  /// only this row moves to `discarded`), reversible from the undo snackbar.
+  final VoidCallback onDiscard;
 
   @override
   Widget build(BuildContext context) {
@@ -109,12 +117,8 @@ class GroupedCaptureCard extends StatelessWidget {
                   color: colors.textSecondary,
                 ),
               ),
-              const SizedBox(width: 10),
-              Icon(
-                LucideIcons.chevronRight,
-                size: 16,
-                color: colors.textSecondary,
-              ),
+              const SizedBox(width: 2),
+              CaptureDiscardButton(onPressed: onDiscard),
             ],
           ),
           const SizedBox(height: 8),

@@ -24,6 +24,7 @@ class CapturesSection extends StatelessWidget {
   const CapturesSection({
     required this.state,
     required this.onDispatch,
+    required this.onDiscard,
     required this.onDiscardDuplicate,
     required this.onExpand,
     super.key,
@@ -34,6 +35,12 @@ class CapturesSection extends StatelessWidget {
   /// Opens the pre-filled transaction form for a capture (also used for a
   /// grouped capture: the merged prefill still comes from a single item).
   final ValueChanged<CaptureReviewItem> onDispatch;
+
+  /// Throws a capture away without dispatching it (HU-05). The page turns the
+  /// cubit's `discardedId` into the undo snackbar; this section only wires the
+  /// button. Not offered on the possible-duplicate card, which already has its
+  /// own "Es la misma" discard with the compared transaction recorded.
+  final ValueChanged<CaptureReviewItem> onDiscard;
 
   /// "Es la misma" on a possible duplicate.
   final ValueChanged<CaptureReviewItem> onDiscardDuplicate;
@@ -84,9 +91,17 @@ class CapturesSection extends StatelessWidget {
               onDifferent: () => onDispatch(item),
             )
           else if (item.isGrouped)
-            GroupedCaptureCard(item: item, onTap: () => onDispatch(item))
+            GroupedCaptureCard(
+              item: item,
+              onTap: () => onDispatch(item),
+              onDiscard: () => onDiscard(item),
+            )
           else
-            PendingCaptureCard(item: item, onTap: () => onDispatch(item)),
+            PendingCaptureCard(
+              item: item,
+              onTap: () => onDispatch(item),
+              onDiscard: () => onDiscard(item),
+            ),
         ],
         if (state.showCaptureBlockRow) ...[
           const SizedBox(height: 10),

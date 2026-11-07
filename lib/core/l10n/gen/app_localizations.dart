@@ -10804,6 +10804,12 @@ abstract class AppLocalizations {
   /// **'Captura descartada'**
   String get captureDiscardedMessage;
 
+  /// No description provided for @captureDiscardAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Descartar captura'**
+  String get captureDiscardAction;
+
   /// No description provided for @captureBellTooltip.
   ///
   /// In es, this message translates to:

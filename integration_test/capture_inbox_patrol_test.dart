@@ -299,10 +299,10 @@ void main() {
       // this fresh install could produce a "Rappi" row otherwise.
       //
       // Generous 15s budget (vs. the 3s default): this route builds
-      // `PendingCapturesCubit`, `TransactionsListCubit` and
-      // `BalanceCarouselCubit` together right after a cold `push` into the
-      // Movimientos branch, and `PendingCapturesCubit` alone combines three
-      // freshly-constructed Drift streams — slow on a software emulator.
+      // `PendingCapturesCubit` and `TransactionsListCubit` together right
+      // after a cold `push` into the Movimientos branch, and
+      // `PendingCapturesCubit` alone combines three freshly-constructed Drift
+      // streams — slow on a software emulator.
       await _pumpUntilFound($, find.text('Rappi'), maxFrames: 150);
       expect(find.text('Pendientes de confirmar'), findsOneWidget);
       expect(find.text('Rappi'), findsOneWidget);
