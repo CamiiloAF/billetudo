@@ -241344,7 +241344,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -241451,68 +241451,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "QdvdU",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "I5BQDW",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "PSVl1",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "k6Bc7z",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "bxKNc",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 4",
-                      "width": 216,
-                      "context": "DESTINO ESPECIAL — no abre el chat (2026-08-27). Este chip navega DIRECTO al formulario de crear presupuesto via la accion onCreateBudget (ya cableada en lib/features/home/presentation/pages/home_page.dart, es la misma ruta que usaba la invitacion vieja del hero antes de este rediseno). NO instancia el flujo normal de chip-abre-chat que usan los demas chips de esta fila/insight.\n\nRAZON: crear presupuesto es Nivel 0 (gratis, sin gate, nunca detras de sesion ni de Premium — CLAUDE.md). El asistente conversacional es beta cerrada hoy y su destino es Premium. Si este chip abriera el chat, la mayoria de usuarios nuevos (sin sesion, y mas adelante sin Premium) se toparia con la hoja de gate (ytvPw) justo en el momento pensado para ensenarles que los presupuestos existen — convertiria un gesto de onboarding gratuito en un intento de venta.\n\nAplica sin importar el estado de sesion/plan del usuario: siempre navegacion directa, nunca chat.\n\nICONO: cambiado a arrow-right (flecha recta) en vez de arrow-up-right (flecha diagonal, la que usan el resto de chips de sugerencia para senalar 'esto abre una conversacion'). Como este chip navega directo en vez de conversar, la flecha recta evita que el usuario espere un chat donde en realidad hay una navegacion directa. Verificado por render (export PNG): arrow-right existe y dibuja correctamente.",
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "Ayúdame a presupuestar"
-                        },
-                        "hBBMt": {
-                          "icon": "arrow-right"
-                        }
-                      }
                     }
                   ]
                 }
@@ -241953,7 +241891,7 @@
                   "name": "AI Card · Grande",
                   "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.",
                   "width": "fill_container",
-                  "height": 137,
+                  "height": 70,
                   "fill": "$surface",
                   "cornerRadius": 24,
                   "stroke": "$border",
@@ -242060,52 +241998,6 @@
                           "icon": "chevron-right",
                           "library": "lucide",
                           "fill": "$primary-on-soft"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "hKFQy",
-                      "name": "Chips Scroll Row",
-                      "clip": true,
-                      "width": "fill_container",
-                      "gap": 8,
-                      "children": [
-                        {
-                          "id": "r5mNr",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 1",
-                          "width": 232,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿En qué se me fue la plata?"
-                            }
-                          }
-                        },
-                        {
-                          "id": "tfrdi",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 2",
-                          "width": 268,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Cómo voy con el presupuesto?"
-                            }
-                          }
-                        },
-                        {
-                          "id": "i56Z97",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 3",
-                          "width": 248,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Puedo ahorrar algo este mes?"
-                            }
-                          }
                         }
                       ]
                     }
@@ -242825,7 +242717,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -242932,52 +242824,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "x8al9v",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "OvOg3",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "NVeKo",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "CTsti",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        }
-                      }
                     }
                   ]
                 }
@@ -243681,7 +243527,7 @@
                   "name": "AI Card · Grande",
                   "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.",
                   "width": "fill_container",
-                  "height": 137,
+                  "height": 70,
                   "fill": "$surface",
                   "cornerRadius": 24,
                   "stroke": "$border",
@@ -243788,52 +243634,6 @@
                           "icon": "chevron-right",
                           "library": "lucide",
                           "fill": "$primary-on-soft"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "QyPBn",
-                      "name": "Chips Scroll Row",
-                      "clip": true,
-                      "width": "fill_container",
-                      "gap": 8,
-                      "children": [
-                        {
-                          "id": "E3ZMwC",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 1",
-                          "width": 232,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿En qué se me fue la plata?"
-                            }
-                          }
-                        },
-                        {
-                          "id": "c92HNo",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 2",
-                          "width": 268,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Cómo voy con el presupuesto?"
-                            }
-                          }
-                        },
-                        {
-                          "id": "T99Vf",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 3",
-                          "width": 248,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Puedo ahorrar algo este mes?"
-                            }
-                          }
                         }
                       ]
                     }
@@ -246280,7 +246080,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -246387,52 +246187,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "zo5af",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "xE3Cd",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "iPjJY",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "vq7ot",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        }
-                      }
                     }
                   ]
                 }
@@ -246999,7 +246753,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -247106,52 +246860,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "PMplg",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "sZ7DV",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "qiM9U",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "eCTBQ",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        }
-                      }
                     }
                   ]
                 }
@@ -248756,7 +248464,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -248863,52 +248571,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "G0uiu",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "fHOyZ",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "aNiCk",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "RHD4Z",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        }
-                      }
                     }
                   ]
                 }
@@ -249342,7 +249004,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -249449,52 +249111,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "UlMCq",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "o8fkNy",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "O0Q9y",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "QDoz8",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        }
-                      }
                     }
                   ]
                 }
@@ -251740,7 +251356,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -251847,61 +251463,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "p301p",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "ZwA0h",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "d0kGP",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "A9q6Xp",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
                     }
                   ]
                 }
@@ -252336,7 +251897,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -252443,61 +252004,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "nONVa",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "Xzf6v",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "k8cwM",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "VOsJJ",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
                     }
                   ]
                 }
@@ -252927,7 +252433,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -253034,61 +252540,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "GodLo",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "UxFlP",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "XYI88",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "fq77o",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
                     }
                   ]
                 }
@@ -256084,7 +255535,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -256191,78 +255642,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "z1zU9",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "lTjKF",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "rFJ9T",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "kPzvZ",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "dQKqh",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 4",
-                      "width": 216,
-                      "context": "DESTINO ESPECIAL — no abre el chat (2026-08-27). Este chip navega DIRECTO al formulario de crear presupuesto via la accion onCreateBudget (ya cableada en lib/features/home/presentation/pages/home_page.dart, es la misma ruta que usaba la invitacion vieja del hero antes de este rediseno). NO instancia el flujo normal de chip-abre-chat que usan los demas chips de esta fila/insight.\n\nRAZON: crear presupuesto es Nivel 0 (gratis, sin gate, nunca detras de sesion ni de Premium — CLAUDE.md). El asistente conversacional es beta cerrada hoy y su destino es Premium. Si este chip abriera el chat, la mayoria de usuarios nuevos (sin sesion, y mas adelante sin Premium) se toparia con la hoja de gate (ytvPw) justo en el momento pensado para ensenarles que los presupuestos existen — convertiria un gesto de onboarding gratuito en un intento de venta.\n\nAplica sin importar el estado de sesion/plan del usuario: siempre navegacion directa, nunca chat.\n\nICONO: cambiado a arrow-right (flecha recta) en vez de arrow-up-right (flecha diagonal, la que usan el resto de chips de sugerencia para senalar 'esto abre una conversacion'). Como este chip navega directo en vez de conversar, la flecha recta evita que el usuario espere un chat donde en realidad hay una navegacion directa. Verificado por render (export PNG): arrow-right existe y dibuja correctamente.",
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "Ayúdame a presupuestar"
-                        },
-                        "hBBMt": {
-                          "icon": "arrow-right",
-                          "fill": "$text-primary"
-                        }
-                      }
                     }
                   ]
                 }
@@ -257891,7 +257270,7 @@
                   "name": "AI Card · Grande",
                   "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.",
                   "width": "fill_container",
-                  "height": 137,
+                  "height": 70,
                   "fill": "$surface",
                   "cornerRadius": 24,
                   "stroke": "$border",
@@ -257998,61 +257377,6 @@
                           "icon": "chevron-right",
                           "library": "lucide",
                           "fill": "$primary-on-soft"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "P6rGnO",
-                      "name": "Chips Scroll Row",
-                      "clip": true,
-                      "width": "fill_container",
-                      "gap": 8,
-                      "children": [
-                        {
-                          "id": "TG691",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 1",
-                          "width": 232,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿En qué se me fue la plata?"
-                            },
-                            "hBBMt": {
-                              "fill": "$text-primary"
-                            }
-                          }
-                        },
-                        {
-                          "id": "b1gyI",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 2",
-                          "width": 268,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Cómo voy con el presupuesto?"
-                            },
-                            "hBBMt": {
-                              "fill": "$text-primary"
-                            }
-                          }
-                        },
-                        {
-                          "id": "tSZHd",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 3",
-                          "width": 248,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Puedo ahorrar algo este mes?"
-                            },
-                            "hBBMt": {
-                              "fill": "$text-primary"
-                            }
-                          }
                         }
                       ]
                     }
@@ -258628,7 +257952,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -258735,61 +258059,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "TmKEX",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "Injvk",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "U4jqg",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "PGsWj",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
                     }
                   ]
                 }
@@ -259219,7 +258488,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -259326,61 +258595,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "M3wBEh",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "CjC1A",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "g7uDq",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "pUEQt",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
                     }
                   ]
                 }
@@ -260087,7 +259301,7 @@
                   "name": "AI Card · Grande",
                   "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.",
                   "width": "fill_container",
-                  "height": 137,
+                  "height": 70,
                   "fill": "$surface",
                   "cornerRadius": 24,
                   "stroke": "$border",
@@ -260194,61 +259408,6 @@
                           "icon": "chevron-right",
                           "library": "lucide",
                           "fill": "$primary-on-soft"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "NUyqz",
-                      "name": "Chips Scroll Row",
-                      "clip": true,
-                      "width": "fill_container",
-                      "gap": 8,
-                      "children": [
-                        {
-                          "id": "Wer8O",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 1",
-                          "width": 232,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿En qué se me fue la plata?"
-                            },
-                            "hBBMt": {
-                              "fill": "$text-primary"
-                            }
-                          }
-                        },
-                        {
-                          "id": "DUg2y",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 2",
-                          "width": 268,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Cómo voy con el presupuesto?"
-                            },
-                            "hBBMt": {
-                              "fill": "$text-primary"
-                            }
-                          }
-                        },
-                        {
-                          "id": "KXlds",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 3",
-                          "width": 248,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Puedo ahorrar algo este mes?"
-                            },
-                            "hBBMt": {
-                              "fill": "$text-primary"
-                            }
-                          }
                         }
                       ]
                     }
@@ -261496,7 +260655,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -261603,68 +260762,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "z6koS",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "rgYTu",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "jY00e",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "oBTZh",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "ea7Zw",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 4",
-                      "width": 216,
-                      "context": "DESTINO ESPECIAL — no abre el chat (2026-08-27). Este chip navega DIRECTO al formulario de crear presupuesto via la accion onCreateBudget (ya cableada en lib/features/home/presentation/pages/home_page.dart, es la misma ruta que usaba la invitacion vieja del hero antes de este rediseno). NO instancia el flujo normal de chip-abre-chat que usan los demas chips de esta fila/insight.\n\nRAZON: crear presupuesto es Nivel 0 (gratis, sin gate, nunca detras de sesion ni de Premium — CLAUDE.md). El asistente conversacional es beta cerrada hoy y su destino es Premium. Si este chip abriera el chat, la mayoria de usuarios nuevos (sin sesion, y mas adelante sin Premium) se toparia con la hoja de gate (ytvPw) justo en el momento pensado para ensenarles que los presupuestos existen — convertiria un gesto de onboarding gratuito en un intento de venta.\n\nAplica sin importar el estado de sesion/plan del usuario: siempre navegacion directa, nunca chat.\n\nICONO: cambiado a arrow-right (flecha recta) en vez de arrow-up-right (flecha diagonal, la que usan el resto de chips de sugerencia para senalar 'esto abre una conversacion'). Como este chip navega directo en vez de conversar, la flecha recta evita que el usuario espere un chat donde en realidad hay una navegacion directa. Verificado por render (export PNG): arrow-right existe y dibuja correctamente.",
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "Ayúdame a presupuestar"
-                        },
-                        "hBBMt": {
-                          "icon": "arrow-right"
-                        }
-                      }
                     }
                   ]
                 }
@@ -262153,7 +261250,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -262260,78 +261357,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "LC98I",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "Vn0hJ",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "D4CoG",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "lcsUt",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "bYxPA",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 4",
-                      "width": 216,
-                      "context": "DESTINO ESPECIAL — no abre el chat (2026-08-27). Este chip navega DIRECTO al formulario de crear presupuesto via la accion onCreateBudget (ya cableada en lib/features/home/presentation/pages/home_page.dart, es la misma ruta que usaba la invitacion vieja del hero antes de este rediseno). NO instancia el flujo normal de chip-abre-chat que usan los demas chips de esta fila/insight.\n\nRAZON: crear presupuesto es Nivel 0 (gratis, sin gate, nunca detras de sesion ni de Premium — CLAUDE.md). El asistente conversacional es beta cerrada hoy y su destino es Premium. Si este chip abriera el chat, la mayoria de usuarios nuevos (sin sesion, y mas adelante sin Premium) se toparia con la hoja de gate (ytvPw) justo en el momento pensado para ensenarles que los presupuestos existen — convertiria un gesto de onboarding gratuito en un intento de venta.\n\nAplica sin importar el estado de sesion/plan del usuario: siempre navegacion directa, nunca chat.\n\nICONO: cambiado a arrow-right (flecha recta) en vez de arrow-up-right (flecha diagonal, la que usan el resto de chips de sugerencia para senalar 'esto abre una conversacion'). Como este chip navega directo en vez de conversar, la flecha recta evita que el usuario espere un chat donde en realidad hay una navegacion directa. Verificado por render (export PNG): arrow-right existe y dibuja correctamente.",
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "Ayúdame a presupuestar"
-                        },
-                        "hBBMt": {
-                          "icon": "arrow-right",
-                          "fill": "$text-primary"
-                        }
-                      }
                     }
                   ]
                 }
@@ -263171,7 +262196,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -263278,52 +262303,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "YfZl7",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "S8nek",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "QQFcA",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "Fj7CL",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        }
-                      }
                     }
                   ]
                 }
@@ -266616,7 +265595,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -266723,52 +265702,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "Cduu3",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "mKxLy",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "wVdeV",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "fOM5Q",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        }
-                      }
                     }
                   ]
                 }
@@ -267229,7 +266162,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -267336,52 +266269,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "YXAU8",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "tSSRI",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "l8ddJ",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "FBiwq",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        }
-                      }
                     }
                   ]
                 }
@@ -267921,7 +266808,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -268028,52 +266915,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "r57hH",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "SpyYs",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "hVCoy",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "UFqYl",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        }
-                      }
                     }
                   ]
                 }
@@ -268864,7 +267705,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -268971,61 +267812,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "EjWY5",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "zh355",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "RFsqV",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "g2xTrr",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
                     }
                   ]
                 }
@@ -269489,7 +268275,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -269596,61 +268382,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "Tv7en",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "Wsis2",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "K67r6",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "BTD27",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
                     }
                   ]
                 }
@@ -270193,7 +268924,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -270300,61 +269031,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "Va1Xh",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "l8Pn0s",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "n2AJlS",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
-                    },
-                    {
-                      "id": "T2QYVU",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        },
-                        "hBBMt": {
-                          "fill": "$text-primary"
-                        }
-                      }
                     }
                   ]
                 }
@@ -271904,7 +270580,7 @@
               "name": "AI Card · Grande",
               "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.\n\nALTURA MINIMA COMUN 137px (fijada 2026-08-26). El estado de chips medía 126px y el de insight 137px: al alternar chips<->insight en el mismo slot, TODO lo de abajo (Acceso rapido, Movimientos) saltaba 11px. Los dos estados de CARD comparten ahora height:137, asi que el slot 2 no cambia de tamaño al cambiar de estado. NO aplica al tercer estado (sin insight y sin acceso), que a proposito NO es una card sino una fila de una linea de ~50px.",
               "width": "fill_container",
-              "height": 137,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -272011,52 +270687,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "dKS4n",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "QpCCh",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 232,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "vH2Jj",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 268,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?"
-                        }
-                      }
-                    },
-                    {
-                      "id": "j3478",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 248,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?"
-                        }
-                      }
                     }
                   ]
                 }
@@ -273462,7 +272092,7 @@
               "name": "AI Card · Grande",
               "context": "VARIANTE A, APROBADA — Ancho generoso + wrap a 2 líneas honesto, con regla de altura de fila. Mismo patrón de scroll horizontal que antes, pero: (1) fontSize del label sube de 13 a 14 y peso de 500 a 600 (mas legible, ya en el componente base `tMqvn`); (2) el Chip 2 se deja deliberadamente angosto para DEMOSTRAR el wrap a 2 lineas real que MASTER.md pide (maxLines:2, sin forzar 1 linea); (3) la altura de la card sube de 137 a 152 para dar espacio real a esa 2a linea sin recortar contenido.\n\nREGLA DE ALTURA POR FILA (ver detalle completo en `tMqvn`): como el Chip 2 necesita 2 lineas, TODOS los chips visibles de esta fila (Chip 1, 3 y 4, que en 1 linea cabrian en 44px) se estiran a la MISMA altura de 2 lineas — nunca alturas mixtas dentro de la fila. En Pencil esto sale gratis dejando `alignItems` sin fijar en 'Chips Scroll Row' (`XHTS0`, default = stretch al hijo mas alto); en Flutter equivale a envolver la fila en `IntrinsicHeight`/stretch, calculado en runtime segun el chip mas alto visible en cada scroll de 4 (ver nota completa para flutter-dev en `tMqvn`).",
               "width": "fill_container",
-              "height": 152,
+              "height": 70,
               "fill": "$surface",
               "cornerRadius": 24,
               "stroke": "$border",
@@ -273569,76 +272199,6 @@
                       "icon": "chevron-right",
                       "library": "lucide",
                       "fill": "$primary-on-soft"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "XHTS0",
-                  "name": "Chips Scroll Row",
-                  "clip": true,
-                  "width": "fill_container",
-                  "gap": 8,
-                  "children": [
-                    {
-                      "id": "cNQB3",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 1",
-                      "width": 224,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿En qué se me fue la plata?",
-                          "fontSize": 14,
-                          "fontWeight": "600"
-                        }
-                      }
-                    },
-                    {
-                      "id": "V2aLbh",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 2",
-                      "width": 186,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Cómo voy con el presupuesto?",
-                          "fontSize": 14,
-                          "fontWeight": "600"
-                        }
-                      }
-                    },
-                    {
-                      "id": "CpNdu",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 3",
-                      "width": 238,
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "¿Puedo ahorrar algo este mes?",
-                          "fontSize": 14,
-                          "fontWeight": "600"
-                        }
-                      }
-                    },
-                    {
-                      "id": "cxOcq",
-                      "type": "ref",
-                      "ref": "tMqvn",
-                      "name": "Chip 4",
-                      "width": 210,
-                      "context": "DESTINO ESPECIAL — no abre el chat (2026-08-27). Este chip navega DIRECTO al formulario de crear presupuesto via la accion onCreateBudget (ya cableada en lib/features/home/presentation/pages/home_page.dart, es la misma ruta que usaba la invitacion vieja del hero antes de este rediseno). NO instancia el flujo normal de chip-abre-chat que usan los demas chips de esta fila/insight.\n\nRAZON: crear presupuesto es Nivel 0 (gratis, sin gate, nunca detras de sesion ni de Premium — CLAUDE.md). El asistente conversacional es beta cerrada hoy y su destino es Premium. Si este chip abriera el chat, la mayoria de usuarios nuevos (sin sesion, y mas adelante sin Premium) se toparia con la hoja de gate (ytvPw) justo en el momento pensado para ensenarles que los presupuestos existen — convertiria un gesto de onboarding gratuito en un intento de venta.\n\nAplica sin importar el estado de sesion/plan del usuario: siempre navegacion directa, nunca chat.\n\nICONO: cambiado a arrow-right (flecha recta) en vez de arrow-up-right (flecha diagonal, la que usan el resto de chips de sugerencia para senalar 'esto abre una conversacion'). Como este chip navega directo en vez de conversar, la flecha recta evita que el usuario espere un chat donde en realidad hay una navegacion directa. Verificado por render (export PNG): arrow-right existe y dibuja correctamente.",
-                      "descendants": {
-                        "tHBsx": {
-                          "content": "Ayúdame a presupuestar",
-                          "fontSize": 14,
-                          "fontWeight": "600"
-                        },
-                        "hBBMt": {
-                          "icon": "arrow-right"
-                        }
-                      }
                     }
                   ]
                 }
@@ -276254,7 +274814,7 @@
                   "name": "AI Card · Grande",
                   "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.",
                   "width": "fill_container",
-                  "height": 137,
+                  "height": 70,
                   "fill": "$surface",
                   "cornerRadius": 24,
                   "stroke": "$border",
@@ -276361,52 +274921,6 @@
                           "icon": "chevron-right",
                           "library": "lucide",
                           "fill": "$primary-on-soft"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "xUQty",
-                      "name": "Chips Scroll Row",
-                      "clip": true,
-                      "width": "fill_container",
-                      "gap": 8,
-                      "children": [
-                        {
-                          "id": "fPsyO",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 1",
-                          "width": 232,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿En qué se me fue la plata?"
-                            }
-                          }
-                        },
-                        {
-                          "id": "jVN6f",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 2",
-                          "width": 268,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Cómo voy con el presupuesto?"
-                            }
-                          }
-                        },
-                        {
-                          "id": "C93K0",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 3",
-                          "width": 248,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Puedo ahorrar algo este mes?"
-                            }
-                          }
                         }
                       ]
                     }
@@ -293872,7 +292386,7 @@
                   "name": "AI Card · Grande",
                   "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.",
                   "width": "fill_container",
-                  "height": 137,
+                  "height": 70,
                   "fill": "$surface",
                   "cornerRadius": 24,
                   "stroke": "$border",
@@ -293979,52 +292493,6 @@
                           "icon": "chevron-right",
                           "library": "lucide",
                           "fill": "$primary-on-soft"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "nu7Kf",
-                      "name": "Chips Scroll Row",
-                      "clip": true,
-                      "width": "fill_container",
-                      "gap": 8,
-                      "children": [
-                        {
-                          "id": "PbKaq",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 1",
-                          "width": 232,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿En qué se me fue la plata?"
-                            }
-                          }
-                        },
-                        {
-                          "id": "ucRGe",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 2",
-                          "width": 268,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Cómo voy con el presupuesto?"
-                            }
-                          }
-                        },
-                        {
-                          "id": "aSGhi",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 3",
-                          "width": 248,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Puedo ahorrar algo este mes?"
-                            }
-                          }
                         }
                       ]
                     }
@@ -294774,7 +293242,7 @@
                   "name": "AI Card · Grande",
                   "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.",
                   "width": "fill_container",
-                  "height": 137,
+                  "height": 70,
                   "fill": "$surface",
                   "cornerRadius": 24,
                   "stroke": "$border",
@@ -294881,52 +293349,6 @@
                           "icon": "chevron-right",
                           "library": "lucide",
                           "fill": "$primary-on-soft"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "hJZGs",
-                      "name": "Chips Scroll Row",
-                      "clip": true,
-                      "width": "fill_container",
-                      "gap": 8,
-                      "children": [
-                        {
-                          "id": "Z9lLR",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 1",
-                          "width": 232,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿En qué se me fue la plata?"
-                            }
-                          }
-                        },
-                        {
-                          "id": "Ubpyv",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 2",
-                          "width": 268,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Cómo voy con el presupuesto?"
-                            }
-                          }
-                        },
-                        {
-                          "id": "exyOv",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 3",
-                          "width": 248,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Puedo ahorrar algo este mes?"
-                            }
-                          }
                         }
                       ]
                     }
@@ -295694,7 +294116,7 @@
                   "name": "AI Card · Grande",
                   "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.",
                   "width": "fill_container",
-                  "height": 137,
+                  "height": 70,
                   "fill": "$surface",
                   "cornerRadius": 24,
                   "stroke": "$border",
@@ -295801,52 +294223,6 @@
                           "icon": "chevron-right",
                           "library": "lucide",
                           "fill": "$primary-on-soft"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "aUENc",
-                      "name": "Chips Scroll Row",
-                      "clip": true,
-                      "width": "fill_container",
-                      "gap": 8,
-                      "children": [
-                        {
-                          "id": "tjPi9",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 1",
-                          "width": 232,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿En qué se me fue la plata?"
-                            }
-                          }
-                        },
-                        {
-                          "id": "auvam",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 2",
-                          "width": 268,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Cómo voy con el presupuesto?"
-                            }
-                          }
-                        },
-                        {
-                          "id": "me6p3",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 3",
-                          "width": 248,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Puedo ahorrar algo este mes?"
-                            }
-                          }
                         }
                       ]
                     }
@@ -296534,7 +294910,7 @@
                   "name": "AI Card · Grande",
                   "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.",
                   "width": "fill_container",
-                  "height": 137,
+                  "height": 70,
                   "fill": "$surface",
                   "cornerRadius": 24,
                   "stroke": "$border",
@@ -296641,52 +295017,6 @@
                           "icon": "chevron-right",
                           "library": "lucide",
                           "fill": "$primary-on-soft"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "MaTdK",
-                      "name": "Chips Scroll Row",
-                      "clip": true,
-                      "width": "fill_container",
-                      "gap": 8,
-                      "children": [
-                        {
-                          "id": "V1HeNg",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 1",
-                          "width": 232,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿En qué se me fue la plata?"
-                            }
-                          }
-                        },
-                        {
-                          "id": "m8SAd",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 2",
-                          "width": 268,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Cómo voy con el presupuesto?"
-                            }
-                          }
-                        },
-                        {
-                          "id": "VaycG",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 3",
-                          "width": 248,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Puedo ahorrar algo este mes?"
-                            }
-                          }
                         }
                       ]
                     }
@@ -297439,7 +295769,7 @@
                   "name": "AI Card · Grande",
                   "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.",
                   "width": "fill_container",
-                  "height": 137,
+                  "height": 70,
                   "fill": "$surface",
                   "cornerRadius": 24,
                   "stroke": "$border",
@@ -297546,52 +295876,6 @@
                           "icon": "chevron-right",
                           "library": "lucide",
                           "fill": "$primary-on-soft"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "qtIly",
-                      "name": "Chips Scroll Row",
-                      "clip": true,
-                      "width": "fill_container",
-                      "gap": 8,
-                      "children": [
-                        {
-                          "id": "I2lvOZ",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 1",
-                          "width": 232,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿En qué se me fue la plata?"
-                            }
-                          }
-                        },
-                        {
-                          "id": "pLuld",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 2",
-                          "width": 268,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Cómo voy con el presupuesto?"
-                            }
-                          }
-                        },
-                        {
-                          "id": "kKmMC",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 3",
-                          "width": 248,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Puedo ahorrar algo este mes?"
-                            }
-                          }
                         }
                       ]
                     }
@@ -298362,7 +296646,7 @@
                   "name": "AI Card · Grande",
                   "context": "Opción 2: card grande de IA en el slot 2. Orbe + título/subtítulo + fila de chips de sugerencia con scroll horizontal (clip:true simula el scroll, mismo patrón que Acceso rápido). Tocar el cuerpo abre el chat vacío; tocar una chip abre el chat con esa pregunta ya enviada. Libera espacio eliminando la tira Mis cuentas.",
                   "width": "fill_container",
-                  "height": 137,
+                  "height": 70,
                   "fill": "$surface",
                   "cornerRadius": 24,
                   "stroke": "$border",
@@ -298469,52 +296753,6 @@
                           "icon": "chevron-right",
                           "library": "lucide",
                           "fill": "$primary-on-soft"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "t55dPX",
-                      "name": "Chips Scroll Row",
-                      "clip": true,
-                      "width": "fill_container",
-                      "gap": 8,
-                      "children": [
-                        {
-                          "id": "P28oq0",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 1",
-                          "width": 232,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿En qué se me fue la plata?"
-                            }
-                          }
-                        },
-                        {
-                          "id": "U317l",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 2",
-                          "width": 268,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Cómo voy con el presupuesto?"
-                            }
-                          }
-                        },
-                        {
-                          "id": "fIdPh",
-                          "type": "ref",
-                          "ref": "tMqvn",
-                          "name": "Chip 3",
-                          "width": 248,
-                          "descendants": {
-                            "tHBsx": {
-                              "content": "¿Puedo ahorrar algo este mes?"
-                            }
-                          }
                         }
                       ]
                     }
@@ -309858,6 +308096,577 @@
               ]
             }
           }
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "ZYeF4",
+      "x": 90350,
+      "y": -4200,
+      "name": "CAPTURAS · Descartar con swipe — C (Claro)",
+      "width": 430,
+      "height": 470,
+      "fill": "$background",
+      "cornerRadius": 24,
+      "layout": "vertical",
+      "gap": 16,
+      "padding": 24,
+      "children": [
+        {
+          "type": "text",
+          "id": "T0n0JZ",
+          "name": "Titulo",
+          "fill": "$text-primary",
+          "content": "Capturas por confirmar · descartar con swipe",
+          "fontFamily": "$font-body",
+          "fontSize": 16,
+          "fontWeight": "700"
+        },
+        {
+          "type": "text",
+          "id": "l1pf3",
+          "name": "Nota",
+          "fill": "$text-secondary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Propuesta C aprobada: la tarjeta en reposo no cambia. El gesto revela la acción.",
+          "lineHeight": 1.4,
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "500"
+        },
+        {
+          "type": "text",
+          "id": "K5cTFh",
+          "name": "Label reposo",
+          "fill": "$text-primary",
+          "content": "1 · Reposo (sin cambios)",
+          "fontFamily": "$font-body",
+          "fontSize": 12,
+          "fontWeight": "700"
+        },
+        {
+          "id": "Imprr",
+          "type": "ref",
+          "ref": "skjlg",
+          "name": "Reposo · captura real"
+        },
+        {
+          "type": "text",
+          "id": "PLW5k",
+          "name": "Label deslizando",
+          "fill": "$text-primary",
+          "content": "2 · Deslizando a la izquierda (revela la acción)",
+          "fontFamily": "$font-body",
+          "fontSize": 12,
+          "fontWeight": "700"
+        },
+        {
+          "type": "frame",
+          "id": "CEgMG",
+          "name": "Swipe · estado",
+          "clip": true,
+          "width": 350,
+          "height": 81,
+          "fill": "$expense",
+          "cornerRadius": 16,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "MKMWy",
+              "x": 254,
+              "y": 0,
+              "name": "Swipe · Action panel",
+              "width": 96,
+              "height": 81,
+              "fill": "$expense",
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "v4X95",
+                  "name": "Swipe · Trash",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "trash-2",
+                  "library": "lucide",
+                  "fill": "$on-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "HQdP9",
+                  "name": "Swipe · Label",
+                  "fill": "$on-primary",
+                  "content": "Descartar",
+                  "fontFamily": "$font-body",
+                  "fontSize": 11,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "BSjYA",
+              "x": -96,
+              "y": 0,
+              "name": "Swipe · Card",
+              "clip": true,
+              "width": 350,
+              "fill": "$surface",
+              "cornerRadius": 16,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "K2Oeb",
+                  "name": "Swipe · Rail",
+                  "context": "Carril de acento del borde izquierdo, 4px $primary-on-soft. Alto fijo por limitacion de Pencil; en Flutter es Border(left: BorderSide(width: 4)) sin alto fijo.",
+                  "width": 4,
+                  "height": 81,
+                  "fill": "$primary-on-soft"
+                },
+                {
+                  "type": "frame",
+                  "id": "zs2Iu",
+                  "name": "Swipe · Body",
+                  "width": "fill_container",
+                  "gap": 10,
+                  "padding": 14,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "mlrJW",
+                      "name": "Mid",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "kPRbA",
+                          "name": "Merchant",
+                          "fill": "$text-primary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "TIENDA D1 SANTA ROSA",
+                          "lineHeight": 1.3,
+                          "fontFamily": "$font-body",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "PwBhI",
+                          "name": "Sub",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Cuenta Nu · Hoy, 8:32 a. m.",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "n7FRX",
+                          "name": "Status Row",
+                          "width": "fill_container",
+                          "gap": 5,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "V7mUx",
+                              "name": "Kicker",
+                              "context": "Garantia explicita, no metadata: 11/700 (MASTER reserva 10px para metadata y esta linea NO lo es). El texto es 'No suma a tu saldo' — nunca 'Sin confirmar', que describe un estado administrativo y no enuncia la garantia que exige HU-04.",
+                              "fill": "$primary-on-soft-strong",
+                              "content": "No suma a tu saldo",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "FtHO1",
+                              "name": "Dot",
+                              "fill": "$text-secondary",
+                              "content": "·",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "kM9fb",
+                              "name": "Issuer",
+                              "fill": "$text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Aviso de Nu",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "nKnLF",
+                      "name": "Right",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "alignItems": "end",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "A5sZ6",
+                          "name": "Amount",
+                          "context": "Monto SIEMPRE en $text-secondary 15/600. Una transaccion ya registrada usa $text-primary 700 — esa diferencia es una de las cinco senales de que esto no es dinero.",
+                          "fill": "$text-secondary",
+                          "content": "$58.470",
+                          "fontFamily": "$font-body",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "icon",
+                      "id": "V2Okps",
+                      "name": "Chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-right",
+                      "library": "lucide",
+                      "fill": "$text-secondary"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "XoRLy",
+          "name": "Comportamiento",
+          "fill": "$text-secondary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Umbral ~35% del ancho. Al soltar: descarta y muestra el snackbar “Captura descartada · Deshacer” (5 s). Solo de derecha a izquierda. Acción 96x81 (tocable ≥44).",
+          "lineHeight": 1.4,
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "500"
+        },
+        {
+          "type": "text",
+          "id": "k4qu8S",
+          "name": "Alcance",
+          "fill": "$text-secondary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Aplica a captura simple (skjlg) y agrupada (RSizy). La tarjeta de posible duplicado no lleva swipe: ya tiene “Es la misma”.",
+          "lineHeight": 1.4,
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "500"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "l84dAP",
+      "x": 90350,
+      "y": -3650,
+      "name": "CAPTURAS · Descartar con swipe — C (Oscuro)",
+      "theme": {
+        "mode": "dark"
+      },
+      "width": 430,
+      "height": 470,
+      "fill": "$background",
+      "cornerRadius": 24,
+      "layout": "vertical",
+      "gap": 16,
+      "padding": 24,
+      "children": [
+        {
+          "type": "text",
+          "id": "ixAFf",
+          "name": "Titulo",
+          "fill": "$text-primary",
+          "content": "Capturas por confirmar · descartar con swipe",
+          "fontFamily": "$font-body",
+          "fontSize": 16,
+          "fontWeight": "700"
+        },
+        {
+          "type": "text",
+          "id": "PkRsa",
+          "name": "Nota",
+          "fill": "$text-secondary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Propuesta C aprobada: la tarjeta en reposo no cambia. El gesto revela la acción.",
+          "lineHeight": 1.4,
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "500"
+        },
+        {
+          "type": "text",
+          "id": "BnVzM",
+          "name": "Label reposo",
+          "fill": "$text-primary",
+          "content": "1 · Reposo (sin cambios)",
+          "fontFamily": "$font-body",
+          "fontSize": 12,
+          "fontWeight": "700"
+        },
+        {
+          "id": "k3osu",
+          "type": "ref",
+          "ref": "skjlg",
+          "name": "Reposo · captura real"
+        },
+        {
+          "type": "text",
+          "id": "OD0Ws",
+          "name": "Label deslizando",
+          "fill": "$text-primary",
+          "content": "2 · Deslizando a la izquierda (revela la acción)",
+          "fontFamily": "$font-body",
+          "fontSize": 12,
+          "fontWeight": "700"
+        },
+        {
+          "type": "frame",
+          "id": "VHaHq",
+          "name": "Swipe · estado",
+          "clip": true,
+          "width": 350,
+          "height": 81,
+          "fill": "$expense",
+          "cornerRadius": 16,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "zAWCe",
+              "x": 254,
+              "y": 0,
+              "name": "Swipe · Action panel",
+              "width": 96,
+              "height": 81,
+              "fill": "$expense",
+              "layout": "vertical",
+              "gap": 3,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "va47S",
+                  "name": "Swipe · Trash",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "trash-2",
+                  "library": "lucide",
+                  "fill": "$on-primary"
+                },
+                {
+                  "type": "text",
+                  "id": "e4TsHR",
+                  "name": "Swipe · Label",
+                  "fill": "$on-primary",
+                  "content": "Descartar",
+                  "fontFamily": "$font-body",
+                  "fontSize": 11,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Nco6s",
+              "x": -96,
+              "y": 0,
+              "name": "Swipe · Card",
+              "clip": true,
+              "width": 350,
+              "fill": "$surface",
+              "cornerRadius": 16,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "hm2tV",
+                  "name": "Swipe · Rail",
+                  "context": "Carril de acento del borde izquierdo, 4px $primary-on-soft. Alto fijo por limitacion de Pencil; en Flutter es Border(left: BorderSide(width: 4)) sin alto fijo.",
+                  "width": 4,
+                  "height": 81,
+                  "fill": "$primary-on-soft"
+                },
+                {
+                  "type": "frame",
+                  "id": "D6stJ",
+                  "name": "Swipe · Body",
+                  "width": "fill_container",
+                  "gap": 10,
+                  "padding": 14,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "tPaI5",
+                      "name": "Mid",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "txQK0",
+                          "name": "Merchant",
+                          "fill": "$text-primary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "TIENDA D1 SANTA ROSA",
+                          "lineHeight": 1.3,
+                          "fontFamily": "$font-body",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "tYT0x",
+                          "name": "Sub",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Cuenta Nu · Hoy, 8:32 a. m.",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "YhG5O",
+                          "name": "Status Row",
+                          "width": "fill_container",
+                          "gap": 5,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "q9OQh",
+                              "name": "Kicker",
+                              "context": "Garantia explicita, no metadata: 11/700 (MASTER reserva 10px para metadata y esta linea NO lo es). El texto es 'No suma a tu saldo' — nunca 'Sin confirmar', que describe un estado administrativo y no enuncia la garantia que exige HU-04.",
+                              "fill": "$primary-on-soft-strong",
+                              "content": "No suma a tu saldo",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "nPMHe",
+                              "name": "Dot",
+                              "fill": "$text-secondary",
+                              "content": "·",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Wt412",
+                              "name": "Issuer",
+                              "fill": "$text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Aviso de Nu",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "VujWH",
+                      "name": "Right",
+                      "layout": "vertical",
+                      "gap": 2,
+                      "alignItems": "end",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "LoSAE",
+                          "name": "Amount",
+                          "context": "Monto SIEMPRE en $text-secondary 15/600. Una transaccion ya registrada usa $text-primary 700 — esa diferencia es una de las cinco senales de que esto no es dinero.",
+                          "fill": "$text-secondary",
+                          "content": "$58.470",
+                          "fontFamily": "$font-body",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "icon",
+                      "id": "tp7SP",
+                      "name": "Chevron",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "chevron-right",
+                      "library": "lucide",
+                      "fill": "$text-secondary"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "t6slV",
+          "name": "Comportamiento",
+          "fill": "$text-secondary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Umbral ~35% del ancho. Al soltar: descarta y muestra el snackbar “Captura descartada · Deshacer” (5 s). Solo de derecha a izquierda. Acción 96x81 (tocable ≥44).",
+          "lineHeight": 1.4,
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "500"
+        },
+        {
+          "type": "text",
+          "id": "h5Q90S",
+          "name": "Alcance",
+          "fill": "$text-secondary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Aplica a captura simple (skjlg) y agrupada (RSizy). La tarjeta de posible duplicado no lleva swipe: ya tiene “Es la misma”.",
+          "lineHeight": 1.4,
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "500"
         }
       ]
     }
