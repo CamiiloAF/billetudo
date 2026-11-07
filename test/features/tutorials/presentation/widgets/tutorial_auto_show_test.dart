@@ -1,6 +1,7 @@
 import 'package:billetudo/core/di/injection.dart';
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
+import 'package:billetudo/core/router/app_route_observer.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/features/tutorials/domain/entities/tutorial_content.dart';
 import 'package:billetudo/features/tutorials/domain/entities/tutorial_key.dart';
@@ -177,6 +178,85 @@ void main() {
     });
   });
 
+  group('surface visibility (Inicio mounted, account form pushed on top)', () {
+    testWidgets(
+        'a tutorial whose screen got covered is not shown over the other '
+        'page, stays pending, and appears once that page pops', (tester) async {
+      when(
+        () => gateCubit.evaluate(
+          content: any(named: 'content'),
+          accountGateShown: any(named: 'accountGateShown'),
+        ),
+      ).thenAnswer((_) async => true);
+
+      final rootNavigatorKey = GlobalKey<NavigatorState>();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light(),
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          navigatorKey: rootNavigatorKey,
+          // Production registers it through `createAppRouter`; the test does
+          // the equivalent on the MaterialApp.
+          navigatorObservers: [appRouteObserver],
+          home: _PushCoverOnFirstFrame(
+            pushCover: () => rootNavigatorKey.currentState!.push(
+              MaterialPageRoute<void>(
+                builder: (context) => Scaffold(
+                  body: TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('close cover'),
+                  ),
+                ),
+              ),
+            ),
+            // The tab shell is a nested navigator in production
+            // (`StatefulShellRoute.indexedStack`); the account form is pushed
+            // on the root one. Reproduce that nesting: `ModalRoute.isCurrent`
+            // stays true for the inner route while the root route covers it.
+            child: Navigator(
+              onGenerateRoute: (settings) => MaterialPageRoute<void>(
+                builder: (context) => const TutorialAutoShow(
+                  tutorialKey: TutorialKey.budgetsScreen,
+                  child: Text('screen body'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('close cover'), findsOneWidget);
+      expect(
+        find.byType(BottomSheet),
+        findsNothing,
+        reason: 'the tutorial must not pop over the page that covered its '
+            'screen (the reported onboarding → "nueva cuenta" bug)',
+      );
+      verifyNever(
+        () => gateCubit.evaluate(
+          content: any(named: 'content'),
+          accountGateShown: any(named: 'accountGateShown'),
+        ),
+      );
+      verifyNever(() => markTutorialSeen(any()));
+
+      await tester.tap(find.text('close cover'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BottomSheet), findsOneWidget);
+      verify(
+        () => gateCubit.evaluate(
+          content: any(named: 'content'),
+          accountGateShown: any(named: 'accountGateShown'),
+        ),
+      ).called(1);
+    });
+  });
+
   group('closing a tutorial sheet (criterion 3)', () {
     testWidgets(
         'dismissing via the standard gesture (tap the scrim) still marks '
@@ -265,4 +345,33 @@ void main() {
       expect(ctaCalled, isTrue);
     });
   });
+}
+
+/// Pushes [pushCover] right after the first frame. An ancestor's `initState`
+/// runs before the child's, so this cover route is already on the root
+/// navigator by the time [TutorialAutoShow] makes its first (post-frame)
+/// attempt — the same ordering as `context.go(inicio)` followed immediately by
+/// `context.push(nueva-cuenta)` in `_finishOnboardingThen`.
+class _PushCoverOnFirstFrame extends StatefulWidget {
+  const _PushCoverOnFirstFrame({
+    required this.pushCover,
+    required this.child,
+  });
+
+  final VoidCallback pushCover;
+  final Widget child;
+
+  @override
+  State<_PushCoverOnFirstFrame> createState() => _PushCoverOnFirstFrameState();
+}
+
+class _PushCoverOnFirstFrameState extends State<_PushCoverOnFirstFrame> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => widget.pushCover());
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
