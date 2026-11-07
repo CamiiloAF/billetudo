@@ -1,0 +1,7 @@
+/* Captura por voz (docs/requirements/fase-2/17-captura-voz.md). El texto en
+   español va aquí; Info.plist queda en inglés como idioma de desarrollo.
+   El de reconocimiento nombra a Apple a propósito: cuando el dispositivo no
+   puede transcribir solo, iOS envía el audio a Apple, y un texto que lo
+   ocultara sería falso. Ni el audio ni la transcripción se guardan. */
+"NSMicrophoneUsageDescription" = "Para que puedas dictar un gasto en vez de escribirlo. El audio no se guarda.";
+"NSSpeechRecognitionUsageDescription" = "Para convertir en texto lo que dictas y llenar el formulario del gasto. Si tu iPhone no puede hacerlo por su cuenta, iOS envía ese audio a Apple para transcribirlo.";

@@ -28,14 +28,17 @@
 	<true/>
 	<!-- Voice capture (docs/requirements/fase-2/17-captura-voz.md). Provisional
 	     wording, pending formal drafting by privacy-legal-officer before this
-	     ships to a store listing. The speech string names Apple on purpose: when
-	     the device cannot transcribe on its own, iOS ships the audio to Apple,
-	     and a permission string that hid that would be false. Neither the audio
-	     nor the transcript is ever stored by this app. -->
+	     ships to a store listing. The visible text is localized in
+	     es.lproj/InfoPlist.strings (Spanish) and en.lproj/InfoPlist.strings
+	     (English, same as these base values — the development language is en);
+	     iOS picks the device language. The speech string names Apple on
+	     purpose: when the device cannot transcribe on its own, iOS ships the
+	     audio to Apple, and a permission string that hid that would be false.
+	     Neither the audio nor the transcript is ever stored by this app. -->
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Para que puedas dictar un gasto en vez de escribirlo. El audio no se guarda.</string>
+	<string>So you can dictate an expense instead of typing it. The audio is never stored.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Para convertir en texto lo que dictas y llenar el formulario del gasto. Si tu iPhone no puede hacerlo por su cuenta, iOS envía ese audio a Apple para transcribirlo.</string>
+	<string>To turn what you dictate into text and fill in the expense form. If your iPhone cannot do it on its own, iOS sends that audio to Apple to transcribe it.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

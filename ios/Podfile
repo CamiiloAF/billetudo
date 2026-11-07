@@ -55,5 +55,30 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
+    # permission_handler compiles each iOS permission in at BUILD time from
+    # GCC_PREPROCESSOR_DEFINITIONS. `permission_handler_apple` defaults
+    # PERMISSION_MICROPHONE to 0 (PermissionHandlerEnums.h), and with it off
+    # Permission.microphone resolves to UnknownPermissionStrategy: status is
+    # always `denied` and request() answers `permanentlyDenied` with no system
+    # prompt, even when the microphone is already allowed in Settings. Voice
+    # capture (docs/requirements/fase-2/17-captura-voz.md) then dead-ends on
+    # "open settings" and never listens on iOS.
+    #
+    # Only the microphone is enabled on purpose: speech-recognition
+    # authorization is requested by `speech_to_text` itself (its
+    # NSSpeechRecognitionUsageDescription is already in Info.plist), and the
+    # app uses no other permission_handler group. Guarded by
+    # test/ios/voice_capture_ios_config_test.dart and proven on a simulator by
+    # integration_test/ios_microphone_permission_test.dart.
+    next unless target.name == 'permission_handler_apple'
+
+    target.build_configurations.each do |config|
+      definitions =
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] || ['$(inherited)']
+      definitions = [definitions] if definitions.is_a?(String)
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] =
+        (definitions + ['PERMISSION_MICROPHONE=1']).uniq
+    end
   end
 end

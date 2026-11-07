@@ -1,0 +1,7 @@
+/* Voice capture (docs/requirements/fase-2/17-captura-voz.md). English; the
+   development language. The speech string names Apple on purpose: when the
+   device cannot transcribe on its own, iOS sends the audio to Apple, and a
+   string that hid that would be false. Neither the audio nor the transcript
+   is ever stored. */
+"NSMicrophoneUsageDescription" = "So you can dictate an expense instead of typing it. The audio is never stored.";
+"NSSpeechRecognitionUsageDescription" = "To turn what you dictate into text and fill in the expense form. If your iPhone cannot do it on its own, iOS sends that audio to Apple to transcribe it.";
