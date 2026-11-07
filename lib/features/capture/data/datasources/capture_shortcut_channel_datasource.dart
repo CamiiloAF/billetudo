@@ -12,7 +12,8 @@ import 'package:injectable/injectable.dart';
 /// direction — not worth a third-party dependency in a finance app.
 ///
 /// Contract, mirrored in `QuickCaptureWidgetBridge.kt` (Android) and
-/// `AppDelegate.swift` (iOS):
+/// `ios/Runner/QuickCaptureWidgetBridge.swift` (iOS) — on iOS the widget URL
+/// arrives through a `FlutterSceneLifeCycleDelegate`, not the app delegate:
 /// - Dart → native `getInitialShortcut` returns the shortcut id the app was
 ///   launched with, or `null`, and clears it so a later hot restart or a
 ///   resume does not replay it.

@@ -86,7 +86,9 @@ abstract class RegisterModule {
   /// Bridge with the native home-screen widgets
   /// (`docs/requirements/fase-2/20-widget-captura-rapida.md`). Named so tests
   /// can swap it for a channel backed by a fake handler; the name string must
-  /// stay in sync with `QuickCaptureWidgetBridge.kt` and `AppDelegate.swift`.
+  /// stay in sync with `QuickCaptureWidgetBridge.kt` and
+  /// `ios/Runner/QuickCaptureWidgetBridge.swift` (registered as a scene
+  /// delegate from `AppDelegate.swift`).
   @Named('captureShortcutChannel')
   @lazySingleton
   MethodChannel captureShortcutChannel() =>
