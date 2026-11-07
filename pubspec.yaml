@@ -1,7 +1,7 @@
 name: billetudo
 description: Billetudo — app de finanzas personales local-first (Flutter) para el mercado hispanohablante.
 publish_to: 'none'
-version: 1.0.2+16
+version: 1.0.2+17
 
 # NOTA: las versiones son indicativas. Ajusta con:
 #   flutter pub get   /   flutter pub upgrade --major-versions
