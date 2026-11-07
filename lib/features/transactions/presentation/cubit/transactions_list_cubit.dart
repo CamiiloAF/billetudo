@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -262,18 +263,31 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
   /// re-subscribes. A no-op when nothing actually changed, so a re-emission of
   /// the same filter from a sheet does not restart the stream.
   Future<void> updateFilter(TransactionFilter filter) async {
+    // 2026-11-07: a budget window is never combined with several selected
+    // accounts (budgets are scoped to their own accounts, so showing a
+    // budget's period over an arbitrary multi-account selection is
+    // misleading). The unified filters sheet locks its Presupuesto section
+    // in that state; this is the single guard for every other entry point
+    // (account chips' multi-select, Inicio, Gráficas drill-down), so a
+    // second account clears any already-applied budget period.
+    final nextFilter =
+        filter.accountIds.length > 1 && filter.hasBudgetPeriodFilter
+            ? filter.copyWith(clearBudgetPeriod: true)
+            : filter;
     final previous = state.filter;
-    if (filter == previous) {
+    if (nextFilter == previous) {
       return;
     }
     await _subscription?.cancel();
-    emit(state.copyWith(filter: filter));
+    emit(state.copyWith(filter: nextFilter));
     _subscribe();
     final accountIdsChanged =
-        filter.accountIds.length != previous.accountIds.length ||
-            !filter.accountIds.containsAll(previous.accountIds);
+        nextFilter.accountIds.length != previous.accountIds.length ||
+            !nextFilter.accountIds.containsAll(previous.accountIds);
     if (accountIdsChanged) {
-      unawaited(_accountFilterPreferences.writeAccountIds(filter.accountIds));
+      unawaited(
+        _accountFilterPreferences.writeAccountIds(nextFilter.accountIds),
+      );
     }
   }
 
@@ -317,7 +331,7 @@ class TransactionsListCubit extends Cubit<TransactionsListState> {
     if (datePeriod.isCustomRange) {
       return;
     }
-    if (direction > 0 && !datePeriodHasNext(datePeriod, DateTime.now())) {
+    if (direction > 0 && !datePeriodHasNext(datePeriod, clock.now())) {
       return;
     }
     await updateFilter(

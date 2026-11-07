@@ -1,10 +1,8 @@
-import 'dart:async';
-
-import 'package:billetudo/core/preferences/balance_carousel_cubit.dart';
-import 'package:billetudo/core/preferences/balance_carousel_preference_datasource.dart';
 import 'package:billetudo/features/capture/presentation/cubit/capture_review_item.dart';
 import 'package:billetudo/features/capture/presentation/cubit/pending_captures_cubit.dart';
 import 'package:billetudo/features/capture/presentation/cubit/pending_captures_state.dart';
+import 'package:billetudo/features/transactions/domain/entities/date_period_filter.dart';
+import 'package:billetudo/features/transactions/domain/entities/transaction_filter.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/transactions_list_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/transactions_list_state.dart';
 import 'package:billetudo/features/transactions/presentation/pages/transactions_page.dart';
@@ -23,16 +21,6 @@ class MockTransactionsListCubit extends MockCubit<TransactionsListState>
 class MockPendingCapturesCubit extends MockCubit<PendingCapturesState>
     implements PendingCapturesCubit {}
 
-/// In-memory prefs so the balance carousel (Mejora #2) renders in its
-/// default expanded state without touching `shared_preferences`.
-class _FakeCarouselPrefs implements BalanceCarouselPreferenceDatasource {
-  @override
-  Future<bool> readCollapsed() async => false;
-
-  @override
-  Future<void> writeCollapsed({required bool collapsed}) async {}
-}
-
 Widget _withProviders(
   TransactionsListCubit listCubit,
   PendingCapturesCubit capturesCubit,
@@ -42,18 +30,6 @@ Widget _withProviders(
       providers: [
         BlocProvider<TransactionsListCubit>.value(value: listCubit),
         BlocProvider<PendingCapturesCubit>.value(value: capturesCubit),
-        BlocProvider<BalanceCarouselCubit>(
-          // `BalanceCarouselState`'s own default is collapsed; force this
-          // fixture's expanded state explicitly via `.load()` (mirrors
-          // production's `app_router.dart`) instead of relying on that
-          // default. Harmless here since this fixture has no accounts and
-          // the carousel never renders, but keeps this fake honest.
-          create: (_) {
-            final carousel = BalanceCarouselCubit(_FakeCarouselPrefs());
-            unawaited(carousel.load());
-            return carousel;
-          },
-        ),
       ],
       child: page,
     );
@@ -81,13 +57,23 @@ void main() {
     capturesCubit = MockPendingCapturesCubit();
   });
 
+  /// Pinned clock because the page renders the default current-month
+  /// `PeriodStepper` label (2026-11-07) — see
+  /// `transactions_page_golden_test.dart`'s own note.
   Future<void> golden(
     WidgetTester tester,
     String name, {
     required Brightness brightness,
   }) async {
     when(() => listCubit.state).thenReturn(
-      TransactionsListState(status: TransactionsListStatus.ready),
+      TransactionsListState(
+        status: TransactionsListStatus.ready,
+        // Pinned to the golden clock, same reason as
+        // `transactions_page_golden_test.dart`'s `golden` helper.
+        filter: TransactionFilter(
+          datePeriod: DatePeriodFilter.thisMonth(goldenReferenceNow),
+        ),
+      ),
     );
     when(() => capturesCubit.state).thenReturn(
       PendingCapturesState(
@@ -106,7 +92,7 @@ void main() {
         ],
       ),
     );
-    await pumpGolden(
+    await pumpWithFixedClock(
       tester,
       _withProviders(
         listCubit,
@@ -114,7 +100,6 @@ void main() {
         TransactionsPage(
           onAddTransaction: (_) {},
           onOpenTransaction: (_) async => null,
-          onOpenAccount: (_) {},
           onDispatchCapture: (_) {},
         ),
       ),

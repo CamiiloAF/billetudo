@@ -26,19 +26,17 @@ class DebtLinkModePage extends StatelessWidget {
     return TutorialAutoShow(
       tutorialKey: TutorialKey.debtLinkMovement,
       child: TransactionsPage(
-        // The FAB is hidden and the row/account taps below are unused in link
-        // mode, so these are inert stubs.
+        // The FAB is hidden and the ordinary row tap is unused in link mode
+        // (taps link the movement instead), so these are inert stubs.
         onAddTransaction: (_) {},
         onOpenTransaction: (_) async => null,
-        onOpenAccount: (_) {},
         linkMode: TransactionsLinkMode(
           // Just the name: the direction ("· Yo debo") confuses more than it
           // helps while picking a movement to attribute.
           bannerTitle: l10n.debtLinkBannerTitle(debt.name),
           bannerBody: l10n.debtLinkBannerBody,
           onCancel: () => Navigator.of(context).pop(),
-          onLinkTransaction: (transactionId) =>
-              _link(context, transactionId),
+          onLinkTransaction: (transactionId) => _link(context, transactionId),
           // Only the movements that can be an abono of this debt are linkable:
           // "Yo debo" → gastos, "Me deben" → ingresos (HU-02), and never one
           // dated before the debt existed.
@@ -53,8 +51,7 @@ class DebtLinkModePage extends StatelessWidget {
   }
 
   Future<void> _link(BuildContext context, String transactionId) async {
-    final linked =
-        await context.read<DebtLinkCubit>().link(transactionId);
+    final linked = await context.read<DebtLinkCubit>().link(transactionId);
     if (!context.mounted) {
       return;
     }

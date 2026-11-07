@@ -1,5 +1,3 @@
-import 'package:billetudo/core/preferences/balance_carousel_cubit.dart';
-import 'package:billetudo/core/preferences/balance_carousel_preference_datasource.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_filter.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
@@ -20,14 +18,6 @@ import '../../transaction_fixtures.dart';
 class MockTransactionsListCubit extends MockCubit<TransactionsListState>
     implements TransactionsListCubit {}
 
-class _FakeCarouselPrefs implements BalanceCarouselPreferenceDatasource {
-  @override
-  Future<bool> readCollapsed() async => false;
-
-  @override
-  Future<void> writeCollapsed({required bool collapsed}) async {}
-}
-
 void main() {
   late MockTransactionsListCubit listCubit;
 
@@ -43,17 +33,12 @@ void main() {
         filter: TransactionFilter(),
       ),
     );
-    final carousel = BalanceCarouselCubit(_FakeCarouselPrefs());
     await tester.pumpAppWidget(
-      MultiBlocProvider(
-        providers: [
-          BlocProvider<TransactionsListCubit>.value(value: listCubit),
-          BlocProvider<BalanceCarouselCubit>.value(value: carousel),
-        ],
+      BlocProvider<TransactionsListCubit>.value(
+        value: listCubit,
         child: TransactionsPage(
           onAddTransaction: (_) {},
           onOpenTransaction: (_) async => null,
-          onOpenAccount: (_) {},
           linkMode: linkMode,
         ),
       ),
@@ -141,17 +126,12 @@ void main() {
           items: items,
         ),
       );
-      final carousel = BalanceCarouselCubit(_FakeCarouselPrefs());
       await tester.pumpAppWidget(
-        MultiBlocProvider(
-          providers: [
-            BlocProvider<TransactionsListCubit>.value(value: listCubit),
-            BlocProvider<BalanceCarouselCubit>.value(value: carousel),
-          ],
+        BlocProvider<TransactionsListCubit>.value(
+          value: listCubit,
           child: TransactionsPage(
             onAddTransaction: (_) {},
             onOpenTransaction: (_) async => null,
-            onOpenAccount: (_) {},
             linkMode: TransactionsLinkMode(
               bannerTitle: 'Enlazar a Crédito · Yo debo',
               bannerBody: 'body',

@@ -219,6 +219,53 @@ void main() {
     });
   });
 
+  group('hasNavigablePeriod', () {
+    test(
+        'es verdadero con el default (este mes) — 2026-11-07: el mes también '
+        'navega', () {
+      final filter = TransactionFilter();
+
+      expect(filter.hasNavigablePeriod, isTrue);
+    });
+
+    test('es verdadero con semana y año', () {
+      for (final granularity in [DateGranularity.week, DateGranularity.year]) {
+        final filter = TransactionFilter(
+          datePeriod: DatePeriodFilter.granular(
+            granularity,
+            DateTime(2026, 1, 5),
+          ),
+        );
+
+        expect(filter.hasNavigablePeriod, isTrue, reason: '$granularity');
+      }
+    });
+
+    test('es falso con un rango personalizado (no tiene anterior/siguiente)',
+        () {
+      final filter = TransactionFilter(
+        datePeriod: DatePeriodFilter.custom(
+          start: DateTime(2026, 1, 1),
+          end: DateTime(2026, 1, 15),
+        ),
+      );
+
+      expect(filter.hasNavigablePeriod, isFalse);
+    });
+
+    test('es verdadero con un periodo de Presupuesto', () {
+      final filter = TransactionFilter(
+        budgetPeriod: DatePeriodFilter.budget(
+          budgetId: 'budget-1',
+          start: DateTime(2026, 7, 1),
+          endExclusive: DateTime(2026, 8, 1),
+        ),
+      );
+
+      expect(filter.hasNavigablePeriod, isTrue);
+    });
+  });
+
   group('activeFilterCount (issue #7, badge del botón Filtros)', () {
     test('es cero sin ningún filtro activo', () {
       final filter = TransactionFilter();

@@ -1,7 +1,3 @@
-import 'dart:async';
-
-import 'package:billetudo/core/preferences/balance_carousel_cubit.dart';
-import 'package:billetudo/core/preferences/balance_carousel_preference_datasource.dart';
 import 'package:billetudo/features/accounts/domain/entities/account.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_balance.dart';
 import 'package:billetudo/features/accounts/domain/entities/account_with_balance.dart';
@@ -25,36 +21,9 @@ import '../../transaction_fixtures.dart';
 class MockTransactionsListCubit extends MockCubit<TransactionsListState>
     implements TransactionsListCubit {}
 
-/// In-memory prefs so the balance carousel (Mejora #2) renders in its default
-/// expanded state without touching `shared_preferences`.
-class _FakeCarouselPrefs implements BalanceCarouselPreferenceDatasource {
-  @override
-  Future<bool> readCollapsed() async => false;
-
-  @override
-  Future<void> writeCollapsed({required bool collapsed}) async {}
-}
-
-/// Wraps [page] with the two cubits the transactions page reads.
+/// Wraps [page] with the cubit the transactions page reads.
 Widget _withProviders(TransactionsListCubit cubit, Widget page) =>
-    MultiBlocProvider(
-      providers: [
-        BlocProvider<TransactionsListCubit>.value(value: cubit),
-        BlocProvider<BalanceCarouselCubit>(
-          // `BalanceCarouselState`'s own default is collapsed (a fresh
-          // install with no saved preference). Production always calls
-          // `.load()` right after construction (see `app_router.dart`); do
-          // the same here so this cubit actually reflects `_FakeCarouselPrefs`
-          // (expanded) instead of silently starting from the state's default.
-          create: (_) {
-            final carousel = BalanceCarouselCubit(_FakeCarouselPrefs());
-            unawaited(carousel.load());
-            return carousel;
-          },
-        ),
-      ],
-      child: page,
-    );
+    BlocProvider<TransactionsListCubit>.value(value: cubit, child: page);
 
 final DateTime _instant = DateTime(2026, 7, 15);
 final int _instantMillis = _instant.millisecondsSinceEpoch;
@@ -94,6 +63,10 @@ void main() {
   });
   setUp(() => cubit = MockTransactionsListCubit());
 
+  /// Every golden here runs under [pumpWithFixedClock]: the page now always
+  /// renders the `PeriodStepper` for a granular Fecha period (2026-11-07),
+  /// including the default current month, so its label would otherwise drift
+  /// with the real wall clock and mismatch the committed PNGs.
   Future<void> golden(
     WidgetTester tester,
     TransactionsListState state,
@@ -101,15 +74,26 @@ void main() {
     required Brightness brightness,
     bool settle = true,
   }) async {
-    when(() => cubit.state).thenReturn(state);
-    await pumpGolden(
+    // The default Fecha period is built from the real wall clock when the
+    // state is constructed in the test body, outside the `withClock` scope
+    // that `pumpWithFixedClock` enters. Pin it to [goldenReferenceNow] here so
+    // a default-filter state renders as "this month" (stepper label = the
+    // reference month) instead of drifting with the host clock.
+    final pinnedState = state.filter.hasDateFilter
+        ? state
+        : state.copyWith(
+            filter: state.filter.copyWith(
+              datePeriod: DatePeriodFilter.thisMonth(goldenReferenceNow),
+            ),
+          );
+    when(() => cubit.state).thenReturn(pinnedState);
+    await pumpWithFixedClock(
       tester,
       _withProviders(
         cubit,
         TransactionsPage(
           onAddTransaction: (_) {},
           onOpenTransaction: (_) async => null,
-          onOpenAccount: (_) {},
         ),
       ),
       brightness: brightness,
@@ -301,6 +285,9 @@ void main() {
       );
     });
 
+    // Default filter = "this month": the PeriodStepper is part of this state
+    // since 2026-11-07 (next chevron disabled, previous enabled), so this
+    // golden doubles as the current-month bar reference.
     testWidgets('with data: income, expense and transfer grouped ($suffix)', (
       tester,
     ) async {
@@ -373,10 +360,9 @@ void main() {
       );
     });
 
-    // The 6th filter chip, "Presupuesto" (criterios 1/3): coexists with the
-    // always-active Fecha chip, and — unlike it — has a genuine neutral state
-    // (`filter.hasBudgetPeriodFilter == false`) with the generic label and no
-    // badge, mirroring the Cuenta chip's own "sin filtro" look.
+    // The 6th filter dimension, "Presupuesto" (criterios 1/3), edited from
+    // the unified sheet / reflected by the PeriodStepper's budget context tag
+    // (the Fecha chip this comment used to mention was removed 2026-11-07).
     testWidgets('budget chip: no filter, neutral ($suffix)', (tester) async {
       await golden(
         tester,
@@ -423,10 +409,13 @@ void main() {
       );
     });
 
-    // `PeriodStepper` (Fecha variant): a granular period other than the
-    // default "this month" (`hasDateFilter == true`) enables both chevrons —
-    // there is no lower bound on the past and this is a past month, so
-    // `datePeriodHasNext` is also true — and shows no `Budget Context Tag`.
+    // `PeriodStepper` (Fecha variant): a past granular month enables both
+    // chevrons — there is no lower bound on the past and this month is behind
+    // the pinned golden clock (2026-08-07), so `datePeriodHasNext` is also
+    // true — and shows no `Budget Context Tag`. The default "this month"
+    // states above already cover the current-month case, where only `Next` is
+    // disabled (2026-11-07: the bar is no longer hidden for the default
+    // period).
     testWidgets('period nav bar: date period, both arrows enabled ($suffix)', (
       tester,
     ) async {
@@ -580,6 +569,9 @@ void main() {
         status: TransactionsListStatus.ready,
         items: items,
         accounts: accounts,
+        filter: TransactionFilter(
+          datePeriod: DatePeriodFilter.thisMonth(goldenReferenceNow),
+        ),
       );
       final withUndo = baseState.copyWith(pendingUndoId: 'tx-1');
       whenListen(
@@ -588,14 +580,13 @@ void main() {
         initialState: baseState,
       );
 
-      await pumpGolden(
+      await pumpWithFixedClock(
         tester,
         _withProviders(
           cubit,
           TransactionsPage(
             onAddTransaction: (_) {},
             onOpenTransaction: (_) async => null,
-            onOpenAccount: (_) {},
           ),
         ),
         brightness: brightness,

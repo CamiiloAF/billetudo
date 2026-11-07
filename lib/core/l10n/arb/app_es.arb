@@ -621,34 +621,6 @@
       }
     }
   },
-  "transactionsBalanceTotalLabel": "Saldo total",
-  "@transactionsBalanceTotalLabel": {
-    "description": "Etiqueta del saldo agregado en la barra compacta del carrusel de saldo colapsado (Mejora #2)."
-  },
-  "transactionsBalanceTotalSemantics": "{label}: {amount}",
-  "@transactionsBalanceTotalSemantics": {
-    "description": "Texto para lectores de pantalla del saldo agregado en la barra compacta del carrusel de saldo colapsado.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      },
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
-  "transactionsBalanceCardBalanceLabel": "Saldo",
-  "@transactionsBalanceCardBalanceLabel": {
-    "description": "Etiqueta del bloque de saldo en la card de cuenta normal del carrusel de saldo de Movimientos (Mejora #2), que espeja las figuras Deuda/Cupo de la variante de tarjeta."
-  },
-  "transactionsBalanceCarouselCollapse": "Ocultar saldos",
-  "@transactionsBalanceCarouselCollapse": {
-    "description": "Semántica del control que colapsa el carrusel de saldo en Movimientos (Mejora #2)."
-  },
-  "transactionsBalanceCarouselExpand": "Mostrar saldos",
-  "@transactionsBalanceCarouselExpand": {
-    "description": "Semántica de la barra compacta que reexpande el carrusel de saldo en Movimientos (Mejora #2)."
-  },
   "transactionsGroupToday": "Hoy",
   "@transactionsGroupToday": {},
   "transactionsGroupYesterday": "Ayer",
@@ -875,6 +847,10 @@
   "@accountFilterSelectAll": {},
   "accountFilterSelectNone": "Ninguna",
   "@accountFilterSelectNone": {},
+  "accountFilterMultiSelectHint": "Mantén presionado para seleccionar varias cuentas",
+  "@accountFilterMultiSelectHint": {},
+  "accountFilterMultiSelectActiveHint": "Selección múltiple: toca una cuenta para agregarla o quitarla",
+  "@accountFilterMultiSelectActiveHint": {},
   "categoryFilterSheetTitle": "Filtrar por categoría",
   "@categoryFilterSheetTitle": {},
   "typeFilterSheetTitle": "Filtrar por tipo",
@@ -901,6 +877,8 @@
   "@transactionsFilterSectionDate": {},
   "transactionsFilterDateLockedByBudget": "No puedes filtrar por fecha con un presupuesto activo",
   "@transactionsFilterDateLockedByBudget": {},
+  "transactionsFilterBudgetLockedByAccounts": "No puedes filtrar por presupuesto con varias cuentas seleccionadas",
+  "@transactionsFilterBudgetLockedByAccounts": {},
   "transactionsFilterSectionType": "TIPO",
   "@transactionsFilterSectionType": {},
   "transactionsFilterSectionCategory": "CATEGORÍA",

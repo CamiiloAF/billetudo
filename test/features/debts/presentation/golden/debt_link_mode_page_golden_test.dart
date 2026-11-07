@@ -1,8 +1,6 @@
-import 'dart:async';
-
-import 'package:billetudo/core/preferences/balance_carousel_cubit.dart';
-import 'package:billetudo/core/preferences/balance_carousel_preference_datasource.dart';
+import 'package:billetudo/features/transactions/domain/entities/date_period_filter.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
+import 'package:billetudo/features/transactions/domain/entities/transaction_filter.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/transactions_list_cubit.dart';
 import 'package:billetudo/features/transactions/presentation/cubit/transactions_list_state.dart';
@@ -19,16 +17,6 @@ import '../../../transactions/transaction_fixtures.dart';
 
 class MockTransactionsListCubit extends MockCubit<TransactionsListState>
     implements TransactionsListCubit {}
-
-/// In-memory prefs so the balance carousel renders expanded without touching
-/// `shared_preferences`.
-class _FakeCarouselPrefs implements BalanceCarouselPreferenceDatasource {
-  @override
-  Future<bool> readCollapsed() async => false;
-
-  @override
-  Future<void> writeCollapsed({required bool collapsed}) async {}
-}
 
 /// Movimientos in "modo enlazar" (`g0x859`/`Y71NB`, Deudas HU-02): the same
 /// `TransactionsPage` list, but topped by the `$primary-soft` "Enlazar a …"
@@ -91,30 +79,20 @@ void main() {
         status: TransactionsListStatus.ready,
         items: items,
         accounts: const [],
+        // Pinned to the golden clock so the default-month PeriodStepper label
+        // is deterministic.
+        filter: TransactionFilter(
+          datePeriod: DatePeriodFilter.thisMonth(goldenReferenceNow),
+        ),
       ),
     );
     await pumpWithFixedClock(
       tester,
-      MultiBlocProvider(
-        providers: [
-          BlocProvider<TransactionsListCubit>.value(value: cubit),
-          BlocProvider<BalanceCarouselCubit>(
-            // `BalanceCarouselState`'s own default is collapsed; force this
-            // fixture's expanded state explicitly via `.load()` (mirrors
-            // production's `app_router.dart`) instead of relying on that
-            // default. Harmless here since `accounts` is empty and the
-            // carousel never renders, but keeps this fake honest.
-            create: (_) {
-              final carousel = BalanceCarouselCubit(_FakeCarouselPrefs());
-              unawaited(carousel.load());
-              return carousel;
-            },
-          ),
-        ],
+      BlocProvider<TransactionsListCubit>.value(
+        value: cubit,
         child: TransactionsPage(
           onAddTransaction: (_) {},
           onOpenTransaction: (_) async => null,
-          onOpenAccount: (_) {},
           linkMode: linkMode,
         ),
       ),

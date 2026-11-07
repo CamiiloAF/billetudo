@@ -7,8 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Deliberately not part of `TransactionFilter`'s Drift-backed data (synced
 /// via PowerSync): which accounts a device's list view is filtered to is a
 /// device preference, not an account one — the same reasoning as
-/// `ThemePreferenceDatasource`/`BalanceCarouselPreferenceDatasource`. So a
-/// signed-in user's devices never fight over it.
+/// `ThemePreferenceDatasource`. So a signed-in user's devices never fight over
+/// it.
 @lazySingleton
 class AccountFilterPreferenceDatasource {
   const AccountFilterPreferenceDatasource(this._prefs);

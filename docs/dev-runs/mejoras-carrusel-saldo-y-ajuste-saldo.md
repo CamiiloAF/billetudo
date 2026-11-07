@@ -1,5 +1,7 @@
 # Dev-run — Carrusel de saldo en Movimientos (#2) + Ajustar saldo (#1)
 
+> **⚠️ RETIRO 2026-11-07:** la Mejora #2 (carrusel de saldo en Movimientos) fue **retirada por completo del código y del diseño de pantalla** a pedido explícito del usuario. Este documento queda como registro histórico de cómo se implementó; el estado vigente está en [`movimientos-retiro-carrusel-saldo.md`](movimientos-retiro-carrusel-saldo.md) y en `design-system/billetudo/pages/transacciones.md` § «Retiro 2026-11-07». La Mejora #1 (ajustar saldo) sigue vigente y no la afecta.
+
 > **Fecha:** 2026-07-21 · **Estado:** #2 implementada y verde · #1 en implementación · tema oscuro de Pencil PENDIENTE (servidor de render caído). **Nada commiteado.**
 > Documento vivo: se actualiza al cerrar #1 y el tema oscuro.
 

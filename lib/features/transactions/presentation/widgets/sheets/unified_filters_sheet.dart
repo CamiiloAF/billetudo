@@ -300,6 +300,12 @@ class UnifiedFilterPill extends StatelessWidget {
 
 /// Section — Presupuesto (`nagyZ`): "Ninguno" + one pill per active budget,
 /// single-selection. Only rendered while `state.hasBudgets` (criterion #6).
+///
+/// 2026-11-07: locked (icon `lock` + caption, pills at `opacity: 0.4`, same
+/// treatment as Fecha when a budget is active) while **2+ accounts** are
+/// selected — budgets are scoped to their own accounts, so the filter is
+/// disabled instead of applying a budget window over a multi-account
+/// selection.
 class BudgetFilterSection extends StatelessWidget {
   const BudgetFilterSection({required this.state, super.key});
 
@@ -308,31 +314,61 @@ class BudgetFilterSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final colors = context.colors;
     final cubit = context.read<UnifiedFiltersCubit>();
+    final locked = state.isBudgetLockedByAccounts;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        UnifiedFilterSectionLabel(label: l10n.transactionsFilterSectionBudget),
-        const SizedBox(height: 10),
-        UnifiedFilterPillRow(
+        Row(
           children: [
-            UnifiedFilterPill(
-              label: l10n.transactionsFilterBudgetNone,
-              icon: LucideIcons.ban,
-              selected: !state.isBudgetActive,
-              onTap: cubit.clearBudget,
+            UnifiedFilterSectionLabel(
+              label: l10n.transactionsFilterSectionBudget,
             ),
-            const SizedBox(width: 8),
-            for (final option in state.budgetOptions) ...[
-              UnifiedFilterPill(
-                label: option.name,
-                icon: CategoryAppearance.iconForOrPlaceholder(option.icon),
-                selected: state.selectedBudgetId == option.budgetId,
-                onTap: () => cubit.selectBudget(option.budgetId),
-              ),
-              if (option != state.budgetOptions.last) const SizedBox(width: 8),
+            if (locked) ...[
+              const SizedBox(width: 6),
+              Icon(LucideIcons.lock, size: 12, color: colors.textSecondary),
             ],
           ],
+        ),
+        if (locked) ...[
+          const SizedBox(height: 6),
+          Text(
+            l10n.transactionsFilterBudgetLockedByAccounts,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: colors.textSecondary,
+                ),
+          ),
+        ],
+        const SizedBox(height: 10),
+        IgnorePointer(
+          ignoring: locked,
+          child: Opacity(
+            opacity: locked ? 0.4 : 1,
+            child: UnifiedFilterPillRow(
+              children: [
+                UnifiedFilterPill(
+                  label: l10n.transactionsFilterBudgetNone,
+                  icon: LucideIcons.ban,
+                  selected: !state.isBudgetActive,
+                  onTap: cubit.clearBudget,
+                ),
+                const SizedBox(width: 8),
+                for (final option in state.budgetOptions) ...[
+                  UnifiedFilterPill(
+                    label: option.name,
+                    icon: CategoryAppearance.iconForOrPlaceholder(option.icon),
+                    selected: state.selectedBudgetId == option.budgetId,
+                    onTap: () => cubit.selectBudget(option.budgetId),
+                  ),
+                  if (option != state.budgetOptions.last)
+                    const SizedBox(width: 8),
+                ],
+              ],
+            ),
+          ),
         ),
       ],
     );

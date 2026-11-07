@@ -810,23 +810,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get transactionsBalanceTotalLabel => 'Total balance';
-
-  @override
-  String transactionsBalanceTotalSemantics(String label, String amount) {
-    return '$label: $amount';
-  }
-
-  @override
-  String get transactionsBalanceCardBalanceLabel => 'Balance';
-
-  @override
-  String get transactionsBalanceCarouselCollapse => 'Hide balances';
-
-  @override
-  String get transactionsBalanceCarouselExpand => 'Show balances';
-
-  @override
   String get transactionsGroupToday => 'Today';
 
   @override
@@ -1118,6 +1101,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountFilterSelectNone => 'None';
 
   @override
+  String get accountFilterMultiSelectHint =>
+      'Long press to select multiple accounts';
+
+  @override
+  String get accountFilterMultiSelectActiveHint =>
+      'Multiple selection: tap an account to add or remove it';
+
+  @override
   String get categoryFilterSheetTitle => 'Filter by category';
 
   @override
@@ -1157,6 +1148,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get transactionsFilterDateLockedByBudget =>
       'You can\'t filter by date with an active budget';
+
+  @override
+  String get transactionsFilterBudgetLockedByAccounts =>
+      'You can\'t filter by budget with multiple accounts selected';
 
   @override
   String get transactionsFilterSectionType => 'TYPE';

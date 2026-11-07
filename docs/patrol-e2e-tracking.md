@@ -269,6 +269,12 @@ confirmar" nunca se monta — en su lugar se ve el copy de la lista vacía
 **Causa raíz, en `lib/features/transactions/presentation/pages/transactions_page.dart`**
 (`TransactionsPage.build`, rama del `switch (state.status)`):
 
+> **Nota de vigencia:** el fragmento de abajo es el código **al momento del bug**
+> (diagnóstico histórico, se conserva como evidencia). Ya no representa el árbol actual:
+> el carrusel de saldo fue retirado el 2026-11-07 y `showCarousel`/`onOpenAccount`/
+> `MovementsBalanceCarousel` ya no existen. Ver
+> [`docs/dev-runs/movimientos-retiro-carrusel-saldo.md`](dev-runs/movimientos-retiro-carrusel-saldo.md).
+
 ```dart
 TransactionsListStatus.ready when state.items.isEmpty =>
   Column(

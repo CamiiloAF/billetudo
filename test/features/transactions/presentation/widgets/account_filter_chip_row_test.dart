@@ -14,10 +14,11 @@ import '../../../categories/presentation/widgets/pump_widget.dart';
 /// bar — one chip per active account plus a single "Todas"/"Limpiar" toggle
 /// chip, never landing on zero selected accounts.
 ///
-/// Issue #incidencias-pruebas-manuales: the toggle chip renders
-/// `check-check` ("Todas") while some account is missing from the
-/// selection, and switches to `x` ("Limpiar") once every account ends up
-/// selected — only one of the two icons is ever present at a time.
+/// 2026-11-07 (explicit user request): a plain tap is **single-select** (it
+/// replaces the filter with the tapped account only), and a **long press**
+/// enters multi-select seeded with that account, after which every tap
+/// adds/removes one account. These tests cover both modes plus the mode
+/// switch itself.
 void main() {
   AccountWithBalance account(String id, String name) => AccountWithBalance(
         account: Account(
@@ -58,138 +59,371 @@ void main() {
         (widget) => widget is CircularIconChip && widget.icon == icon,
       );
 
-  Future<Set<String>?> pumpAndTap(
+  /// Pumps the row behind a small stateful harness that feeds every emission
+  /// back as the new `selected`, mirroring production (`TransactionsListCubit`
+  /// emits the new filter and the row rebuilds) — without it, chained
+  /// interactions in multi-select mode would read a stale prop.
+  Future<List<Set<String>>> pumpRow(
     WidgetTester tester, {
     required Set<String> selected,
-    required Finder tapTarget,
+    List<AccountWithBalance>? rowAccounts,
   }) async {
-    Set<String>? result;
+    final emissions = <Set<String>>[];
     await tester.pumpAppWidget(
-      AccountFilterChipRow(
-        accounts: accounts,
-        selected: selected,
-        onChanged: (next) => result = next,
+      _AccountFilterChipRowHarness(
+        accounts: rowAccounts ?? accounts,
+        initialSelected: selected,
+        onEmitted: emissions.add,
       ),
     );
-    await tester.tap(tapTarget);
-    await tester.pump();
-    return result;
+    return emissions;
   }
 
   testWidgets(
-      'sin filtro (selected vacío), cada chip de cuenta y "Todas" quedan '
-      'activos', (tester) async {
-    await tester.pumpAppWidget(
-      AccountFilterChipRow(
-        accounts: accounts,
-        selected: const {},
-        onChanged: (_) {},
-      ),
-    );
+      'sin filtro (selected vacío), cada chip de cuenta y "Todas" '
+      'quedan activos', (tester) async {
+    await pumpRow(tester, selected: const {});
 
     final pills =
         tester.widgetList<FilterChipPill>(find.byType(FilterChipPill));
     for (final pill in pills) {
-      expect(pill.active, isTrue, reason: '${pill.label} debería estar activo');
+      expect(
+        pill.active,
+        isTrue,
+        reason: '${pill.label} debería estar activo',
+      );
     }
   });
 
-  testWidgets(
-      'con una selección parcial, el chip toggle muestra "Todas" y al '
-      'tocarlo selecciona explícitamente todas las cuentas', (tester) async {
-    final result = await pumpAndTap(
-      tester,
-      selected: {cash.account.id},
-      tapTarget: circularIconChip(LucideIcons.checkCheck),
-    );
-    expect(
-      result,
-      {cash.account.id, bank.account.id, savings.account.id},
-    );
+  group('selección simple (tap sin long press)', () {
+    testWidgets('desde "Todas", tocar una cuenta filtra solo esa cuenta',
+        (tester) async {
+      final emissions = await pumpRow(tester, selected: const {});
+
+      await tester.tap(find.text('Efectivo'));
+      await tester.pump();
+
+      expect(emissions.last, {cash.account.id});
+    });
+
+    testWidgets(
+        'tocar otra cuenta reemplaza la selección anterior (no la '
+        'suma)', (tester) async {
+      final emissions = await pumpRow(
+        tester,
+        selected: {cash.account.id},
+      );
+
+      await tester.tap(find.text('Nequi'));
+      await tester.pump();
+
+      expect(emissions.last, {bank.account.id});
+    });
+
+    testWidgets('tocar la cuenta ya seleccionada la mantiene (idempotente)',
+        (tester) async {
+      final emissions = await pumpRow(
+        tester,
+        selected: {cash.account.id},
+      );
+
+      await tester.tap(find.text('Efectivo'));
+      await tester.pump();
+
+      expect(emissions.last, {cash.account.id});
+    });
+
+    testWidgets(
+        'con una selección múltiple previa, un tap la colapsa a una '
+        'sola cuenta', (tester) async {
+      final emissions = await pumpRow(
+        tester,
+        selected: {cash.account.id, bank.account.id},
+      );
+
+      await tester.tap(find.text('Ahorros'));
+      await tester.pump();
+
+      expect(emissions.last, {savings.account.id});
+    });
   });
 
-  testWidgets(
-      'con todas las cuentas seleccionadas (implícito), el chip toggle '
-      'muestra "Limpiar" y al tocarlo deja solo la primera cuenta',
-      (tester) async {
-    final result = await pumpAndTap(
-      tester,
-      selected: const {},
-      tapTarget: circularIconChip(LucideIcons.x),
-    );
-    expect(result, {cash.account.id});
+  group('selección múltiple (long press)', () {
+    FilterChipPill pillFor(WidgetTester tester, String label) =>
+        tester.widget<FilterChipPill>(
+          find.byWidgetPredicate(
+            (widget) => widget is FilterChipPill && widget.label == label,
+          ),
+        );
+
+    bool multiActive(WidgetTester tester) => tester
+        .widgetList<FilterChipPill>(find.byType(FilterChipPill))
+        .any((pill) => pill.trailingIcon == LucideIcons.check);
+
+    testWidgets(
+        'con "Efectivo" seleccionado, long press en "Nequi" deja ambas '
+        'activas (suma, no reemplaza)', (tester) async {
+      final emissions = await pumpRow(
+        tester,
+        selected: {cash.account.id},
+      );
+
+      await tester.longPress(find.text('Nequi'));
+      await tester.pump();
+
+      expect(emissions.last, {cash.account.id, bank.account.id});
+      expect(pillFor(tester, 'Efectivo').active, isTrue);
+      expect(pillFor(tester, 'Nequi').active, isTrue);
+      expect(multiActive(tester), isTrue);
+    });
+
+    testWidgets(
+        'long press sobre la única cuenta ya seleccionada no entra en multi '
+        '(haría falta una segunda)', (tester) async {
+      final emissions = await pumpRow(
+        tester,
+        selected: {cash.account.id},
+      );
+
+      await tester.longPress(find.text('Efectivo'));
+      await tester.pump();
+
+      expect(emissions, isEmpty);
+      expect(multiActive(tester), isFalse);
+    });
+
+    testWidgets(
+        'desde "Todas", el long press conserva todas las cuentas y entra en '
+        'multi', (tester) async {
+      final emissions = await pumpRow(tester, selected: const {});
+
+      await tester.longPress(find.text('Efectivo'));
+      await tester.pump();
+
+      // Sin cambio de filtro: todas siguen activas (default inclusivo-vacío).
+      expect(emissions.last, isEmpty);
+      expect(multiActive(tester), isTrue);
+      expect(pillFor(tester, 'Nequi').active, isTrue);
+    });
+
+    testWidgets(
+        'en multi, cada tap suma una cuenta hasta el default '
+        'inclusivo (1, 2, 3...)', (tester) async {
+      final emissions = await pumpRow(
+        tester,
+        selected: {cash.account.id},
+      );
+
+      await tester.longPress(find.text('Nequi')); // {Efectivo, Nequi}
+      await tester.pump();
+      expect(emissions.last, {cash.account.id, bank.account.id});
+
+      await tester.tap(find.text('Ahorros'));
+      await tester.pump();
+      // Las 3 cuentas = el default inclusivo-vacío de "Todas".
+      expect(emissions.last, isEmpty);
+      expect(multiActive(tester), isTrue);
+    });
+
+    testWidgets('un tap en multi quita la cuenta tocada', (tester) async {
+      final emissions = await pumpRow(
+        tester,
+        selected: {cash.account.id},
+      );
+
+      await tester.longPress(find.text('Nequi')); // {Efectivo, Nequi}
+      await tester.pump();
+      await tester.tap(find.text('Nequi'));
+      await tester.pump();
+
+      expect(emissions.last, {cash.account.id});
+    });
+
+    testWidgets(
+        'al volver a 1 cuenta seleccionada el multi se desactiva, y el '
+        'siguiente tap vuelve a reemplazar', (tester) async {
+      final emissions = await pumpRow(
+        tester,
+        selected: {cash.account.id},
+      );
+
+      await tester.longPress(find.text('Nequi')); // multi: {Efectivo, Nequi}
+      await tester.pump();
+      expect(multiActive(tester), isTrue);
+
+      await tester.tap(find.text('Efectivo')); // 2 -> 1: sale del modo
+      await tester.pump();
+      expect(emissions.last, {bank.account.id});
+      expect(multiActive(tester), isFalse);
+
+      await tester.tap(find.text('Ahorros'));
+      await tester.pump();
+      expect(emissions.last, {savings.account.id});
+    });
+
+    testWidgets('mientras multi está activo, un long press no hace nada',
+        (tester) async {
+      final emissions = await pumpRow(
+        tester,
+        selected: {cash.account.id},
+      );
+
+      await tester.longPress(find.text('Nequi'));
+      await tester.pump();
+      final emittedBefore = emissions.length;
+
+      await tester.longPress(find.text('Ahorros'));
+      await tester.pump();
+
+      expect(
+        emissions.length,
+        emittedBefore,
+        reason: 'el long press en multi no debe emitir ni salir del modo',
+      );
+      expect(multiActive(tester), isTrue);
+
+      // Si el long press no hubiera hecho nada, este tap suma Ahorros y
+      // colapsa al default (3 de 3); si hubiera entrado/salido del modo de
+      // otra forma, el resultado habría sido distinto.
+      await tester.tap(find.text('Ahorros'));
+      await tester.pump();
+      expect(emissions.last, isEmpty);
+    });
+
+    testWidgets('en modo multi, cada pill seleccionada muestra el check',
+        (tester) async {
+      await pumpRow(tester, selected: {cash.account.id});
+
+      // Single-select: sin checks, aunque la pill esté activa.
+      expect(pillFor(tester, 'Efectivo').trailingIcon, isNull);
+
+      await tester.longPress(find.text('Nequi'));
+      await tester.pump();
+
+      expect(pillFor(tester, 'Efectivo').trailingIcon, LucideIcons.check);
+      expect(pillFor(tester, 'Nequi').trailingIcon, LucideIcons.check);
+      expect(pillFor(tester, 'Ahorros').trailingIcon, isNull);
+    });
+
+    testWidgets('tocar el chip "Todas" sale del modo multi y vuelve al default',
+        (tester) async {
+      final emissions = await pumpRow(
+        tester,
+        selected: {cash.account.id},
+      );
+
+      await tester.longPress(find.text('Nequi')); // multi: {Efectivo, Nequi}
+      await tester.pump();
+      expect(multiActive(tester), isTrue);
+
+      await tester.tap(circularIconChip(LucideIcons.checkCheck));
+      await tester.pump();
+
+      // "Todas" emite el conjunto explícito completo (no el vacío implícito,
+      // para que el estado sea distinguible), y sale del modo multi.
+      expect(
+        emissions.last,
+        {cash.account.id, bank.account.id, savings.account.id},
+      );
+      expect(multiActive(tester), isFalse);
+
+      // De vuelta en single-select: el próximo tap reemplaza.
+      await tester.tap(find.text('Ahorros'));
+      await tester.pump();
+      expect(emissions.last, {savings.account.id});
+    });
   });
 
-  testWidgets(
-      'con todas las cuentas seleccionadas explícitamente, el chip toggle '
-      'también muestra "Limpiar"', (tester) async {
-    final result = await pumpAndTap(
-      tester,
-      selected: {cash.account.id, bank.account.id, savings.account.id},
-      tapTarget: circularIconChip(LucideIcons.x),
-    );
-    expect(result, {cash.account.id});
+  group('chip toggle "Todas"/"Limpiar"', () {
+    testWidgets(
+        'con una selección parcial, muestra "Todas" y al tocarlo selecciona '
+        'explícitamente todas las cuentas', (tester) async {
+      final emissions = await pumpRow(
+        tester,
+        selected: {cash.account.id},
+      );
+
+      await tester.tap(circularIconChip(LucideIcons.checkCheck));
+      await tester.pump();
+
+      expect(
+        emissions.last,
+        {cash.account.id, bank.account.id, savings.account.id},
+      );
+    });
+
+    testWidgets(
+        'con todas las cuentas seleccionadas (implícito), muestra "Limpiar" y '
+        'al tocarlo deja solo la primera cuenta', (tester) async {
+      final emissions = await pumpRow(tester, selected: const {});
+
+      await tester.tap(circularIconChip(LucideIcons.x));
+      await tester.pump();
+
+      expect(emissions.last, {cash.account.id});
+    });
+
+    testWidgets(
+        'con todas las cuentas seleccionadas explícitamente, también muestra '
+        '"Limpiar"', (tester) async {
+      final emissions = await pumpRow(
+        tester,
+        selected: {cash.account.id, bank.account.id, savings.account.id},
+      );
+
+      await tester.tap(circularIconChip(LucideIcons.x));
+      await tester.pump();
+
+      expect(emissions.last, {cash.account.id});
+    });
   });
 
-  testWidgets(
-      'deseleccionar una cuenta entre varias explícitas la quita del '
-      'conjunto', (tester) async {
-    final result = await pumpAndTap(
-      tester,
-      selected: {cash.account.id, bank.account.id},
-      tapTarget: find.text('Efectivo'),
-    );
-    expect(result, {bank.account.id});
-  });
-
-  testWidgets(
-      'deseleccionar la última cuenta explícita seleccionada es un no-op '
-      '(nunca cero cuentas)', (tester) async {
-    final result = await pumpAndTap(
-      tester,
-      selected: {cash.account.id},
-      tapTarget: find.text('Efectivo'),
-    );
-    expect(result, {cash.account.id});
-  });
-
-  testWidgets(
-      'sin filtro previo (Todas), deseleccionar una cuenta dentro de 3 '
-      'activas deja las otras 2 explícitas', (tester) async {
-    final result = await pumpAndTap(
-      tester,
-      selected: const {},
-      tapTarget: find.text('Efectivo'),
-    );
-    expect(result, {bank.account.id, savings.account.id});
-  });
-
-  testWidgets(
-      'sin filtro previo y solo una cuenta activa, deseleccionarla es un '
-      'no-op', (tester) async {
-    Set<String>? result;
-    await tester.pumpAppWidget(
-      AccountFilterChipRow(
-        accounts: [cash],
+  group('única cuenta activa', () {
+    testWidgets('tocar la única cuenta existente la selecciona',
+        (tester) async {
+      final emissions = await pumpRow(
+        tester,
         selected: const {},
-        onChanged: (next) => result = next,
-      ),
-    );
-    await tester.tap(find.text('Efectivo'));
-    await tester.pump();
-    // No-op: the toggle refuses to leave zero accounts, so it hands back the
-    // same effective selection it started from.
-    expect(result, {cash.account.id});
+        rowAccounts: [cash],
+      );
+
+      await tester.tap(find.text('Efectivo'));
+      await tester.pump();
+
+      expect(emissions.last, {cash.account.id});
+    });
+  });
+}
+
+/// Test-only harness: keeps `selected` live so a chain of taps behaves like
+/// the real screen, where each emission rebuilds the row with the new filter.
+class _AccountFilterChipRowHarness extends StatefulWidget {
+  const _AccountFilterChipRowHarness({
+    required this.accounts,
+    required this.initialSelected,
+    required this.onEmitted,
   });
 
-  testWidgets(
-      'reseleccionar la única cuenta faltante colapsa de vuelta al default '
-      'inclusivo-vacío', (tester) async {
-    final result = await pumpAndTap(
-      tester,
-      selected: {cash.account.id, bank.account.id},
-      tapTarget: find.text('Ahorros'),
-    );
-    expect(result, isEmpty);
-  });
+  final List<AccountWithBalance> accounts;
+  final Set<String> initialSelected;
+  final ValueChanged<Set<String>> onEmitted;
+
+  @override
+  State<_AccountFilterChipRowHarness> createState() =>
+      _AccountFilterChipRowHarnessState();
+}
+
+class _AccountFilterChipRowHarnessState
+    extends State<_AccountFilterChipRowHarness> {
+  late Set<String> _selected = widget.initialSelected;
+
+  @override
+  Widget build(BuildContext context) => AccountFilterChipRow(
+        accounts: widget.accounts,
+        selected: _selected,
+        onChanged: (next) {
+          widget.onEmitted(next);
+          setState(() => _selected = next);
+        },
+      );
 }

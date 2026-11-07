@@ -68,9 +68,6 @@ import 'package:billetudo/core/notifications/domain/usecases/set_notification_ki
     as _i860;
 import 'package:billetudo/core/preferences/account_filter_preference_datasource.dart'
     as _i248;
-import 'package:billetudo/core/preferences/balance_carousel_cubit.dart' as _i38;
-import 'package:billetudo/core/preferences/balance_carousel_preference_datasource.dart'
-    as _i345;
 import 'package:billetudo/core/preferences/debt_payment_toggle_preference_datasource.dart'
     as _i554;
 import 'package:billetudo/core/security/secure_clipboard.dart' as _i486;
@@ -395,6 +392,8 @@ import 'package:billetudo/features/capture/data/datasources/issuer_rules_asset_d
     as _i405;
 import 'package:billetudo/features/capture/data/datasources/issuer_settings_preference_datasource.dart'
     as _i715;
+import 'package:billetudo/features/capture/data/datasources/manual_movement_attempt_preference_datasource.dart'
+    as _i847;
 import 'package:billetudo/features/capture/data/datasources/merchant_learning_local_datasource.dart'
     as _i777;
 import 'package:billetudo/features/capture/data/datasources/pending_captures_local_datasource.dart'
@@ -409,6 +408,8 @@ import 'package:billetudo/features/capture/data/repositories/issuer_rules_reposi
     as _i330;
 import 'package:billetudo/features/capture/data/repositories/issuer_settings_repository_impl.dart'
     as _i946;
+import 'package:billetudo/features/capture/data/repositories/manual_movement_attempt_repository_impl.dart'
+    as _i615;
 import 'package:billetudo/features/capture/data/repositories/notification_capture_repository_impl.dart'
     as _i674;
 import 'package:billetudo/features/capture/data/repositories/pending_capture_repository_impl.dart'
@@ -431,6 +432,8 @@ import 'package:billetudo/features/capture/domain/repositories/issuer_rules_repo
     as _i925;
 import 'package:billetudo/features/capture/domain/repositories/issuer_settings_repository.dart'
     as _i824;
+import 'package:billetudo/features/capture/domain/repositories/manual_movement_attempt_repository.dart'
+    as _i576;
 import 'package:billetudo/features/capture/domain/repositories/microphone_permission_gate.dart'
     as _i129;
 import 'package:billetudo/features/capture/domain/repositories/notification_capture_repository.dart'
@@ -491,6 +494,8 @@ import 'package:billetudo/features/capture/domain/usecases/parse_spoken_transact
     as _i996;
 import 'package:billetudo/features/capture/domain/usecases/purge_discarded_captures.dart'
     as _i725;
+import 'package:billetudo/features/capture/domain/usecases/register_manual_movement_attempt.dart'
+    as _i934;
 import 'package:billetudo/features/capture/domain/usecases/request_microphone_permission.dart'
     as _i695;
 import 'package:billetudo/features/capture/domain/usecases/restore_pending_capture.dart'
@@ -1157,9 +1162,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i248.AccountFilterPreferenceDatasource>(() =>
         _i248.AccountFilterPreferenceDatasource(
             gh<_i460.SharedPreferencesAsync>()));
-    gh.lazySingleton<_i345.BalanceCarouselPreferenceDatasource>(() =>
-        _i345.BalanceCarouselPreferenceDatasource(
-            gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i554.DebtPaymentTogglePreferenceDatasource>(() =>
         _i554.DebtPaymentTogglePreferenceDatasource(
             gh<_i460.SharedPreferencesAsync>()));
@@ -1172,6 +1174,9 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i715.IssuerSettingsPreferenceDatasource>(() =>
         _i715.IssuerSettingsPreferenceDatasource(
+            gh<_i460.SharedPreferencesAsync>()));
+    gh.lazySingleton<_i847.ManualMovementAttemptPreferenceDatasource>(() =>
+        _i847.ManualMovementAttemptPreferenceDatasource(
             gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i525.BackupStatusLocalDatasource>(() =>
         _i525.BackupStatusLocalDatasource(gh<_i460.SharedPreferencesAsync>()));
@@ -1370,8 +1375,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i416.NotificationCaptureRepository>(() =>
         _i674.NotificationCaptureRepositoryImpl(
             gh<_i725.CaptureMethodChannelDatasource>()));
-    gh.lazySingleton<_i38.BalanceCarouselCubit>(() => _i38.BalanceCarouselCubit(
-        gh<_i345.BalanceCarouselPreferenceDatasource>()));
+    gh.lazySingleton<_i576.ManualMovementAttemptRepository>(
+        () => _i615.ManualMovementAttemptRepositoryImpl(
+              gh<_i847.ManualMovementAttemptPreferenceDatasource>(),
+              gh<_i474.CrashReporter>(),
+            ));
     gh.lazySingleton<_i239.NotificationScheduler>(() =>
         _i996.LocalNotificationScheduler(gh<_i598.NotificationMessages>()));
     gh.lazySingleton<_i395.AiInsightConversationRepository>(
@@ -1404,6 +1412,9 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i1013.DebtBalanceCalculator>(),
           gh<_i474.CrashReporter>(),
         ));
+    gh.factory<_i934.RegisterManualMovementAttempt>(() =>
+        _i934.RegisterManualMovementAttempt(
+            gh<_i576.ManualMovementAttemptRepository>()));
     gh.lazySingleton<_i34.GoalQuickAmountsRepository>(
         () => _i327.GoalQuickAmountsRepositoryImpl(
               gh<_i60.GoalQuickAmountsLocalDatasource>(),

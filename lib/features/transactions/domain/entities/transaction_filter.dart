@@ -44,8 +44,9 @@ class TransactionFilter extends Equatable {
 
   final DatePeriodFilter datePeriod;
 
-  /// The "Presupuesto" chip's window (built via [DatePeriodFilter.budget]),
-  /// entirely independent from [datePeriod] (the Fecha chip): `null` is its
+  /// The "Presupuesto" filter's window (built via
+  /// [DatePeriodFilter.budget]), entirely independent from [datePeriod] (the
+  /// Fecha filter): `null` is its
   /// default/cleared state, unlike `datePeriod`, which is never null. Both
   /// windows apply together, by intersection (AND), when present.
   final DatePeriodFilter? budgetPeriod;
@@ -61,15 +62,24 @@ class TransactionFilter extends Equatable {
   /// HU-06b: unlike the other dimensions, [datePeriod] is never "empty" —
   /// its default is always the current month
   /// ([DatePeriodFilter.thisMonth]). "Active" here means "not that default",
-  /// which is what flips the Fecha chip/badge on.
+  /// which is what flips the Fecha dimension's badge on.
   bool get hasDateFilter => datePeriod != DatePeriodFilter.thisMonth();
 
   /// Whether the active period can be stepped back/forward (`PeriodStepper`'s
   /// condition, Adición 2026-09-10 `u6sSAc`/`w9Eszi`). A custom range has no
   /// "previous"/"next" window — only its chip should show, never the nav
   /// bar.
+  ///
+  /// 2026-11-07: the bar is now shown for **every** granular Fecha period,
+  /// including the default "this month" one. It used to be hidden while the
+  /// period equaled `DatePeriodFilter.thisMonth()`, which left the Month
+  /// granularity as the only one without in-place Prev/Next navigation (Week
+  /// and Year always differ from the default the moment they are picked, so
+  /// they did show it) — the user has to be able to move between months
+  /// without reopening the filters sheet. A custom range still never shows
+  /// it, unless a Presupuesto window is the active period.
   bool get hasNavigablePeriod =>
-      (hasDateFilter && !datePeriod.isCustomRange) || hasBudgetPeriodFilter;
+      !datePeriod.isCustomRange || hasBudgetPeriodFilter;
 
   /// Issue #7: sum of dimensions with an active filter, used for the
   /// unified filters sheet's badge. [searchText] and [sortOrder] are

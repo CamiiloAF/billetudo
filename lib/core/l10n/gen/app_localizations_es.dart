@@ -813,23 +813,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get transactionsBalanceTotalLabel => 'Saldo total';
-
-  @override
-  String transactionsBalanceTotalSemantics(String label, String amount) {
-    return '$label: $amount';
-  }
-
-  @override
-  String get transactionsBalanceCardBalanceLabel => 'Saldo';
-
-  @override
-  String get transactionsBalanceCarouselCollapse => 'Ocultar saldos';
-
-  @override
-  String get transactionsBalanceCarouselExpand => 'Mostrar saldos';
-
-  @override
   String get transactionsGroupToday => 'Hoy';
 
   @override
@@ -1120,6 +1103,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get accountFilterSelectNone => 'Ninguna';
 
   @override
+  String get accountFilterMultiSelectHint =>
+      'Mantén presionado para seleccionar varias cuentas';
+
+  @override
+  String get accountFilterMultiSelectActiveHint =>
+      'Selección múltiple: toca una cuenta para agregarla o quitarla';
+
+  @override
   String get categoryFilterSheetTitle => 'Filtrar por categoría';
 
   @override
@@ -1158,6 +1149,10 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get transactionsFilterDateLockedByBudget =>
       'No puedes filtrar por fecha con un presupuesto activo';
+
+  @override
+  String get transactionsFilterBudgetLockedByAccounts =>
+      'No puedes filtrar por presupuesto con varias cuentas seleccionadas';
 
   @override
   String get transactionsFilterSectionType => 'TIPO';

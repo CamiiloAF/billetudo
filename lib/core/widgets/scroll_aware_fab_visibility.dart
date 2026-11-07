@@ -21,6 +21,13 @@ mixin ScrollAwareFabVisibility<T extends StatefulWidget> on State<T> {
   /// Whether the FAB should currently be shown.
   bool get fabVisible => _fabVisible;
 
+  /// The same scroll-direction signal as [fabVisible], exposed for other
+  /// scroll-driven chrome that should hide/show with the FAB (e.g. a
+  /// collapsing header or filter block via `ScrollAwareCollapsible`). It
+  /// shares [fabVisible]'s state — the FAB and that chrome always move
+  /// together.
+  bool get scrollAwareVisible => _fabVisible;
+
   @override
   void initState() {
     super.initState();

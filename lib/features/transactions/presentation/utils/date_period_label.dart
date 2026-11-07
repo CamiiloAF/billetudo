@@ -3,10 +3,9 @@ import 'package:intl/intl.dart';
 import '../../domain/entities/date_period_filter.dart';
 
 /// "Julio 2026" — HU-06b's Month granularity label (`P5fSkK`'s "Period
-/// Label", and the Chip Fecha default it mirrors): the full month name,
-/// capitalized, plus the year. `intl`'s Spanish month names come back
-/// lowercase ("julio 2026"), so this capitalizes the first letter — shared
-/// by the date filter stepper and the Chip Fecha so both agree.
+/// Label"): the full month name, capitalized, plus the year. `intl`'s
+/// Spanish month names come back lowercase ("julio 2026"), so this
+/// capitalizes the first letter.
 String monthYearLabel(DateTime anchor) {
   final raw = DateFormat('MMMM yyyy', 'es_CO').format(anchor);
   if (raw.isEmpty) {
@@ -17,8 +16,8 @@ String monthYearLabel(DateTime anchor) {
 
 /// "Este mes" / "Julio 2026" / "3 jul - 9 jul" / a custom range / a budget's
 /// window ("25 ago – 25 sep") — whatever best names [period], shared by the
-/// Chip Fecha, `PeriodStepper` and the unified filters sheet so all three read
-/// the same label for the same period.
+/// `PeriodStepper` and the unified filters sheet so both read the same label
+/// for the same period.
 String datePeriodLabel(DatePeriodFilter period) {
   if (period.isCustomRange || period.isBudgetPeriod) {
     return _rangeLabel(period);

@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:equatable/equatable.dart';
 
 /// Granularity of a "stepper" date period (HU-06b): Week / Month / Year,
@@ -36,8 +37,12 @@ class DatePeriodFilter extends Equatable {
       DatePeriodFilter._(granularity: granularity, anchor: _stripTime(anchor));
 
   /// Default state, always active: the current calendar month.
+  ///
+  /// Reads `clock.now()` rather than `DateTime.now()` for the default, so
+  /// goldens and tests can pin "today" with `withClock` — the same pattern
+  /// the rest of the app already uses for date-dependent UI.
   factory DatePeriodFilter.thisMonth([DateTime? now]) =>
-      DatePeriodFilter.granular(DateGranularity.month, now ?? DateTime.now());
+      DatePeriodFilter.granular(DateGranularity.month, now ?? clock.now());
 
   /// HU-06b: "Rango personalizado". [end] is inclusive (the last day the
   /// user picked); [endExclusive] resolves it to a half-open bound for
@@ -70,7 +75,7 @@ class DatePeriodFilter extends Equatable {
   ///
   /// This is a standalone value carried in `TransactionFilter.budgetPeriod`
   /// (its own field) — never assigned to `TransactionFilter.datePeriod`,
-  /// which stays exclusively the Fecha chip's state (HU-06b).
+  /// which stays exclusively the Fecha filter's state (HU-06b).
   ///
   /// [index]/[hasPrevious]/[hasNext] mirror `BudgetPeriodWindow`'s own fields
   /// (via `BudgetPeriodOption`, HU-`Adición 2026-09-10`'s Period Nav Bar):

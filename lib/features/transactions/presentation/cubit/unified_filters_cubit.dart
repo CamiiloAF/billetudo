@@ -28,11 +28,13 @@ class UnifiedFiltersState extends Equatable {
     Set<String> categoryIds = const <String>{},
     this.tags = const <Tag>[],
     Set<String> tagIds = const <String>{},
+    Set<String> accountIds = const <String>{},
     this.failure,
   })  : datePeriod = datePeriod ?? DatePeriodFilter.thisMonth(),
         types = Set.unmodifiable(types),
         categoryIds = Set.unmodifiable(categoryIds),
-        tagIds = Set.unmodifiable(tagIds);
+        tagIds = Set.unmodifiable(tagIds),
+        accountIds = Set.unmodifiable(accountIds);
 
   final UnifiedFiltersStatus status;
 
@@ -43,6 +45,12 @@ class UnifiedFiltersState extends Equatable {
 
   /// `null` means "no budget chosen" — the sheet's cleared/default state.
   final String? selectedBudgetId;
+
+  /// The account ids currently filtered in Movimientos, carried only so the
+  /// Presupuesto section can be locked when more than one account is
+  /// selected (2026-11-07) — accounts themselves are never edited here.
+  /// Empty means "todas las cuentas" (no account filter), not "none".
+  final Set<String> accountIds;
 
   /// HU-06b: never a bare "no filter" state, always a bounded period.
   final DatePeriodFilter datePeriod;
@@ -63,6 +71,15 @@ class UnifiedFiltersState extends Equatable {
   bool get isBudgetActive => selectedBudgetId != null;
   bool get isDateActive => datePeriod != DatePeriodFilter.thisMonth();
 
+  /// Two or more accounts are explicitly selected in Movimientos.
+  bool get hasMultipleAccounts => accountIds.length > 1;
+
+  /// 2026-11-07: Presupuesto is disabled while several accounts are selected
+  /// — budgets are scoped to their own accounts, so applying one over an
+  /// arbitrary multi-account selection would be misleading. Mirrors
+  /// [isDateLockedByBudget]'s locked treatment, in the opposite direction.
+  bool get isBudgetLockedByAccounts => hasBudgets && hasMultipleAccounts;
+
   /// The Fecha section's disabled/locked treatment (icon `lock` + caption,
   /// `Granularity Switch`/`Stepper Row` at `opacity: 0.4`): only while a
   /// Presupuesto filter is active, and only meaningful when there are
@@ -80,6 +97,7 @@ class UnifiedFiltersState extends Equatable {
     Set<String>? categoryIds,
     List<Tag>? tags,
     Set<String>? tagIds,
+    Set<String>? accountIds,
     Failure? failure,
   }) =>
       UnifiedFiltersState(
@@ -93,6 +111,7 @@ class UnifiedFiltersState extends Equatable {
         categoryIds: categoryIds ?? this.categoryIds,
         tags: tags ?? this.tags,
         tagIds: tagIds ?? this.tagIds,
+        accountIds: accountIds ?? this.accountIds,
         failure: failure,
       );
 
@@ -106,6 +125,7 @@ class UnifiedFiltersState extends Equatable {
         categoryIds,
         tags,
         tagIds,
+        accountIds,
         failure,
       ];
 }
@@ -168,14 +188,20 @@ class UnifiedFiltersCubit extends Cubit<UnifiedFiltersState> {
     required List<BudgetPeriodOption> budgetOptions,
   }) async {
     await _cancelSubscriptions();
+    final hasMultipleAccounts = filter.accountIds.length > 1;
     emit(
       UnifiedFiltersState(
         budgetOptions: budgetOptions,
-        selectedBudgetId: filter.budgetPeriod?.budgetId,
+        // Defensive: a budget never survives alongside 2+ selected accounts
+        // (`TransactionsListCubit.updateFilter` already clears it before the
+        // sheet opens), but if it ever did, the locked section wins.
+        selectedBudgetId:
+            hasMultipleAccounts ? null : filter.budgetPeriod?.budgetId,
         datePeriod: filter.datePeriod,
         types: filter.types,
         categoryIds: filter.categoryIds,
         tagIds: filter.tagIds,
+        accountIds: filter.accountIds,
       ),
     );
     _tagsSubscription = _watchTags().listen((result) {
@@ -197,12 +223,20 @@ class UnifiedFiltersCubit extends Cubit<UnifiedFiltersState> {
 
   /// Criterion #7: selecting a Presupuesto clears any active Fecha filter in
   /// the very same event — not a visual-only disable.
-  void selectBudget(String budgetId) => emit(
-        state.copyWith(
-          selectedBudgetId: budgetId,
-          datePeriod: DatePeriodFilter.thisMonth(),
-        ),
-      );
+  ///
+  /// 2026-11-07: a no-op while the section is locked by a multi-account
+  /// selection — the UI already dims it, this is the model-level guard.
+  void selectBudget(String budgetId) {
+    if (state.isBudgetLockedByAccounts) {
+      return;
+    }
+    emit(
+      state.copyWith(
+        selectedBudgetId: budgetId,
+        datePeriod: DatePeriodFilter.thisMonth(),
+      ),
+    );
+  }
 
   /// The Presupuesto section's own "Ninguno" pill.
   void clearBudget() => emit(state.copyWith(clearSelectedBudget: true));
@@ -267,12 +301,16 @@ class UnifiedFiltersCubit extends Cubit<UnifiedFiltersState> {
           status: state.status,
           budgetOptions: state.budgetOptions,
           tags: state.tags,
+          // Accounts are not edited in this sheet: keep them so the
+          // Presupuesto lock (2+ selected) survives "Limpiar todo".
+          accountIds: state.accountIds,
         ),
       );
 
   /// Builds the delta "Aplicar" hands back to the caller.
   UnifiedFiltersResult buildResult() {
-    final budgetId = state.selectedBudgetId;
+    final budgetId =
+        state.isBudgetLockedByAccounts ? null : state.selectedBudgetId;
     DatePeriodFilter? budgetPeriod;
     if (budgetId != null) {
       for (final option in state.budgetOptions) {

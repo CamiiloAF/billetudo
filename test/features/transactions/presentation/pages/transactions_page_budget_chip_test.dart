@@ -38,7 +38,6 @@ void main() {
         child: TransactionsPage(
           onAddTransaction: (_) {},
           onOpenTransaction: (_) async => null,
-          onOpenAccount: (_) {},
         ),
       ),
     );

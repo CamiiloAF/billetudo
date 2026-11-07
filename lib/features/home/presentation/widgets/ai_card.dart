@@ -78,7 +78,6 @@ class AiCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      constraints: const BoxConstraints(minHeight: 137),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: context.colors.surface,

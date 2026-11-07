@@ -227,8 +227,7 @@ void main() {
     // reveal here — only the hint copy changes between off/on. This case
     // covers the "on" business state that "create income, empty" (off,
     // default) does not.
-    testWidgets('create income, counts in budget on ($suffix)',
-        (tester) async {
+    testWidgets('create income, counts in budget on ($suffix)', (tester) async {
       await golden(
         tester,
         () => TransactionFormState(

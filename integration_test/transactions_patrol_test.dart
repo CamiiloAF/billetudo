@@ -648,11 +648,10 @@ void main() {
         find.text('Cuenta A → Cuenta B'),
         findsOneWidget,
       );
-      // Not a bare find.text('\$100'): the Movimientos balance carousel
-      // (Mejora #2, `MovementsBalanceCard`) now shows "Cuenta B"'s own
-      // balance figure right above the list, so the same string also renders
-      // there. Scope the finder to the transfer's `TransactionRow` — the
-      // widget this assertion actually cares about.
+      // Not a bare find.text('\$100'): the page can render the same amount
+      // string in more than one place (the transfer row and any other row or
+      // figure carrying that amount). Scope the finder to the transfer's
+      // `TransactionRow` — the widget this assertion actually cares about.
       await _expectEventually(
         $,
         find.descendant(
@@ -953,8 +952,8 @@ void main() {
       expect(find.text('-\$20'), findsOneWidget);
 
       // Issue #7: cuenta filtering moved out of a sheet into its own row of
-      // multi-selection chips (`AccountFilterChipRow`) directly on the
-      // Movimientos filter bar — "Todas" is one of those chips, not a
+      // chips (`AccountFilterChipRow`, tap = single-select / long press =
+      // multi-select since 2026-11-07) directly on the Movimientos filter bar — "Todas" is one of those chips, not a
       // trigger that opens a separate sheet anymore. It's now an icon-only
       // `CircularIconChip` (`check-check`, no visible `Text`), so it's
       // located by its icon rather than by label — same reasoning as the
@@ -968,11 +967,11 @@ void main() {
         findsOneWidget,
       );
 
-      // Deselecting "Cuenta B" from the default all-selected state leaves
-      // only "Cuenta A" active — `find.text('Cuenta B')` is ambiguous here
-      // (a list row title reads the same), so this taps the chip through its
-      // own widget type, same reasoning `_pickAccount` documents for the old
-      // sheet's rows.
+      // 2026-11-07: a plain tap on an account chip is single-select — it
+      // filters to that account only (long press enters multi-select).
+      // `find.text('Cuenta B')` is ambiguous here (a list row title reads the
+      // same), so this taps the chip through its own widget type, same
+      // reasoning `_pickAccount` documents for the old sheet's rows.
       await $.tester.tap(
         find.byWidgetPredicate(
           (widget) => widget is FilterChipPill && widget.label == 'Cuenta B',
@@ -980,9 +979,9 @@ void main() {
       );
       await $.tester.pumpAndSettle();
 
-      // HU-06: filtered to Cuenta A only — Cuenta B's movement disappears.
-      await _expectEventually($, find.text('-\$20'), findsNothing);
-      expect(find.text('-\$10'), findsOneWidget);
+      // HU-06: filtered to Cuenta B only — Cuenta A's movement disappears.
+      await _expectEventually($, find.text('-\$10'), findsNothing);
+      expect(find.text('-\$20'), findsOneWidget);
     },
   );
 
@@ -1341,8 +1340,8 @@ void main() {
   );
 
   patrolTest(
-    'Period Nav Bar: aplicar un filtro de Fecha no-default lo muestra y '
-    'Prev/Next navegan entre periodos',
+    'Period Nav Bar: el mes default muestra la barra y Prev/Next navegan '
+    'entre periodos (un filtro de Fecha no-default también)',
     ($) async {
       await startApp($);
       await _createCashAccount($, 'Efectivo');
@@ -1350,10 +1349,23 @@ void main() {
       _goToTransactions($);
       await $.tester.pumpAndSettle();
 
-      // Default filter is `DatePeriodFilter.thisMonth()`
-      // (`TransactionFilter.hasDateFilter`), so `PeriodStepper` is not built
-      // at all yet.
-      expect(find.byType(PeriodStepper), findsNothing);
+      final nextArrow = find.byWidgetPredicate(
+        (widget) =>
+            widget is PeriodStepperChevron &&
+            widget.icon == LucideIcons.chevronRight,
+      );
+
+      // 2026-11-07: the default filter is `DatePeriodFilter.thisMonth()`,
+      // and the Month granularity now renders the `PeriodStepper` too — it
+      // used to be the only granular period without in-place Prev/Next
+      // navigation. On the current month, "Next" starts disabled (there is
+      // nowhere forward to go); "Prev" is always enabled for a granular
+      // period.
+      await _expectEventually($, find.byType(PeriodStepper), findsOneWidget);
+      expect(
+        $.tester.widget<PeriodStepperChevron>(nextArrow).onPressed,
+        isNull,
+      );
 
       // Applies a non-default Fecha filter through the real unified filters
       // sheet: switching granularity to "Semana" (current week) differs from
@@ -1376,28 +1388,22 @@ void main() {
       await $.tester.tap(find.text('Aplicar'));
       await $.tester.pumpAndSettle();
 
-      // The bar now renders, anchored on the current week: there is no
-      // lower bound on the past (`datePeriodHasPrevious` is always true for
-      // a granular period), but "Next" starts disabled — the current week
-      // has nowhere forward to go (`datePeriodHasNext`'s own doc comment).
+      // The bar now renders anchored on the current week: "Next" starts
+      // disabled — the current week has nowhere forward to go
+      // (`datePeriodHasNext`'s own doc comment).
       await _expectEventually($, find.byType(PeriodStepper), findsOneWidget);
-      final nextArrow = find.byWidgetPredicate(
-        (widget) =>
-            widget is PeriodStepperChevron &&
-            widget.icon == LucideIcons.chevronRight,
-      );
       expect(
         $.tester.widget<PeriodStepperChevron>(nextArrow).onPressed,
         isNull,
       );
 
-      final originalLabel = _periodNavLabel($);
+      final originalWeekLabel = _periodNavLabel($);
 
       // Tap Prev: steps back one week, and the period label changes to
       // reflect it.
       await _tapPeriodNavArrow($, LucideIcons.chevronLeft);
-      final previousLabel = _periodNavLabel($);
-      expect(previousLabel, isNot(equals(originalLabel)));
+      final previousWeekLabel = _periodNavLabel($);
+      expect(previousWeekLabel, isNot(equals(originalWeekLabel)));
 
       // Having stepped back, "Next" is enabled again — there is now a period
       // ahead of the one on screen.
@@ -1409,10 +1415,44 @@ void main() {
       // Tap Next: steps back to the original week — same label as before
       // stepping away.
       await _tapPeriodNavArrow($, LucideIcons.chevronRight);
-      expect(_periodNavLabel($), originalLabel);
+      expect(_periodNavLabel($), originalWeekLabel);
 
       // Back at the current week, "Next" is disabled again — the bounded
       // edge this scenario's own comment above documents.
+      expect(
+        $.tester.widget<PeriodStepperChevron>(nextArrow).onPressed,
+        isNull,
+      );
+
+      // Switching the granularity to "Mes" keeps the bar and navigates
+      // between months now that Month is no longer excluded — the exact gap
+      // the user reported (2026-11-07).
+      await $.tester.tap(find.byTooltip('Filtros'));
+      await $.tester.pumpAndSettle();
+      await $.tester.tap(find.text('Mes'));
+      await $.tester.pumpAndSettle();
+      await $.tester.tap(find.text('Aplicar'));
+      await $.tester.pumpAndSettle();
+
+      await _expectEventually($, find.byType(PeriodStepper), findsOneWidget);
+      expect(
+        $.tester.widget<PeriodStepperChevron>(nextArrow).onPressed,
+        isNull,
+      );
+
+      final originalMonthLabel = _periodNavLabel($);
+      await _tapPeriodNavArrow($, LucideIcons.chevronLeft);
+      final previousMonthLabel = _periodNavLabel($);
+      expect(previousMonthLabel, isNot(equals(originalMonthLabel)));
+
+      // Stepped back in time: "Next" is enabled and returns to the month it
+      // started on.
+      expect(
+        $.tester.widget<PeriodStepperChevron>(nextArrow).onPressed,
+        isNotNull,
+      );
+      await _tapPeriodNavArrow($, LucideIcons.chevronRight);
+      expect(_periodNavLabel($), originalMonthLabel);
       expect(
         $.tester.widget<PeriodStepperChevron>(nextArrow).onPressed,
         isNull,

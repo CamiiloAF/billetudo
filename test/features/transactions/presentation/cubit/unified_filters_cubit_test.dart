@@ -171,6 +171,83 @@ void main() {
     );
   });
 
+  group('bloqueo de Presupuesto con 2+ cuentas seleccionadas (2026-11-07)', () {
+    blocTest<UnifiedFiltersCubit, UnifiedFiltersState>(
+      'con 2+ cuentas, isBudgetLockedByAccounts es true y el presupuesto '
+      'aplicado se ignora al abrir el sheet',
+      build: build,
+      act: (cubit) => cubit.start(
+        filter: TransactionFilter(
+          accountIds: const {'acc-1', 'acc-2'},
+          budgetPeriod: DatePeriodFilter.budget(
+            budgetId: 'budget-1',
+            start: DateTime(2026, 7),
+            endExclusive: DateTime(2026, 8),
+          ),
+        ),
+        budgetOptions: [food],
+      ),
+      verify: (cubit) {
+        expect(cubit.state.hasMultipleAccounts, isTrue);
+        expect(cubit.state.isBudgetLockedByAccounts, isTrue);
+        expect(cubit.state.selectedBudgetId, isNull);
+        expect(cubit.state.accountIds, {'acc-1', 'acc-2'});
+        expect(cubit.buildResult().budgetPeriod, isNull);
+      },
+    );
+
+    blocTest<UnifiedFiltersCubit, UnifiedFiltersState>(
+      'con 2+ cuentas, selectBudget es un no-op y buildResult no arrastra '
+      'presupuesto',
+      build: build,
+      act: (cubit) async {
+        await cubit.start(
+          filter: TransactionFilter(accountIds: const {'acc-1', 'acc-2'}),
+          budgetOptions: [food],
+        );
+        cubit.selectBudget('budget-1');
+      },
+      verify: (cubit) {
+        expect(cubit.state.selectedBudgetId, isNull);
+        expect(cubit.state.isBudgetLockedByAccounts, isTrue);
+        expect(cubit.buildResult().budgetPeriod, isNull);
+      },
+    );
+
+    blocTest<UnifiedFiltersCubit, UnifiedFiltersState>(
+      'con una sola cuenta, Presupuesto sigue habilitado y seleccionable',
+      build: build,
+      act: (cubit) async {
+        await cubit.start(
+          filter: TransactionFilter(accountIds: const {'acc-1'}),
+          budgetOptions: [food],
+        );
+        cubit.selectBudget('budget-1');
+      },
+      verify: (cubit) {
+        expect(cubit.state.isBudgetLockedByAccounts, isFalse);
+        expect(cubit.state.selectedBudgetId, 'budget-1');
+        expect(cubit.buildResult().budgetPeriod?.budgetId, 'budget-1');
+      },
+    );
+
+    blocTest<UnifiedFiltersCubit, UnifiedFiltersState>(
+      'clearAll conserva las cuentas seleccionadas (y por tanto el bloqueo)',
+      build: build,
+      act: (cubit) async {
+        await cubit.start(
+          filter: TransactionFilter(accountIds: const {'acc-1', 'acc-2'}),
+          budgetOptions: [food],
+        );
+        cubit.clearAll();
+      },
+      verify: (cubit) {
+        expect(cubit.state.accountIds, {'acc-1', 'acc-2'});
+        expect(cubit.state.isBudgetLockedByAccounts, isTrue);
+      },
+    );
+  });
+
   group('buildResult', () {
     blocTest<UnifiedFiltersCubit, UnifiedFiltersState>(
       'resuelve budgetPeriod desde el presupuesto seleccionado',

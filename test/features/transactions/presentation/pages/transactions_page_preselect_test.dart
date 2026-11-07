@@ -1,6 +1,4 @@
 import 'package:billetudo/core/di/injection.dart';
-import 'package:billetudo/core/preferences/balance_carousel_cubit.dart';
-import 'package:billetudo/core/preferences/balance_carousel_preference_datasource.dart';
 import 'package:billetudo/features/accounts/domain/usecases/has_any_active_account.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_active_accounts_count.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_filter.dart';
@@ -24,18 +22,11 @@ class MockHasAnyActiveAccount extends Mock implements HasAnyActiveAccount {}
 class MockWatchActiveAccountsCount extends Mock
     implements WatchActiveAccountsCount {}
 
-class _FakeCarouselPrefs implements BalanceCarouselPreferenceDatasource {
-  @override
-  Future<bool> readCollapsed() async => false;
-
-  @override
-  Future<void> writeCollapsed({required bool collapsed}) async {}
-}
-
-/// The FAB's account preselection (Mejora #2): the new-movement form opens on
-/// the account of the carousel's active card, read from the carousel cubit's
-/// remembered page and clamped against the shown accounts. Covers all three
-/// filter states plus the shrink-below-current-page clamp.
+/// The FAB's account preselection: the new-movement form opens on the first
+/// account the active filter shows ([TransactionsListState.displayedAccounts]
+/// `.first`), and on none when the filter shows no account. Covers the
+/// unfiltered list, a single-account filter, a multi-account filter (order
+/// follows the account list, not the filter's set order) and the empty case.
 void main() {
   late MockTransactionsListCubit listCubit;
 
@@ -75,27 +66,20 @@ void main() {
   Future<String?> pumpAndTapFab(
     WidgetTester tester, {
     required TransactionsListState state,
-    required int currentPage,
   }) async {
     when(() => listCubit.state).thenReturn(state);
     String? captured;
     var called = false;
-    final carousel = BalanceCarouselCubit(_FakeCarouselPrefs())
-      ..pageChanged(currentPage);
 
     await tester.pumpAppWidget(
-      MultiBlocProvider(
-        providers: [
-          BlocProvider<TransactionsListCubit>.value(value: listCubit),
-          BlocProvider<BalanceCarouselCubit>.value(value: carousel),
-        ],
+      BlocProvider<TransactionsListCubit>.value(
+        value: listCubit,
         child: TransactionsPage(
           onAddTransaction: (id) {
             called = true;
             captured = id;
           },
           onOpenTransaction: (_) async => null,
-          onOpenAccount: (_) {},
         ),
       ),
     );
@@ -115,41 +99,34 @@ void main() {
         filter: TransactionFilter(accountIds: accountIds),
       );
 
-  testWidgets('preselecciona la cuenta de la tarjeta activa (Todas)', (
-    tester,
-  ) async {
-    final id = await pumpAndTapFab(
-      tester,
-      state: readyWith(),
-      currentPage: 1,
-    );
+  testWidgets('sin filtro de cuenta preselecciona la primera cuenta (Todas)',
+      (tester) async {
+    final id = await pumpAndTapFab(tester, state: readyWith());
 
-    // Página 1 de las tres mostradas -> Bancolombia.
-    expect(id, 'a2');
+    expect(id, 'a1');
   });
 
   testWidgets('con una sola cuenta filtrada preselecciona esa', (tester) async {
     final id = await pumpAndTapFab(
       tester,
       state: readyWith(accountIds: {'a3'}),
-      currentPage: 0,
     );
 
     expect(id, 'a3');
   });
 
   testWidgets(
-    'si el set encogió por debajo de la página activa, hace clamp al último',
+    'con varias cuentas filtradas preselecciona la primera en el orden '
+    'de la lista',
     (tester) async {
-      // La página recordada (5) quedó fuera de rango tras filtrar: se recorta
-      // al último índice mostrado en vez de reventar.
+      // The filter set has no order; `displayedAccounts` preserves the order
+      // of `accounts`, so `a1` wins even when `a3` is requested first.
       final id = await pumpAndTapFab(
         tester,
-        state: readyWith(),
-        currentPage: 5,
+        state: readyWith(accountIds: {'a3', 'a1'}),
       );
 
-      expect(id, 'a3');
+      expect(id, 'a1');
     },
   );
 
@@ -157,7 +134,6 @@ void main() {
     final id = await pumpAndTapFab(
       tester,
       state: readyWith(accountIds: {'zzz'}),
-      currentPage: 0,
     );
 
     expect(id, isNull);

@@ -158,5 +158,34 @@ void main() {
         );
       });
     });
+    group('con 2+ cuentas bloqueando Presupuesto ($suffix)', () {
+      setUp(() {
+        final cubit = MockUnifiedFiltersCubit();
+        when(() => cubit.start(
+              filter: any(named: 'filter'),
+              budgetOptions: any(named: 'budgetOptions'),
+            )).thenAnswer((_) async {});
+        when(() => cubit.state).thenReturn(
+          UnifiedFiltersState(
+            status: UnifiedFiltersStatus.ready,
+            budgetOptions: [food],
+            accountIds: const {'acc-1', 'acc-2'},
+            types: const {TransactionType.expense},
+            tags: tags,
+          ),
+        );
+        getIt.registerFactory<UnifiedFiltersCubit>(() => cubit);
+      });
+
+      testWidgets(
+          '2026-11-07: icono lock + leyenda en Presupuesto, pills a 0.4 y '
+          'Fecha intacta', (tester) async {
+        await golden(
+          tester,
+          'budget_locked_by_accounts_$suffix',
+          brightness: brightness,
+        );
+      });
+    });
   }
 }

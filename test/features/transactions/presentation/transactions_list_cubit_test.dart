@@ -650,6 +650,58 @@ void main() {
         ).called(1);
       },
     );
+
+    blocTest<TransactionsListCubit, TransactionsListState>(
+      'seleccionar 2+ cuentas limpia el filtro de presupuesto (2026-11-07: '
+      'un presupuesto no aplica a varias cuentas a la vez)',
+      setUp: () => when(() => watchTransactions(any()))
+          .thenAnswer((_) => Stream.value(Right([entry]))),
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await cubit.updateFilter(
+          cubit.state.filter.copyWith(
+            budgetPeriod: DatePeriodFilter.budget(
+              budgetId: 'budget-1',
+              start: DateTime(2026, 7),
+              endExclusive: DateTime(2026, 8),
+            ),
+          ),
+        );
+        await cubit.updateFilter(
+          cubit.state.filter.copyWith(accountIds: const {'acc-1', 'acc-2'}),
+        );
+      },
+      verify: (cubit) {
+        expect(cubit.state.filter.accountIds, {'acc-1', 'acc-2'});
+        expect(cubit.state.filter.hasBudgetPeriodFilter, isFalse);
+        expect(cubit.state.filter.budgetPeriod, isNull);
+      },
+    );
+
+    blocTest<TransactionsListCubit, TransactionsListState>(
+      'con una sola cuenta seleccionada, el filtro de presupuesto se conserva',
+      setUp: () => when(() => watchTransactions(any()))
+          .thenAnswer((_) => Stream.value(Right([entry]))),
+      build: build,
+      act: (cubit) async {
+        await cubit.start();
+        await cubit.updateFilter(
+          cubit.state.filter.copyWith(
+            budgetPeriod: DatePeriodFilter.budget(
+              budgetId: 'budget-1',
+              start: DateTime(2026, 7),
+              endExclusive: DateTime(2026, 8),
+            ),
+            accountIds: const {'acc-1'},
+          ),
+        );
+      },
+      verify: (cubit) {
+        expect(cubit.state.filter.accountIds, {'acc-1'});
+        expect(cubit.state.filter.budgetPeriod?.budgetId, 'budget-1');
+      },
+    );
   });
 
   group('stepPeriod (Period Nav Bar, Adición 2026-09-10)', () {

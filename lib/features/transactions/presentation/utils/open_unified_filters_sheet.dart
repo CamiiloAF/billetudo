@@ -7,10 +7,11 @@ import '../widgets/sheets/unified_filters_sheet.dart';
 
 /// Opens `UnifiedFiltersSheet` seeded with [state]'s current filter and, if
 /// the user applies it, merges the result back into `TransactionsListCubit`.
-/// Shared by `FiltersButton` and the Chip Fecha (`FilterChipPill`) in
-/// `TransactionsFilterBar` — both open the exact same sheet, since a
-/// standalone Fecha sheet no longer exists in production (everything but
-/// cuenta lives in `UnifiedFiltersSheet`, see `unified_filters_sheet.dart`).
+/// The only trigger in production is `FiltersButton` in
+/// `TransactionsSearchRow` — the `FilterChipPill` "Chip Fecha" that used to
+/// share it was removed on 2026-11-07 (the always-visible `PeriodStepper`
+/// already names the period). Everything but cuenta lives in this sheet; see
+/// `unified_filters_sheet.dart`.
 Future<void> openUnifiedFiltersSheet(
   BuildContext context,
   TransactionsListState state,

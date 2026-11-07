@@ -184,8 +184,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
         return const Right(unit);
       });
 
-  /// The Presupuesto chip (`filter.budgetPeriod`), when active, substitutes
-  /// the Fecha chip (`filter.datePeriod`) entirely: the sheet locks Fecha
+  /// The Presupuesto filter (`filter.budgetPeriod`), when active, substitutes
+  /// the Fecha filter (`filter.datePeriod`) entirely: the sheet locks Fecha
   /// while a budget is selected precisely because the budget's real window
   /// (which may span across calendar months) is the only one that should
   /// apply. `filter.datePeriod` is ignored in that case, not intersected.

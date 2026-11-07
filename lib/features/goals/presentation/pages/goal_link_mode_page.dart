@@ -32,11 +32,10 @@ class GoalLinkModePage extends StatelessWidget {
     return TutorialAutoShow(
       tutorialKey: TutorialKey.goalLinkMovement,
       child: TransactionsPage(
-        // The FAB is hidden and the row/account taps below are unused in link
-        // mode, so these are inert stubs.
+        // The FAB is hidden and the ordinary row tap is unused in link mode
+        // (taps link the movement instead), so these are inert stubs.
         onAddTransaction: (_) {},
         onOpenTransaction: (_) async => null,
-        onOpenAccount: (_) {},
         linkMode: TransactionsLinkMode(
           bannerTitle: l10n.goalLinkBannerTitle(goalName),
           bannerBody: l10n.goalLinkBannerBody,

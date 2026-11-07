@@ -149,11 +149,11 @@ import '../error/result.dart';
 import '../l10n/gen/app_localizations.dart';
 import '../legal/presentation/widgets/legal_reacceptance_gate.dart';
 import '../legal/presentation/widgets/sheets/legal_acceptance_sheet.dart';
-import '../preferences/balance_carousel_cubit.dart';
 import '../sync/presentation/cubit/sync_status_cubit.dart';
 import '../sync/presentation/pages/pending_sync_changes_page.dart';
 import '../sync/presentation/pages/sync_status_page.dart';
 import '../widgets/coming_soon_page.dart';
+import 'app_route_observer.dart';
 
 /// App routes. Each feature registers its own here. Paths stay in Spanish
 /// because they are user-visible URLs.
@@ -579,6 +579,11 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.home}) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: initialLocation,
+    // `TutorialAutoShow` needs to know when navigation changed so it can
+    // re-check whether its screen is actually visible (see
+    // `app_route_observer.dart`). Passed through the router because
+    // `MaterialApp.router` does not forward `navigatorObservers`.
+    observers: <NavigatorObserver>[appRouteObserver],
     routes: [
       StatefulShellRoute.indexedStack(
         // `LegalReacceptanceGate` wraps every entry into the shell (not just
@@ -781,14 +786,11 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
           builder: (context, state) {
             final listCubit =
                 _started(getIt<TransactionsListCubit>(), (c) => c.start());
-            final carouselCubit =
-                _started(getIt<BalanceCarouselCubit>(), (c) => c.load());
             final capturesCubit =
                 _started(getIt<PendingCapturesCubit>(), (c) async => c.start());
             return MultiBlocProvider(
               providers: [
                 BlocProvider.value(value: listCubit),
-                BlocProvider.value(value: carouselCubit),
                 BlocProvider.value(value: capturesCubit),
               ],
               child: TransactionsPage(
@@ -799,7 +801,6 @@ StatefulShellBranch _movimientosBranch() => StatefulShellBranch(
                 ),
                 onOpenTransaction: (id) =>
                     context.push<String>(AppRoutes.transaction(id)),
-                onOpenAccount: (id) => context.push(AppRoutes.account(id)),
                 onDispatchCapture: (item) => context.push(
                   AppRoutes.dispatchCapture,
                   extra: capturePrefillFor(item),
@@ -1873,7 +1874,7 @@ ScheduledPaymentFormCubit _startedDebtInstallmentForm(
 }
 
 // Movimientos in Deudas link mode (HU-02): the existing Movimientos list reused
-// with a `TransactionsLinkMode` — a banner, no FAB, no carousel, and row taps
+// with a `TransactionsLinkMode` — a banner, no FAB, and row taps
 // that attribute the movement to the debt. Stacked on the root navigator above
 // the tab bar. The `Debt` arrives in `state.extra`.
 GoRoute _debtLinkModeRoute() => GoRoute(
@@ -1895,9 +1896,6 @@ GoRoute _debtLinkModeRoute() => GoRoute(
                   (c) => c.start(),
                 ),
               ),
-              BlocProvider.value(
-                value: _started(getIt<BalanceCarouselCubit>(), (c) => c.load()),
-              ),
               BlocProvider.value(value: getIt<DebtLinkCubit>()..start(debt)),
             ],
             child: DebtLinkModePage(debt: debt),
@@ -1908,7 +1906,7 @@ GoRoute _debtLinkModeRoute() => GoRoute(
 
 // Movimientos in Metas link mode (HU-03 "Enlazar un movimiento"): the
 // existing Movimientos list reused with a `TransactionsLinkMode` — a banner,
-// no FAB, no carousel, and row taps that attribute the movement to the goal.
+// no FAB, and row taps that attribute the movement to the goal.
 // Stacked on the root navigator above the tab bar. The `GoalLinkContext`
 // arrives in `state.extra`.
 GoRoute _goalLinkModeRoute() => GoRoute(
@@ -1926,9 +1924,6 @@ GoRoute _goalLinkModeRoute() => GoRoute(
                   getIt<TransactionsListCubit>(),
                   (c) => c.start(),
                 ),
-              ),
-              BlocProvider.value(
-                value: _started(getIt<BalanceCarouselCubit>(), (c) => c.load()),
               ),
               BlocProvider.value(
                 value: getIt<GoalLinkCubit>()

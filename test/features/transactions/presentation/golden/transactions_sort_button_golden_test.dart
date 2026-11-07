@@ -1,3 +1,4 @@
+import 'package:billetudo/features/transactions/domain/entities/date_period_filter.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_filter.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
@@ -64,15 +65,24 @@ void main() {
     TransactionsListState state, {
     required Brightness brightness,
   }) async {
-    when(() => cubit.state).thenReturn(state);
-    await pumpGolden(
+    // Pin the default Fecha period to the golden clock: the page always
+    // renders the PeriodStepper for a granular period since 2026-11-07, and
+    // the state here is built outside the `withClock` scope.
+    final pinnedState = state.filter.hasDateFilter
+        ? state
+        : state.copyWith(
+            filter: state.filter.copyWith(
+              datePeriod: DatePeriodFilter.thisMonth(goldenReferenceNow),
+            ),
+          );
+    when(() => cubit.state).thenReturn(pinnedState);
+    await pumpWithFixedClock(
       tester,
       BlocProvider<TransactionsListCubit>.value(
         value: cubit,
         child: TransactionsPage(
           onAddTransaction: (_) {},
           onOpenTransaction: (_) async => null,
-          onOpenAccount: (_) {},
         ),
       ),
       brightness: brightness,

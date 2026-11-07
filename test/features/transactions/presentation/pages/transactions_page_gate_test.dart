@@ -1,6 +1,4 @@
 import 'package:billetudo/core/di/injection.dart';
-import 'package:billetudo/core/preferences/balance_carousel_cubit.dart';
-import 'package:billetudo/core/preferences/balance_carousel_preference_datasource.dart';
 import 'package:billetudo/features/accounts/domain/usecases/has_any_active_account.dart';
 import 'package:billetudo/features/accounts/domain/usecases/watch_active_accounts_count.dart';
 import 'package:billetudo/features/accounts/presentation/widgets/account_gate_bridge_sheet.dart';
@@ -24,14 +22,6 @@ class MockHasAnyActiveAccount extends Mock implements HasAnyActiveAccount {}
 class MockWatchActiveAccountsCount extends Mock
     implements WatchActiveAccountsCount {}
 
-class _FakeCarouselPrefs implements BalanceCarouselPreferenceDatasource {
-  @override
-  Future<bool> readCollapsed() async => false;
-
-  @override
-  Future<void> writeCollapsed({required bool collapsed}) async {}
-}
-
 /// `15-gate-cuenta.md` HU-02/HU-04: tapping the FAB / new-transaction CTA in
 /// Movimientos without any active account opens the bridge instead of
 /// mounting a form that could never save.
@@ -50,7 +40,8 @@ void main() {
 
   tearDown(getIt.reset);
 
-  Future<void> pumpAndTapFab(WidgetTester tester, {String? Function()? onAdd}) async {
+  Future<void> pumpAndTapFab(WidgetTester tester,
+      {String? Function()? onAdd}) async {
     final listCubit = MockTransactionsListCubit();
     when(() => listCubit.state).thenReturn(
       TransactionsListState(
@@ -58,18 +49,12 @@ void main() {
         filter: TransactionFilter(),
       ),
     );
-    final carousel = BalanceCarouselCubit(_FakeCarouselPrefs());
-
     await tester.pumpAppWidget(
-      MultiBlocProvider(
-        providers: [
-          BlocProvider<TransactionsListCubit>.value(value: listCubit),
-          BlocProvider<BalanceCarouselCubit>.value(value: carousel),
-        ],
+      BlocProvider<TransactionsListCubit>.value(
+        value: listCubit,
         child: TransactionsPage(
           onAddTransaction: (id) => onAdd?.call(),
           onOpenTransaction: (_) async => null,
-          onOpenAccount: (_) {},
         ),
       ),
     );

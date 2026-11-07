@@ -1430,36 +1430,6 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 etiqueta} other{{count} etiquetas}}'**
   String transactionsFilterTagSelected(int count);
 
-  /// Etiqueta del saldo agregado en la barra compacta del carrusel de saldo colapsado (Mejora #2).
-  ///
-  /// In es, this message translates to:
-  /// **'Saldo total'**
-  String get transactionsBalanceTotalLabel;
-
-  /// Texto para lectores de pantalla del saldo agregado en la barra compacta del carrusel de saldo colapsado.
-  ///
-  /// In es, this message translates to:
-  /// **'{label}: {amount}'**
-  String transactionsBalanceTotalSemantics(String label, String amount);
-
-  /// Etiqueta del bloque de saldo en la card de cuenta normal del carrusel de saldo de Movimientos (Mejora #2), que espeja las figuras Deuda/Cupo de la variante de tarjeta.
-  ///
-  /// In es, this message translates to:
-  /// **'Saldo'**
-  String get transactionsBalanceCardBalanceLabel;
-
-  /// Semántica del control que colapsa el carrusel de saldo en Movimientos (Mejora #2).
-  ///
-  /// In es, this message translates to:
-  /// **'Ocultar saldos'**
-  String get transactionsBalanceCarouselCollapse;
-
-  /// Semántica de la barra compacta que reexpande el carrusel de saldo en Movimientos (Mejora #2).
-  ///
-  /// In es, this message translates to:
-  /// **'Mostrar saldos'**
-  String get transactionsBalanceCarouselExpand;
-
   /// No description provided for @transactionsGroupToday.
   ///
   /// In es, this message translates to:
@@ -2000,6 +1970,18 @@ abstract class AppLocalizations {
   /// **'Ninguna'**
   String get accountFilterSelectNone;
 
+  /// No description provided for @accountFilterMultiSelectHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Mantén presionado para seleccionar varias cuentas'**
+  String get accountFilterMultiSelectHint;
+
+  /// No description provided for @accountFilterMultiSelectActiveHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Selección múltiple: toca una cuenta para agregarla o quitarla'**
+  String get accountFilterMultiSelectActiveHint;
+
   /// No description provided for @categoryFilterSheetTitle.
   ///
   /// In es, this message translates to:
@@ -2077,6 +2059,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No puedes filtrar por fecha con un presupuesto activo'**
   String get transactionsFilterDateLockedByBudget;
+
+  /// No description provided for @transactionsFilterBudgetLockedByAccounts.
+  ///
+  /// In es, this message translates to:
+  /// **'No puedes filtrar por presupuesto con varias cuentas seleccionadas'**
+  String get transactionsFilterBudgetLockedByAccounts;
 
   /// No description provided for @transactionsFilterSectionType.
   ///

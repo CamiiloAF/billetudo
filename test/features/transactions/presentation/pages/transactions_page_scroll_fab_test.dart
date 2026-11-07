@@ -1,5 +1,3 @@
-import 'package:billetudo/core/preferences/balance_carousel_cubit.dart';
-import 'package:billetudo/core/preferences/balance_carousel_preference_datasource.dart';
 import 'package:billetudo/core/widgets/scroll_aware_fab.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_filter.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction_with_details.dart';
@@ -17,14 +15,6 @@ import '../../transaction_fixtures.dart';
 
 class MockTransactionsListCubit extends MockCubit<TransactionsListState>
     implements TransactionsListCubit {}
-
-class _FakeCarouselPrefs implements BalanceCarouselPreferenceDatasource {
-  @override
-  Future<bool> readCollapsed() async => false;
-
-  @override
-  Future<void> writeCollapsed({required bool collapsed}) async {}
-}
 
 /// GitHub issue #26: the movimientos FAB must hide/show on scroll, same as
 /// `HomePage`'s own FAB — it used to render unconditionally regardless of
@@ -54,18 +44,12 @@ void main() {
         items: buildManyItems(),
       ),
     );
-    final carousel = BalanceCarouselCubit(_FakeCarouselPrefs());
-
     await tester.pumpAppWidget(
-      MultiBlocProvider(
-        providers: [
-          BlocProvider<TransactionsListCubit>.value(value: cubit),
-          BlocProvider<BalanceCarouselCubit>.value(value: carousel),
-        ],
+      BlocProvider<TransactionsListCubit>.value(
+        value: cubit,
         child: TransactionsPage(
           onAddTransaction: (_) {},
           onOpenTransaction: (_) async => null,
-          onOpenAccount: (_) {},
         ),
       ),
     );

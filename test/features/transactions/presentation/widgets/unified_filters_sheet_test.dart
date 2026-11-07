@@ -128,6 +128,48 @@ void main() {
     expect(dimmed, isNotEmpty);
   });
 
+  testWidgets(
+      'con 2+ cuentas seleccionadas, la sección Presupuesto muestra candado '
+      'y leyenda, y las pills quedan dimidas', (tester) async {
+    await pump(
+      tester,
+      filter: TransactionFilter(
+        accountIds: const {'acc-1', 'acc-2'},
+      ),
+      budgetOptions: [food],
+    );
+
+    expect(find.text('PRESUPUESTO'), findsOneWidget);
+    expect(find.byIcon(LucideIcons.lock), findsOneWidget);
+    expect(
+      find.text(
+        'No puedes filtrar por presupuesto con varias cuentas seleccionadas',
+      ),
+      findsOneWidget,
+    );
+    final dimmed = tester.widgetList<Opacity>(find.byType(Opacity)).where(
+          (opacity) => opacity.opacity == 0.4,
+        );
+    expect(dimmed, isNotEmpty);
+  });
+
+  testWidgets('con una sola cuenta seleccionada, Presupuesto no se bloquea',
+      (tester) async {
+    await pump(
+      tester,
+      filter: TransactionFilter(accountIds: const {'acc-1'}),
+      budgetOptions: [food],
+    );
+
+    expect(find.byIcon(LucideIcons.lock), findsNothing);
+    expect(
+      find.text(
+        'No puedes filtrar por presupuesto con varias cuentas seleccionadas',
+      ),
+      findsNothing,
+    );
+  });
+
   group('Categoría', () {
     testWidgets(
         'sin selección muestra el control genérico "Categorías" sin '
