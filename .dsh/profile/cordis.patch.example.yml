@@ -1,0 +1,79 @@
+# Ejemplo de patch para el perfil de DeepSeek Harness (DESKTOP).
+#
+# YA APLICADO en esta máquina el 2026-11-07 (backup del archivo previo en
+#   ~/.dsh/profiles/desktop/cordis.patch.yml.bak-2026-11-07).
+# Se conserva acá para reaplicarlo tras reinstalar DSH o en otra máquina.
+#
+# NO se copia al repo ni se ejecuta: es la configuración que vive en
+#   ~/.dsh/profiles/desktop/cordis.patch.yml
+# y que DSH aplica después de las capas de bundle. Los bloques de abajo van
+# AGREGADOS al final del array existente de ese archivo (no reemplaces nada).
+#
+# Después de editar el perfil, reiniciá DSH (o recargá el perfil) para que las
+# tools nuevas aparezcan.
+
+# ---------------------------------------------------------------------------
+# 1) Pencil MCP — lectura/escritura de billetudo.pen
+#    Requiere la app Pencil Desktop abierta; si está cerrada, el server arranca
+#    y falla al conectar (failOnStartupError: false deja seguir al harness).
+#    El binario y el socket son locales de esta máquina (macOS arm64).
+# ---------------------------------------------------------------------------
+- id: mcp-pencil
+  name: '@deepseek-ai/dsh-mcp-client'
+  config:
+    serverName: pencil
+    transport: stdio
+    command: /Users/cami/.pencil/mcp/visual_studio_code/out/mcp-server-darwin-arm64
+    args: ['--app', 'desktop', '--agent', 'deepseek-harness']
+    # Las operaciones de diseño (Get/ToScreenshot) pueden tardar; el default es 60s.
+    toolCallTimeoutMs: 180000
+    # Si Pencil está cerrado, no tires abajo el harness: las tools simplemente no aparecen.
+    failOnStartupError: false
+
+# ---------------------------------------------------------------------------
+# 2) Sandbox: permitir que Flutter escriba fuera del workspace
+#    (cache del SDK, pub cache, Gradle, Xcode, emuladores).
+#    Solo aplica al preset workspace-write; con Full access no hace falta.
+#    Las rutas deben existir y ser físicas (sin symlinks). Verificadas 2026-11-07.
+#    OJO: /Users/cami/Library/Android/sdk es symlink -> se declara el destino real.
+# ---------------------------------------------------------------------------
+- id: sandbox-policy
+  name: '@deepseek-ai/dsh-sandbox-policy'
+  config:
+    additionalWritableRoots:
+      - /Users/cami/development/flutter
+      - /Users/cami/.pub-cache
+      - /Users/cami/.gradle
+      - /Users/cami/.android
+      - /Users/Shared/dev-tools/android-sdk
+      - /Users/cami/Library/Caches/CocoaPods
+      - /Users/cami/Library/Developer/Xcode/DerivedData
+      - /Users/cami/Library/Developer/Xcode/UserData
+      - /Users/cami/Library/Developer/CoreSimulator
+      - /Users/cami/Library/Caches/Homebrew
+
+# ---------------------------------------------------------------------------
+# 3) Supabase MCP (OPCIONAL, descomentá y poné un PAT)
+#    El endpoint remoto usa OAuth; el cliente MCP de DSH manda headers estáticos.
+#    Si tenés un Personal Access Token (sbp_...), exportalo como variable de
+#    entorno antes de abrir DSH y descomentá:
+# ---------------------------------------------------------------------------
+# - id: mcp-supabase-prod
+#   name: '@deepseek-ai/dsh-mcp-client'
+#   config:
+#     serverName: supabase_prod
+#     transport: streamable-http
+#     url: 'https://mcp.supabase.com/mcp?project_ref=dlmocmvddzygltjgkwka'
+#     headers:
+#       Authorization: !!js '`Bearer ${process.env.SUPABASE_ACCESS_TOKEN ?? ""}`'
+#     failOnStartupError: false
+#
+# - id: mcp-supabase-dev
+#   name: '@deepseek-ai/dsh-mcp-client'
+#   config:
+#     serverName: supabase_dev
+#     transport: streamable-http
+#     url: 'https://mcp.supabase.com/mcp?project_ref=sjpabpzpjydkbglaavag'
+#     headers:
+#       Authorization: !!js '`Bearer ${process.env.SUPABASE_ACCESS_TOKEN ?? ""}`'
+#     failOnStartupError: false

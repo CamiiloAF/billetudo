@@ -1,0 +1,14 @@
+{
+  "name": "feature-dev",
+  "description": "Entrega una feature COMPLETA de billetudo en una sola corrida: triage automatico del tamano (s/m/l), implementacion Clean Architecture con el equipo de agentes, suite de tests completa (unit/widget/golden/Patrol via qa-automator, sin dejar e2e en skip por comodidad), review escalado al riesgo con fix loop acotado, verificacion de fidelidad visual contra Pencil si hay UI (golden vs. nodeId, con fix loop), y UN solo artefacto de cierre (docs/dev-runs/<slug>.md) que tambien deja al dia docs/fidelidad-visual-tracking.md. El contexto viaja en memoria entre agentes (structured output), no en archivos. Codigo queda SIN commitear. Args (objeto JSON): {source: \"<descripcion o ruta a una nota>\", size?: \"auto\"|\"s\"|\"m\"|\"l\"}.",
+  "whenToUse": "Cuando el usuario pida implementar una feature o mejora de billetudo de punta a punta. Para solo scaffold usa feature-scaffold; para solo revisar usa feature-review.",
+  "phases": [
+    { "title": "Plan", "detail": "Architect: triage de tamano, AC y change map — en memoria, sin archivos" },
+    { "title": "Build", "detail": "flutter-dev: esquema Drift si aplica → domain+data → presentation" },
+    { "title": "Test", "detail": "qa-automator: analyze + suite + goldens completos + Patrol (bootea emulador si falta) + gaps de cobertura" },
+    { "title": "Review", "detail": "Escalado por tamano: quick (s) / conventions+compliance (m) / feature-review adversarial (l), con fix loop" },
+    { "title": "Verify", "detail": "Verificacion adversarial de cada hallazgo del review profundo (solo tamano L: feature-review inlineado)" },
+    { "title": "Fidelity", "detail": "Si needsUi: pencil-fidelity-reviewer compara goldens vs nodeId, con fix loop acotado" },
+    { "title": "Close", "detail": "Unico artefacto: docs/dev-runs/<slug>.md + actualiza docs/fidelidad-visual-tracking.md" }
+  ]
+}

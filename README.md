@@ -41,18 +41,31 @@ lib/
 
 ## Estado actual
 
-Ya incluido:
-- Documentación de investigación y plan (`docs/`).
-- Esquema de datos Drift completo: [`lib/core/database/app_database.dart`](lib/core/database/app_database.dart) (9 tablas, UUIDs, timestamps de sync, borrado lógico, dinero en centavos).
-- `pubspec.yaml`, `analysis_options.yaml`, `.gitignore`.
-- Estructura de carpetas (con `.gitkeep`).
+> Verificado el **2026-11-07** sobre `dev`. Si esta sección y el código difieren, manda el código.
 
-Pendiente (configuración técnica — a tu cargo):
-- `flutter create .` para generar plataformas (android/ios/…).
-- `dart run build_runner build` para generar `app_database.g.dart`.
-- Wiring de PowerSync sobre la BD de Drift + proyecto Supabase (schema espejo).
-- Claves/entornos (Supabase, RevenueCat, AdMob, LLM) fuera del repo (`.env`).
-- `claude init`.
+Billetudo ya está muy por delante de un esqueleto:
+
+- **Fase 1 completa** (cuentas, categorías, transacciones, inicio, auth/sync, presupuestos,
+  metas, deudas, pagos programados, gráficas, import/export, onboarding, apariencia,
+  gate-cuenta, minitutoriales). **Fase 2 shippeada** salvo OCR: captura por voz, lectura de
+  notificaciones bancarias, centro de avisos, recordatorios y widget de captura rápida.
+  **Fase 4**: asistente de IA en beta cerrada (backend en Supabase Edge Functions).
+  **Fase 3**: motor de insights parcial, sin página/ruta todavía.
+- Esquema Drift: **25 tablas**, `schemaVersion` **35**, migraciones `v1→v35` y espejo
+  PowerSync/Supabase en [`lib/core/database/app_database.dart`](lib/core/database/app_database.dart).
+- `android/` e `ios/` generados con flavors `dev`/`prod`; PowerSync + Supabase cableados.
+- ~766 tests, 1.043 goldens y 22 archivos Patrol.
+
+Requisito al clonar (el código generado **no** se commitea):
+
+```bash
+flutter pub get
+dart run build_runner build --force-jit   # --force-jit es obligatorio
+```
+
+Faltan para correr la app: `.env.dev`/`.env.prod` (partir de `.env.example`). Para trabajar
+desde DeepSeek Harness, ver [`AGENTS.md`](AGENTS.md) y
+[`docs/dsh-migration.md`](docs/dsh-migration.md).
 
 ### Flavors (dev / prod)
 
