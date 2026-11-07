@@ -2831,6 +2831,8 @@
   "@scheduledSnoozeSheetSectionTitle": {},
   "scheduledConfirmationSheetEditTooltip": "Editar plantilla",
   "@scheduledConfirmationSheetEditTooltip": {},
+  "scheduledConfirmationSheetViewDetails": "Ver historial y detalles",
+  "@scheduledConfirmationSheetViewDetails": {},
   "scheduledGuidedReviewExit": "Salir",
   "@scheduledGuidedReviewExit": {},
   "scheduledGuidedReviewConfirmNext": "Confirmar y siguiente",

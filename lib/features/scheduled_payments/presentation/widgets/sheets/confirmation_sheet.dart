@@ -28,6 +28,7 @@ import '../../utils/scheduled_payment_format.dart';
 import '../scheduled_category_icon_wrap.dart';
 import '../scheduled_payment_editable_amount_field.dart';
 import 'confirmation_sheet_field_row.dart';
+import 'scheduled_payment_view_details_link.dart';
 import 'scheduled_scope_note.dart';
 import 'snooze_sheet.dart';
 
@@ -42,6 +43,7 @@ class ConfirmationSheet extends StatelessWidget {
   const ConfirmationSheet({
     required this.source,
     this.allPending = const [],
+    this.onViewDetails,
     super.key,
   });
 
@@ -54,10 +56,20 @@ class ConfirmationSheet extends StatelessWidget {
   /// simply does not show.
   final List<PendingScheduledOccurrence> allPending;
 
+  /// Opens the template's detail page (history + config) from the
+  /// "Ver historial y detalles" link. `null` hides the link.
+  ///
+  /// Wired only from the pending lists: a template with a pending occurrence
+  /// is left out of "Activos", so this is the only way to reach its detail
+  /// without confirming/skipping/snoozing first. The detail screen's own
+  /// pending badge leaves it `null` — the user is already there.
+  final VoidCallback? onViewDetails;
+
   static Future<ConfirmationSheetResult?> show(
     BuildContext context, {
     required PendingScheduledOccurrence source,
     List<PendingScheduledOccurrence> allPending = const [],
+    VoidCallback? onViewDetails,
   }) =>
       // Dismissible and draggable like every other sheet in the app: tapping
       // the scrim or dragging the handle down closes it. Dismissing is not a
@@ -69,8 +81,11 @@ class ConfirmationSheet extends StatelessWidget {
         context: context,
         isScrollControlled: true,
         useRootNavigator: true,
-        builder: (context) =>
-            ConfirmationSheet(source: source, allPending: allPending),
+        builder: (context) => ConfirmationSheet(
+          source: source,
+          allPending: allPending,
+          onViewDetails: onViewDetails,
+        ),
       );
 
   @override
@@ -78,13 +93,17 @@ class ConfirmationSheet extends StatelessWidget {
     return BlocProvider(
       create: (context) =>
           getIt<ConfirmationSheetCubit>()..load(source, allPending: allPending),
-      child: const ConfirmationSheetBody(),
+      child: ConfirmationSheetBody(onViewDetails: onViewDetails),
     );
   }
 }
 
 class ConfirmationSheetBody extends StatelessWidget {
-  const ConfirmationSheetBody({super.key});
+  const ConfirmationSheetBody({this.onViewDetails, super.key});
+
+  /// See [ConfirmationSheet.onViewDetails]. `null` hides the link, which is
+  /// the case of the guided review and of the detail screen's own badge.
+  final VoidCallback? onViewDetails;
 
   @override
   Widget build(BuildContext context) {
@@ -169,6 +188,17 @@ class ConfirmationSheetBody extends StatelessWidget {
                 ),
               );
             },
+            // Pops with `cancelled` first (the occurrence stays awaiting, so
+            // criterion 7 holds), then hands off to the caller's navigation —
+            // same pop-then-push ordering as the pencil shortcut above.
+            onViewDetails: onViewDetails == null
+                ? null
+                : () {
+                    final callback = onViewDetails!;
+                    Navigator.of(context)
+                        .pop(ConfirmationSheetResult.cancelled);
+                    callback();
+                  },
           ),
         );
       },
@@ -580,6 +610,7 @@ class ConfirmationSheetFields extends StatelessWidget {
     required this.onSkip,
     required this.onSnooze,
     required this.onEdit,
+    this.onViewDetails,
     this.note,
     this.categoryName,
     this.categoryIcon,
@@ -637,6 +668,12 @@ class ConfirmationSheetFields extends StatelessWidget {
   /// `null` when [isGuided] is true — see [ConfirmationSheetHead.onEdit].
   final VoidCallback? onEdit;
 
+  /// Shows the "Ver historial y detalles" link under the sheet head when
+  /// non-null (wired only from the pending lists); the tap already pops the
+  /// sheet, so this callback only navigates. `null` in guided review and on
+  /// the detail screen's own pending badge.
+  final VoidCallback? onViewDetails;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -678,6 +715,16 @@ class ConfirmationSheetFields extends StatelessWidget {
                   frequency: frequency,
                   onEdit: isGuided ? null : onEdit,
                 ),
+                // Directly under the head, before the accumulated strip: the
+                // only way to reach the detail of a template that is hidden
+                // from "Activos" while an occurrence is pending. Inert while a
+                // confirmation write is in flight, same as the footer buttons:
+                // popping the sheet then would let the settled write's
+                // `Navigator.pop(confirmed)` land on the pushed detail route.
+                if (onViewDetails case final onViewDetails?)
+                  ScheduledPaymentViewDetailsLink(
+                    onTap: isSaving ? null : onViewDetails,
+                  ),
                 if (pendingCountForTemplate >= 2) ...[
                   const SizedBox(height: 12),
                   ScheduledAccumulatedStrip(

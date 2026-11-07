@@ -3426,6 +3426,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduledConfirmationSheetEditTooltip => 'Edit template';
 
   @override
+  String get scheduledConfirmationSheetViewDetails =>
+      'View history and details';
+
+  @override
   String get scheduledGuidedReviewExit => 'Exit';
 
   @override

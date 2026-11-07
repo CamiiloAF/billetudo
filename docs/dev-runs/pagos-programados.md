@@ -174,3 +174,17 @@ del repo, no de esta feature.
 Documenta el flag --force-jit para el bug conocido de build_runner en el
 README.
 ```
+
+## Acceso al detalle desde la hoja de confirmación (2026-11-07)
+
+**Pedido (dogfooding):** al abrir un pago programado pendiente solo se podía confirmar, posponer u omitir; no había forma de ver el historial ni el detalle de la plantilla sin resolver antes la ocurrencia.
+
+**Causa raíz:** una plantilla con ocurrencia pendiente se oculta de "Activos" (regla de HU-04/HU-03: no se repite arriba y abajo), así que su detalle `/pagos-programados/:id` —historial + configuración— era inalcanzable desde la lista mientras existiera un pendiente. La hoja de confirmación era la única superficie que abría esa plantilla y no tenía salida al detalle.
+
+**Cambio:**
+- **Diseño:** fila-link de 44pt "Ver historial y detalles" debajo del head de la hoja, sobre las 5 variantes no guiadas en ambos temas (claro `YpMV7`/`irJZw`/`K5lXU`/`EJAvD`/`woFWS`, oscuro `MVQ0W`/`d0RmlF`/`nsjeM`/`hFvKn`/`ihKOd`): `history` + label 13/700 + `chevron-right`, todo `$primary-on-soft-strong`. Sin link en revisión guiada (abortaría el flujo, igual que el lápiz). Documentado en `design-system/billetudo/pages/pagos-programados.md`.
+- **Código:** `ScheduledPaymentViewDetailsLink` (widget público); `onViewDetails` opcional en `ConfirmationSheet`/`ConfirmationSheet.show`/`ConfirmationSheetBody`/`ConfirmationSheetFields`; al tocar, la hoja se cierra con `ConfirmationSheetResult.cancelled` (la ocurrencia sigue pendiente) y el caller navega con `context.push(AppRoutes.scheduledPayment(id))`. Cableado solo en `PendingOccurrencesPage` y `PendingOccurrencesSection`; el detalle y "Confirmar ahora" no lo muestran (ya están en el detalle). **La confirmación sigue siendo obligatoria** — el link solo navega, nunca aplica la ocurrencia (criterio 7). Mientras la hoja está guardando (`isSaving`) el link queda inerte sin cambiar de aspecto, para que una confirmación en vuelo no pueda cerrar la hoja y hacer que su `pop(confirmed)` caiga sobre el detalle recién empujado.
+- **l10n:** `scheduledConfirmationSheetViewDetails` en `app_es.arb` y `app_en.arb`.
+- **Tests:** widget test del link (label + tap), test de presencia en la hoja standalone y ausencia en la guiada, y goldens de las 6 variantes no guiadas regenerados.
+
+**Ida y vuelta:** el detalle de la misma plantilla ofrece su hoja de confirmación desde el hero (pill de pendiente), así que el usuario puede revisar el historial y volver a confirmar sin perder el flujo.

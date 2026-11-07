@@ -81,6 +81,12 @@ void main() {
   // `accounts/.../sheets_golden_test.dart`) instead of pumping the body
   // straight into a `Scaffold`: that chrome only exists once the widget is
   // actually shown as a modal route.
+  //
+  // Every standalone case passes a no-op `onViewDetails` because the pending
+  // lists always do (`ConfirmationSheet.show`), so the committed PNGs include
+  // the "Ver historial y detalles" link row under the head. The guided
+  // variant has no such callback by design (`GuidedReviewSheetBody`), so its
+  // golden stays link-free — see `guided` below.
   Future<void> goldenStandalone(
     WidgetTester tester,
     ConfirmationSheetState state,
@@ -100,7 +106,7 @@ void main() {
               isScrollControlled: true,
               builder: (context) => BlocProvider<ConfirmationSheetCubit>.value(
                 value: cubit,
-                child: const ConfirmationSheetBody(),
+                child: ConfirmationSheetBody(onViewDetails: () {}),
               ),
             ),
             child: const Text('open'),

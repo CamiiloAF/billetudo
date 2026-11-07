@@ -5873,6 +5873,12 @@ abstract class AppLocalizations {
   /// **'Editar plantilla'**
   String get scheduledConfirmationSheetEditTooltip;
 
+  /// No description provided for @scheduledConfirmationSheetViewDetails.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver historial y detalles'**
+  String get scheduledConfirmationSheetViewDetails;
+
   /// No description provided for @scheduledGuidedReviewExit.
   ///
   /// In es, this message translates to:

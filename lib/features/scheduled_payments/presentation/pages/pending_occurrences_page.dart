@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../transactions/presentation/widgets/transaction_header_button.dart';
@@ -185,6 +189,14 @@ class PendingOccurrencesListView extends StatelessWidget {
       context,
       source: entry,
       allPending: state.items,
+      // A template with a pending occurrence is left out of "Activos", so
+      // this link is the only way to reach its detail (history + config)
+      // without confirming, skipping or snoozing first.
+      onViewDetails: () => unawaited(
+        context.push(
+          AppRoutes.scheduledPayment(entry.scheduledPayment.id),
+        ),
+      ),
     );
     switch (result) {
       case ConfirmationSheetResult.skipped:

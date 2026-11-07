@@ -2,11 +2,13 @@ import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
 import 'package:billetudo/features/scheduled_payments/domain/entities/scheduled_payment.dart';
 import 'package:billetudo/features/scheduled_payments/presentation/widgets/sheets/confirmation_sheet.dart';
+import 'package:billetudo/features/scheduled_payments/presentation/widgets/sheets/scheduled_payment_view_details_link.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Widget tests for the two smallest new pieces of the confirmation sheet
-/// (item 2/3 of the design pass): the "Acumuladas" strip and the sheet head.
+/// Widget tests for the smallest pieces of the confirmation sheet (item 2/3 of
+/// the design pass): the "Acumuladas" strip, the sheet head and the
+/// "Ver historial y detalles" link.
 void main() {
   Widget appWith(Widget child) => MaterialApp(
         theme: AppTheme.light(),
@@ -33,6 +35,42 @@ void main() {
       expect(find.textContaining('Netflix'), findsOneWidget);
       // The sub-line is the part that says the rest of the backlog stays put.
       expect(find.textContaining('siguen en tu lista'), findsOneWidget);
+    });
+  });
+
+  group('ScheduledPaymentViewDetailsLink', () {
+    testWidgets(
+        'muestra la etiqueta de l10n en español ("Ver historial y detalles")',
+        (tester) async {
+      await tester.pumpWidget(
+        appWith(ScheduledPaymentViewDetailsLink(onTap: () {})),
+      );
+
+      expect(find.text('Ver historial y detalles'), findsOneWidget);
+    });
+
+    testWidgets('tocar la fila llama onTap', (tester) async {
+      var taps = 0;
+      await tester.pumpWidget(
+        appWith(ScheduledPaymentViewDetailsLink(onTap: () => taps++)),
+      );
+
+      await tester.tap(find.text('Ver historial y detalles'));
+      await tester.pump();
+
+      expect(taps, 1);
+    });
+
+    testWidgets('la fila mide 44px de alto (tap target del diseño)',
+        (tester) async {
+      await tester.pumpWidget(
+        appWith(ScheduledPaymentViewDetailsLink(onTap: () {})),
+      );
+
+      expect(
+        tester.getSize(find.byType(ScheduledPaymentViewDetailsLink)).height,
+        44,
+      );
     });
   });
 

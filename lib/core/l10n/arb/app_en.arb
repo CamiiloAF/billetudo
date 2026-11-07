@@ -1325,6 +1325,7 @@
   "scheduledSnoozeSheetSectionTitle": "Pick the new date",
   "scheduledConfirmationSheetConfirm": "Confirm",
   "scheduledConfirmationSheetEditTooltip": "Edit template",
+  "scheduledConfirmationSheetViewDetails": "View history and details",
   "scheduledConfirmationSheetScopeNote": "What you edit applies to this payment only. The template stays the same and next month it will propose {amount} again.",
   "scheduledConfirmationSheetSkip": "Skip",
   "scheduledConfirmationSheetSnooze": "Snooze",

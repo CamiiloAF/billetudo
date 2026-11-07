@@ -71,7 +71,9 @@ void main() {
               isScrollControlled: true,
               builder: (context) => BlocProvider<ConfirmationSheetCubit>.value(
                 value: cubit,
-                child: const ConfirmationSheetBody(),
+                // The link is part of the real sheet (the pending lists always
+                // pass it); include it so the overflow budget stays realistic.
+                child: ConfirmationSheetBody(onViewDetails: () {}),
               ),
             ),
             child: const Text('open'),
