@@ -274,7 +274,7 @@ void main() {
         status: NoticesStatus.ready,
         captures: [],
       ),
-      backgroundState: CaptureBackgroundState(
+      backgroundState: const CaptureBackgroundState(
         isSupported: true,
         isLoading: false,
         permissionGranted: true,
