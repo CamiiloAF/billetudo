@@ -28,10 +28,21 @@ class CapturesSection extends StatelessWidget {
     required this.onDiscard,
     required this.onDiscardDuplicate,
     required this.onExpand,
+    this.alert,
+    this.footer,
     super.key,
   });
 
   final NoticesState state;
+
+  /// Optional degraded-state card (HU-09), rendered between the section's
+  /// heading and the first capture card. `null` leaves the section byte-for-
+  /// byte as it was.
+  final Widget? alert;
+
+  /// Optional section footer (HU-09's "Última captura: …"), rendered after the
+  /// last row and the block-action row. `null` leaves the section unchanged.
+  final Widget? footer;
 
   /// Opens the pre-filled transaction form for a capture (also used for a
   /// grouped capture: the merged prefill still comes from a single item).
@@ -84,6 +95,10 @@ class CapturesSection extends StatelessWidget {
             color: colors.textSecondary,
           ),
         ),
+        if (alert case final alert?) ...[
+          const SizedBox(height: 12),
+          alert,
+        ],
         for (final item in visible) ...[
           const SizedBox(height: 10),
           if (item.hasDuplicate)
@@ -117,6 +132,10 @@ class CapturesSection extends StatelessWidget {
             captureCount: state.captures.length,
             onTap: onExpand,
           ),
+        ],
+        if (footer case final footer?) ...[
+          const SizedBox(height: 12),
+          footer,
         ],
       ],
     );

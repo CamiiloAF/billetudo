@@ -102,3 +102,32 @@ Tema oscuro: pendiente — no se construye hasta aprobación explícita del clar
 esta ronda, falta la pasada de oscuro). Auditado por `ui-ux-reviewer`: sin hallazgos tras
 corregir el sublabel largo y fusionar la fila en el frame real (ver revisión en
 `pages/minitutoriales.md`).
+
+## Captura en segundo plano (2026-11-10, HU-09)
+
+Fila permanente en "Preferencias", inmediatamente después de "Avisos de tu banco". No la
+reemplaza: esa activa permiso/emisores; esta explica y arregla el **segundo plano** (batería y
+autostart del fabricante). Reutiliza el campo de Ajustes (`Appearance Field`, `R8PlN`), 64 de alto,
+con chevron.
+
+Estados (frames de referencia: `rN8ye` claro / `lv0iQ` oscuro, "Ajustes · Captura en segundo
+plano — fila"):
+
+| Estado | Icono | Wrap / glifo | Sublabel | Tap |
+|---|---|---|---|---|
+| Todo en orden | `shield-check` | `$muted` / `$text-secondary` | "Activa · última captura {hoy/ayer/fecha}" | Abre la hoja |
+| Esperando el primer aviso | `shield-check` | `$muted` / `$text-secondary` | "Activa · esperando el primer aviso" | Abre la hoja |
+| Puede estar detenida | `shield-alert` | `$amber-soft` / `$amber-text` | "Revisá dos ajustes del sistema" (`$amber-text`) | Abre la hoja |
+| Falta activar la captura | `bell-off` | `$muted` / `$text-secondary` | "Activa primero los avisos de tu banco" | Permiso / catálogo de emisores |
+| Silenciada ("Ahora no") | `clock` | `$muted` / `$text-secondary` | "Silenciada por 14 días" | Abre la hoja igual |
+| Revisando | `clock` | `$muted` / `$text-secondary` | "Revisando el estado…" | — |
+
+- La fila es Android-only: en iOS no se dibuja (ni el gap, igual que "Avisos de tu banco").
+- Re-lee el estado real al volver a foreground; nunca confía en el último snapshot.
+- La lógica de estados y las señales (heartbeat del listener, regla de degradación) viven en
+  [`captura-segundo-plano.md`](captura-segundo-plano.md).
+
+Nota: los frames vigentes de la página Ajustes (`aaQBp` claro / `TQHmY` oscuro) todavía no
+incluyen todas las filas que sí existen en el código (Notificaciones, Acceso rápido, Widget,
+"Avisos de tu banco"); la fila nueva se documenta como referencia de fila propio y se replicará
+en los frames de página cuando se haga el pase de actualización de Ajustes.

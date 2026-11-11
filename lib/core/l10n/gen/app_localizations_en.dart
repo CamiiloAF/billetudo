@@ -6561,6 +6561,105 @@ class AppLocalizationsEn extends AppLocalizations {
   String get captureNoIssuersCta => 'Choose apps';
 
   @override
+  String get captureBackgroundCardTitle => 'Capture may stop';
+
+  @override
+  String get captureBackgroundCardSubtitle =>
+      'Your phone can close Billetudo when you\'re not using it. If that happens, notices won\'t arrive until you open it.';
+
+  @override
+  String get captureBackgroundReviewCta => 'Review';
+
+  @override
+  String get captureBackgroundSnoozeCta => 'Not now';
+
+  @override
+  String get captureBackgroundEmptyTitle => 'Notices may not be arriving';
+
+  @override
+  String get captureBackgroundEmptyDescription =>
+      'Your phone can close Billetudo when you\'re not using it. Turn on two system settings and we\'ll keep reading even when it\'s closed.';
+
+  @override
+  String get captureBackgroundEmptyCta => 'Review capture';
+
+  @override
+  String get captureBackgroundSheetTitle => 'Background capture';
+
+  @override
+  String get captureBackgroundSheetBody =>
+      'For Billetudo to read notices while closed, your phone must not be shutting it down. Two settings fix that.';
+
+  @override
+  String get captureBackgroundBatteryTitle => 'Allow battery';
+
+  @override
+  String get captureBackgroundBatterySubtitle =>
+      'Keeps the system from putting it to sleep';
+
+  @override
+  String get captureBackgroundBatteryAllowed => 'Allowed';
+
+  @override
+  String get captureBackgroundAutostartTitle => 'Open autostart';
+
+  @override
+  String captureBackgroundAutostartSubtitle(String brand) {
+    return 'On $brand, so it listens again';
+  }
+
+  @override
+  String captureBackgroundLastCapture(String when) {
+    return 'Last capture: $when';
+  }
+
+  @override
+  String get captureBackgroundNoCaptureYet =>
+      'We haven\'t received any notice yet.';
+
+  @override
+  String captureBackgroundSheetFooter(String when) {
+    return 'Last capture: $when If something doesn\'t arrive, add it by hand.';
+  }
+
+  @override
+  String get captureBackgroundSheetFooterNoCapture =>
+      'We haven\'t received any notice yet. If something doesn\'t arrive, add it by hand.';
+
+  @override
+  String get captureBackgroundConfirmCta => 'Done, I turned it on';
+
+  @override
+  String captureBackgroundActionRowSemantics(String title, String subtitle) {
+    return '$title. $subtitle';
+  }
+
+  @override
+  String get captureBackgroundFieldLabel => 'Background capture';
+
+  @override
+  String captureBackgroundFieldActive(String when) {
+    return 'Active · last capture $when';
+  }
+
+  @override
+  String get captureBackgroundFieldActiveNoCapture =>
+      'Active · waiting for the first notice';
+
+  @override
+  String get captureBackgroundFieldChecking => 'Checking the status…';
+
+  @override
+  String get captureBackgroundFieldAttention => 'Check two system settings';
+
+  @override
+  String get captureBackgroundFieldNeedsSetup =>
+      'First turn on your bank notices';
+
+  @override
+  String get captureBackgroundFieldSnoozed => 'Silenced for 14 days';
+
+  @override
   String get captureNotBalancePill => 'Does not add to your balance';
 
   @override
@@ -6702,6 +6801,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get captureDisabledOpenSettingsCta => 'Turn on in Android Settings';
+
+  @override
+  String get captureBackgroundLinkLabel => 'Background capture settings';
 
   @override
   String get captureIssuersHeader => 'Apps that are read';

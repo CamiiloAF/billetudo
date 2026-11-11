@@ -1,3 +1,5 @@
+import 'package:billetudo/features/capture/presentation/cubit/capture_background_cubit.dart';
+import 'package:billetudo/features/capture/presentation/cubit/capture_background_state.dart';
 import 'package:billetudo/features/capture/presentation/cubit/capture_review_item.dart';
 import 'package:billetudo/features/capture/presentation/cubit/notices_cubit.dart';
 import 'package:billetudo/features/capture/presentation/cubit/notices_state.dart';
@@ -20,12 +22,20 @@ class MockNoticesCubit extends MockCubit<NoticesState>
 /// duplicate) both under and over the visible cap (`YliJD` block row).
 void main() {
   late MockNoticesCubit cubit;
+  late MockCaptureBackgroundCubit background;
 
   setUpAll(() async {
     disableGoogleFontsRuntimeFetching();
     await loadMaterialIconsFont();
   });
-  setUp(() => cubit = MockNoticesCubit());
+  setUp(() {
+    cubit = MockNoticesCubit();
+    background = MockCaptureBackgroundCubit();
+    // No degradation: every existing PNG must stay byte-identical.
+    when(() => background.state).thenReturn(
+      const CaptureBackgroundState(isSupported: true, isLoading: false),
+    );
+  });
 
   Future<void> golden(
     WidgetTester tester,
@@ -36,8 +46,11 @@ void main() {
     when(() => cubit.state).thenReturn(state);
     await pumpGolden(
       tester,
-      BlocProvider<NoticesCubit>.value(
-        value: cubit,
+      MultiBlocProvider(
+        providers: [
+          BlocProvider<NoticesCubit>.value(value: cubit),
+          BlocProvider<CaptureBackgroundCubit>.value(value: background),
+        ],
         child: NoticesPage(
           onDispatchCapture: (_) {},
           onChooseIssuers: () {},
@@ -162,8 +175,11 @@ void main() {
     );
     await pumpGolden(
       tester,
-      BlocProvider<NoticesCubit>.value(
-        value: cubit,
+      MultiBlocProvider(
+        providers: [
+          BlocProvider<NoticesCubit>.value(value: cubit),
+          BlocProvider<CaptureBackgroundCubit>.value(value: background),
+        ],
         child: NoticesPage(
           onDispatchCapture: (_) {},
           onChooseIssuers: () {},

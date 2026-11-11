@@ -28,9 +28,14 @@ import '../widgets/issuers_no_apps_view.dart';
 class CaptureIssuersPage extends StatefulWidget {
   const CaptureIssuersPage({required this.onOpenPermission, super.key});
 
-  /// Opens the explainer/permission screen. Used by the revoked state, which
-  /// cannot fix anything by itself.
-  final VoidCallback onOpenPermission;
+  /// Opens the explainer/permission screen and completes when the user comes
+  /// back. Used by the revoked state, which cannot fix anything by itself.
+  ///
+  /// The page re-reads the catalog **after** the future completes: returning
+  /// from the permission flow used to reuse a screen whose cubit had loaded
+  /// before the permission existed, so the switches showed as off until the
+  /// screen was re-entered from scratch.
+  final Future<void> Function() onOpenPermission;
 
   @override
   State<CaptureIssuersPage> createState() => _CaptureIssuersPageState();
@@ -57,6 +62,14 @@ class _CaptureIssuersPageState extends State<CaptureIssuersPage>
     }
   }
 
+  Future<void> _openPermission() async {
+    await widget.onOpenPermission();
+    if (!mounted) {
+      return;
+    }
+    await context.read<CaptureIssuersCubit>().refresh();
+  }
+
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context);
@@ -75,8 +88,8 @@ class _CaptureIssuersPageState extends State<CaptureIssuersPage>
                   }
                   if (!state.permissionGranted) {
                     return CaptureDisabledView(
-                      onOpenSettings: widget.onOpenPermission,
-                      onSeeHowItWorks: widget.onOpenPermission,
+                      onOpenSettings: () => unawaited(_openPermission()),
+                      onSeeHowItWorks: () => unawaited(_openPermission()),
                     );
                   }
                   if (state.hasError) {

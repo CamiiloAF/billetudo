@@ -7,6 +7,8 @@ import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
 import 'package:billetudo/features/auth/domain/usecases/sign_out.dart';
 import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
 import 'package:billetudo/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:billetudo/features/capture/presentation/cubit/capture_background_cubit.dart';
+import 'package:billetudo/features/capture/presentation/cubit/capture_background_state.dart';
 import 'package:billetudo/features/capture/presentation/cubit/capture_status_cubit.dart';
 import 'package:billetudo/features/capture/presentation/cubit/capture_status_state.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
@@ -21,6 +23,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../support/golden_helpers.dart';
+import '../../../capture/capture_mocks.dart';
 
 class MockWatchAuthSession extends Mock implements WatchAuthSession {}
 
@@ -35,9 +38,10 @@ class MockThemeModeCubit extends MockCubit<ThemeMode>
 class MockSyncStatusCubit extends MockCubit<SyncStatusState>
     implements SyncStatusCubit {}
 
-/// Seeded `isSupported: false` (the default): Ajustes' capture row draws
-/// nothing off Android, which is what these tests and goldens already
-/// assert about the Preferencias section.
+/// Seeded `isSupported: true`: the golden shows the Android page, which is
+/// where both capture rows exist (the platform the HU-09 surfaces ship to).
+/// The iOS "draws nothing" behaviour is asserted in the widget and page tests,
+/// not in the golden.
 class MockCaptureStatusCubit extends MockCubit<CaptureStatusState>
     implements CaptureStatusCubit {}
 
@@ -101,12 +105,38 @@ void main() {
     );
 
     final captureStatusCubit = MockCaptureStatusCubit();
-    when(() => captureStatusCubit.state)
-        .thenReturn(const CaptureStatusState(isLoading: false));
+    const captureStatusState = CaptureStatusState(
+      isSupported: true,
+      isLoading: false,
+      permissionGranted: true,
+      enabledCount: 1,
+    );
+    when(() => captureStatusCubit.state).thenReturn(captureStatusState);
     whenListen(
       captureStatusCubit,
       const Stream<CaptureStatusState>.empty(),
-      initialState: const CaptureStatusState(isLoading: false),
+      initialState: captureStatusState,
+    );
+
+    // HU-09's permanent row: the healthy state, which is what a user with
+    // capture actually working sees. Its relative day is pinned to the
+    // golden clock so the PNG does not drift into "7 de agosto" tomorrow.
+    final captureBackgroundCubit = MockCaptureBackgroundCubit();
+    final captureBackgroundState = CaptureBackgroundState(
+      isSupported: true,
+      isLoading: false,
+      permissionGranted: true,
+      enabledCount: 1,
+      diagnostics: buildCaptureDiagnostics(
+        lastCaptureAtEpochMs:
+            DateTime(2026, 8, 7, 9, 19).millisecondsSinceEpoch,
+      ),
+    );
+    when(() => captureBackgroundCubit.state).thenReturn(captureBackgroundState);
+    whenListen(
+      captureBackgroundCubit,
+      const Stream<CaptureBackgroundState>.empty(),
+      initialState: captureBackgroundState,
     );
 
     // "Avisos": todos los tipos encendidos, que es el default real.
@@ -119,7 +149,7 @@ void main() {
       initialState: const NotificationSettingsState(loaded: true),
     );
 
-    await pumpGolden(
+    await pumpWithFixedClock(
       tester,
       MultiBlocProvider(
         providers: [
@@ -128,6 +158,9 @@ void main() {
           BlocProvider<ThemeModeCubit>.value(value: themeModeCubit),
           BlocProvider<SyncStatusCubit>.value(value: syncStatusCubit),
           BlocProvider<CaptureStatusCubit>.value(value: captureStatusCubit),
+          BlocProvider<CaptureBackgroundCubit>.value(
+            value: captureBackgroundCubit,
+          ),
           BlocProvider<NotificationSettingsCubit>.value(
             value: notificationSettingsCubit,
           ),
@@ -139,10 +172,16 @@ void main() {
           onOpenSyncStatus: () {},
           onOpenQuickAccessOrder: () {},
           onOpenCapture: (_) {},
+          onOpenCaptureSetup: (_) {},
           onOpenNotifications: () {},
         ),
       ),
       brightness: brightness,
+      // Full-page canvas: HU-09's "Captura en segundo plano" row lives in
+      // Preferencias, below the first 844pt viewport. Capturing only the
+      // viewport would leave the row this golden is meant to evidence out of
+      // the PNG (and the page golden is about the whole page anyway).
+      size: tallGoldenPhoneSize(height: 2000),
     );
     await expectLater(
       find.byType(SettingsPage),

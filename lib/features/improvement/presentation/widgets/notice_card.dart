@@ -28,6 +28,7 @@ class NoticeCard extends StatelessWidget {
     required this.onPrimaryAction,
     this.secondaryActionLabel,
     this.onSecondaryAction,
+    this.subtitleMaxLines = 1,
     super.key,
   });
 
@@ -40,6 +41,15 @@ class NoticeCard extends StatelessWidget {
 
   /// Already localized.
   final String subtitle;
+
+  /// How many lines the subtitle may wrap to before it ellipsizes.
+  ///
+  /// `1` is the component's own behaviour (every notice card in the design
+  /// keeps its subtitle on one line so a long template name cannot push the
+  /// actions down). The degraded capture card (`VW54R`) overrides it to `3`:
+  /// its sentence explains what the phone does and truncating it would leave
+  /// the card saying only half of why it exists.
+  final int subtitleMaxLines;
 
   /// Already localized.
   final String primaryActionLabel;
@@ -102,7 +112,7 @@ class NoticeCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      maxLines: 1,
+                      maxLines: subtitleMaxLines,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontSize: 12,

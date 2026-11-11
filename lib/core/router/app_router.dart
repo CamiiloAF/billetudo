@@ -48,6 +48,7 @@ import '../../features/budgets/presentation/pages/budget_form_page.dart';
 import '../../features/budgets/presentation/pages/budgets_page.dart';
 import '../../features/capture/domain/usecases/mark_notification_capture_offered.dart';
 import '../../features/capture/domain/usecases/should_offer_notification_capture.dart';
+import '../../features/capture/presentation/cubit/capture_background_cubit.dart';
 import '../../features/capture/presentation/cubit/capture_issuers_cubit.dart';
 import '../../features/capture/presentation/cubit/capture_permission_cubit.dart';
 import '../../features/capture/presentation/cubit/capture_status_cubit.dart';
@@ -1318,6 +1319,12 @@ GoRoute _settingsRoute() => GoRoute(
             create: (context) =>
                 _started(getIt<CaptureStatusCubit>(), (c) => c.start()),
           ),
+          // HU-09: the permanent "Captura en segundo plano" row re-reads the
+          // real listener state on entry and on every return to foreground.
+          BlocProvider(
+            create: (context) =>
+                _started(getIt<CaptureBackgroundCubit>(), (c) => c.start()),
+          ),
         ],
         child: SettingsPage(
           onOpenLogin: () => context.push(AppRoutes.login),
@@ -1337,6 +1344,13 @@ GoRoute _settingsRoute() => GoRoute(
           // the tap lands where the user's next decision actually is.
           onOpenCapture: (status) => context.push(
             status.permissionGranted
+                ? AppRoutes.captureIssuers
+                : AppRoutes.capturePermission,
+          ),
+          // HU-09's background row: a missing precondition sends the user to
+          // fix it first; the sheet only makes sense once capture is on.
+          onOpenCaptureSetup: (permissionGranted) => context.push(
+            permissionGranted
                 ? AppRoutes.captureIssuers
                 : AppRoutes.capturePermission,
           ),
@@ -1530,15 +1544,37 @@ GoRoute _accountsRoute() => GoRoute(
 GoRoute _noticesRoute() => GoRoute(
       path: AppRoutes.notices,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => BlocProvider(
-        create: (context) =>
-            _started(getIt<NoticesCubit>(), (c) async => c.start()),
+      builder: (context, state) => MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) =>
+                _started(getIt<NoticesCubit>(), (c) async => c.start()),
+          ),
+          // HU-09: the degraded capture surfaces read the real device state
+          // (permission, issuers, battery exemption) on entry and on every
+          // return to foreground. Started here, next to the captures the page
+          // already watches, so the card and the section share one snapshot.
+          BlocProvider(
+            create: (context) =>
+                _started(getIt<CaptureBackgroundCubit>(), (c) => c.start()),
+          ),
+        ],
         child: NoticesPage(
           onDispatchCapture: (item) => context.push(
             AppRoutes.dispatchCapture,
             extra: capturePrefillFor(item),
           ),
           onChooseIssuers: () => context.push(AppRoutes.captureIssuers),
+          // The permanent door into "Captura en segundo plano" from Avisos:
+          // same sheet the degraded card opens, without waiting for the app
+          // to suspect the listener died. When capture is not configured yet,
+          // route to the missing step instead of a sheet about settings that
+          // do not matter yet.
+          onOpenCaptureSetup: (bool permissionGranted) => context.push(
+            permissionGranted
+                ? AppRoutes.captureIssuers
+                : AppRoutes.capturePermission,
+          ),
         ),
       ),
       routes: [
@@ -1555,9 +1591,15 @@ GoRoute _noticesRoute() => GoRoute(
               // next step and not an optional detour. `pushReplacement` so
               // going back from the catalog does not land on an explainer
               // for a permission the user already granted.
-              onGranted: () => context.pushReplacement(
-                AppRoutes.captureIssuers,
-              ),
+              //
+              // When the explainer was opened FROM the issuers screen
+              // (`extra: true`), grant must simply pop back to it: pushing a
+              // second catalog used to leave the old, pre-permission one
+              // underneath, so going back showed every switch off even though
+              // the choices were saved.
+              onGranted: () => state.extra == true
+                  ? context.pop()
+                  : context.pushReplacement(AppRoutes.captureIssuers),
               onDecline: () => context.pop(),
             ),
           ),
@@ -1570,7 +1612,8 @@ GoRoute _noticesRoute() => GoRoute(
             create: (context) =>
                 _started(getIt<CaptureIssuersCubit>(), (c) => c.start()),
             child: CaptureIssuersPage(
-              onOpenPermission: () => context.push(AppRoutes.capturePermission),
+              onOpenPermission: () =>
+                  context.push(AppRoutes.capturePermission, extra: true),
             ),
           ),
         ),

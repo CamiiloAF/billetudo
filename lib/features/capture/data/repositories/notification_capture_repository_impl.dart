@@ -2,10 +2,12 @@ import 'package:flutter/services.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/result.dart';
+import '../../domain/entities/capture_diagnostics.dart';
 import '../../domain/entities/issuer_app.dart';
 import '../../domain/entities/parsed_notification.dart';
 import '../../domain/repositories/notification_capture_repository.dart';
 import '../datasources/capture_method_channel_datasource.dart';
+import '../models/capture_diagnostics_model.dart';
 import '../models/native_capture_model.dart';
 
 /// Method-channel implementation of [NotificationCaptureRepository].
@@ -70,6 +72,24 @@ class NotificationCaptureRepositoryImpl
                 case final IssuerApp a)
               a,
         ];
+      });
+
+  @override
+  FutureResult<CaptureDiagnostics> getDiagnostics() => _guard(() async {
+        final Map<Object?, Object?> raw = await _datasource.getDiagnostics();
+        return CaptureDiagnosticsModel.fromMap(raw);
+      });
+
+  @override
+  FutureResult<Unit> requestIgnoreBatteryOptimizations() => _guard(() async {
+        await _datasource.requestIgnoreBatteryOptimizations();
+        return unit;
+      });
+
+  @override
+  FutureResult<Unit> openAutostartSettings() => _guard(() async {
+        await _datasource.openAutostartSettings();
+        return unit;
       });
 
   /// Wraps a channel call. `PlatformException`/`MissingPluginException` are

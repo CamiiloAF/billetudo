@@ -23,12 +23,15 @@ IssuerApp _issuer(String id, {required bool enabled}) => IssuerApp(
 void main() {
   late MockNotificationCaptureRepository capture;
   late MockIssuerSettingsRepository issuers;
+  late MockMarkCaptureConfigured markConfigured;
 
   setUpAll(() => registerFallbackValue(const <String>{}));
 
   setUp(() {
     capture = MockNotificationCaptureRepository();
     issuers = MockIssuerSettingsRepository();
+    markConfigured = MockMarkCaptureConfigured();
+    when(markConfigured.call).thenAnswer((_) async => const Right(unit));
     when(capture.getEnabledIssuers)
         .thenAnswer((_) async => const Right(<String>{}));
     when(() => capture.setEnabledIssuers(any()))
@@ -47,6 +50,7 @@ void main() {
         IsNotificationAccessGranted(capture),
         SetIssuerListening(capture, issuers),
         TurnOffAllIssuerListening(capture, issuers),
+        markConfigured,
       );
 
   void stubPermission({required bool granted}) => when(
@@ -159,6 +163,35 @@ void main() {
       expect(cubit.state.enabledCount, 0);
       // The permission is untouched: the screen stays usable.
       expect(cubit.state.permissionGranted, isTrue);
+    },
+  );
+
+  blocTest<CaptureIssuersCubit, CaptureIssuersState>(
+    'latches the configured date once there is a permission and an enabled '
+    'issuer (HU-09), without touching the screen state',
+    setUp: () {
+      stubPermission(granted: true);
+      stubApps(<IssuerApp>[_issuer('nu', enabled: true)]);
+    },
+    build: build,
+    act: (CaptureIssuersCubit cubit) => cubit.start(),
+    verify: (CaptureIssuersCubit cubit) {
+      verify(markConfigured.call).called(1);
+      expect(cubit.state.enabledCount, 1);
+    },
+  );
+
+  blocTest<CaptureIssuersCubit, CaptureIssuersState>(
+    'does not latch a configuration date while no issuer is switched on',
+    setUp: () {
+      stubPermission(granted: true);
+      stubApps(<IssuerApp>[_issuer('nu', enabled: false)]);
+    },
+    build: build,
+    act: (CaptureIssuersCubit cubit) => cubit.start(),
+    verify: (CaptureIssuersCubit cubit) {
+      verifyNever(markConfigured.call);
+      expect(cubit.state.enabledCount, 0);
     },
   );
 

@@ -13,6 +13,14 @@
          Se pide en runtime, en el momento de dictar: nunca en el arranque ni
          en el onboarding. El audio no se guarda ni se sincroniza. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <!-- Captura en segundo plano (HU-09,
+         docs/requirements/fase-2/19-notificaciones-bancarias.md). Permite
+         abrir el diálogo "no optimizar batería" para esta app, no lo concede:
+         el sistema sigue preguntando y la app no puede decidir por el usuario.
+         Se pide en contexto, desde la hoja "Captura en segundo plano", cuando
+         el usuario toca "Revisar" porque dejó de recibir avisos — nunca al
+         abrir la app ni en el onboarding. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <application
         android:label="@string/app_name"
         android:name="${applicationName}"

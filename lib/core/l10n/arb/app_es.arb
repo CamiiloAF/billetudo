@@ -5265,6 +5265,93 @@
   "@captureNoIssuersDescription": {},
   "captureNoIssuersCta": "Elegir apps",
   "@captureNoIssuersCta": {},
+  "captureBackgroundCardTitle": "La captura puede detenerse",
+  "@captureBackgroundCardTitle": {},
+  "captureBackgroundCardSubtitle": "Tu teléfono puede cerrar Billetudo cuando no lo usás. Si pasa, no llegan avisos hasta que lo abras.",
+  "@captureBackgroundCardSubtitle": {},
+  "captureBackgroundReviewCta": "Revisar",
+  "@captureBackgroundReviewCta": {},
+  "captureBackgroundSnoozeCta": "Ahora no",
+  "@captureBackgroundSnoozeCta": {},
+  "captureBackgroundEmptyTitle": "Puede que los avisos no estén llegando",
+  "@captureBackgroundEmptyTitle": {},
+  "captureBackgroundEmptyDescription": "Tu teléfono puede cerrar Billetudo cuando no lo usás. Activá dos ajustes del sistema y seguimos leyendo aunque esté cerrada.",
+  "@captureBackgroundEmptyDescription": {},
+  "captureBackgroundEmptyCta": "Revisar captura",
+  "@captureBackgroundEmptyCta": {},
+  "captureBackgroundSheetTitle": "Captura en segundo plano",
+  "@captureBackgroundSheetTitle": {},
+  "captureBackgroundSheetBody": "Para que Billetudo lea los avisos aunque esté cerrado, el teléfono no tiene que estar cerrándolo. Se arregla con dos ajustes.",
+  "@captureBackgroundSheetBody": {},
+  "captureBackgroundBatteryTitle": "Permitir batería",
+  "@captureBackgroundBatteryTitle": {},
+  "captureBackgroundBatterySubtitle": "Evita que el sistema lo duerma",
+  "@captureBackgroundBatterySubtitle": {},
+  "captureBackgroundBatteryAllowed": "Permitido",
+  "@captureBackgroundBatteryAllowed": {},
+  "captureBackgroundAutostartTitle": "Abrir inicio automático",
+  "@captureBackgroundAutostartTitle": {},
+  "captureBackgroundAutostartSubtitle": "En {brand}, para que vuelva a escuchar",
+  "@captureBackgroundAutostartSubtitle": {
+    "placeholders": {
+      "brand": {
+        "type": "String"
+      }
+    }
+  },
+  "captureBackgroundLastCapture": "Última captura: {when}",
+  "@captureBackgroundLastCapture": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "captureBackgroundNoCaptureYet": "Todavía no recibimos ningún aviso.",
+  "@captureBackgroundNoCaptureYet": {},
+  "captureBackgroundSheetFooter": "Última captura: {when} Si algo no llega, registralo a mano.",
+  "@captureBackgroundSheetFooter": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "captureBackgroundSheetFooterNoCapture": "Todavía no recibimos ningún aviso. Si algo no llega, registralo a mano.",
+  "@captureBackgroundSheetFooterNoCapture": {},
+  "captureBackgroundConfirmCta": "Listo, ya lo activé",
+  "@captureBackgroundConfirmCta": {},
+  "captureBackgroundActionRowSemantics": "{title}. {subtitle}",
+  "@captureBackgroundActionRowSemantics": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "subtitle": {
+        "type": "String"
+      }
+    }
+  },
+  "captureBackgroundFieldLabel": "Captura en segundo plano",
+  "@captureBackgroundFieldLabel": {},
+  "captureBackgroundFieldActive": "Activa · última captura {when}",
+  "@captureBackgroundFieldActive": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "captureBackgroundFieldActiveNoCapture": "Activa · esperando el primer aviso",
+  "@captureBackgroundFieldActiveNoCapture": {},
+  "captureBackgroundFieldChecking": "Revisando el estado…",
+  "@captureBackgroundFieldChecking": {},
+  "captureBackgroundFieldAttention": "Revisá dos ajustes del sistema",
+  "@captureBackgroundFieldAttention": {},
+  "captureBackgroundFieldNeedsSetup": "Activa primero los avisos de tu banco",
+  "@captureBackgroundFieldNeedsSetup": {},
+  "captureBackgroundFieldSnoozed": "Silenciada por 14 días",
+  "@captureBackgroundFieldSnoozed": {},
   "captureNotBalancePill": "No suma a tu saldo",
   "@captureNotBalancePill": {},
   "captureIssuerLabel": "Aviso de {issuer}",
@@ -5343,6 +5430,8 @@
   "@captureDisabledPendingNote": {},
   "captureDisabledOpenSettingsCta": "Activar en Ajustes de Android",
   "@captureDisabledOpenSettingsCta": {},
+  "captureBackgroundLinkLabel": "Ajustes de captura en segundo plano",
+  "@captureBackgroundLinkLabel": {},
   "captureIssuersHeader": "Apps que se leen",
   "@captureIssuersHeader": {},
   "captureIssuersScopeNote": "Solo se leen los avisos de las apps que enciendas aquí. Las demás no se abren nunca.",

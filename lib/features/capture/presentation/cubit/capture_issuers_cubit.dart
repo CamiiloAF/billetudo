@@ -5,6 +5,7 @@ import '../../../../core/error/result.dart';
 import '../../domain/entities/issuer_app.dart';
 import '../../domain/usecases/get_issuer_apps.dart';
 import '../../domain/usecases/is_notification_access_granted.dart';
+import '../../domain/usecases/mark_capture_configured.dart';
 import '../../domain/usecases/set_issuer_listening.dart';
 import '../../domain/usecases/turn_off_all_issuer_listening.dart';
 import 'capture_issuers_state.dart';
@@ -22,12 +23,14 @@ class CaptureIssuersCubit extends Cubit<CaptureIssuersState> {
     this._isGranted,
     this._setIssuerListening,
     this._turnOffAll,
+    this._markConfigured,
   ) : super(const CaptureIssuersState());
 
   final GetIssuerApps _getIssuerApps;
   final IsNotificationAccessGranted _isGranted;
   final SetIssuerListening _setIssuerListening;
   final TurnOffAllIssuerListening _turnOffAll;
+  final MarkCaptureConfigured _markConfigured;
 
   Future<void> start() => _load();
 
@@ -86,6 +89,13 @@ class CaptureIssuersCubit extends Cubit<CaptureIssuersState> {
             issuers: value,
           ),
         );
+        // Latch the start of HU-09's three-day "configured and never captured"
+        // grace period. Idempotent and fire-and-forget: it never changes what
+        // this screen shows, and a failed write only means the next visit
+        // tries again.
+        if (value.any((IssuerApp issuer) => issuer.enabled)) {
+          await _markConfigured();
+        }
       case Left():
         emit(
           state.copyWith(

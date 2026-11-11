@@ -6575,6 +6575,107 @@ class AppLocalizationsEs extends AppLocalizations {
   String get captureNoIssuersCta => 'Elegir apps';
 
   @override
+  String get captureBackgroundCardTitle => 'La captura puede detenerse';
+
+  @override
+  String get captureBackgroundCardSubtitle =>
+      'Tu teléfono puede cerrar Billetudo cuando no lo usás. Si pasa, no llegan avisos hasta que lo abras.';
+
+  @override
+  String get captureBackgroundReviewCta => 'Revisar';
+
+  @override
+  String get captureBackgroundSnoozeCta => 'Ahora no';
+
+  @override
+  String get captureBackgroundEmptyTitle =>
+      'Puede que los avisos no estén llegando';
+
+  @override
+  String get captureBackgroundEmptyDescription =>
+      'Tu teléfono puede cerrar Billetudo cuando no lo usás. Activá dos ajustes del sistema y seguimos leyendo aunque esté cerrada.';
+
+  @override
+  String get captureBackgroundEmptyCta => 'Revisar captura';
+
+  @override
+  String get captureBackgroundSheetTitle => 'Captura en segundo plano';
+
+  @override
+  String get captureBackgroundSheetBody =>
+      'Para que Billetudo lea los avisos aunque esté cerrado, el teléfono no tiene que estar cerrándolo. Se arregla con dos ajustes.';
+
+  @override
+  String get captureBackgroundBatteryTitle => 'Permitir batería';
+
+  @override
+  String get captureBackgroundBatterySubtitle =>
+      'Evita que el sistema lo duerma';
+
+  @override
+  String get captureBackgroundBatteryAllowed => 'Permitido';
+
+  @override
+  String get captureBackgroundAutostartTitle => 'Abrir inicio automático';
+
+  @override
+  String captureBackgroundAutostartSubtitle(String brand) {
+    return 'En $brand, para que vuelva a escuchar';
+  }
+
+  @override
+  String captureBackgroundLastCapture(String when) {
+    return 'Última captura: $when';
+  }
+
+  @override
+  String get captureBackgroundNoCaptureYet =>
+      'Todavía no recibimos ningún aviso.';
+
+  @override
+  String captureBackgroundSheetFooter(String when) {
+    return 'Última captura: $when Si algo no llega, registralo a mano.';
+  }
+
+  @override
+  String get captureBackgroundSheetFooterNoCapture =>
+      'Todavía no recibimos ningún aviso. Si algo no llega, registralo a mano.';
+
+  @override
+  String get captureBackgroundConfirmCta => 'Listo, ya lo activé';
+
+  @override
+  String captureBackgroundActionRowSemantics(String title, String subtitle) {
+    return '$title. $subtitle';
+  }
+
+  @override
+  String get captureBackgroundFieldLabel => 'Captura en segundo plano';
+
+  @override
+  String captureBackgroundFieldActive(String when) {
+    return 'Activa · última captura $when';
+  }
+
+  @override
+  String get captureBackgroundFieldActiveNoCapture =>
+      'Activa · esperando el primer aviso';
+
+  @override
+  String get captureBackgroundFieldChecking => 'Revisando el estado…';
+
+  @override
+  String get captureBackgroundFieldAttention =>
+      'Revisá dos ajustes del sistema';
+
+  @override
+  String get captureBackgroundFieldNeedsSetup =>
+      'Activa primero los avisos de tu banco';
+
+  @override
+  String get captureBackgroundFieldSnoozed => 'Silenciada por 14 días';
+
+  @override
   String get captureNotBalancePill => 'No suma a tu saldo';
 
   @override
@@ -6716,6 +6817,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get captureDisabledOpenSettingsCta => 'Activar en Ajustes de Android';
+
+  @override
+  String get captureBackgroundLinkLabel =>
+      'Ajustes de captura en segundo plano';
 
   @override
   String get captureIssuersHeader => 'Apps que se leen';

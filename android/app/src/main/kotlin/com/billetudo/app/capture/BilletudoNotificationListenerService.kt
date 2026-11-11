@@ -45,13 +45,27 @@ class BilletudoNotificationListenerService : NotificationListenerService() {
 
     override fun onListenerConnected() {
         super.onListenerConnected()
+        // Direct evidence for HU-09: the system actually bound us. A build that
+        // was rejected by the OEM (MIUI/HyperOS) never reaches this callback,
+        // which is what lets the app warn in minutes instead of after days.
+        isConnected = true
+        settings.markListenerConnected(System.currentTimeMillis())
     }
 
     override fun onListenerDisconnected() {
+        // Flip the live flag BEFORE asking to be rebound: the channel may be
+        // read while the rebind is in flight, and it must not claim coverage
+        // the process does not have at that instant.
+        isConnected = false
         super.onListenerDisconnected()
         requestRebind(
             ComponentName(this, BilletudoNotificationListenerService::class.java),
         )
+    }
+
+    override fun onDestroy() {
+        isConnected = false
+        super.onDestroy()
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
@@ -84,6 +98,7 @@ class BilletudoNotificationListenerService : NotificationListenerService() {
         ) ?: return
 
         buffer.add(capture)
+        settings.markCaptureReceived(capture.postedAtEpochMs)
     }
 
     /**
@@ -91,5 +106,26 @@ class BilletudoNotificationListenerService : NotificationListenerService() {
      * it announced, and a capture already parked stays parked.
      */
     override fun onNotificationRemoved(sbn: StatusBarNotification?) = Unit
+
+    companion object {
+        /**
+         * Live state of the current process: whether the system has this
+         * listener bound right now. It is reset on disconnect and on destroy
+         * and is never persisted.
+         *
+         * This is NOT the historical proof: `listenerConnectedNow` is only
+         * meaningful inside a running process, and a cold start always answers
+         * `false` until the system binds the service again. The durable
+         * evidence is [CaptureSettings.lastListenerConnectedAt], written by
+         * [onListenerConnected]; reporting both lets Flutter tell "never bound"
+         * (the OEM rejected the service) from "bound, then dropped" (the
+         * system killed the process).
+         *
+         * `@Volatile` because the method channel reads it from a different
+         * thread than the one the service callbacks run on.
+         */
+        @Volatile
+        var isConnected: Boolean = false
+    }
 
 }

@@ -12,6 +12,7 @@ import '../../../../core/widgets/settings_field.dart';
 import '../../../auth/domain/entities/auth_session.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../capture/presentation/cubit/capture_status_state.dart';
+import '../../../capture/presentation/widgets/capture_background_field.dart';
 import '../../../capture/presentation/widgets/capture_settings_field.dart';
 import '../cubit/app_settings_cubit.dart';
 import '../cubit/app_settings_state.dart';
@@ -39,6 +40,7 @@ class SettingsPage extends StatelessWidget {
     required this.onOpenSyncStatus,
     required this.onOpenQuickAccessOrder,
     required this.onOpenCapture,
+    required this.onOpenCaptureSetup,
     required this.onOpenNotifications,
     super.key,
   });
@@ -68,6 +70,13 @@ class SettingsPage extends StatelessWidget {
   /// The row draws nothing on iOS, where the permission does not exist, so
   /// this is never called there.
   final ValueChanged<CaptureStatusState> onOpenCapture;
+
+  /// Opens the background-capture setup the permanent row asks for (HU-09):
+  /// the permission explainer when `false`, the issuer catalog when `true`.
+  /// Same split as [onOpenCapture], but driven by the row's own snapshot
+  /// instead of the status row's — they can disagree for a beat after a
+  /// revocation, and the row the user tapped is the one that must win.
+  final ValueChanged<bool> onOpenCaptureSetup;
 
   /// Opens the info sheet and honours its "Activar modo sobres" call to action.
   Future<void> _openEnvelopeInfo(
@@ -173,6 +182,11 @@ class SettingsPage extends StatelessWidget {
                       // a stored flag, because the permission can be revoked
                       // from Android without the app being told.
                       CaptureSettingsField(onTap: onOpenCapture),
+                      // HU-09's permanent status row: explains and repairs
+                      // the background side (battery / autostart) without
+                      // waiting for Avisos to detect a problem. It draws
+                      // nothing on iOS, like the row above it.
+                      CaptureBackgroundField(onOpenSetup: onOpenCaptureSetup),
                       BlocBuilder<AppSettingsCubit, AppSettingsState>(
                         builder: (context, settings) => ShowHelpOnEntryField(
                           enabled: settings.showHelpOnSectionEntry,

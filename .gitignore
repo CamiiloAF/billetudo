@@ -42,3 +42,6 @@ test/**/failures/
 
 sentry.properties
 web/venv/
+
+# Copia temporal de Gradle usada en workarounds del sandbox (nunca debe trackearse)
+.gradle-dsh/

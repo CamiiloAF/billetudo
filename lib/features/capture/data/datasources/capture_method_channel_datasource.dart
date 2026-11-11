@@ -94,4 +94,33 @@ class CaptureMethodChannelDatasource {
         if (entry is Map<Object?, Object?>) entry,
     ];
   }
+
+  /// Phone-side facts behind HU-09. Answers an empty map off Android, which
+  /// the model maps to the empty diagnostics entity — the feature is Android
+  /// only and a probe must never fail just because the platform is not.
+  Future<Map<Object?, Object?>> getDiagnostics() async {
+    if (!_isSupported) {
+      return const <Object?, Object?>{};
+    }
+    final Map<Object?, Object?>? raw =
+        await _channel.invokeMapMethod<Object?, Object?>('getDiagnostics');
+    return raw ?? const <Object?, Object?>{};
+  }
+
+  /// Opens the battery-optimization exemption screen. No-op off Android.
+  Future<void> requestIgnoreBatteryOptimizations() async {
+    if (!_isSupported) {
+      return;
+    }
+    await _channel.invokeMethod<void>('requestIgnoreBatteryOptimizations');
+  }
+
+  /// Opens the OEM autostart screen (or the app details fallback). No-op off
+  /// Android.
+  Future<void> openAutostartSettings() async {
+    if (!_isSupported) {
+      return;
+    }
+    await _channel.invokeMethod<void>('openAutostartSettings');
+  }
 }

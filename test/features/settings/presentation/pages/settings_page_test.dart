@@ -9,6 +9,8 @@ import 'package:billetudo/features/auth/domain/entities/auth_user.dart';
 import 'package:billetudo/features/auth/domain/usecases/sign_out.dart';
 import 'package:billetudo/features/auth/domain/usecases/watch_auth_session.dart';
 import 'package:billetudo/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:billetudo/features/capture/presentation/cubit/capture_background_cubit.dart';
+import 'package:billetudo/features/capture/presentation/cubit/capture_background_state.dart';
 import 'package:billetudo/features/capture/presentation/cubit/capture_status_cubit.dart';
 import 'package:billetudo/features/capture/presentation/cubit/capture_status_state.dart';
 import 'package:billetudo/features/settings/presentation/cubit/app_settings_cubit.dart';
@@ -27,6 +29,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../auth/presentation/widgets/pump_widget.dart';
+import '../../../capture/capture_mocks.dart';
 
 class MockWatchAuthSession extends Mock implements WatchAuthSession {}
 
@@ -57,6 +60,7 @@ void main() {
   late MockThemeModeCubit themeModeCubit;
   late MockSyncStatusCubit syncStatusCubit;
   late MockCaptureStatusCubit captureStatusCubit;
+  late MockCaptureBackgroundCubit captureBackgroundCubit;
   late MockNotificationSettingsCubit notificationSettingsCubit;
 
   const user = AuthUser(
@@ -111,6 +115,17 @@ void main() {
       const Stream<CaptureStatusState>.empty(),
       initialState: const CaptureStatusState(isLoading: false),
     );
+
+    // Hidden by default, like the row above it: most cases are about the
+    // rest of Ajustes. The HU-09 case below turns it on with attention.
+    captureBackgroundCubit = MockCaptureBackgroundCubit();
+    when(() => captureBackgroundCubit.state)
+        .thenReturn(const CaptureBackgroundState(isLoading: false));
+    whenListen(
+      captureBackgroundCubit,
+      const Stream<CaptureBackgroundState>.empty(),
+      initialState: const CaptureBackgroundState(isLoading: false),
+    );
   });
 
   Future<void> pumpSettings(
@@ -121,6 +136,7 @@ void main() {
     ValueChanged<String>? onOpenComingSoon,
     VoidCallback? onOpenSyncStatus,
     VoidCallback? onOpenQuickAccessOrder,
+    ValueChanged<bool>? onOpenCaptureSetup,
   }) async {
     when(() => watchAuthSession.current).thenReturn(session);
     when(() => watchAuthSession()).thenAnswer((_) => const Stream.empty());
@@ -133,6 +149,9 @@ void main() {
           BlocProvider<ThemeModeCubit>.value(value: themeModeCubit),
           BlocProvider<SyncStatusCubit>.value(value: syncStatusCubit),
           BlocProvider<CaptureStatusCubit>.value(value: captureStatusCubit),
+          BlocProvider<CaptureBackgroundCubit>.value(
+            value: captureBackgroundCubit,
+          ),
           BlocProvider<NotificationSettingsCubit>.value(
             value: notificationSettingsCubit,
           ),
@@ -144,6 +163,7 @@ void main() {
           onOpenSyncStatus: onOpenSyncStatus ?? () {},
           onOpenQuickAccessOrder: onOpenQuickAccessOrder ?? () {},
           onOpenCapture: (_) {},
+          onOpenCaptureSetup: onOpenCaptureSetup ?? (_) {},
           onOpenNotifications: () {},
         ),
       ),
@@ -209,6 +229,41 @@ void main() {
       await tester.pump();
 
       expect(opened, 1);
+    });
+  });
+
+  group('fila permanente "Captura en segundo plano" (HU-09)', () {
+    testWidgets(
+        'aparece con el estado de atención cuando el listener puede '
+        'estar detenido', (tester) async {
+      when(() => captureBackgroundCubit.state).thenReturn(
+        CaptureBackgroundState(
+          isSupported: true,
+          isLoading: false,
+          permissionGranted: true,
+          enabledCount: 1,
+          degraded: true,
+          showsAttention: true,
+          diagnostics: buildCaptureDiagnostics(),
+        ),
+      );
+      await pumpSettings(tester, session: const AuthSession.signedOut());
+
+      await tester.scrollUntilVisible(
+        find.text('Captura en segundo plano'),
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.pump();
+
+      expect(find.text('Captura en segundo plano'), findsOneWidget);
+      expect(find.text('Revisá dos ajustes del sistema'), findsOneWidget);
+    });
+
+    testWidgets('en iOS no se dibuja', (tester) async {
+      await pumpSettings(tester, session: const AuthSession.signedOut());
+
+      expect(find.text('Captura en segundo plano'), findsNothing);
     });
   });
 

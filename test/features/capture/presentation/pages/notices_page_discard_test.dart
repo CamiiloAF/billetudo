@@ -1,5 +1,7 @@
 import 'package:billetudo/core/l10n/gen/app_localizations.dart';
 import 'package:billetudo/core/theme/app_theme.dart';
+import 'package:billetudo/features/capture/presentation/cubit/capture_background_cubit.dart';
+import 'package:billetudo/features/capture/presentation/cubit/capture_background_state.dart';
 import 'package:billetudo/features/capture/presentation/cubit/capture_review_item.dart';
 import 'package:billetudo/features/capture/presentation/cubit/notices_cubit.dart';
 import 'package:billetudo/features/capture/presentation/cubit/notices_state.dart';
@@ -22,9 +24,14 @@ class MockNoticesCubit extends MockCubit<NoticesState>
 /// capture to the form.
 void main() {
   late MockNoticesCubit cubit;
+  late MockCaptureBackgroundCubit background;
 
   setUp(() {
     cubit = MockNoticesCubit();
+    background = MockCaptureBackgroundCubit();
+    when(() => background.state).thenReturn(
+      const CaptureBackgroundState(isSupported: true, isLoading: false),
+    );
     when(() => cubit.discard(any())).thenAnswer((_) async {});
   });
 
@@ -37,21 +44,28 @@ void main() {
   Future<void> pumpPage(
     WidgetTester tester, {
     required ValueChanged<CaptureReviewItem> onDispatchCapture,
+    Stream<NoticesState>? stream,
   }) async {
-    when(() => cubit.state).thenReturn(
-      NoticesState(
-        status: NoticesStatus.ready,
-        captures: [item('capture-1')],
-      ),
+    final NoticesState initial = NoticesState(
+      status: NoticesStatus.ready,
+      captures: [item('capture-1')],
     );
+    if (stream != null) {
+      whenListen(cubit, stream, initialState: initial);
+    } else {
+      when(() => cubit.state).thenReturn(initial);
+    }
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light(),
         locale: const Locale('es'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: BlocProvider<NoticesCubit>.value(
-          value: cubit,
+        home: MultiBlocProvider(
+          providers: [
+            BlocProvider<NoticesCubit>.value(value: cubit),
+            BlocProvider<CaptureBackgroundCubit>.value(value: background),
+          ],
           child: NoticesPage(
             onDispatchCapture: onDispatchCapture,
             onChooseIssuers: () {},
@@ -77,6 +91,35 @@ void main() {
 
     verify(() => cubit.discard('capture-1')).called(1);
     expect(dispatched, 0);
+  });
+
+  testWidgets('the undo snackbar dismisses itself after its duration',
+      (tester) async {
+    // Regression: Flutter 3.38 defaults `SnackBar.persist` to `true` when the
+    // bar carries an action, so a missing `persist: false` leaves the undo
+    // snackbar on screen forever. The Avisos centre must set it explicitly.
+    final NoticesState initial = NoticesState(
+      status: NoticesStatus.ready,
+      captures: [item('capture-1')],
+    );
+    await pumpPage(
+      tester,
+      onDispatchCapture: (_) {},
+      stream: Stream<NoticesState>.value(
+        initial.copyWith(discardedId: 'capture-1'),
+      ),
+    );
+    await tester.pump();
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsOneWidget);
+
+    // The auto-dismiss timer is armed only once the entrance animation has
+    // completed (`ScaffoldMessengerState` schedules it in its next build), so
+    // settle first and then let the 5s duration elapse. The bar has to be gone
+    // without a tap.
+    await tester.pump(const Duration(seconds: 6));
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsNothing);
   });
 
   testWidgets('the card itself still dispatches the capture to the form',

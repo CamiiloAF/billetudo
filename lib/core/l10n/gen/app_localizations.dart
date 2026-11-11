@@ -10731,6 +10731,168 @@ abstract class AppLocalizations {
   /// **'Elegir apps'**
   String get captureNoIssuersCta;
 
+  /// No description provided for @captureBackgroundCardTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'La captura puede detenerse'**
+  String get captureBackgroundCardTitle;
+
+  /// No description provided for @captureBackgroundCardSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu teléfono puede cerrar Billetudo cuando no lo usás. Si pasa, no llegan avisos hasta que lo abras.'**
+  String get captureBackgroundCardSubtitle;
+
+  /// No description provided for @captureBackgroundReviewCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisar'**
+  String get captureBackgroundReviewCta;
+
+  /// No description provided for @captureBackgroundSnoozeCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahora no'**
+  String get captureBackgroundSnoozeCta;
+
+  /// No description provided for @captureBackgroundEmptyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Puede que los avisos no estén llegando'**
+  String get captureBackgroundEmptyTitle;
+
+  /// No description provided for @captureBackgroundEmptyDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu teléfono puede cerrar Billetudo cuando no lo usás. Activá dos ajustes del sistema y seguimos leyendo aunque esté cerrada.'**
+  String get captureBackgroundEmptyDescription;
+
+  /// No description provided for @captureBackgroundEmptyCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisar captura'**
+  String get captureBackgroundEmptyCta;
+
+  /// No description provided for @captureBackgroundSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Captura en segundo plano'**
+  String get captureBackgroundSheetTitle;
+
+  /// No description provided for @captureBackgroundSheetBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Para que Billetudo lea los avisos aunque esté cerrado, el teléfono no tiene que estar cerrándolo. Se arregla con dos ajustes.'**
+  String get captureBackgroundSheetBody;
+
+  /// No description provided for @captureBackgroundBatteryTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Permitir batería'**
+  String get captureBackgroundBatteryTitle;
+
+  /// No description provided for @captureBackgroundBatterySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Evita que el sistema lo duerma'**
+  String get captureBackgroundBatterySubtitle;
+
+  /// No description provided for @captureBackgroundBatteryAllowed.
+  ///
+  /// In es, this message translates to:
+  /// **'Permitido'**
+  String get captureBackgroundBatteryAllowed;
+
+  /// No description provided for @captureBackgroundAutostartTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir inicio automático'**
+  String get captureBackgroundAutostartTitle;
+
+  /// No description provided for @captureBackgroundAutostartSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'En {brand}, para que vuelva a escuchar'**
+  String captureBackgroundAutostartSubtitle(String brand);
+
+  /// No description provided for @captureBackgroundLastCapture.
+  ///
+  /// In es, this message translates to:
+  /// **'Última captura: {when}'**
+  String captureBackgroundLastCapture(String when);
+
+  /// No description provided for @captureBackgroundNoCaptureYet.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no recibimos ningún aviso.'**
+  String get captureBackgroundNoCaptureYet;
+
+  /// No description provided for @captureBackgroundSheetFooter.
+  ///
+  /// In es, this message translates to:
+  /// **'Última captura: {when} Si algo no llega, registralo a mano.'**
+  String captureBackgroundSheetFooter(String when);
+
+  /// No description provided for @captureBackgroundSheetFooterNoCapture.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no recibimos ningún aviso. Si algo no llega, registralo a mano.'**
+  String get captureBackgroundSheetFooterNoCapture;
+
+  /// No description provided for @captureBackgroundConfirmCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Listo, ya lo activé'**
+  String get captureBackgroundConfirmCta;
+
+  /// No description provided for @captureBackgroundActionRowSemantics.
+  ///
+  /// In es, this message translates to:
+  /// **'{title}. {subtitle}'**
+  String captureBackgroundActionRowSemantics(String title, String subtitle);
+
+  /// No description provided for @captureBackgroundFieldLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Captura en segundo plano'**
+  String get captureBackgroundFieldLabel;
+
+  /// No description provided for @captureBackgroundFieldActive.
+  ///
+  /// In es, this message translates to:
+  /// **'Activa · última captura {when}'**
+  String captureBackgroundFieldActive(String when);
+
+  /// No description provided for @captureBackgroundFieldActiveNoCapture.
+  ///
+  /// In es, this message translates to:
+  /// **'Activa · esperando el primer aviso'**
+  String get captureBackgroundFieldActiveNoCapture;
+
+  /// No description provided for @captureBackgroundFieldChecking.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisando el estado…'**
+  String get captureBackgroundFieldChecking;
+
+  /// No description provided for @captureBackgroundFieldAttention.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisá dos ajustes del sistema'**
+  String get captureBackgroundFieldAttention;
+
+  /// No description provided for @captureBackgroundFieldNeedsSetup.
+  ///
+  /// In es, this message translates to:
+  /// **'Activa primero los avisos de tu banco'**
+  String get captureBackgroundFieldNeedsSetup;
+
+  /// No description provided for @captureBackgroundFieldSnoozed.
+  ///
+  /// In es, this message translates to:
+  /// **'Silenciada por 14 días'**
+  String get captureBackgroundFieldSnoozed;
+
   /// No description provided for @captureNotBalancePill.
   ///
   /// In es, this message translates to:
@@ -10965,6 +11127,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Activar en Ajustes de Android'**
   String get captureDisabledOpenSettingsCta;
+
+  /// No description provided for @captureBackgroundLinkLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustes de captura en segundo plano'**
+  String get captureBackgroundLinkLabel;
 
   /// No description provided for @captureIssuersHeader.
   ///

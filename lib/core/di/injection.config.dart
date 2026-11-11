@@ -382,6 +382,8 @@ import 'package:billetudo/features/budgets/presentation/cubit/budgets_list_cubit
     as _i244;
 import 'package:billetudo/features/budgets/presentation/cubit/zero_based_summary_cubit.dart'
     as _i843;
+import 'package:billetudo/features/capture/data/datasources/capture_background_preference_datasource.dart'
+    as _i720;
 import 'package:billetudo/features/capture/data/datasources/capture_method_channel_datasource.dart'
     as _i725;
 import 'package:billetudo/features/capture/data/datasources/capture_offer_preference_datasource.dart'
@@ -398,6 +400,8 @@ import 'package:billetudo/features/capture/data/datasources/merchant_learning_lo
     as _i777;
 import 'package:billetudo/features/capture/data/datasources/pending_captures_local_datasource.dart'
     as _i791;
+import 'package:billetudo/features/capture/data/repositories/capture_background_preferences_repository_impl.dart'
+    as _i956;
 import 'package:billetudo/features/capture/data/repositories/capture_learning_repository_impl.dart'
     as _i184;
 import 'package:billetudo/features/capture/data/repositories/capture_offer_repository_impl.dart'
@@ -420,6 +424,8 @@ import 'package:billetudo/features/capture/data/repositories/preferences_cloud_t
     as _i1054;
 import 'package:billetudo/features/capture/data/repositories/speech_to_text_recognizer.dart'
     as _i159;
+import 'package:billetudo/features/capture/domain/repositories/capture_background_preferences_repository.dart'
+    as _i200;
 import 'package:billetudo/features/capture/domain/repositories/capture_learning_repository.dart'
     as _i415;
 import 'package:billetudo/features/capture/domain/repositories/capture_offer_repository.dart'
@@ -460,6 +466,8 @@ import 'package:billetudo/features/capture/domain/usecases/find_duplicate_candid
     as _i810;
 import 'package:billetudo/features/capture/domain/usecases/forget_capture_learning.dart'
     as _i867;
+import 'package:billetudo/features/capture/domain/usecases/get_capture_background_health.dart'
+    as _i804;
 import 'package:billetudo/features/capture/domain/usecases/get_cloud_transcription_consent.dart'
     as _i553;
 import 'package:billetudo/features/capture/domain/usecases/get_enabled_issuers.dart'
@@ -482,8 +490,12 @@ import 'package:billetudo/features/capture/domain/usecases/link_issuer_account.d
     as _i274;
 import 'package:billetudo/features/capture/domain/usecases/load_issuer_rules.dart'
     as _i133;
+import 'package:billetudo/features/capture/domain/usecases/mark_capture_configured.dart'
+    as _i283;
 import 'package:billetudo/features/capture/domain/usecases/mark_notification_capture_offered.dart'
     as _i384;
+import 'package:billetudo/features/capture/domain/usecases/open_capture_autostart_settings.dart'
+    as _i1033;
 import 'package:billetudo/features/capture/domain/usecases/open_microphone_settings.dart'
     as _i1073;
 import 'package:billetudo/features/capture/domain/usecases/open_notification_access_settings.dart'
@@ -496,6 +508,8 @@ import 'package:billetudo/features/capture/domain/usecases/purge_discarded_captu
     as _i725;
 import 'package:billetudo/features/capture/domain/usecases/register_manual_movement_attempt.dart'
     as _i934;
+import 'package:billetudo/features/capture/domain/usecases/request_battery_optimization_exemption.dart'
+    as _i1068;
 import 'package:billetudo/features/capture/domain/usecases/request_microphone_permission.dart'
     as _i695;
 import 'package:billetudo/features/capture/domain/usecases/restore_pending_capture.dart'
@@ -510,6 +524,8 @@ import 'package:billetudo/features/capture/domain/usecases/set_issuer_listening.
     as _i293;
 import 'package:billetudo/features/capture/domain/usecases/should_offer_notification_capture.dart'
     as _i348;
+import 'package:billetudo/features/capture/domain/usecases/snooze_capture_background_alert.dart'
+    as _i256;
 import 'package:billetudo/features/capture/domain/usecases/start_voice_capture.dart'
     as _i1048;
 import 'package:billetudo/features/capture/domain/usecases/stop_voice_capture.dart'
@@ -530,6 +546,8 @@ import 'package:billetudo/features/capture/domain/usecases/watch_pending_capture
     as _i593;
 import 'package:billetudo/features/capture/domain/usecases/watch_voice_capture_updates.dart'
     as _i853;
+import 'package:billetudo/features/capture/presentation/cubit/capture_background_cubit.dart'
+    as _i923;
 import 'package:billetudo/features/capture/presentation/cubit/capture_issuers_cubit.dart'
     as _i661;
 import 'package:billetudo/features/capture/presentation/cubit/capture_permission_cubit.dart'
@@ -1169,6 +1187,9 @@ extension GetItInjectableX on _i174.GetIt {
         _i207.ThemePreferenceDatasource(gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i464.EverSignedInDatasource>(
         () => _i464.EverSignedInDatasource(gh<_i460.SharedPreferencesAsync>()));
+    gh.lazySingleton<_i720.CaptureBackgroundPreferenceDatasource>(() =>
+        _i720.CaptureBackgroundPreferenceDatasource(
+            gh<_i460.SharedPreferencesAsync>()));
     gh.lazySingleton<_i287.CaptureOfferPreferenceDatasource>(() =>
         _i287.CaptureOfferPreferenceDatasource(
             gh<_i460.SharedPreferencesAsync>()));
@@ -1216,9 +1237,17 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i476.MappingTemplatesLocalDatasource>(),
               gh<_i474.CrashReporter>(),
             ));
+    gh.lazySingleton<_i200.CaptureBackgroundPreferencesRepository>(
+        () => _i956.CaptureBackgroundPreferencesRepositoryImpl(
+              gh<_i720.CaptureBackgroundPreferenceDatasource>(),
+              gh<_i474.CrashReporter>(),
+            ));
     gh.lazySingleton<_i173.NotificationPreferences>(() =>
         _i275.SharedPreferencesNotificationPreferences(
             gh<_i460.SharedPreferencesAsync>()));
+    gh.factory<_i256.SnoozeCaptureBackgroundAlert>(() =>
+        _i256.SnoozeCaptureBackgroundAlert(
+            gh<_i200.CaptureBackgroundPreferencesRepository>()));
     gh.lazySingleton<_i190.SyncOperationUploader>(
         () => _i257.SupabaseOperationUploader(gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i718.LocalDataOwnershipDatasource>(
@@ -1653,6 +1682,15 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i130.SyncStatusSource>(),
               gh<_i400.SyncQuarantineRepository>(),
             ));
+    gh.factory<_i804.GetCaptureBackgroundHealth>(
+        () => _i804.GetCaptureBackgroundHealth(
+              gh<_i416.NotificationCaptureRepository>(),
+              gh<_i200.CaptureBackgroundPreferencesRepository>(),
+            ));
+    gh.factory<_i283.MarkCaptureConfigured>(() => _i283.MarkCaptureConfigured(
+          gh<_i416.NotificationCaptureRepository>(),
+          gh<_i200.CaptureBackgroundPreferencesRepository>(),
+        ));
     gh.factory<_i925.GetLastBackupSavedAt>(
         () => _i925.GetLastBackupSavedAt(gh<_i24.BackupStatusRepository>()));
     gh.factory<_i936.MarkBackupSaved>(
@@ -1671,8 +1709,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i248.IsNotificationCaptureSupported>(() =>
         _i248.IsNotificationCaptureSupported(
             gh<_i416.NotificationCaptureRepository>()));
+    gh.factory<_i1033.OpenCaptureAutostartSettings>(() =>
+        _i1033.OpenCaptureAutostartSettings(
+            gh<_i416.NotificationCaptureRepository>()));
     gh.factory<_i547.OpenNotificationAccessSettings>(() =>
         _i547.OpenNotificationAccessSettings(
+            gh<_i416.NotificationCaptureRepository>()));
+    gh.factory<_i1068.RequestBatteryOptimizationExemption>(() =>
+        _i1068.RequestBatteryOptimizationExemption(
             gh<_i416.NotificationCaptureRepository>()));
     gh.factory<_i194.SetEnabledIssuers>(() =>
         _i194.SetEnabledIssuers(gh<_i416.NotificationCaptureRepository>()));
@@ -1858,6 +1902,7 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i364.IsNotificationAccessGranted>(),
           gh<_i293.SetIssuerListening>(),
           gh<_i288.TurnOffAllIssuerListening>(),
+          gh<_i283.MarkCaptureConfigured>(),
         ));
     gh.factory<_i783.ExportAccountsCategoriesCsv>(
         () => _i783.ExportAccountsCategoriesCsv(gh<_i742.ExportRepository>()));
@@ -2226,6 +2271,15 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i442.ReadNotificationPermission>(),
               gh<_i1052.OpenNotificationSystemSettings>(),
             ));
+    gh.factory<_i923.CaptureBackgroundCubit>(() => _i923.CaptureBackgroundCubit(
+          gh<_i804.GetCaptureBackgroundHealth>(),
+          gh<_i248.IsNotificationCaptureSupported>(),
+          gh<_i364.IsNotificationAccessGranted>(),
+          gh<_i464.GetIssuerApps>(),
+          gh<_i256.SnoozeCaptureBackgroundAlert>(),
+          gh<_i1068.RequestBatteryOptimizationExemption>(),
+          gh<_i1033.OpenCaptureAutostartSettings>(),
+        ));
     gh.factory<_i489.MergeCubit>(
         () => _i489.MergeCubit(gh<_i916.MergeLocalData>()));
     gh.factory<_i95.CaptureStatusCubit>(() => _i95.CaptureStatusCubit(

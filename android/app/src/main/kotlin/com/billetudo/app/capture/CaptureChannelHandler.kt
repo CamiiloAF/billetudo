@@ -21,6 +21,7 @@ class CaptureChannelHandler(private val context: Context) : MethodChannel.Method
 
     private val settings = CaptureSettings(context)
     private val buffer = PendingCaptureBuffer(settings)
+    private val systemSettings = CaptureSystemSettings(context)
 
     fun register(messenger: BinaryMessenger) {
         MethodChannel(messenger, CHANNEL).setMethodCallHandler(this)
@@ -47,6 +48,48 @@ class CaptureChannelHandler(private val context: Context) : MethodChannel.Method
             "clearPendingCaptures" -> {
                 buffer.clear()
                 result.success(null)
+            }
+            // HU-09: the phone-side facts behind "is capture still alive".
+            // Read on demand, never cached: the user or the system can change
+            // any of them between two visits to Avisos.
+            "getDiagnostics" -> result.success(
+                mapOf(
+                    "lastCaptureAtEpochMs" to settings.lastCaptureAt(),
+                    // The direct signals (HU-09): the durable proof that the
+                    // system bound this listener at some point, and whether it
+                    // is bound in this process right now. A null timestamp plus
+                    // `false` is the MIUI/HyperOS rejected-bind case.
+                    "lastListenerConnectedAtEpochMs" to
+                        settings.lastListenerConnectedAt(),
+                    "listenerConnectedNow" to
+                        BilletudoNotificationListenerService.isConnected,
+                    "batteryOptimizationExempt" to
+                        systemSettings.isIgnoringBatteryOptimizations(),
+                    "manufacturer" to systemSettings.manufacturer(),
+                    "autostartAvailable" to systemSettings.autostartAvailable(),
+                ),
+            )
+            "requestIgnoreBatteryOptimizations" -> {
+                if (systemSettings.requestIgnoreBatteryOptimizations()) {
+                    result.success(null)
+                } else {
+                    result.error(
+                        ERROR_NO_ACTIVITY,
+                        "No system screen accepted the battery request",
+                        null,
+                    )
+                }
+            }
+            "openAutostartSettings" -> {
+                if (systemSettings.openAutostartSettings()) {
+                    result.success(null)
+                } else {
+                    result.error(
+                        ERROR_NO_ACTIVITY,
+                        "No system screen accepted the autostart request",
+                        null,
+                    )
+                }
             }
             else -> result.notImplemented()
         }
@@ -121,5 +164,12 @@ class CaptureChannelHandler(private val context: Context) : MethodChannel.Method
     companion object {
         /** Must match `CaptureMethodChannelDatasource.channelName`. */
         const val CHANNEL = "com.billetudo.app/capture"
+
+        /**
+         * No system screen could be opened for a HU-09 action. Flutter turns
+         * this into a `Failure`, so the sheet can stay open instead of
+         * pretending the setting was shown.
+         */
+        private const val ERROR_NO_ACTIVITY = "no_activity"
     }
 }

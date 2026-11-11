@@ -1,4 +1,5 @@
 import '../../../../core/error/result.dart';
+import '../entities/capture_diagnostics.dart';
 import '../entities/issuer_app.dart';
 import '../entities/parsed_notification.dart';
 
@@ -48,4 +49,30 @@ abstract class NotificationCaptureRepository {
   /// The catalog crossed with the apps actually installed on the device
   /// (HU-02), each carrying its current on/off state.
   FutureResult<List<IssuerApp>> getInstalledIssuerApps();
+
+  /// The phone-side facts behind background capture (HU-09): when the listener
+  /// last produced a capture, whether Android already exempts the app from
+  /// battery optimization, the manufacturer, and whether that manufacturer has
+  /// an autostart screen worth opening.
+  ///
+  /// **Off Android this is a no-op** and answers
+  /// [CaptureDiagnostics.empty] — never a failure. The feature does not exist
+  /// there, and a diagnostics probe must not be the thing that crashes a build
+  /// without the native side.
+  FutureResult<CaptureDiagnostics> getDiagnostics();
+
+  /// Opens `ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` for this app, falling
+  /// back to `ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS`.
+  ///
+  /// **Off Android this is a no-op** that resolves to `Right(unit)`. The app
+  /// can only open the screen: the result says nothing about whether the
+  /// exemption was granted, so re-read [getDiagnostics] when the user returns.
+  FutureResult<Unit> requestIgnoreBatteryOptimizations();
+
+  /// Opens the manufacturer's autostart screen, falling back to the app's
+  /// details page. A channel failure (no screen could be opened) becomes a
+  /// `Left` so the caller can keep the sheet open instead of pretending.
+  ///
+  /// **Off Android this is a no-op** that resolves to `Right(unit)`.
+  FutureResult<Unit> openAutostartSettings();
 }

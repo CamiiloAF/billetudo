@@ -94,3 +94,35 @@ jerarquía. El gesto no agrega nada visible en reposo y usa el idioma móvil est
   `IMs3M` y `bkNc1` estén persistidos en el archivo.
 - Si se retoma la idea de descartar también en Movimientos, la spec vive acá y se replica en
   `pages/transacciones.md` (la fila fantasma pertenece a esa pantalla).
+
+## Estados degradados de captura (2026-11-10)
+
+Cuando la lectura de notificaciones configurada puede haberse detenido en segundo plano
+(optimización de batería / autostart del fabricante, caso Xiaomi/HyperOS documentado en
+`docs/dev-runs/` y en el log del sistema), Avisos deja de mostrar "Todo al día" y usa un
+estado degradado:
+
+- **Con capturas pendientes:** card de estado arriba de la sección (`VW54R` claro / `DSCf0`
+  oscuro) con "Revisar" / "Ahora no"; pie con "Última captura: …".
+- **Sin capturas:** el vacío de la sección se reemplaza por el estado explicativo
+  (`krE9G` claro / `S0iyTP` oscuro) con CTA "Revisar captura".
+- Ambas abren la hoja `TPLPN` (claro) / `bN2YZ` (oscuro), que lleva a los dos ajustes del
+  sistema (batería y autostart del fabricante) y refresca el estado real al confirmar.
+
+Reglas de aparición, copy exacto, tokens, accesibilidad y contrato de comportamiento viven en
+[`captura-segundo-plano.md`](captura-segundo-plano.md). Los estados existentes
+(permiso no concedido / sin emisores) tienen precedencia y no cambian.
+
+## Acceso permanente a ajustes de captura (2026-11-10)
+
+Footer fijo al pie de la pantalla (sobre el área segura), visible en cualquier estado de Avisos en
+Android: icono `shield-check` 16 + label "Ajustes de captura en segundo plano" (13/700,
+`$primary-on-soft`), sobre fondo `$background`, padding `[10,20]`.
+
+- Frames: `e7Ab6E` (claro) / `uSpAA` (oscuro), "Avisos · con acceso a ajustes de captura".
+- Si la captura está configurada (permiso + ≥1 emisor), abre la hoja "Captura en segundo plano".
+- Si falta configurar, lleva al paso que falta: permiso de notificaciones o catálogo de emisores.
+- No reemplaza los estados degradados (card/vacío): esos siguen apareciendo cuando la app detecta
+  que la captura pudo detenerse. Es la puerta permanente para un usuario nuevo que, si no, creería
+  que el permiso de escucha es lo único necesario.
+- iOS no lo dibuja.

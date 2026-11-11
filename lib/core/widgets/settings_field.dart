@@ -18,6 +18,7 @@ class SettingsField extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.sublabel,
+    this.sublabelColor,
     this.iconColor,
     this.iconBackground,
     this.badge,
@@ -28,6 +29,11 @@ class SettingsField extends StatelessWidget {
   final IconData icon;
   final String label;
   final String? sublabel;
+
+  /// Defaults to `$text-secondary`. Overridden by rows whose sublabel carries
+  /// a status accent (e.g. the amber "Revisá dos ajustes del sistema" of the
+  /// background-capture row), never to decorate ordinary copy.
+  final Color? sublabelColor;
   final VoidCallback onTap;
 
   /// Defaults to the component's `$primary-on-soft` glyph.
@@ -108,8 +114,9 @@ class SettingsField extends StatelessWidget {
                         // with the optional badge and would overflow it.
                         Text(
                           sublabel!,
-                          style: theme.textTheme.bodySmall
-                              ?.copyWith(color: colors.textSecondary),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: sublabelColor ?? colors.textSecondary,
+                          ),
                         ),
                       ],
                     ],
