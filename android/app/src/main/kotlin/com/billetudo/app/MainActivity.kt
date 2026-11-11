@@ -45,6 +45,16 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    /**
+     * The capture channel is per engine. Once the engine is gone, a capture
+     * arriving while the process still lives (notification listener) must not
+     * try to push to a dead messenger: it stays buffered until the next drain.
+     */
+    override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        CaptureChannelHandler.detach()
+        super.cleanUpFlutterEngine(flutterEngine)
+    }
+
     override fun onDestroy() {
         captureShortcutChannel = null
         super.onDestroy()

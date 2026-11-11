@@ -9,6 +9,7 @@ import 'package:billetudo/features/capture/domain/repositories/capture_offer_rep
 import 'package:billetudo/features/capture/domain/repositories/issuer_settings_repository.dart';
 import 'package:billetudo/features/capture/domain/repositories/notification_capture_repository.dart';
 import 'package:billetudo/features/capture/domain/repositories/pending_capture_repository.dart';
+import 'package:billetudo/features/capture/domain/usecases/drain_and_ingest_captures.dart';
 import 'package:billetudo/features/capture/domain/usecases/get_capture_background_health.dart';
 import 'package:billetudo/features/capture/domain/usecases/get_issuer_apps.dart';
 import 'package:billetudo/features/capture/domain/usecases/is_notification_access_granted.dart';
@@ -17,6 +18,7 @@ import 'package:billetudo/features/capture/domain/usecases/mark_capture_configur
 import 'package:billetudo/features/capture/domain/usecases/open_capture_autostart_settings.dart';
 import 'package:billetudo/features/capture/domain/usecases/request_battery_optimization_exemption.dart';
 import 'package:billetudo/features/capture/domain/usecases/snooze_capture_background_alert.dart';
+import 'package:billetudo/features/capture/domain/usecases/watch_incoming_captures.dart';
 import 'package:billetudo/features/capture/presentation/cubit/capture_background_cubit.dart';
 import 'package:billetudo/features/capture/presentation/cubit/capture_background_state.dart';
 import 'package:billetudo/features/transactions/domain/entities/transaction.dart';
@@ -65,6 +67,11 @@ class MockOpenCaptureAutostartSettings extends Mock
     implements OpenCaptureAutostartSettings {}
 
 class MockMarkCaptureConfigured extends Mock implements MarkCaptureConfigured {}
+
+class MockWatchIncomingCaptures extends Mock implements WatchIncomingCaptures {}
+
+class MockDrainAndIngestCaptures extends Mock
+    implements DrainAndIngestCaptures {}
 
 /// The page-level fake for the HU-09 cubit: `NoticesPage` only reads the
 /// snapshot, so a mocked `state` is enough for its widget and golden tests.

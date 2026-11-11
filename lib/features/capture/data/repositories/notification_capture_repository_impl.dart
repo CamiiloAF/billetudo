@@ -62,6 +62,12 @@ class NotificationCaptureRepositoryImpl
         ];
       });
 
+  /// Plain forward: the stream is created by the datasource and carries no
+  /// platform failure of its own (the doorbell only says "drain now; the drain
+  /// itself reports its errors").
+  @override
+  Stream<void> incomingCaptureEvents() => _datasource.incomingCaptures;
+
   @override
   FutureResult<List<IssuerApp>> getInstalledIssuerApps() => _guard(() async {
         final List<Map<Object?, Object?>> raw =

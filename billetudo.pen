@@ -308669,6 +308669,1989 @@
           "fontWeight": "500"
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "VW54R",
+      "x": 91500,
+      "y": -5750,
+      "name": "Captura degradada · card en Avisos (Claro)",
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "V0Ag5M",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container"
+        },
+        {
+          "id": "T0oLo",
+          "type": "ref",
+          "ref": "Dtm0X",
+          "name": "Page Header",
+          "width": "fill_container",
+          "descendants": {
+            "QnxB2": {
+              "content": "Avisos"
+            },
+            "HCkvh": {
+              "fill": []
+            },
+            "jQ1B5": {
+              "enabled": false
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "hOsYA",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            4,
+            20,
+            28,
+            20
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "s9cQwe",
+              "name": "Section title",
+              "fill": "$text-primary",
+              "content": "Capturas por confirmar",
+              "fontFamily": "$font-body",
+              "fontSize": 15,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "JO0op",
+              "name": "Section caption",
+              "fill": "$text-secondary",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Aún no afectan tu saldo. Se registran solo cuando tú lo confirmas.",
+              "lineHeight": 1.4,
+              "fontFamily": "$font-body",
+              "fontSize": 12,
+              "fontWeight": "500"
+            },
+            {
+              "id": "hLWM9",
+              "type": "ref",
+              "ref": "cYVQm",
+              "name": "Estado de captura",
+              "width": "fill_container",
+              "descendants": {
+                "o0U86y": {
+                  "fill": "$amber-soft"
+                },
+                "xWSgc": {
+                  "icon": "shield-alert",
+                  "fill": "$amber-text"
+                },
+                "Q21xx": {
+                  "content": "La captura puede detenerse"
+                },
+                "gBDBj": {
+                  "content": "Tu teléfono puede cerrar Billetudo cuando no lo usás. Si pasa, no llegan avisos hasta que lo abras."
+                },
+                "OvvPW": {
+                  "content": "Revisar"
+                },
+                "WIZDc": {
+                  "content": "Ahora no"
+                }
+              }
+            },
+            {
+              "id": "lDELa",
+              "type": "ref",
+              "ref": "skjlg",
+              "name": "Captura · normal",
+              "width": "fill_container"
+            },
+            {
+              "type": "text",
+              "id": "UpBFz",
+              "name": "Última captura",
+              "fill": "$text-secondary",
+              "content": "Última captura: hoy, 9:19 a. m.",
+              "fontFamily": "$font-body",
+              "fontSize": 11,
+              "fontWeight": "500"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "TPLPN",
+      "x": 91500,
+      "y": -2500,
+      "name": "Captura en segundo plano · hoja (Claro)",
+      "clip": true,
+      "width": 390,
+      "height": 640,
+      "fill": "$scrim",
+      "layout": "vertical",
+      "justifyContent": "end",
+      "children": [
+        {
+          "type": "frame",
+          "id": "eva9d",
+          "name": "Sheet",
+          "width": "fill_container",
+          "fill": "$surface",
+          "cornerRadius": [
+            28,
+            28,
+            0,
+            0
+          ],
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            12,
+            20,
+            28,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "YhR2O",
+              "name": "Handle Wrap",
+              "width": "fill_container",
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "GEk5H",
+                  "name": "Handle",
+                  "width": 40,
+                  "height": 4,
+                  "fill": "$border",
+                  "cornerRadius": 2
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "g6Uohi",
+              "name": "Content",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "H5k3P",
+                  "name": "Title",
+                  "fill": "$text-primary",
+                  "content": "Captura en segundo plano",
+                  "fontFamily": "$font-body",
+                  "fontSize": 19,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "TD2jo",
+                  "name": "Body",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Para que Billetudo lea los avisos aunque esté cerrado, el teléfono no tiene que estar cerrándolo. Se arregla con dos ajustes.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "BVGpU",
+                  "name": "Action rows",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "zkkrv",
+                      "name": "Row · batería",
+                      "width": "fill_container",
+                      "height": 64,
+                      "fill": "$surface",
+                      "cornerRadius": 14,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "IdGex",
+                          "name": "Left",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "UXMn9",
+                              "name": "Icon Wrap",
+                              "width": 44,
+                              "height": 44,
+                              "fill": "$amber-soft",
+                              "cornerRadius": 22,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "rzZJZ",
+                                  "name": "Icon",
+                                  "width": 20,
+                                  "height": 20,
+                                  "icon": "battery-charging",
+                                  "library": "lucide",
+                                  "fill": "$amber-text"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "u7RvTU",
+                              "name": "Mid",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "vlqUN",
+                                  "name": "Title",
+                                  "fill": "$text-primary",
+                                  "content": "Permitir batería",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 15,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "dkC2v",
+                                  "name": "Sub",
+                                  "fill": "$text-secondary",
+                                  "content": "Evita que el sistema lo duerma",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "icon",
+                          "id": "g39m5",
+                          "name": "Trailing",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "chevron-right",
+                          "library": "lucide",
+                          "fill": "$text-secondary"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "EgQFz",
+                      "name": "Row · inicio",
+                      "width": "fill_container",
+                      "height": 64,
+                      "fill": "$surface",
+                      "cornerRadius": 14,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "gkfaq",
+                          "name": "Left",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "zyFPQ",
+                              "name": "Icon Wrap",
+                              "width": 44,
+                              "height": 44,
+                              "fill": "$primary-soft",
+                              "cornerRadius": 22,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "RyR0r",
+                                  "name": "Icon",
+                                  "width": 20,
+                                  "height": 20,
+                                  "icon": "rotate-cw",
+                                  "library": "lucide",
+                                  "fill": "$primary-on-soft"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "GQjXG",
+                              "name": "Mid",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ZZdBn",
+                                  "name": "Title",
+                                  "fill": "$text-primary",
+                                  "content": "Abrir inicio automático",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 15,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "P1drk",
+                                  "name": "Sub",
+                                  "fill": "$text-secondary",
+                                  "content": "En Xiaomi, para que vuelva a escuchar",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "icon",
+                          "id": "r9e0MG",
+                          "name": "Trailing",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "chevron-right",
+                          "library": "lucide",
+                          "fill": "$text-secondary"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "qXNmN",
+                  "name": "Footnote",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Última captura: hoy, 9:19 a. m. Si algo no llega, registralo a mano.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$font-body",
+                  "fontSize": 11,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "w2NzHN",
+                  "name": "CTA Block",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "id": "z1Tp4",
+                      "type": "ref",
+                      "ref": "j7Zvt",
+                      "name": "CTA Primario",
+                      "width": "fill_container",
+                      "descendants": {
+                        "PKzAO": {
+                          "icon": "shield-check"
+                        },
+                        "JHbmq": {
+                          "content": "Listo, ya lo activé"
+                        }
+                      }
+                    },
+                    {
+                      "id": "BI9GA",
+                      "type": "ref",
+                      "ref": "pNjOz",
+                      "name": "CTA Secundario",
+                      "width": "fill_container",
+                      "descendants": {
+                        "kAVHJ": {
+                          "content": "Ahora no"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "krE9G",
+      "x": 91500,
+      "y": -4600,
+      "name": "Captura degradada · vacío en Avisos (Claro)",
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "XOTnO",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container"
+        },
+        {
+          "id": "cyyWY",
+          "type": "ref",
+          "ref": "Dtm0X",
+          "name": "Page Header",
+          "width": "fill_container",
+          "descendants": {
+            "QnxB2": {
+              "content": "Avisos"
+            },
+            "HCkvh": {
+              "fill": []
+            },
+            "jQ1B5": {
+              "enabled": false
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "jexA4",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            4,
+            20,
+            28,
+            20
+          ],
+          "justifyContent": "center",
+          "children": [
+            {
+              "id": "XkrLU",
+              "type": "ref",
+              "ref": "jmQO5",
+              "name": "Empty degradado",
+              "width": "fill_container",
+              "descendants": {
+                "wablL": {
+                  "fill": "$amber-soft"
+                },
+                "Z40WX": {
+                  "icon": "shield-alert",
+                  "fill": "$amber-text"
+                },
+                "UUiCK": {
+                  "content": "Puede que los avisos no estén llegando"
+                },
+                "fKrxF": {
+                  "enabled": true,
+                  "content": "Tu teléfono puede cerrar Billetudo cuando no lo usás. Activá dos ajustes del sistema y seguimos leyendo aunque esté cerrada."
+                },
+                "OQJ6H": {
+                  "enabled": true
+                },
+                "OQJ6H/PKzAO": {
+                  "icon": "shield-alert"
+                },
+                "OQJ6H/JHbmq": {
+                  "content": "Revisar captura"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F8llO",
+      "type": "ref",
+      "ref": "cYVQm",
+      "x": 98000,
+      "y": -1600,
+      "name": "preview · card",
+      "width": "fill_container(350)",
+      "descendants": {
+        "o0U86y": {
+          "fill": "$amber-soft"
+        },
+        "xWSgc": {
+          "icon": "shield-alert",
+          "fill": "$amber-text"
+        },
+        "Q21xx": {
+          "content": "La captura puede detenerse"
+        },
+        "gBDBj": {
+          "content": "Tu teléfono puede cerrar Billetudo cuando no lo usás. Si pasa, no llegan avisos hasta que lo abras."
+        },
+        "OvvPW": {
+          "content": "Revisar"
+        },
+        "WIZDc": {
+          "content": "Ahora no"
+        }
+      }
+    },
+    {
+      "type": "frame",
+      "id": "DSCf0",
+      "x": 92200,
+      "y": -5750,
+      "name": "Captura degradada · card en Avisos (Oscuro)",
+      "theme": {
+        "mode": "dark"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "cAcpf",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container"
+        },
+        {
+          "id": "tWAFa",
+          "type": "ref",
+          "ref": "Dtm0X",
+          "name": "Page Header",
+          "width": "fill_container",
+          "descendants": {
+            "QnxB2": {
+              "content": "Avisos"
+            },
+            "HCkvh": {
+              "fill": []
+            },
+            "jQ1B5": {
+              "enabled": false
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "kz9BK",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            4,
+            20,
+            28,
+            20
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "GbcHX",
+              "name": "Section title",
+              "fill": "$text-primary",
+              "content": "Capturas por confirmar",
+              "fontFamily": "$font-body",
+              "fontSize": 15,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "z4N74s",
+              "name": "Section caption",
+              "fill": "$text-secondary",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Aún no afectan tu saldo. Se registran solo cuando tú lo confirmas.",
+              "lineHeight": 1.4,
+              "fontFamily": "$font-body",
+              "fontSize": 12,
+              "fontWeight": "500"
+            },
+            {
+              "id": "xyEqJ",
+              "type": "ref",
+              "ref": "cYVQm",
+              "name": "Estado de captura",
+              "width": "fill_container",
+              "descendants": {
+                "o0U86y": {
+                  "fill": "$amber-soft"
+                },
+                "xWSgc": {
+                  "icon": "shield-alert",
+                  "fill": "$amber-text"
+                },
+                "Q21xx": {
+                  "content": "La captura puede detenerse"
+                },
+                "gBDBj": {
+                  "content": "Tu teléfono puede cerrar Billetudo cuando no lo usás. Si pasa, no llegan avisos hasta que lo abras."
+                },
+                "OvvPW": {
+                  "content": "Revisar"
+                },
+                "WIZDc": {
+                  "content": "Ahora no"
+                }
+              }
+            },
+            {
+              "id": "a2Hss",
+              "type": "ref",
+              "ref": "skjlg",
+              "name": "Captura · normal",
+              "width": "fill_container"
+            },
+            {
+              "type": "text",
+              "id": "J6gzg",
+              "name": "Última captura",
+              "fill": "$text-secondary",
+              "content": "Última captura: hoy, 9:19 a. m.",
+              "fontFamily": "$font-body",
+              "fontSize": 11,
+              "fontWeight": "500"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "S0iyTP",
+      "x": 92200,
+      "y": -4600,
+      "name": "Captura degradada · vacío en Avisos (Oscuro)",
+      "theme": {
+        "mode": "dark"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "OkPiB",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container"
+        },
+        {
+          "id": "omgtI",
+          "type": "ref",
+          "ref": "Dtm0X",
+          "name": "Page Header",
+          "width": "fill_container",
+          "descendants": {
+            "QnxB2": {
+              "content": "Avisos"
+            },
+            "HCkvh": {
+              "fill": []
+            },
+            "jQ1B5": {
+              "enabled": false
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "UoEFX",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            4,
+            20,
+            28,
+            20
+          ],
+          "justifyContent": "center",
+          "children": [
+            {
+              "id": "FqYcb",
+              "type": "ref",
+              "ref": "jmQO5",
+              "name": "Empty degradado",
+              "width": "fill_container",
+              "descendants": {
+                "wablL": {
+                  "fill": "$amber-soft"
+                },
+                "Z40WX": {
+                  "icon": "shield-alert",
+                  "fill": "$amber-text"
+                },
+                "UUiCK": {
+                  "content": "Puede que los avisos no estén llegando"
+                },
+                "fKrxF": {
+                  "enabled": true,
+                  "content": "Tu teléfono puede cerrar Billetudo cuando no lo usás. Activá dos ajustes del sistema y seguimos leyendo aunque esté cerrada."
+                },
+                "OQJ6H": {
+                  "enabled": true
+                },
+                "OQJ6H/PKzAO": {
+                  "icon": "shield-alert"
+                },
+                "OQJ6H/JHbmq": {
+                  "content": "Revisar captura"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "bN2YZ",
+      "x": 92200,
+      "y": -3550,
+      "name": "Captura en segundo plano · hoja (Oscuro)",
+      "theme": {
+        "mode": "dark"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 640,
+      "fill": "$scrim",
+      "layout": "vertical",
+      "justifyContent": "end",
+      "children": [
+        {
+          "type": "frame",
+          "id": "upSW4",
+          "name": "Sheet",
+          "width": "fill_container",
+          "fill": "$surface",
+          "cornerRadius": [
+            28,
+            28,
+            0,
+            0
+          ],
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            12,
+            20,
+            28,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "ltA8B",
+              "name": "Handle Wrap",
+              "width": "fill_container",
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "NJqEL",
+                  "name": "Handle",
+                  "width": 40,
+                  "height": 4,
+                  "fill": "$border",
+                  "cornerRadius": 2
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "hRqAL",
+              "name": "Content",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "v5bp0V",
+                  "name": "Title",
+                  "fill": "$text-primary",
+                  "content": "Captura en segundo plano",
+                  "fontFamily": "$font-body",
+                  "fontSize": 19,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "n3E20",
+                  "name": "Body",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Para que Billetudo lea los avisos aunque esté cerrado, el teléfono no tiene que estar cerrándolo. Se arregla con dos ajustes.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "Osz51",
+                  "name": "Action rows",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Ic04s",
+                      "name": "Row · batería",
+                      "width": "fill_container",
+                      "height": 64,
+                      "fill": "$surface",
+                      "cornerRadius": 14,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "QyySP",
+                          "name": "Left",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "cdpmt",
+                              "name": "Icon Wrap",
+                              "width": 44,
+                              "height": 44,
+                              "fill": "$amber-soft",
+                              "cornerRadius": 22,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "BYAew",
+                                  "name": "Icon",
+                                  "width": 20,
+                                  "height": 20,
+                                  "icon": "battery-charging",
+                                  "library": "lucide",
+                                  "fill": "$amber-text"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "hGJaj",
+                              "name": "Mid",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "F3w6H",
+                                  "name": "Title",
+                                  "fill": "$text-primary",
+                                  "content": "Permitir batería",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 15,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "wXyLF",
+                                  "name": "Sub",
+                                  "fill": "$text-secondary",
+                                  "content": "Evita que el sistema lo duerma",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "icon",
+                          "id": "D7ogx",
+                          "name": "Trailing",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "chevron-right",
+                          "library": "lucide",
+                          "fill": "$text-secondary"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "q7Wf7",
+                      "name": "Row · inicio",
+                      "width": "fill_container",
+                      "height": 64,
+                      "fill": "$surface",
+                      "cornerRadius": 14,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "shHgh",
+                          "name": "Left",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "uydzY",
+                              "name": "Icon Wrap",
+                              "width": 44,
+                              "height": 44,
+                              "fill": "$primary-soft",
+                              "cornerRadius": 22,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "XRW2X",
+                                  "name": "Icon",
+                                  "width": 20,
+                                  "height": 20,
+                                  "icon": "rotate-cw",
+                                  "library": "lucide",
+                                  "fill": "$primary-on-soft"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "jpiCR",
+                              "name": "Mid",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "b7icbI",
+                                  "name": "Title",
+                                  "fill": "$text-primary",
+                                  "content": "Abrir inicio automático",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 15,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "e14Mr",
+                                  "name": "Sub",
+                                  "fill": "$text-secondary",
+                                  "content": "En Xiaomi, para que vuelva a escuchar",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "icon",
+                          "id": "XUeci",
+                          "name": "Trailing",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "chevron-right",
+                          "library": "lucide",
+                          "fill": "$text-secondary"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "RMtHp",
+                  "name": "Footnote",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Última captura: hoy, 9:19 a. m. Si algo no llega, registralo a mano.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$font-body",
+                  "fontSize": 11,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "tQJLK",
+                  "name": "CTA Block",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "id": "BeqUN",
+                      "type": "ref",
+                      "ref": "j7Zvt",
+                      "name": "CTA Primario",
+                      "width": "fill_container",
+                      "descendants": {
+                        "PKzAO": {
+                          "icon": "shield-check"
+                        },
+                        "JHbmq": {
+                          "content": "Listo, ya lo activé"
+                        }
+                      }
+                    },
+                    {
+                      "id": "OsATB",
+                      "type": "ref",
+                      "ref": "pNjOz",
+                      "name": "CTA Secundario",
+                      "width": "fill_container",
+                      "descendants": {
+                        "kAVHJ": {
+                          "content": "Ahora no"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "rN8ye",
+      "x": 6200,
+      "y": 20600,
+      "name": "Ajustes · Captura en segundo plano — fila (Claro)",
+      "width": 390,
+      "height": 560,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "gap": 10,
+      "padding": 20,
+      "children": [
+        {
+          "type": "text",
+          "id": "rDfFL",
+          "name": "Zona",
+          "fill": "$text-secondary",
+          "content": "AJUSTES · FILA \"CAPTURA EN SEGUNDO PLANO\"",
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "700"
+        },
+        {
+          "type": "text",
+          "id": "N2LGY",
+          "name": "Nota",
+          "fill": "$text-secondary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Va después de \"Avisos de tu banco\" (Preferencias). Abre la hoja de ajustes, o el permiso si falta.",
+          "lineHeight": 1.4,
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "500"
+        },
+        {
+          "type": "text",
+          "id": "OBTIW",
+          "name": "State caption",
+          "fill": "$text-primary",
+          "content": "1 · Todo en orden",
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "700"
+        },
+        {
+          "id": "EFpBC",
+          "type": "ref",
+          "ref": "R8PlN",
+          "name": "Fila · normal",
+          "width": "fill_container",
+          "descendants": {
+            "r6Zlx": {
+              "fill": "$muted"
+            },
+            "ZKIRA": {
+              "icon": "shield-check",
+              "fill": "$text-secondary"
+            },
+            "IwyuZ": {
+              "content": "Captura en segundo plano"
+            },
+            "RK3zo": {
+              "content": "Activa · última captura hoy",
+              "fill": "$text-secondary"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "id": "Q2peh",
+          "name": "State caption",
+          "fill": "$text-primary",
+          "content": "2 · Puede estar detenida",
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "700"
+        },
+        {
+          "id": "hi15a",
+          "type": "ref",
+          "ref": "R8PlN",
+          "name": "Fila · atención",
+          "width": "fill_container",
+          "descendants": {
+            "r6Zlx": {
+              "fill": "$amber-soft"
+            },
+            "ZKIRA": {
+              "icon": "shield-alert",
+              "fill": "$amber-text"
+            },
+            "IwyuZ": {
+              "content": "Captura en segundo plano"
+            },
+            "RK3zo": {
+              "content": "Revisá dos ajustes del sistema",
+              "fill": "$amber-text"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "id": "p6Wy5",
+          "name": "State caption",
+          "fill": "$text-primary",
+          "content": "3 · Falta activar la captura",
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "700"
+        },
+        {
+          "id": "OMfif",
+          "type": "ref",
+          "ref": "R8PlN",
+          "name": "Fila · sin permiso",
+          "width": "fill_container",
+          "descendants": {
+            "r6Zlx": {
+              "fill": "$muted"
+            },
+            "ZKIRA": {
+              "icon": "bell-off",
+              "fill": "$text-secondary"
+            },
+            "IwyuZ": {
+              "content": "Captura en segundo plano"
+            },
+            "RK3zo": {
+              "content": "Activa primero los avisos de tu banco",
+              "fill": "$text-secondary"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "id": "XsdaQ",
+          "name": "State caption",
+          "fill": "$text-primary",
+          "content": "4 · Silenciada con \"Ahora no\"",
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "700"
+        },
+        {
+          "id": "BGuA3",
+          "type": "ref",
+          "ref": "R8PlN",
+          "name": "Fila · silenciada",
+          "width": "fill_container",
+          "descendants": {
+            "r6Zlx": {
+              "fill": "$muted"
+            },
+            "ZKIRA": {
+              "icon": "clock",
+              "fill": "$text-secondary"
+            },
+            "IwyuZ": {
+              "content": "Captura en segundo plano"
+            },
+            "RK3zo": {
+              "content": "Silenciada por 14 días",
+              "fill": "$text-secondary"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "lv0iQ",
+      "x": 6700,
+      "y": 20600,
+      "name": "Ajustes · Captura en segundo plano — fila (Oscuro)",
+      "theme": {
+        "mode": "dark"
+      },
+      "width": 390,
+      "height": 560,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "gap": 10,
+      "padding": 20,
+      "children": [
+        {
+          "type": "text",
+          "id": "wGeLN",
+          "name": "Zona",
+          "fill": "$text-secondary",
+          "content": "AJUSTES · FILA \"CAPTURA EN SEGUNDO PLANO\"",
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "700"
+        },
+        {
+          "type": "text",
+          "id": "Mhfc3",
+          "name": "Nota",
+          "fill": "$text-secondary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Va después de \"Avisos de tu banco\" (Preferencias). Abre la hoja de ajustes, o el permiso si falta.",
+          "lineHeight": 1.4,
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "500"
+        },
+        {
+          "type": "text",
+          "id": "odnW4",
+          "name": "State caption",
+          "fill": "$text-primary",
+          "content": "1 · Todo en orden",
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "700"
+        },
+        {
+          "id": "WUsgm",
+          "type": "ref",
+          "ref": "R8PlN",
+          "name": "Fila · normal",
+          "width": "fill_container",
+          "descendants": {
+            "r6Zlx": {
+              "fill": "$muted"
+            },
+            "ZKIRA": {
+              "icon": "shield-check",
+              "fill": "$text-secondary"
+            },
+            "IwyuZ": {
+              "content": "Captura en segundo plano"
+            },
+            "RK3zo": {
+              "content": "Activa · última captura hoy",
+              "fill": "$text-secondary"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "id": "bq6Ey",
+          "name": "State caption",
+          "fill": "$text-primary",
+          "content": "2 · Puede estar detenida",
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "700"
+        },
+        {
+          "id": "mteZR",
+          "type": "ref",
+          "ref": "R8PlN",
+          "name": "Fila · atención",
+          "width": "fill_container",
+          "descendants": {
+            "r6Zlx": {
+              "fill": "$amber-soft"
+            },
+            "ZKIRA": {
+              "icon": "shield-alert",
+              "fill": "$amber-text"
+            },
+            "IwyuZ": {
+              "content": "Captura en segundo plano"
+            },
+            "RK3zo": {
+              "content": "Revisá dos ajustes del sistema",
+              "fill": "$amber-text"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "id": "D06Fkr",
+          "name": "State caption",
+          "fill": "$text-primary",
+          "content": "3 · Falta activar la captura",
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "700"
+        },
+        {
+          "id": "qZTrO",
+          "type": "ref",
+          "ref": "R8PlN",
+          "name": "Fila · sin permiso",
+          "width": "fill_container",
+          "descendants": {
+            "r6Zlx": {
+              "fill": "$muted"
+            },
+            "ZKIRA": {
+              "icon": "bell-off",
+              "fill": "$text-secondary"
+            },
+            "IwyuZ": {
+              "content": "Captura en segundo plano"
+            },
+            "RK3zo": {
+              "content": "Activa primero los avisos de tu banco",
+              "fill": "$text-secondary"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "id": "d7IOS",
+          "name": "State caption",
+          "fill": "$text-primary",
+          "content": "4 · Silenciada con \"Ahora no\"",
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "700"
+        },
+        {
+          "id": "pJxm7",
+          "type": "ref",
+          "ref": "R8PlN",
+          "name": "Fila · silenciada",
+          "width": "fill_container",
+          "descendants": {
+            "r6Zlx": {
+              "fill": "$muted"
+            },
+            "ZKIRA": {
+              "icon": "clock",
+              "fill": "$text-secondary"
+            },
+            "IwyuZ": {
+              "content": "Captura en segundo plano"
+            },
+            "RK3zo": {
+              "content": "Silenciada por 14 días",
+              "fill": "$text-secondary"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "e7Ab6E",
+      "x": 92800,
+      "y": -5750,
+      "name": "Avisos · con acceso a ajustes de captura (Claro)",
+      "context": "CENTRO DE AVISOS detras de la campana del Home — PANTALLA COMPLETA con ruta propia, no bottom sheet. Reemplaza al ComingSoonSheet de home_page.dart. Dos secciones: \"Avisos\" (cobro proximo, meta alcanzada, ocurrencia por confirmar — fase-3/22-centro-notificaciones.md) y \"Capturas por confirmar\" (HU-04/HU-05). JERARQUIA DELIBERADA: los avisos van PRIMERO y pesan mas. Chasis de aviso + carril de 4px (componente skjlg): la captura pertenece a la misma familia visual que un aviso (chasis identico a cYVQm, CERO tinte) pero su subfamilia esta sin confirmar (carril $primary-on-soft). Ninguna captura lleva boton solido: la tarjeta entera navega al formulario pre-llenado (HU-05) y la seccion remata en UNA sola fila de accion de bloque (YliJD) que abre la revision guiada UNA POR UNA — nunca 'confirmar todas', prohibido por HU-05. Asi los unicos botones solidos $primary de la pantalla son los de los avisos, y la jerarquia 'los avisos pesan mas' queda dicha por el PESO DEL CONTROL, no solo por el orden. TOPE POR SECCION (regla de composicion, 2026-09-09): si AMBAS secciones tienen contenido, cada una muestra como maximo 2 elementos + su fila de pie (YliJD); si solo UNA seccion tiene contenido, muestra hasta 4 elementos y la fila aparece solo si hay mas. EXCEPCION (medida, no estimada): la tarjeta de posible duplicado (EqRlj) mide 299px, ~3.7 capturas normales de 81px. Si la seccion incluye esa tarjeta, el tope de seccion unica baja de 4 a 3 elementos visibles y la fila de pie aparece SIEMPRE. Listar 4 con un duplicado da 652px de 672 solo si TODOS los comercios caben en una linea, y llega a 672/672 —scroll— en cuanto uno se va a dos, que es el caso real (razones sociales largas). Ver E3DGD / E91A7T, donde esta la cuenta completa. Antes solo Capturas tenia tope y Avisos no: con 3 avisos + 2 capturas el contenido llegaba a ~830px sobre ~672 utiles y el criterio 'todo de un vistazo, sin scroll' —la razon de que esto sea pantalla completa y no una hoja— dejaba de cumplirse. Ver el frame de peor caso. PRESUPUESTO MEDIDO (2026-09-09): 10 + 275 (avisos) + 18 + 282 (capturas) + 20 = 605px sobre ~672 utiles en 390x844 descontando el home indicator. La PRIMERA seccion va SIN encabezado. La SEGUNDA se llama \"Capturas por confirmar\" (no \"Por confirmar\") para no colisionar con el \"Por confirmar\" de Pagos programados. SIN ORBE NI LENGUAJE DE IA: todo es dato calculado por la app. Chrome: Page Header (Dtm0X), sin Tab Bar — es pantalla apilada.",
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "aX8xc",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container"
+        },
+        {
+          "id": "DPOds",
+          "type": "ref",
+          "ref": "Dtm0X",
+          "name": "Page Header",
+          "width": "fill_container",
+          "descendants": {
+            "QnxB2": {
+              "content": "Avisos"
+            },
+            "HCkvh": {
+              "fill": []
+            },
+            "jQ1B5": {
+              "enabled": false
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "fNl6X",
+          "name": "Content · zona scrolleable",
+          "context": "TODO el contenido de esta pantalla scrollea en teoria; lo unico fijo es el Page Header — pero el criterio de disenio es que NO haga falta scroll. Se mide contra un telefono real (390x844), no contra el lienzo de 972px de la convencion de mockup: Content util = 844-62(status)-76(header) = 706px, ~672 descontando el home indicator. TOPE POR SECCION (2026-09-09): si AMBAS secciones tienen contenido, cada una muestra maximo 2 elementos + su fila de pie (YliJD); si solo UNA seccion tiene contenido, muestra hasta 4 y la fila aparece solo si hay mas. EXCEPCION (medida, no estimada): la tarjeta de posible duplicado (EqRlj) mide 299px, ~3.7 capturas normales de 81px. Si la seccion incluye esa tarjeta, el tope de seccion unica baja de 4 a 3 elementos visibles y la fila de pie aparece SIEMPRE. Listar 4 con un duplicado da 652px de 672 solo si TODOS los comercios caben en una linea, y llega a 672/672 —scroll— en cuanto uno se va a dos, que es el caso real (razones sociales largas). Ver E3DGD / E91A7T, donde esta la cuenta completa. La PRIMERA seccion va SIN encabezado — repetir 'Avisos' bajo el titulo 'Avisos' no informa. La SEGUNDA se llama 'Capturas por confirmar' (no 'Por confirmar' a secas) para no colisionar con el 'Por confirmar' de Pagos programados. MEDIDO EN ESTE FRAME (caso tipico, 2 avisos + 3 capturas): 10 + 275 + 18 + 282 + 20 = 605px sobre 672. Margen 67px.",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 18,
+          "padding": [
+            10,
+            20,
+            20,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "A1EzhF",
+              "name": "Sección Avisos",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "id": "KGJca",
+                  "type": "ref",
+                  "ref": "cYVQm",
+                  "name": "Aviso · Cobro próximo",
+                  "width": "fill_container",
+                  "descendants": {
+                    "Q21xx": {
+                      "content": "Netflix se cobra en 3 días"
+                    },
+                    "gBDBj": {
+                      "content": "$44.900 · Pago programado · Nu"
+                    },
+                    "OvvPW": {
+                      "content": "Ver pago"
+                    },
+                    "WIZDc": {
+                      "content": "Recordar después"
+                    }
+                  }
+                },
+                {
+                  "id": "v0h9c",
+                  "type": "ref",
+                  "ref": "cYVQm",
+                  "name": "Aviso · Ocurrencia por confirmar",
+                  "width": "fill_container",
+                  "descendants": {
+                    "o0U86y": {
+                      "fill": "$primary-soft"
+                    },
+                    "xWSgc": {
+                      "icon": "circle-check-big",
+                      "fill": "$primary-on-soft"
+                    },
+                    "Q21xx": {
+                      "content": "El arriendo estaba programado para ayer"
+                    },
+                    "gBDBj": {
+                      "content": "$1.200.000 · Cuenta Ahorros"
+                    },
+                    "OvvPW": {
+                      "content": "Confirmar pago"
+                    },
+                    "WIZDc": {
+                      "content": "Todavía no"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "JJKh3",
+              "name": "Sección Capturas",
+              "context": "Seccion de capturas por confirmar. Chasis de aviso + carril de 4px (componente skjlg): la captura pertenece a la misma familia visual que un aviso (chasis identico a cYVQm, CERO tinte) pero su subfamilia esta sin confirmar (carril $primary-on-soft). Ninguna captura lleva boton solido: la tarjeta entera navega al formulario pre-llenado (HU-05) y la seccion remata en UNA sola fila de accion de bloque (YliJD) que abre la revision guiada UNA POR UNA — nunca 'confirmar todas', prohibido por HU-05. Asi los unicos botones solidos $primary de la pantalla son los de los avisos, y la jerarquia 'los avisos pesan mas' queda dicha por el PESO DEL CONTROL, no solo por el orden. Presupuesto medido: header 19 + 10 + caption 17 + 10 + 81 + 10 + 81 + 10 + fila 44 = 282px. El caption ('Aun no afectan tu saldo hasta que tu confirmes.') es una de las cinco senales redundantes que impiden leer una captura como dinero — no se elimina para ganar altura.",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "id": "qK5Yk",
+                  "type": "ref",
+                  "ref": "E2pvO",
+                  "name": "Sec Capturas Header",
+                  "width": "fill_container",
+                  "descendants": {
+                    "h31d6": {
+                      "content": "Capturas por confirmar"
+                    },
+                    "W7FUc": {
+                      "enabled": false
+                    }
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "aHsjN",
+                  "name": "Sec Capturas Caption",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Aún no afectan tu saldo hasta que tú confirmes.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "500"
+                },
+                {
+                  "id": "d3KVr",
+                  "type": "ref",
+                  "ref": "skjlg",
+                  "name": "Captura 1 · D1 (Nu)",
+                  "width": "fill_container",
+                  "descendants": {
+                    "R5MXx": {
+                      "content": "TIENDA D1 SANTA ROSA"
+                    },
+                    "cdH1C": {
+                      "content": "Cuenta Nu · Hoy, 8:32 a. m."
+                    },
+                    "IF6UM": {
+                      "content": "Aviso de Nu"
+                    },
+                    "wBnsd": {
+                      "content": "$58.470"
+                    }
+                  }
+                },
+                {
+                  "id": "nsUdN",
+                  "type": "ref",
+                  "ref": "skjlg",
+                  "name": "Captura 2 · Bre-B (Nequi)",
+                  "width": "fill_container",
+                  "descendants": {
+                    "R5MXx": {
+                      "content": "BRE-B A LAURA MEJÍA C."
+                    },
+                    "cdH1C": {
+                      "content": "Cuenta Nequi · Hoy, 9:41 a. m."
+                    },
+                    "IF6UM": {
+                      "content": "Aviso de Nequi"
+                    },
+                    "wBnsd": {
+                      "content": "$85.000"
+                    }
+                  }
+                },
+                {
+                  "id": "X03MLG",
+                  "type": "ref",
+                  "ref": "YliJD",
+                  "name": "Acción de bloque · Revisar capturas",
+                  "width": "fill_container",
+                  "descendants": {
+                    "FRmud": {
+                      "content": "Revisar las 3 capturas"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "vC8rY",
+          "name": "Footer · Ajustes de captura",
+          "width": "fill_container",
+          "padding": [
+            10,
+            20
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "kQQ52",
+              "name": "Footer row",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "u3RZFY",
+                  "name": "Shield",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "shield-check",
+                  "library": "lucide",
+                  "fill": "$primary-on-soft"
+                },
+                {
+                  "type": "text",
+                  "id": "FVVB2",
+                  "name": "Footer label",
+                  "fill": "$primary-on-soft",
+                  "content": "Ajustes de captura en segundo plano",
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "700"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "uSpAA",
+      "x": 93300,
+      "y": -5750,
+      "name": "Avisos · con acceso a ajustes de captura (Oscuro)",
+      "context": "CENTRO DE AVISOS detras de la campana del Home — PANTALLA COMPLETA con ruta propia, no bottom sheet. Reemplaza al ComingSoonSheet de home_page.dart. Dos secciones: \"Avisos\" (cobro proximo, meta alcanzada, ocurrencia por confirmar — fase-3/22-centro-notificaciones.md) y \"Capturas por confirmar\" (HU-04/HU-05). JERARQUIA DELIBERADA: los avisos van PRIMERO y pesan mas. Chasis de aviso + carril de 4px (componente skjlg): la captura pertenece a la misma familia visual que un aviso (chasis identico a cYVQm, CERO tinte) pero su subfamilia esta sin confirmar (carril $primary-on-soft). Ninguna captura lleva boton solido: la tarjeta entera navega al formulario pre-llenado (HU-05) y la seccion remata en UNA sola fila de accion de bloque (YliJD) que abre la revision guiada UNA POR UNA — nunca 'confirmar todas', prohibido por HU-05. Asi los unicos botones solidos $primary de la pantalla son los de los avisos, y la jerarquia 'los avisos pesan mas' queda dicha por el PESO DEL CONTROL, no solo por el orden. TOPE POR SECCION (regla de composicion, 2026-09-09): si AMBAS secciones tienen contenido, cada una muestra como maximo 2 elementos + su fila de pie (YliJD); si solo UNA seccion tiene contenido, muestra hasta 4 elementos y la fila aparece solo si hay mas. EXCEPCION (medida, no estimada): la tarjeta de posible duplicado (EqRlj) mide 299px, ~3.7 capturas normales de 81px. Si la seccion incluye esa tarjeta, el tope de seccion unica baja de 4 a 3 elementos visibles y la fila de pie aparece SIEMPRE. Listar 4 con un duplicado da 652px de 672 solo si TODOS los comercios caben en una linea, y llega a 672/672 —scroll— en cuanto uno se va a dos, que es el caso real (razones sociales largas). Ver E3DGD / E91A7T, donde esta la cuenta completa. Antes solo Capturas tenia tope y Avisos no: con 3 avisos + 2 capturas el contenido llegaba a ~830px sobre ~672 utiles y el criterio 'todo de un vistazo, sin scroll' —la razon de que esto sea pantalla completa y no una hoja— dejaba de cumplirse. Ver el frame de peor caso. PRESUPUESTO MEDIDO (2026-09-09): 10 + 275 (avisos) + 18 + 282 (capturas) + 20 = 605px sobre ~672 utiles en 390x844 descontando el home indicator. La PRIMERA seccion va SIN encabezado. La SEGUNDA se llama \"Capturas por confirmar\" (no \"Por confirmar\") para no colisionar con el \"Por confirmar\" de Pagos programados. SIN ORBE NI LENGUAJE DE IA: todo es dato calculado por la app. Chrome: Page Header (Dtm0X), sin Tab Bar — es pantalla apilada.",
+      "theme": {
+        "mode": "dark"
+      },
+      "clip": true,
+      "width": 390,
+      "height": 972,
+      "fill": "$background",
+      "cornerRadius": 40,
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "rEXxB",
+          "type": "ref",
+          "ref": "vYZJT",
+          "name": "Status Bar",
+          "width": "fill_container"
+        },
+        {
+          "id": "zqYfg",
+          "type": "ref",
+          "ref": "Dtm0X",
+          "name": "Page Header",
+          "width": "fill_container",
+          "descendants": {
+            "QnxB2": {
+              "content": "Avisos"
+            },
+            "HCkvh": {
+              "fill": []
+            },
+            "jQ1B5": {
+              "enabled": false
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "v8yhJ3",
+          "name": "Content · zona scrolleable",
+          "context": "TODO el contenido de esta pantalla scrollea en teoria; lo unico fijo es el Page Header — pero el criterio de disenio es que NO haga falta scroll. Se mide contra un telefono real (390x844), no contra el lienzo de 972px de la convencion de mockup: Content util = 844-62(status)-76(header) = 706px, ~672 descontando el home indicator. TOPE POR SECCION (2026-09-09): si AMBAS secciones tienen contenido, cada una muestra maximo 2 elementos + su fila de pie (YliJD); si solo UNA seccion tiene contenido, muestra hasta 4 y la fila aparece solo si hay mas. EXCEPCION (medida, no estimada): la tarjeta de posible duplicado (EqRlj) mide 299px, ~3.7 capturas normales de 81px. Si la seccion incluye esa tarjeta, el tope de seccion unica baja de 4 a 3 elementos visibles y la fila de pie aparece SIEMPRE. Listar 4 con un duplicado da 652px de 672 solo si TODOS los comercios caben en una linea, y llega a 672/672 —scroll— en cuanto uno se va a dos, que es el caso real (razones sociales largas). Ver E3DGD / E91A7T, donde esta la cuenta completa. La PRIMERA seccion va SIN encabezado — repetir 'Avisos' bajo el titulo 'Avisos' no informa. La SEGUNDA se llama 'Capturas por confirmar' (no 'Por confirmar' a secas) para no colisionar con el 'Por confirmar' de Pagos programados. MEDIDO EN ESTE FRAME (caso tipico, 2 avisos + 3 capturas): 10 + 275 + 18 + 282 + 20 = 605px sobre 672. Margen 67px.",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 18,
+          "padding": [
+            10,
+            20,
+            20,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "T312g",
+              "name": "Sección Avisos",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "id": "Gp58A",
+                  "type": "ref",
+                  "ref": "cYVQm",
+                  "name": "Aviso · Cobro próximo",
+                  "width": "fill_container",
+                  "descendants": {
+                    "Q21xx": {
+                      "content": "Netflix se cobra en 3 días"
+                    },
+                    "gBDBj": {
+                      "content": "$44.900 · Pago programado · Nu"
+                    },
+                    "OvvPW": {
+                      "content": "Ver pago"
+                    },
+                    "WIZDc": {
+                      "content": "Recordar después"
+                    }
+                  }
+                },
+                {
+                  "id": "ssGIu",
+                  "type": "ref",
+                  "ref": "cYVQm",
+                  "name": "Aviso · Ocurrencia por confirmar",
+                  "width": "fill_container",
+                  "descendants": {
+                    "o0U86y": {
+                      "fill": "$primary-soft"
+                    },
+                    "xWSgc": {
+                      "icon": "circle-check-big",
+                      "fill": "$primary-on-soft"
+                    },
+                    "Q21xx": {
+                      "content": "El arriendo estaba programado para ayer"
+                    },
+                    "gBDBj": {
+                      "content": "$1.200.000 · Cuenta Ahorros"
+                    },
+                    "OvvPW": {
+                      "content": "Confirmar pago"
+                    },
+                    "WIZDc": {
+                      "content": "Todavía no"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "oMVkU",
+              "name": "Sección Capturas",
+              "context": "Seccion de capturas por confirmar. Chasis de aviso + carril de 4px (componente skjlg): la captura pertenece a la misma familia visual que un aviso (chasis identico a cYVQm, CERO tinte) pero su subfamilia esta sin confirmar (carril $primary-on-soft). Ninguna captura lleva boton solido: la tarjeta entera navega al formulario pre-llenado (HU-05) y la seccion remata en UNA sola fila de accion de bloque (YliJD) que abre la revision guiada UNA POR UNA — nunca 'confirmar todas', prohibido por HU-05. Asi los unicos botones solidos $primary de la pantalla son los de los avisos, y la jerarquia 'los avisos pesan mas' queda dicha por el PESO DEL CONTROL, no solo por el orden. Presupuesto medido: header 19 + 10 + caption 17 + 10 + 81 + 10 + 81 + 10 + fila 44 = 282px. El caption ('Aun no afectan tu saldo hasta que tu confirmes.') es una de las cinco senales redundantes que impiden leer una captura como dinero — no se elimina para ganar altura.",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "id": "V6fBML",
+                  "type": "ref",
+                  "ref": "E2pvO",
+                  "name": "Sec Capturas Header",
+                  "width": "fill_container",
+                  "descendants": {
+                    "h31d6": {
+                      "content": "Capturas por confirmar"
+                    },
+                    "W7FUc": {
+                      "enabled": false
+                    }
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "sz3Hk",
+                  "name": "Sec Capturas Caption",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Aún no afectan tu saldo hasta que tú confirmes.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "500"
+                },
+                {
+                  "id": "La3y6",
+                  "type": "ref",
+                  "ref": "skjlg",
+                  "name": "Captura 1 · D1 (Nu)",
+                  "width": "fill_container",
+                  "descendants": {
+                    "R5MXx": {
+                      "content": "TIENDA D1 SANTA ROSA"
+                    },
+                    "cdH1C": {
+                      "content": "Cuenta Nu · Hoy, 8:32 a. m."
+                    },
+                    "IF6UM": {
+                      "content": "Aviso de Nu"
+                    },
+                    "wBnsd": {
+                      "content": "$58.470"
+                    }
+                  }
+                },
+                {
+                  "id": "aYlu3",
+                  "type": "ref",
+                  "ref": "skjlg",
+                  "name": "Captura 2 · Bre-B (Nequi)",
+                  "width": "fill_container",
+                  "descendants": {
+                    "R5MXx": {
+                      "content": "BRE-B A LAURA MEJÍA C."
+                    },
+                    "cdH1C": {
+                      "content": "Cuenta Nequi · Hoy, 9:41 a. m."
+                    },
+                    "IF6UM": {
+                      "content": "Aviso de Nequi"
+                    },
+                    "wBnsd": {
+                      "content": "$85.000"
+                    }
+                  }
+                },
+                {
+                  "id": "EyyQq",
+                  "type": "ref",
+                  "ref": "YliJD",
+                  "name": "Acción de bloque · Revisar capturas",
+                  "width": "fill_container",
+                  "descendants": {
+                    "FRmud": {
+                      "content": "Revisar las 3 capturas"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "FtjmQ",
+          "name": "Footer · Ajustes de captura",
+          "width": "fill_container",
+          "padding": [
+            10,
+            20
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "h1413S",
+              "name": "Footer row",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "Ol3QW",
+                  "name": "Shield",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "shield-check",
+                  "library": "lucide",
+                  "fill": "$primary-on-soft"
+                },
+                {
+                  "type": "text",
+                  "id": "FU0Rw",
+                  "name": "Footer label",
+                  "fill": "$primary-on-soft",
+                  "content": "Ajustes de captura en segundo plano",
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "700"
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "themes": {

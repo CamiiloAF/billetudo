@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/capture/domain/entities/capture_background_health.dart';
 import 'package:billetudo/features/capture/domain/entities/issuer_app.dart';
@@ -24,6 +26,8 @@ void main() {
   late MockSnoozeCaptureBackgroundAlert snooze;
   late MockRequestBatteryOptimizationExemption requestBattery;
   late MockOpenCaptureAutostartSettings openAutostart;
+  late MockMarkCaptureConfigured markConfigured;
+  late MockWatchIncomingCaptures watchIncoming;
 
   setUpAll(registerCaptureFallbacks);
 
@@ -35,6 +39,11 @@ void main() {
     snooze = MockSnoozeCaptureBackgroundAlert();
     requestBattery = MockRequestBatteryOptimizationExemption();
     openAutostart = MockOpenCaptureAutostartSettings();
+    markConfigured = MockMarkCaptureConfigured();
+    watchIncoming = MockWatchIncomingCaptures();
+
+    when(markConfigured.call).thenAnswer((_) async => const Right(unit));
+    when(watchIncoming.call).thenAnswer((_) => const Stream<void>.empty());
 
     when(supported.call).thenReturn(true);
     when(granted.call).thenAnswer((_) async => const Right(true));
@@ -56,6 +65,8 @@ void main() {
         snooze,
         requestBattery,
         openAutostart,
+        markConfigured,
+        watchIncoming,
       );
 
   void stubHealth({
@@ -332,6 +343,52 @@ void main() {
       expect(cubit.state.showsAttention, isTrue);
     },
   );
+
+  blocTest<CaptureBackgroundCubit, CaptureBackgroundState>(
+    'start backfills the configuration date for an install that predates the '
+    'HU-09 mark, so the degraded rule stops reading "never configured"',
+    setUp: stubHealth,
+    build: build,
+    act: (CaptureBackgroundCubit cubit) => cubit.start(),
+    verify: (CaptureBackgroundCubit cubit) {
+      verify(markConfigured.call).called(1);
+      // The mark is idempotent; the health read is not skipped because of it.
+      verify(health.call).called(1);
+    },
+  );
+
+  blocTest<CaptureBackgroundCubit, CaptureBackgroundState>(
+    'no configuration backfill is attempted while capture is not set up',
+    setUp: () {
+      when(issuerApps.call).thenAnswer(
+        (_) async => Right(<IssuerApp>[_issuer('nu', enabled: false)]),
+      );
+    },
+    build: build,
+    act: (CaptureBackgroundCubit cubit) => cubit.start(),
+    verify: (CaptureBackgroundCubit cubit) {
+      verifyNever(markConfigured.call);
+      verifyNever(health.call);
+    },
+  );
+
+  test('a live capture doorbell re-reads the health so the card can clear',
+      () async {
+    final StreamController<void> doorbell = StreamController<void>.broadcast();
+    addTearDown(doorbell.close);
+    when(watchIncoming.call).thenAnswer((_) => doorbell.stream);
+
+    final cubit = build();
+    addTearDown(cubit.close);
+    await cubit.start();
+
+    doorbell.add(null);
+    await pumpEventQueue();
+
+    // `verify` consumes invocations in mocktail, so the count is only read once
+    // at the end: one read from `start()` plus one from the doorbell refresh.
+    verify(health.call).called(2);
+  });
 }
 
 IssuerApp _issuer(String id, {required bool enabled}) => IssuerApp(

@@ -1,6 +1,7 @@
 import 'package:billetudo/core/error/result.dart';
 import 'package:billetudo/features/capture/domain/entities/capture_background_health.dart';
 import 'package:billetudo/features/capture/domain/entities/capture_diagnostics.dart';
+import 'package:billetudo/features/capture/domain/repositories/capture_background_preferences_repository.dart';
 import 'package:billetudo/features/capture/domain/usecases/get_capture_background_health.dart';
 import 'package:billetudo/features/capture/domain/usecases/mark_capture_configured.dart';
 import 'package:billetudo/features/capture/domain/usecases/open_capture_autostart_settings.dart';
@@ -75,6 +76,8 @@ void main() {
     );
     when(preferences.configuredAt).thenAnswer((_) async => Right(configuredAt));
     when(preferences.snoozedUntil).thenAnswer((_) async => Right(snoozedUntil));
+    when(() => preferences.markConfigured(any()))
+        .thenAnswer((_) async => const Right(unit));
   }
 
   Future<CaptureBackgroundHealth> healthAt(DateTime at) async {
@@ -413,9 +416,71 @@ void main() {
 
     test('latches the date only when permission and issuers are in place',
         () async {
-      stub(configuredAt: null);
+      // No evidence of a previous configuration either: a truly fresh setup
+      // anchors the clock at "now".
+      stub(configuredAt: null, lastListenerConnectedAtEpochMs: null);
       when(() => preferences.markConfigured(any()))
           .thenAnswer((_) async => const Right(unit));
+
+      final Result<Unit> result = await mark();
+
+      expect(result.isRight(), isTrue);
+      verify(() => preferences.markConfigured(now)).called(1);
+    });
+
+    test('backfills from the last capture for an install that predates the '
+        'HU-09 mark, so the alarm does not wait a fresh grace period', () async {
+      final DateTime capturedAt = DateTime(2026, 11, 9, 9, 19);
+      stub(
+        configuredAt: null,
+        lastCaptureAtEpochMs: capturedAt.millisecondsSinceEpoch,
+        lastListenerConnectedAtEpochMs: null,
+      );
+
+      final Result<Unit> result = await mark();
+
+      expect(result.isRight(), isTrue);
+      verify(() => preferences.markConfigured(capturedAt)).called(1);
+      verifyNever(() => preferences.markConfigured(now));
+    });
+
+    test('a listener heartbeat alone is not proof of configuration: the clock '
+        'starts now instead, to avoid a false alarm right after setup',
+        () async {
+      final DateTime connectedAt = DateTime(2026, 11, 8, 15);
+      stub(
+        configuredAt: null,
+        lastListenerConnectedAtEpochMs: connectedAt.millisecondsSinceEpoch,
+      );
+
+      final Result<Unit> result = await mark();
+
+      expect(result.isRight(), isTrue);
+      verify(() => preferences.markConfigured(now)).called(1);
+      verifyNever(() => preferences.markConfigured(connectedAt));
+    });
+
+    test('clamps a future capture timestamp to now instead of silencing the '
+        'rule for the whole device-clock skew', () async {
+      final DateTime future = now.add(const Duration(days: 2));
+      stub(
+        configuredAt: null,
+        lastCaptureAtEpochMs: future.millisecondsSinceEpoch,
+        lastListenerConnectedAtEpochMs: null,
+      );
+
+      final Result<Unit> result = await mark();
+
+      expect(result.isRight(), isTrue);
+      verify(() => preferences.markConfigured(now)).called(1);
+      verifyNever(() => preferences.markConfigured(future));
+    });
+
+    test('falls back to now when the diagnostics probe cannot be completed',
+        () async {
+      stub(configuredAt: null, lastListenerConnectedAtEpochMs: null);
+      when(capture.getDiagnostics)
+          .thenAnswer((_) async => const Left(UnexpectedFailure('channel')));
 
       final Result<Unit> result = await mark();
 
@@ -474,6 +539,47 @@ void main() {
     });
   });
 
+  group('backfill and degradation together (reported bug)', () {
+    test('an install configured before HU-09 that used to capture is reported '
+        'degraded on the first visit instead of staying silent', () async {
+      // The bug: `configuredAt` was never written (the mark shipped with
+      // HU-09), the listener is now rejected by MIUI and the last capture was
+      // yesterday. Backfilling from that capture restores the real clock, so
+      // the direct "never connected" signal fires immediately.
+      final DateTime lastCapture = now.subtract(const Duration(hours: 20));
+      when(capture.isPermissionGranted)
+          .thenAnswer((_) async => const Right(true));
+      when(capture.getEnabledIssuers)
+          .thenAnswer((_) async => const Right(<String>{'nu'}));
+      when(capture.getDiagnostics).thenAnswer(
+        (_) async => Right(
+          buildCaptureDiagnostics(
+            lastCaptureAtEpochMs: lastCapture.millisecondsSinceEpoch,
+            lastListenerConnectedAtEpochMs: null,
+            listenerConnectedNow: false,
+          ),
+        ),
+      );
+      final _InMemoryCaptureBackgroundPreferences store =
+          _InMemoryCaptureBackgroundPreferences();
+
+      await withClock(
+        Clock.fixed(now),
+        () => MarkCaptureConfigured(capture, store)(),
+      );
+      final Result<CaptureBackgroundHealth> result = await withClock(
+        Clock.fixed(now),
+        () => GetCaptureBackgroundHealth(capture, store)(),
+      );
+
+      final CaptureBackgroundHealth health =
+          result.getOrElse((Failure f) => throw StateError(f.message));
+      expect(store.configured, lastCapture);
+      expect(health.degraded, isTrue);
+      expect(health.showsAttention, isTrue);
+    });
+  });
+
   group('system actions', () {
     test('battery exemption delegates to the channel', () async {
       when(capture.requestIgnoreBatteryOptimizations)
@@ -526,4 +632,31 @@ void main() {
     expect(const CaptureDiagnostics.empty().lastListenerConnectedAt, isNull);
     expect(const CaptureDiagnostics.empty().listenerConnectedNow, isFalse);
   });
+}
+
+
+/// Per-device dates backed by memory, so the backfill and the rule can be
+/// exercised together without a SharedPreferences harness.
+class _InMemoryCaptureBackgroundPreferences
+    implements CaptureBackgroundPreferencesRepository {
+  DateTime? configured;
+  DateTime? snoozedUntilDate;
+
+  @override
+  FutureResult<DateTime?> configuredAt() async => Right(configured);
+
+  @override
+  FutureResult<Unit> markConfigured(DateTime at) async {
+    configured ??= at;
+    return const Right(unit);
+  }
+
+  @override
+  FutureResult<DateTime?> snoozedUntil() async => Right(snoozedUntilDate);
+
+  @override
+  FutureResult<Unit> snoozeUntil(DateTime until) async {
+    snoozedUntilDate = until;
+    return const Right(unit);
+  }
 }

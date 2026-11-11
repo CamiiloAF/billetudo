@@ -99,6 +99,11 @@ class BilletudoNotificationListenerService : NotificationListenerService() {
 
         buffer.add(capture)
         settings.markCaptureReceived(capture.postedAtEpochMs)
+        // Ring Flutter's doorbell when an engine is alive, so the new capture
+        // reaches the inbox immediately instead of waiting for the next cold
+        // start or for the user to open Avisos. No engine → no event; the
+        // capture is already safely buffered.
+        CaptureChannelHandler.notifyCaptureBuffered()
     }
 
     /**

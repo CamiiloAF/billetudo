@@ -3,12 +3,9 @@ import 'package:billetudo/features/accounts/domain/entities/account_with_balance
 import 'package:billetudo/features/accounts/domain/usecases/watch_accounts.dart';
 import 'package:billetudo/features/capture/domain/entities/duplicate_candidate.dart';
 import 'package:billetudo/features/capture/domain/entities/issuer_catalog_entry.dart';
-import 'package:billetudo/features/capture/domain/entities/parsed_notification.dart';
 import 'package:billetudo/features/capture/domain/entities/pending_capture.dart';
 import 'package:billetudo/features/capture/domain/usecases/discard_pending_capture.dart';
-import 'package:billetudo/features/capture/domain/usecases/drain_native_captures.dart';
 import 'package:billetudo/features/capture/domain/usecases/find_duplicate_candidates.dart';
-import 'package:billetudo/features/capture/domain/usecases/ingest_parsed_captures.dart';
 import 'package:billetudo/features/capture/domain/usecases/restore_pending_capture.dart';
 import 'package:billetudo/features/capture/domain/usecases/watch_issuer_catalog.dart';
 import 'package:billetudo/features/capture/domain/usecases/watch_pending_captures.dart';
@@ -35,10 +32,6 @@ class MockGetCategory extends Mock implements GetCategory {}
 
 class MockDiscardPendingCapture extends Mock implements DiscardPendingCapture {}
 
-class MockDrainNativeCaptures extends Mock implements DrainNativeCaptures {}
-
-class MockIngestParsedCaptures extends Mock implements IngestParsedCaptures {}
-
 class MockRestorePendingCapture extends Mock implements RestorePendingCapture {}
 
 void main() {
@@ -49,8 +42,7 @@ void main() {
   late MockGetCategory getCategory;
   late MockDiscardPendingCapture discard;
   late MockRestorePendingCapture restore;
-  late MockDrainNativeCaptures drainNativeCaptures;
-  late MockIngestParsedCaptures ingestParsedCaptures;
+  late MockDrainAndIngestCaptures drainAndIngestCaptures;
 
   setUpAll(() {
     registerCaptureFallbacks();
@@ -65,13 +57,8 @@ void main() {
     getCategory = MockGetCategory();
     discard = MockDiscardPendingCapture();
     restore = MockRestorePendingCapture();
-    drainNativeCaptures = MockDrainNativeCaptures();
-    ingestParsedCaptures = MockIngestParsedCaptures();
-
-    when(() => drainNativeCaptures()).thenAnswer(
-      (_) async => const Right<Failure, List<ParsedNotification>>([]),
-    );
-    when(() => ingestParsedCaptures(any())).thenAnswer(
+    drainAndIngestCaptures = MockDrainAndIngestCaptures();
+    when(drainAndIngestCaptures.call).thenAnswer(
       (_) async => const Right<Failure, List<PendingCapture>>([]),
     );
 
@@ -110,8 +97,7 @@ void main() {
         getCategory,
         discard,
         restore,
-        drainNativeCaptures,
-        ingestParsedCaptures,
+        drainAndIngestCaptures,
       );
 
   void stubCaptures(List<PendingCapture> captures) {

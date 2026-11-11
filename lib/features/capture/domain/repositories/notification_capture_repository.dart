@@ -46,6 +46,22 @@ abstract class NotificationCaptureRepository {
   /// lost, which is the accepted trade-off of never keeping the text.
   FutureResult<List<ParsedNotification>> drainPendingCaptures();
 
+  /// Emits once every time the native listener parks a new capture while the
+  /// app process is alive.
+  ///
+  /// The buffer alone is not enough: without this signal a capture received
+  /// with the app already running stays invisible (no bell badge, nothing in
+  /// Avisos) until the next cold start or until the user opens the inbox,
+  /// which is exactly the "la app no está escuchando" report this closes.
+  ///
+  /// **It carries no data on purpose**: the only way to read a capture is
+  /// [drainPendingCaptures], which empties the native buffer atomically. The
+  /// event only says "there may be something new to drain".
+  ///
+  /// Never fires off Android (the feature does not exist there), and when the
+  /// Flutter engine is not alive the native side simply keeps buffering.
+  Stream<void> incomingCaptureEvents();
+
   /// The catalog crossed with the apps actually installed on the device
   /// (HU-02), each carrying its current on/off state.
   FutureResult<List<IssuerApp>> getInstalledIssuerApps();

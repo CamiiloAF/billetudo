@@ -3,6 +3,8 @@ package com.billetudo.app.capture
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
@@ -24,7 +26,11 @@ class CaptureChannelHandler(private val context: Context) : MethodChannel.Method
     private val systemSettings = CaptureSystemSettings(context)
 
     fun register(messenger: BinaryMessenger) {
-        MethodChannel(messenger, CHANNEL).setMethodCallHandler(this)
+        val channel = MethodChannel(messenger, CHANNEL)
+        channel.setMethodCallHandler(this)
+        // Kept so the listener can push `onCaptureBuffered` while this engine
+        // is alive. Cleared when the engine is destroyed (MainActivity).
+        eventsChannel = channel
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -166,10 +172,57 @@ class CaptureChannelHandler(private val context: Context) : MethodChannel.Method
         const val CHANNEL = "com.billetudo.app/capture"
 
         /**
+         * Must match `CaptureMethodChannelDatasource.incomingCaptureMethod`.
+         *
+         * It is a doorbell, not a payload: Dart answers it by draining the
+         * buffer. Nothing about the notification itself crosses here, so the
+         * zero-retention promise is unchanged.
+         */
+        private const val METHOD_ON_CAPTURE_BUFFERED = "onCaptureBuffered"
+
+        /**
          * No system screen could be opened for a HU-09 action. Flutter turns
          * this into a `Failure`, so the sheet can stay open instead of
          * pretending the setting was shown.
          */
         private const val ERROR_NO_ACTIVITY = "no_activity"
+
+        /**
+         * The channel of the Flutter engine currently attached to the app, or
+         * `null` when there is none (process started only to deliver a
+         * notification, activity destroyed, …).
+         *
+         * `@Volatile` because [register]/[detach] run on the platform thread
+         * while the listener callbacks may be posted from another thread.
+         */
+        @Volatile
+        private var eventsChannel: MethodChannel? = null
+
+        private val mainHandler by lazy { Handler(Looper.getMainLooper()) }
+
+        /**
+         * Tells Flutter that the native listener just parked a capture, so it
+         * can drain the buffer and update the inbox/badge immediately.
+         *
+         * **No engine, no event:** when the app process only hosts the
+         * service (the common "app closed" case) there is nothing to notify
+         * and the capture simply waits in [PendingCaptureBuffer] for the next
+         * drain, exactly as before. A dead engine is swallowed here; losing a
+         * doorbell is harmless because the app drains on start/resume anyway.
+         */
+        fun notifyCaptureBuffered() {
+            val channel = eventsChannel ?: return
+            mainHandler.post {
+                runCatching { channel.invokeMethod(METHOD_ON_CAPTURE_BUFFERED, null) }
+            }
+        }
+
+        /**
+         * Called when the Flutter engine goes away, so a later capture does
+         * not target a dead messenger.
+         */
+        fun detach() {
+            eventsChannel = null
+        }
     }
 }

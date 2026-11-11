@@ -460,6 +460,8 @@ import 'package:billetudo/features/capture/domain/usecases/discard_captures_befo
     as _i456;
 import 'package:billetudo/features/capture/domain/usecases/discard_pending_capture.dart'
     as _i371;
+import 'package:billetudo/features/capture/domain/usecases/drain_and_ingest_captures.dart'
+    as _i930;
 import 'package:billetudo/features/capture/domain/usecases/drain_native_captures.dart'
     as _i117;
 import 'package:billetudo/features/capture/domain/usecases/find_duplicate_candidates.dart'
@@ -538,6 +540,8 @@ import 'package:billetudo/features/capture/domain/usecases/turn_off_all_issuer_l
     as _i288;
 import 'package:billetudo/features/capture/domain/usecases/watch_capture_shortcuts.dart'
     as _i871;
+import 'package:billetudo/features/capture/domain/usecases/watch_incoming_captures.dart'
+    as _i536;
 import 'package:billetudo/features/capture/domain/usecases/watch_issuer_catalog.dart'
     as _i739;
 import 'package:billetudo/features/capture/domain/usecases/watch_pending_capture_count.dart'
@@ -546,6 +550,8 @@ import 'package:billetudo/features/capture/domain/usecases/watch_pending_capture
     as _i593;
 import 'package:billetudo/features/capture/domain/usecases/watch_voice_capture_updates.dart'
     as _i853;
+import 'package:billetudo/features/capture/presentation/capture_ingest_observer.dart'
+    as _i730;
 import 'package:billetudo/features/capture/presentation/cubit/capture_background_cubit.dart'
     as _i923;
 import 'package:billetudo/features/capture/presentation/cubit/capture_issuers_cubit.dart'
@@ -1143,7 +1149,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i529.ZeroBasedSummaryCalculator>(
         () => const _i529.ZeroBasedSummaryCalculator());
     gh.lazySingleton<_i725.CaptureMethodChannelDatasource>(
-        () => const _i725.CaptureMethodChannelDatasource());
+        () => _i725.CaptureMethodChannelDatasource());
     gh.lazySingleton<_i405.IssuerRulesAssetDatasource>(
         () => const _i405.IssuerRulesAssetDatasource());
     gh.lazySingleton<_i1013.DebtBalanceCalculator>(
@@ -1720,6 +1726,8 @@ extension GetItInjectableX on _i174.GetIt {
             gh<_i416.NotificationCaptureRepository>()));
     gh.factory<_i194.SetEnabledIssuers>(() =>
         _i194.SetEnabledIssuers(gh<_i416.NotificationCaptureRepository>()));
+    gh.factory<_i536.WatchIncomingCaptures>(() =>
+        _i536.WatchIncomingCaptures(gh<_i416.NotificationCaptureRepository>()));
     gh.factory<_i601.ConfirmImport>(
         () => _i601.ConfirmImport(gh<_i447.ImportRepository>()));
     gh.factory<_i788.GetExistingAccountsForImport>(
@@ -1882,6 +1890,17 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i87.GetCategoryDeletionImpact>(),
           gh<_i968.DeleteCategory>(),
           gh<_i928.SuggestSubcategoryIcon>(),
+        ));
+    gh.factory<_i923.CaptureBackgroundCubit>(() => _i923.CaptureBackgroundCubit(
+          gh<_i804.GetCaptureBackgroundHealth>(),
+          gh<_i248.IsNotificationCaptureSupported>(),
+          gh<_i364.IsNotificationAccessGranted>(),
+          gh<_i464.GetIssuerApps>(),
+          gh<_i256.SnoozeCaptureBackgroundAlert>(),
+          gh<_i1068.RequestBatteryOptimizationExemption>(),
+          gh<_i1033.OpenCaptureAutostartSettings>(),
+          gh<_i283.MarkCaptureConfigured>(),
+          gh<_i536.WatchIncomingCaptures>(),
         ));
     gh.lazySingleton<_i418.BackupRepository>(
         () => _i393.BackupRepositoryImpl(gh<_i716.BackupJsonDatasource>()));
@@ -2271,15 +2290,6 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i442.ReadNotificationPermission>(),
               gh<_i1052.OpenNotificationSystemSettings>(),
             ));
-    gh.factory<_i923.CaptureBackgroundCubit>(() => _i923.CaptureBackgroundCubit(
-          gh<_i804.GetCaptureBackgroundHealth>(),
-          gh<_i248.IsNotificationCaptureSupported>(),
-          gh<_i364.IsNotificationAccessGranted>(),
-          gh<_i464.GetIssuerApps>(),
-          gh<_i256.SnoozeCaptureBackgroundAlert>(),
-          gh<_i1068.RequestBatteryOptimizationExemption>(),
-          gh<_i1033.OpenCaptureAutostartSettings>(),
-        ));
     gh.factory<_i489.MergeCubit>(
         () => _i489.MergeCubit(gh<_i916.MergeLocalData>()));
     gh.factory<_i95.CaptureStatusCubit>(() => _i95.CaptureStatusCubit(
@@ -2466,6 +2476,10 @@ extension GetItInjectableX on _i174.GetIt {
             ));
     gh.factory<_i722.AccountFilterCubit>(
         () => _i722.AccountFilterCubit(gh<_i837.WatchAccounts>()));
+    gh.factory<_i930.DrainAndIngestCaptures>(() => _i930.DrainAndIngestCaptures(
+          gh<_i117.DrainNativeCaptures>(),
+          gh<_i954.IngestParsedCaptures>(),
+        ));
     gh.factory<_i916.DebtLinkCubit>(
         () => _i916.DebtLinkCubit(gh<_i980.LinkTransactionToDebt>()));
     gh.factory<_i701.GoalDetailCubit>(() => _i701.GoalDetailCubit(
@@ -2597,6 +2611,16 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i674.GetActiveBudgets>(),
           gh<_i529.WatchGoals>(),
         ));
+    gh.factory<_i166.NoticesCubit>(() => _i166.NoticesCubit(
+          gh<_i593.WatchPendingCaptures>(),
+          gh<_i739.WatchIssuerCatalog>(),
+          gh<_i837.WatchAccounts>(),
+          gh<_i810.FindDuplicateCandidates>(),
+          gh<_i382.GetCategory>(),
+          gh<_i371.DiscardPendingCapture>(),
+          gh<_i917.RestorePendingCapture>(),
+          gh<_i930.DrainAndIngestCaptures>(),
+        ));
     gh.factory<_i168.LegalAcceptanceCubit>(() => _i168.LegalAcceptanceCubit(
           gh<_i223.ResolveLegalDocument>(),
           gh<_i836.AcceptLegalDocuments>(),
@@ -2646,6 +2670,12 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i1047.WithdrawFromGoal>(),
           gh<_i837.WatchAccounts>(),
         ));
+    gh.lazySingleton<_i730.CaptureIngestObserver>(
+        () => _i730.CaptureIngestObserver(
+              gh<_i930.DrainAndIngestCaptures>(),
+              gh<_i536.WatchIncomingCaptures>(),
+              gh<_i474.CrashReporter>(),
+            ));
     gh.factory<_i401.SaveCopyCubit>(() => _i401.SaveCopyCubit(
           gh<_i237.CreateFullBackup>(),
           gh<_i936.MarkBackupSaved>(),
@@ -2680,17 +2710,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i769.WatchPendingConfirmationInsights>(),
           gh<_i1051.WatchGoalMilestoneInsights>(),
           gh<_i173.NotificationPreferences>(),
-        ));
-    gh.factory<_i166.NoticesCubit>(() => _i166.NoticesCubit(
-          gh<_i593.WatchPendingCaptures>(),
-          gh<_i739.WatchIssuerCatalog>(),
-          gh<_i837.WatchAccounts>(),
-          gh<_i810.FindDuplicateCandidates>(),
-          gh<_i382.GetCategory>(),
-          gh<_i371.DiscardPendingCapture>(),
-          gh<_i917.RestorePendingCapture>(),
-          gh<_i117.DrainNativeCaptures>(),
-          gh<_i954.IngestParsedCaptures>(),
         ));
     gh.factory<_i414.DebtPaymentCubit>(() => _i414.DebtPaymentCubit(
           gh<_i135.RegisterDebtCashEvent>(),
