@@ -32,7 +32,7 @@ void main() {
   });
 
   NotificationCaptureRepositoryImpl buildRepository() =>
-      const NotificationCaptureRepositoryImpl(
+      NotificationCaptureRepositoryImpl(
         CaptureMethodChannelDatasource(),
       );
 
@@ -281,6 +281,25 @@ void main() {
       expect(battery.isLeft(), isTrue);
       expect(autostart.isLeft(), isTrue);
     });
+  });
+
+  test('the native capture doorbell is exposed as a payload-less stream',
+      () async {
+    final NotificationCaptureRepositoryImpl repository = buildRepository();
+    final Future<void> doorbell =
+        repository.incomingCaptureEvents().first;
+
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .handlePlatformMessage(
+      channel.name,
+      const StandardMethodCodec().encodeMethodCall(
+        const MethodCall(CaptureMethodChannelDatasource.incomingCaptureMethod),
+      ),
+      (ByteData? _) {},
+    );
+
+    // Completes only if the repository forwarded the native event.
+    await doorbell;
   });
 
   group('off Android', () {

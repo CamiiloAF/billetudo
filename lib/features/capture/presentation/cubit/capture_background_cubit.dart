@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -8,9 +10,11 @@ import '../../domain/usecases/get_capture_background_health.dart';
 import '../../domain/usecases/get_issuer_apps.dart';
 import '../../domain/usecases/is_notification_access_granted.dart';
 import '../../domain/usecases/is_notification_capture_supported.dart';
+import '../../domain/usecases/mark_capture_configured.dart';
 import '../../domain/usecases/open_capture_autostart_settings.dart';
 import '../../domain/usecases/request_battery_optimization_exemption.dart';
 import '../../domain/usecases/snooze_capture_background_alert.dart';
+import '../../domain/usecases/watch_incoming_captures.dart';
 import 'capture_background_state.dart';
 
 /// Drives the "background capture may have stopped" surfaces of Avisos
@@ -36,6 +40,8 @@ class CaptureBackgroundCubit extends Cubit<CaptureBackgroundState> {
     this._snooze,
     this._requestBatteryExemption,
     this._openAutostart,
+    this._markConfigured,
+    this._watchIncomingCaptures,
   ) : super(const CaptureBackgroundState());
 
   final GetCaptureBackgroundHealth _health;
@@ -45,11 +51,33 @@ class CaptureBackgroundCubit extends Cubit<CaptureBackgroundState> {
   final SnoozeCaptureBackgroundAlert _snooze;
   final RequestBatteryOptimizationExemption _requestBatteryExemption;
   final OpenCaptureAutostartSettings _openAutostart;
+  final MarkCaptureConfigured _markConfigured;
+  final WatchIncomingCaptures _watchIncomingCaptures;
+
+  StreamSubscription<void>? _incomingSub;
+
+  /// Detects a reload that is no longer the latest one. `start()`, the live
+  /// doorbell and the resume refresh can overlap; without this, an older
+  /// snapshot could be emitted after a newer one and briefly show attention
+  /// the device no longer has (or hide it).
+  int _reloadGeneration = 0;
+
+  bool _isStale(int generation) =>
+      isClosed || generation != _reloadGeneration;
 
   /// Initial read. Shows the loading state, since the card appearing a beat
   /// after the captures section is fine and the alternative (a stale card
   /// from a previous visit) is not.
-  Future<void> start() => _reload();
+  ///
+  /// It also subscribes to the live capture doorbell: a new capture is the
+  /// fastest possible proof that capture is alive again, so the degraded card
+  /// has to clear without waiting for the next visit.
+  Future<void> start() async {
+    _incomingSub ??= _watchIncomingCaptures().listen(
+      (_) => unawaited(refresh()),
+    );
+    await _reload();
+  }
 
   /// Re-read after returning to foreground. Silent: the surfaces keep the
   /// last snapshot on screen until the new one is ready.
@@ -109,6 +137,7 @@ class CaptureBackgroundCubit extends Cubit<CaptureBackgroundState> {
     if (isClosed) {
       return;
     }
+    final int generation = ++_reloadGeneration;
 
     final bool supported = _isSupported();
     if (!supported) {
@@ -133,7 +162,7 @@ class CaptureBackgroundCubit extends Cubit<CaptureBackgroundState> {
     }
 
     final Result<bool> granted = await _isGranted();
-    if (isClosed) {
+    if (_isStale(generation)) {
       return;
     }
     final bool permissionGranted = switch (granted) {
@@ -154,7 +183,7 @@ class CaptureBackgroundCubit extends Cubit<CaptureBackgroundState> {
     }
 
     final Result<List<IssuerApp>> apps = await _getIssuerApps();
-    if (isClosed) {
+    if (_isStale(generation)) {
       return;
     }
     final List<IssuerApp> issuers;
@@ -194,8 +223,21 @@ class CaptureBackgroundCubit extends Cubit<CaptureBackgroundState> {
       return;
     }
 
+    // Migration guard (2026-11-11): installations configured **before** HU-09
+    // existed never got `configuredAt`, so the rule below reads "not
+    // configured" and the app stays silent forever — the exact "Todo al día
+    // mientras la captura está muerta" report this closes. Now that the two
+    // preconditions are verified, latch the date (idempotent, evidence-based:
+    // see `MarkCaptureConfigured`). A failed write is intentionally ignored:
+    // it only means the next visit tries again, and it must never turn a
+    // healthy capture into an error surface.
+    await _markConfigured();
+    if (_isStale(generation)) {
+      return;
+    }
+
     final Result<CaptureBackgroundHealth> health = await _health();
-    if (isClosed) {
+    if (_isStale(generation)) {
       return;
     }
     switch (health) {
@@ -229,5 +271,11 @@ class CaptureBackgroundCubit extends Cubit<CaptureBackgroundState> {
           ),
         );
     }
+  }
+
+  @override
+  Future<void> close() async {
+    await _incomingSub?.cancel();
+    return super.close();
   }
 }

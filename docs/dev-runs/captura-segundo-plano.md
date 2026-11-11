@@ -194,3 +194,19 @@ test/features/settings` → 793 verdes; Kotlin `:app:compileDevDebugKotlin` BUIL
   permiso se abre **desde** el catálogo, `extra: true` ⇒ al conceder hace `pop()` (no apila otro) y
   `CaptureIssuersPage` re-lee el catálogo al volver (`await onOpenPermission; refresh()`). Tests:
   `capture_issuers_page_test.dart`.
+
+## Adición 2026-11-11 — ingesta en vivo + backfill del reloj de HU-09
+
+Nuevo reporte del usuario con el build de Play 1.1.0: "no escucha y no muestra la nueva entrada".
+Diagnóstico y fix en [`fix-captura-ingesta-en-vivo.md`](fix-captura-ingesta-en-vivo.md):
+
+- Una captura recibida con la app **ya abierta** no se ingería hasta reiniciar o abrir Avisos
+  (antes solo drenaban `bootstrap` y `NoticesCubit.start()`); ahora el listener nativo manda un
+  evento `onCaptureBuffered` y un observador app-wide drena y persiste al instante, con
+  `AppLifecycleState.resumed` como red de seguridad.
+- `configuredAt` solo lo escribía la pantalla de emisores, que nació con HU-09: las instalaciones
+  configuradas con builds anteriores nunca veían la tarjeta/hoja de degradación. Ahora se
+  rellena desde evidencia nativa (`lastCaptureAt` → `lastListenerConnectedAt` → ahora) en cada
+  lectura de `CaptureBackgroundCubit`.
+- El buffer nativo y el rechazo de bind de MIUI/HyperOS no cambian: la app sigue sin poder
+  conceder "Inicio automático" ni la exención de batería, solo abrir esas pantallas.

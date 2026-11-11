@@ -6,9 +6,8 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../features/auth/domain/usecases/wait_for_first_sync_before_seeding.dart';
-import '../features/capture/domain/entities/parsed_capture.dart';
-import '../features/capture/domain/usecases/drain_native_captures.dart';
-import '../features/capture/domain/usecases/ingest_parsed_captures.dart';
+import '../features/capture/domain/usecases/drain_and_ingest_captures.dart';
+import '../features/capture/presentation/capture_ingest_observer.dart';
 import '../features/categories/domain/usecases/seed_default_categories.dart';
 import '../features/onboarding/domain/usecases/should_show_onboarding.dart';
 import '../features/scheduled_payments/domain/usecases/generate_due_scheduled_payments.dart';
@@ -229,36 +228,31 @@ Future<Widget Function()> _initApp(
     }
   }
 
+  // App-wide live ingestion (2026-11-11): a bank notification received while
+  // the app is open or in the background used to stay in the native buffer
+  // until a cold start or until the user opened Avisos, so the bell badge never
+  // appeared and the inbox said "Todo al día". The observer drains on the
+  // native doorbell and on every return to foreground.
+  //
+  // Started **before** the cold-start drain below: the doorbell stream is a
+  // broadcast one, so a notification that lands between the two would be
+  // dropped (no listener yet) and its capture would stay invisible until the
+  // next resume. Subscribing first closes that window; the double drain is
+  // harmless because `PendingCaptureBuffer.drain()` is atomic.
+  unawaited(getIt<CaptureIngestObserver>().start());
+
   // The Android listener runs without a Flutter engine and buffers parsed
   // captures until the app starts. Move them into Drift before mounting the
   // app so the inbox and its badge see notifications received while closed.
-  final nativeCapturesResult = await getIt<DrainNativeCaptures>()();
+  //
+  // `DrainAndIngestCaptures` is also what the live ingester above calls when a
+  // notification arrives with the app already running; keeping a single use
+  // case for both moments is what prevents the two paths from drifting.
+  final nativeCapturesResult = await getIt<DrainAndIngestCaptures>()();
   if (nativeCapturesResult case Left(value: final failure)) {
     unawaited(
-      crash.recordFailure(failure, context: 'drainNativeCaptures'),
+      crash.recordFailure(failure, context: 'drainAndIngestCaptures'),
     );
-  } else {
-    final captures = [
-      for (final capture in nativeCapturesResult.getOrElse(
-        (_) => const [],
-      ))
-        ParsedCapture(
-          sourcePackage: capture.sourcePackage,
-          sourceRuleId: capture.ruleId,
-          postedAt: capture.postedAt,
-          amountMinor: capture.amountMinor,
-          currency: capture.currency,
-          entryType: capture.entryType,
-          merchantRaw: capture.merchantRaw,
-          accountHint: capture.accountHint,
-        ),
-    ];
-    final ingestionResult = await getIt<IngestParsedCaptures>()(captures);
-    if (ingestionResult case Left(value: final failure)) {
-      unawaited(
-        crash.recordFailure(failure, context: 'ingestParsedCaptures'),
-      );
-    }
   }
 
   // Catch up on scheduled payments due since the last launch (HU-02,
